@@ -92,15 +92,15 @@ Goal: Journeys A and B from spec §3 work end to end, offline, on iPad Safari an
 
 ### Song model and import (SONG)
 
-- [ ] **P1-01** `Song` model types, tempo map, beats ↔ seconds conversion (ADR 0003).
-- [ ] **P1-02** MusicXML parser: partwise scores, chords, voices, backup/forward, ties merged,
+- [x] **P1-01** `Song` model types, tempo map, beats ↔ seconds conversion (ADR 0003).
+- [x] **P1-02** MusicXML parser: partwise scores, chords, voices, backup/forward, ties merged,
       staves → hands, fingering, tempo, time and key signatures, pickup bars, repeats with
       first/second endings. (D.C./D.S./coda jumps are not unrolled yet.)
-- [ ] **P1-03** `.mxl` unzip in the browser.
-- [ ] **P1-04** Standard MIDI file parser (format 0 and 1), drum channel and non-piano programmes
+- [x] **P1-03** `.mxl` unzip in the browser.
+- [x] **P1-04** Standard MIDI file parser (format 0 and 1), drum channel and non-piano programmes
       dropped unless kept.
-- [ ] **P1-05** MIDI quantiser: coarsest grid that keeps ≥ 95 % of onsets within ±30 ms.
-- [ ] **P1-06** MIDI hand split: two tracks → lower average pitch is the left hand; one track →
+- [x] **P1-05** MIDI quantiser: coarsest grid that keeps ≥ 95 % of onsets within ±30 ms.
+- [x] **P1-06** MIDI hand split: two tracks → lower average pitch is the left hand; one track →
       split around middle C with smoothing; user-movable split point.
 - [ ] **P1-07** Import review screen: swap staves / move split point, base tempo, transpose, trim
       bars, title and tags. (Basic version done: title, tempo, transpose, split point.)

@@ -1,0 +1,23 @@
+{
+  "name": "@opentiles/song-model",
+  "version": "0.1.0",
+  "private": true,
+  "description": "The Song model, tempo map, and MusicXML / MIDI importers for OpenTiles",
+  "license": "AGPL-3.0-or-later",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "test": "vitest run",
+    "typecheck": "tsc -p tsconfig.json"
+  },
+  "dependencies": {
+    "fflate": "^0.8.2"
+  },
+  "devDependencies": {
+    "@xmldom/xmldom": "^0.9.8",
+    "typescript": "~6.0.3",
+    "vitest": "^5.0.3"
+  }
+}
