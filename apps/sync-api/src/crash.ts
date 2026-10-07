@@ -27,7 +27,7 @@ const LIMITS = {
 };
 
 const EMAIL = /[^\s@<>()"',;:]+@[^\s@<>()"',;:]+\.[A-Za-z]{2,}/g;
-const SECRET_PARAM = /\b(token|code|key|secret|password|session|auth)=([^&#\s]+)/gi;
+const SECRET_PARAM = /\b(token|code|key|secret|password|session|auth)=([^&#\s)"'<>]+)/gi;
 const BEARER = /Bearer\s+[A-Za-z0-9._~+/=-]+/gi;
 
 /** Removes things that could identify a person or unlock an account. */

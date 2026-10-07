@@ -187,7 +187,12 @@ export function s3BlobStore(options: S3Options): BlobStore {
       .join('/');
     const search = query.map(([k, v]) => `${uriEncode(k)}=${uriEncode(v)}`).join('&');
     const url = `${endpoint.protocol}//${host}${encodedPath}${search ? `?${search}` : ''}`;
-    return doFetch(url, { method, headers, body });
+    // fetch wants a buffer it owns outright; copy only when the view sits on something else.
+    const payload =
+      body === undefined || body.buffer instanceof ArrayBuffer
+        ? (body as Uint8Array<ArrayBuffer> | undefined)
+        : new Uint8Array(body);
+    return doFetch(url, { method, headers, body: payload });
   }
 
   return {
