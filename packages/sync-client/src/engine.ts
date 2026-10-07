@@ -248,6 +248,15 @@ export class SyncEngine {
         }
         incoming = { ...local.record, data: null, deleted: true };
       }
+      if (
+        local?.pending &&
+        incoming.modifiedAt === local.record.modifiedAt &&
+        incoming.deviceId === local.record.deviceId
+      ) {
+        // Our own upload whose answer was lost (for example the connection dropped): it is saved.
+        await this.store.put({ ...local, version: remote.version, pending: false });
+        return true;
+      }
       if (local?.pending) {
         result.conflicts += 1;
         if (!wins(incoming, local.record)) {

@@ -203,6 +203,31 @@ describe('last writer wins', () => {
     }
   });
 
+  it('recognises its own upload when the answer was lost', async () => {
+    const server = inProcessServer();
+    const api = await server.signedIn();
+    const { vault } = await createRemoteVault(api, PASS, weakKdf);
+    let dropAnswer = true;
+    const flakyApi: SyncApi = {
+      ...api,
+      putBlob: async (rid, sealed, base) => {
+        const res = await api.putBlob(rid, sealed, base);
+        if (dropAnswer) {
+          dropAnswer = false;
+          throw new TypeError('network connection lost');
+        }
+        return res;
+      },
+    };
+    const d = device(flakyApi, vault.key, 'device-a');
+    const id = newRecordId();
+    await d.engine.change(id, 'progress', { runs: 1 });
+    await expect(d.engine.sync()).rejects.toThrow('network connection lost');
+    const second = await d.engine.sync();
+    expect(second).toEqual({ pulled: 0, pushed: 0, conflicts: 0, failed: [] });
+    expect(await d.store.get(id)).toMatchObject({ version: 1, pending: false });
+  });
+
   it('keeps an edit made while its previous version was uploading', async () => {
     const server = inProcessServer();
     const api = await server.signedIn();
