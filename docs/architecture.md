@@ -46,16 +46,19 @@ Two seams keep the design simple:
 
 ## Packages
 
-| Package               | Responsibility                                                                                  | Depends on              |
-| --------------------- | ----------------------------------------------------------------------------------------------- | ----------------------- |
-| `packages/song-model` | `Song` types, tempo map, MusicXML and MIDI parsing, quantiser, hand split, transpose            | `fflate` (unzip `.mxl`) |
-| `packages/practice`   | `NoteEvent`, practice steps, `WaitMode`, `PlayAlongScorer`, tempo scaling                       | `song-model`            |
-| `packages/engine`     | Rust detector compiled to `engine.wasm`; AudioWorklet processor and main-thread loader in `js/` | —                       |
-| `packages/importers`  | Heavy, lazy-loaded converters (MuseScore, OMR, audio) — later phases                            | `song-model`            |
-| `apps/web`            | React UI, canvas views, Web Audio, Web MIDI, IndexedDB, service worker                          | all of the above        |
+| Package                | Responsibility                                                                                  | Depends on              |
+| ---------------------- | ----------------------------------------------------------------------------------------------- | ----------------------- |
+| `packages/song-model`  | `Song` types, tempo map, MusicXML and MIDI parsing, quantiser, hand split, transpose            | `fflate` (unzip `.mxl`) |
+| `packages/practice`    | `NoteEvent`, practice steps, `WaitMode`, `PlayAlongScorer`, tempo scaling                       | `song-model`            |
+| `packages/engine`      | Rust detector compiled to `engine.wasm`; AudioWorklet processor and main-thread loader in `js/` | —                       |
+| `packages/importers`   | Heavy, lazy-loaded converters (MuseScore, OMR, audio) — later phases                            | `song-model`            |
+| `packages/vault`       | Library key, Argon2id and recovery-code wrapping, record encryption, encrypted backup file      | `hash-wasm`, `fflate`   |
+| `packages/sync-client` | Sync API client, key setup on the server, last-writer-wins sync engine                          | `vault`                 |
+| `apps/web`             | React UI, canvas views, Web Audio, Web MIDI, IndexedDB, service worker                          | all of the above        |
+| `apps/sync-api`        | Optional sync service (Node 22): sign-in, encrypted blobs, wrapped keys, crash reports          | —                       |
 
-`song-model` and `practice` are DOM-free (ADR 0004) so they run in tests, web workers and the iOS
-shell unchanged.
+`song-model`, `practice`, `vault` and `sync-client` are DOM-free (ADR 0004, ADR 0006) so they run
+in tests, web workers and the iOS shell unchanged.
 
 ## The `Song` model
 
@@ -143,10 +146,11 @@ numbers come from a synthesiser, not a piano in a room; the G0 gate is judged on
 
 - **Private library:** IndexedDB via Dexie — original file bytes, the parsed `Song`, practice
   settings and progress. `navigator.storage.persist()` is requested on first import.
-- **Backup (phase 2):** an encrypted `.zip` the user keeps.
+- **Backup (phase 2):** an encrypted `.zip` the user keeps (`packages/vault`).
 - **Sync (phase 3):** a random 256-bit library key, wrapped with an Argon2id-derived key from the
-  user's passphrase; every record (including titles) encrypted with AES-GCM before upload. The
-  server sees only account email, blob count and size, and timestamps.
+  user's passphrase and again with a printable recovery code; every record (including titles)
+  encrypted with AES-GCM before upload. The server sees only account email, blob count and size,
+  and timestamps. Details, deployment and the API: [sync.md](sync.md); decisions: ADR 0006.
 
 ## Safari and iPad rules
 
@@ -168,5 +172,7 @@ These come from spec §5. Every item must hold before G1.
 ## Deviations from the spec's repository layout
 
 - `packages/practice` was added for the practice engine (ADR 0004).
+- `packages/vault`, `packages/sync-client` and `apps/sync-api` were added for the encrypted backup
+  and sync (ADR 0006).
 - `packages/engine` also holds the AudioWorklet processor and loader (`js/`) so the wasm module and
   the code that drives it are versioned together.
