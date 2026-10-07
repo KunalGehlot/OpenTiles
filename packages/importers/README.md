@@ -17,6 +17,11 @@ to `importScore` in `packages/song-model`; MuseScore files go to the lazy-loaded
 | MuseScore `.mscz`, `.mscx` | Own reader (`src/musescore.ts`), see ADR 0005                 | P2-10 (done) |
 | PDF / photo                | Optical music recognition model in the browser (experimental) | P4-01        |
 | Audio recording            | Audio-to-MIDI model                                           | P4-02        |
+| Format            | Converter                                                     | Plan task                                 |
+| ----------------- | ------------------------------------------------------------- | ----------------------------------------- |
+| MuseScore `.mscz` | webmscore (MuseScore compiled to WebAssembly) → MusicXML      | P2-10 (check licence fits AGPL-3.0 first) |
+| PDF / photo       | Optical music recognition model in the browser (experimental) | P4-01                                     |
+| Audio recording   | Basic Pitch audio-to-MIDI model, in `packages/audio-import`   | P4-02                                     |
 
 Every converter runs on the user's device and produces a `Song` via `packages/song-model`.
 Nothing is uploaded for processing.

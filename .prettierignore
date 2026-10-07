@@ -11,3 +11,4 @@ catalogue/cache/
 tools/pipeline/tests/fixtures/
 # Xcode project files and the built web app that `cap sync` copies in
 apps/ios-shell/ios/
+apps/web/public/models/
