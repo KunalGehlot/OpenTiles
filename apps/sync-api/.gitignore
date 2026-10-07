@@ -1,0 +1,2 @@
+# Local development data: the SQLite database holds account emails. Never commit it.
+data/

@@ -1,0 +1,36 @@
+{
+  "name": "@opentiles/sync-api",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Blind storage for OpenTiles encrypted sync: sign-in, encrypted blobs, wrapped keys and opt-in crash reports",
+  "license": "AGPL-3.0-or-later",
+  "type": "module",
+  "engines": {
+    "node": ">=22.13"
+  },
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "start": "node --disable-warning=ExperimentalWarning dist/server.js",
+    "dev": "tsc -p tsconfig.build.json && node --disable-warning=ExperimentalWarning --env-file-if-exists=.env dist/server.js",
+    "test": "vitest run",
+    "typecheck": "tsc -p tsconfig.json"
+  },
+  "dependencies": {
+    "@hono/node-server": "^2.1.3",
+    "@simplewebauthn/server": "^14.0.3",
+    "hono": "^4.13.13",
+    "nodemailer": "^10.0.16"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "@types/nodemailer": "^8.0.2",
+    "typescript": "~6.0.3",
+    "vitest": "^5.0.3"
+  }
+}

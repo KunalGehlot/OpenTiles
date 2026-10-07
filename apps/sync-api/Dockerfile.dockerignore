@@ -1,0 +1,13 @@
+# BuildKit reads this file for builds that use apps/sync-api/Dockerfile.
+**/node_modules
+**/dist
+**/coverage
+**/.env
+**/.env.*
+!**/.env.example
+.git
+target
+target-*
+apps/web/test-results
+apps/web/playwright-report
+packages/engine/testdata/recordings
