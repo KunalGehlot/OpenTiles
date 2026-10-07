@@ -1,0 +1,28 @@
+{
+  "name": "@opentiles/audio-import",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Approximate audio-to-notes import with Spotify Basic Pitch, loaded on demand",
+  "license": "AGPL-3.0-or-later",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "test": "vitest run",
+    "typecheck": "tsc -p tsconfig.json"
+  },
+  "dependencies": {
+    "@opentiles/song-model": "workspace:*",
+    "@spotify/basic-pitch": "^1.0.1",
+    "@tensorflow/tfjs-backend-cpu": "^4.22.0",
+    "@tensorflow/tfjs-backend-webgl": "^4.22.0",
+    "@tensorflow/tfjs-converter": "^4.22.0",
+    "@tensorflow/tfjs-core": "^4.22.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "typescript": "~6.0.3",
+    "vitest": "^5.0.3"
+  }
+}

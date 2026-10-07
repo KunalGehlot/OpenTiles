@@ -7,7 +7,7 @@ weigh down the main bundle:
 | ----------------- | ------------------------------------------------------------- | ----------------------------------------- |
 | MuseScore `.mscz` | webmscore (MuseScore compiled to WebAssembly) → MusicXML      | P2-10 (check licence fits AGPL-3.0 first) |
 | PDF / photo       | Optical music recognition model in the browser (experimental) | P4-01                                     |
-| Audio recording   | Audio-to-MIDI model (e.g. Basic Pitch)                        | P4-02                                     |
+| Audio recording   | Basic Pitch audio-to-MIDI model, in `packages/audio-import`   | P4-02                                     |
 
 Every converter runs on the user's device and produces a `Song` via `packages/song-model`.
 Nothing is uploaded for processing.
