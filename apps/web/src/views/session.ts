@@ -55,6 +55,11 @@ export class PracticeSession {
   flashes: Flash[] = [];
   /** Note ids already played correctly in this run (drawn differently). */
   readonly done = new Set<string>();
+  /**
+   * Per-note feedback for the score views: `wrong` when a wrong key was played while the note was
+   * expected (wait mode) or the note was missed (play-along); it stays red for the rest of the run.
+   */
+  readonly marks = new Map<string, 'correct' | 'wrong'>();
 
   private timeline: Timeline | null = null;
   private scorer: PlayAlongScorer | null = null;
@@ -125,6 +130,7 @@ export class PracticeSession {
     this.wait = new WaitMode(this.steps);
     this.wait.onStep = (step) => this.onStep(step);
     this.done.clear();
+    this.marks.clear();
     this.flashes = [];
     this.summary = null;
     this.startedAt = 0;
@@ -194,11 +200,17 @@ export class PracticeSession {
       if (out.kind === 'correct') {
         this.keys.set(e.pitch, 'correct');
         this.flash(e.pitch, 'correct', t);
-        for (const n of before?.notes ?? []) if (n.pitch === e.pitch) this.done.add(n.id);
+        for (const n of before?.notes ?? []) {
+          if (n.pitch !== e.pitch) continue;
+          this.done.add(n.id);
+          if (!this.marks.has(n.id)) this.marks.set(n.id, 'correct');
+        }
         if (out.completed && before) this.accompanyStep(before, t);
       } else if (out.kind === 'wrong') {
         this.keys.set(e.pitch, 'wrong');
         this.flash(e.pitch, 'wrong', t);
+        for (const n of before?.notes ?? [])
+          if (!this.done.has(n.id)) this.marks.set(n.id, 'wrong');
       }
     } else if (this.mode === 'play-along' && this.scorer) {
       const out = this.scorer.handle(e);
@@ -207,6 +219,7 @@ export class PracticeSession {
         this.keys.set(e.pitch, ok ? 'correct' : 'wrong');
         this.flash(e.pitch, ok ? 'correct' : 'wrong', t);
         this.done.add(out.result.note.id);
+        this.marks.set(out.result.note.id, out.result.judgement === 'missed' ? 'wrong' : 'correct');
       } else {
         this.keys.set(e.pitch, 'wrong');
         this.flash(e.pitch, 'wrong', t);
@@ -268,6 +281,7 @@ export class PracticeSession {
     this.timeline = new Timeline(this.song, this.tempo, t + LEAD_IN, fromBeat);
     this.summary = null;
     this.done.clear();
+    this.marks.clear();
     this.startedAt = t + LEAD_IN;
     this.finishedAt = 0;
     const tl = this.timeline;
@@ -322,7 +336,10 @@ export class PracticeSession {
       this.beat = this.timeline.beatAt(t);
       this.runSchedule(t);
       if (this.scorer) {
-        for (const r of this.scorer.update(t)) this.flash(r.note.pitch, 'missed', t);
+        for (const r of this.scorer.update(t)) {
+          this.flash(r.note.pitch, 'missed', t);
+          this.marks.set(r.note.id, 'wrong');
+        }
         if (this.mode === 'play-along') {
           this.onExpected(this.upcomingPitches(t));
         }

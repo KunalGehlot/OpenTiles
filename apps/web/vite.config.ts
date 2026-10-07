@@ -110,9 +110,10 @@ function pwa(): Plugin[] {
       // .mp3 is for public/samples/piano/*.mp3; source maps stay out of the cache, and the plugin
       // adds manifest.webmanifest itself.
       globPatterns: ['**/*.{html,js,css,wasm,json,musicxml,mxl,xml,svg,png,mp3}'],
-      // The main bundle and individual samples are well below this; the default 2 MiB is too
-      // close for comfort once the sampler lands.
-      maximumFileSizeToCacheInBytes: 8 * 1024 * 1024,
+      // The main bundle and individual samples are well below this. The largest file is the
+      // Verovio score engraver (~8 MB: WebAssembly embedded in one lazy-loaded chunk, P1-15); it is
+      // precached so the score views work offline even if they were never opened online.
+      maximumFileSizeToCacheInBytes: 16 * 1024 * 1024,
       // Take control of the first page right after install, so a tab that goes offline without
       // a reload can still open catalogue pieces. Updates still wait for the user ('prompt').
       clientsClaim: true,
@@ -135,6 +136,7 @@ export default defineConfig(({ mode }) => ({
     ),
   },
   worker: { format: 'es' },
-  build: { target: 'es2022', sourcemap: true },
+  // The Verovio chunk is large by design and only loaded when a score view opens.
+  build: { target: 'es2022', sourcemap: true, chunkSizeWarningLimit: 9000 },
   server: { fs: { allow: [resolve(import.meta.dirname, '../..')] } },
 }));

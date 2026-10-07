@@ -32,14 +32,16 @@ export function loadCatalogue(): Promise<CataloguePiece[]> {
 
 export async function loadCatalogueSong(
   slug: string,
-): Promise<{ piece: CataloguePiece; song: Song }> {
+): Promise<{ piece: CataloguePiece; song: Song; bytes: Uint8Array }> {
   const pieces = await loadCatalogue();
   const piece = pieces.find((p) => p.slug === slug);
   if (!piece) throw new Error('This piece is not in the catalogue.');
   const res = await fetch(new URL(piece.score, base));
   if (!res.ok) throw new Error(`Could not load the score (${res.status}).`);
-  const song = importScore(piece.score, new Uint8Array(await res.arrayBuffer()));
-  return { piece, song };
+  // The bytes are kept for the score views, which draw the original file (P1-15).
+  const bytes = new Uint8Array(await res.arrayBuffer());
+  const song = importScore(piece.score, bytes);
+  return { piece, song, bytes };
 }
 
 export const DIFFICULTY_LABELS = [

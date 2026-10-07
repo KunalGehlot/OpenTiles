@@ -47,6 +47,13 @@ export function About() {
         <a href="samples/piano/LICENSE.txt">licence text</a>. Until the samples have loaded, or if
         they cannot load, a simple built-in synthesiser plays instead.
       </p>
+      <p>
+        Scores are engraved on your device by{' '}
+        <a href="https://www.verovio.org/" rel="noreferrer">
+          Verovio
+        </a>
+        , used under the GNU LGPL-3.0 (or later).
+      </p>
       <h2>Open source</h2>
       <p>
         The app is licensed under the GNU AGPL-3.0; catalogue metadata under CC0. Source code, plans
