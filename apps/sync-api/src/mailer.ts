@@ -37,13 +37,19 @@ export function memoryMailer(): Mailer & { sent: MailMessage[] } {
  * `smtps://user:password@smtp.example.eu:465` (implicit TLS) or `smtp://...:587` (STARTTLS,
  * required).
  */
-export function smtpMailer(options: { url: string; from: string }): Mailer {
+export function smtpMailer(options: {
+  url: string;
+  from: string;
+  /** Only for tests against a local fake server; production always requires TLS. */
+  unsafeAllowPlaintext?: boolean;
+}): Mailer {
   const url = new URL(options.url);
   const transport = createTransport({
     host: url.hostname,
     port: Number(url.port || (url.protocol === 'smtps:' ? 465 : 587)),
     secure: url.protocol === 'smtps:',
-    requireTLS: true,
+    requireTLS: !options.unsafeAllowPlaintext,
+    ignoreTLS: options.unsafeAllowPlaintext === true,
     auth: url.username
       ? { user: decodeURIComponent(url.username), pass: decodeURIComponent(url.password) }
       : undefined,

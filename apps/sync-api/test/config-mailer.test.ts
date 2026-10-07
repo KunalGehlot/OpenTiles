@@ -1,4 +1,4 @@
-import type { AddressInfo } from 'node:net';
+import { createServer, type AddressInfo } from 'node:net';
 import { serve } from '@hono/node-server';
 import { getConnInfo } from '@hono/node-server/conninfo';
 import { describe, expect, it } from 'vitest';
@@ -6,7 +6,7 @@ import { createApp } from '../src/app.js';
 import { memoryBlobStore } from '../src/blob-store.js';
 import { makeConfig, settingsFromEnv } from '../src/config.js';
 import { openDatabase } from '../src/db.js';
-import { httpMailer, memoryMailer, signInMessage } from '../src/mailer.js';
+import { httpMailer, memoryMailer, signInMessage, smtpMailer } from '../src/mailer.js';
 
 describe('settingsFromEnv', () => {
   it('fills in sensible defaults for local development', () => {
@@ -106,6 +106,62 @@ describe('mailers', () => {
     await expect(mailer.send({ to: 'a@example.org', subject: 's', text: 't' })).rejects.toThrow(
       /HTTP 500/,
     );
+  });
+});
+
+describe('smtpMailer', () => {
+  it('delivers the message to an SMTP server', async () => {
+    // A minimal SMTP server: just enough of RFC 5321 for one message.
+    const received: string[] = [];
+    const smtp = createServer((socket) => {
+      socket.setEncoding('utf8');
+      let inData = false;
+      let buffer = '';
+      socket.write('220 test ESMTP\r\n');
+      socket.on('data', (chunk: string) => {
+        buffer += chunk;
+        let index: number;
+        while ((index = buffer.indexOf('\r\n')) >= 0) {
+          const line = buffer.slice(0, index);
+          buffer = buffer.slice(index + 2);
+          if (inData) {
+            if (line === '.') {
+              inData = false;
+              socket.write('250 queued\r\n');
+            } else {
+              received.push(line);
+            }
+          } else if (/^(EHLO|HELO)/i.test(line)) {
+            socket.write('250 test\r\n');
+          } else if (/^DATA/i.test(line)) {
+            inData = true;
+            socket.write('354 go ahead\r\n');
+          } else if (/^QUIT/i.test(line)) {
+            socket.end('221 bye\r\n');
+          } else {
+            socket.write('250 ok\r\n');
+          }
+        }
+      });
+    });
+    await new Promise<void>((resolve) => smtp.listen(0, '127.0.0.1', () => resolve()));
+    const { port } = smtp.address() as AddressInfo;
+    try {
+      const mailer = smtpMailer({
+        url: `smtp://127.0.0.1:${port}`,
+        from: 'OpenTiles <no-reply@opentiles.example>',
+        unsafeAllowPlaintext: true,
+      });
+      await mailer.send(
+        signInMessage('a@example.org', 'https://x.example/#token=t', '1234-5678', 15),
+      );
+      const message = received.join('\n');
+      expect(message).toContain('Subject: Your OpenTiles sign-in link');
+      expect(message).toContain('To: a@example.org');
+      expect(message).toContain('1234-5678');
+    } finally {
+      await new Promise((resolve) => smtp.close(resolve));
+    }
   });
 });
 
