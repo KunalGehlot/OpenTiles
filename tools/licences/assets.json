@@ -1,0 +1,48 @@
+{
+  "$comment": "Every file under the scanned roots must be covered by one entry (longest path wins). Each entry names a licence file whose text is checked against the declared licence. See CONTRIBUTING.md, 'Licences of dependencies and assets'.",
+  "roots": ["apps/web/public"],
+  "assets": [
+    {
+      "path": "apps/web/public/samples/piano",
+      "licence": "CC-BY-3.0",
+      "licenceFile": "apps/web/public/samples/piano/LICENSE.txt",
+      "source": "Salamander Grand Piano V3 by Alexander Holm, adapted; see README.md in the folder"
+    },
+    {
+      "path": "apps/web/public/models/basic-pitch",
+      "licence": "Apache-2.0",
+      "licenceFile": "apps/web/public/models/basic-pitch/LICENSE",
+      "source": "Basic Pitch model from @spotify/basic-pitch 1.0.1, unchanged; see README.md in the folder"
+    },
+    {
+      "path": "apps/web/public/icon.svg",
+      "licence": "AGPL-3.0-or-later",
+      "licenceFile": "LICENSE",
+      "source": "Made for OpenTiles"
+    },
+    {
+      "path": "apps/web/public/apple-touch-icon.png",
+      "licence": "AGPL-3.0-or-later",
+      "licenceFile": "LICENSE",
+      "source": "Rendered from icon.svg"
+    },
+    {
+      "path": "apps/web/public/pwa-192x192.png",
+      "licence": "AGPL-3.0-or-later",
+      "licenceFile": "LICENSE",
+      "source": "Rendered from icon.svg"
+    },
+    {
+      "path": "apps/web/public/pwa-512x512.png",
+      "licence": "AGPL-3.0-or-later",
+      "licenceFile": "LICENSE",
+      "source": "Rendered from icon.svg"
+    },
+    {
+      "path": "apps/web/public/maskable-512x512.png",
+      "licence": "AGPL-3.0-or-later",
+      "licenceFile": "LICENSE",
+      "source": "Rendered from icon.svg"
+    }
+  ]
+}
