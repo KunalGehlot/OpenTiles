@@ -1,0 +1,11 @@
+# Eine kleine Nachtmusik, K. 525 (1787), by Wolfgang Amadeus Mozart: the opening bars in octaves, closing chord added.
+# Original simplified arrangement for OpenTiles, released under CC0 1.0.
+title: Eine kleine Nachtmusik (opening)
+composer: Wolfgang Amadeus Mozart
+key: 1
+time: 4/4
+tempo: 120
+RH: G4q re D4e G4q re D4e | G4e D4e G4e B4e D5q rq | C5q re A4e C5q re A4e | C5e A4e F#4e A4e D4q rq
+RH: [G4 B4 D5]w
+LH: G3q re D3e G3q re D3e | G3e D3e G3e B3e D4q rq | C4q re A3e C4q re A3e | C4e A3e F#3e A3e D3q rq
+LH: G2w

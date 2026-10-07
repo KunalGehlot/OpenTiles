@@ -2,6 +2,24 @@
   "version": 1,
   "pieces": [
     {
+      "slug": "alle-meine-entchen",
+      "title": "Alle meine Entchen",
+      "composer": "Traditional (German children's song, 19th century)",
+      "difficulty": 1,
+      "licence": "CC0-1.0",
+      "verified": false,
+      "score": "pieces/alle-meine-entchen/score.musicxml"
+    },
+    {
+      "slug": "au-clair-de-la-lune",
+      "title": "Au clair de la lune",
+      "composer": "Traditional (French song, 18th century)",
+      "difficulty": 1,
+      "licence": "CC0-1.0",
+      "verified": false,
+      "score": "pieces/au-clair-de-la-lune/score.musicxml"
+    },
+    {
       "slug": "frere-jacques",
       "title": "Frère Jacques",
       "composer": "Traditional (French round, 18th century)",
@@ -9,6 +27,51 @@
       "licence": "CC0-1.0",
       "verified": false,
       "score": "pieces/frere-jacques/score.musicxml"
+    },
+    {
+      "slug": "hot-cross-buns",
+      "title": "Hot Cross Buns",
+      "composer": "Traditional (English street cry, 18th century)",
+      "difficulty": 1,
+      "licence": "CC0-1.0",
+      "verified": false,
+      "score": "pieces/hot-cross-buns/score.musicxml"
+    },
+    {
+      "slug": "haenschen-klein",
+      "title": "Hänschen klein (Lightly Row)",
+      "composer": "Traditional (German folk song, 19th century)",
+      "difficulty": 1,
+      "licence": "CC0-1.0",
+      "verified": false,
+      "score": "pieces/haenschen-klein/score.musicxml"
+    },
+    {
+      "slug": "jingle-bells",
+      "title": "Jingle Bells (chorus)",
+      "composer": "James Lord Pierpont",
+      "difficulty": 1,
+      "licence": "CC0-1.0",
+      "verified": false,
+      "score": "pieces/jingle-bells/score.musicxml"
+    },
+    {
+      "slug": "london-bridge",
+      "title": "London Bridge Is Falling Down",
+      "composer": "Traditional (English nursery rhyme)",
+      "difficulty": 1,
+      "licence": "CC0-1.0",
+      "verified": false,
+      "score": "pieces/london-bridge/score.musicxml"
+    },
+    {
+      "slug": "mary-had-a-little-lamb",
+      "title": "Mary Had a Little Lamb",
+      "composer": "Lowell Mason",
+      "difficulty": 1,
+      "licence": "CC0-1.0",
+      "verified": false,
+      "score": "pieces/mary-had-a-little-lamb/score.musicxml"
     },
     {
       "slug": "ode-to-joy",
@@ -20,6 +83,24 @@
       "score": "pieces/ode-to-joy/score.musicxml"
     },
     {
+      "slug": "old-macdonald",
+      "title": "Old MacDonald Had a Farm",
+      "composer": "Traditional (folk song)",
+      "difficulty": 1,
+      "licence": "CC0-1.0",
+      "verified": false,
+      "score": "pieces/old-macdonald/score.musicxml"
+    },
+    {
+      "slug": "row-row-row-your-boat",
+      "title": "Row, Row, Row Your Boat",
+      "composer": "Traditional (nursery rhyme, 19th century)",
+      "difficulty": 1,
+      "licence": "CC0-1.0",
+      "verified": false,
+      "score": "pieces/row-row-row-your-boat/score.musicxml"
+    },
+    {
       "slug": "twinkle-twinkle",
       "title": "Twinkle, Twinkle, Little Star",
       "composer": "Traditional (French melody, 18th century)",
@@ -27,6 +108,42 @@
       "licence": "CC0-1.0",
       "verified": false,
       "score": "pieces/twinkle-twinkle/score.musicxml"
+    },
+    {
+      "slug": "yankee-doodle",
+      "title": "Yankee Doodle",
+      "composer": "Traditional (American, 18th century)",
+      "difficulty": 1,
+      "licence": "CC0-1.0",
+      "verified": false,
+      "score": "pieces/yankee-doodle/score.musicxml"
+    },
+    {
+      "slug": "amazing-grace",
+      "title": "Amazing Grace",
+      "composer": "Traditional (American hymn tune 'New Britain', 1829)",
+      "difficulty": 2,
+      "licence": "CC0-1.0",
+      "verified": false,
+      "score": "pieces/amazing-grace/score.musicxml"
+    },
+    {
+      "slug": "auld-lang-syne",
+      "title": "Auld Lang Syne (verse)",
+      "composer": "Traditional (Scottish)",
+      "difficulty": 2,
+      "licence": "CC0-1.0",
+      "verified": false,
+      "score": "pieces/auld-lang-syne/score.musicxml"
+    },
+    {
+      "slug": "deck-the-halls",
+      "title": "Deck the Halls",
+      "composer": "Traditional (Welsh carol 'Nos Galan')",
+      "difficulty": 2,
+      "licence": "CC0-1.0",
+      "verified": false,
+      "score": "pieces/deck-the-halls/score.musicxml"
     },
     {
       "slug": "fur-elise-opening",
@@ -38,6 +155,51 @@
       "score": "pieces/fur-elise-opening/score.musicxml"
     },
     {
+      "slug": "good-king-wenceslas",
+      "title": "Good King Wenceslas",
+      "composer": "Traditional (spring carol 'Tempus adest floridum', 1582)",
+      "difficulty": 2,
+      "licence": "CC0-1.0",
+      "verified": false,
+      "score": "pieces/good-king-wenceslas/score.musicxml"
+    },
+    {
+      "slug": "hark-the-herald-angels-sing",
+      "title": "Hark! The Herald Angels Sing (opening)",
+      "composer": "Felix Mendelssohn",
+      "difficulty": 2,
+      "licence": "CC0-1.0",
+      "verified": false,
+      "score": "pieces/hark-the-herald-angels-sing/score.musicxml"
+    },
+    {
+      "slug": "joy-to-the-world",
+      "title": "Joy to the World (opening)",
+      "composer": "Lowell Mason",
+      "difficulty": 2,
+      "licence": "CC0-1.0",
+      "verified": false,
+      "score": "pieces/joy-to-the-world/score.musicxml"
+    },
+    {
+      "slug": "largo-new-world",
+      "title": "Largo from the New World Symphony (theme)",
+      "composer": "Antonín Dvořák",
+      "difficulty": 2,
+      "licence": "CC0-1.0",
+      "verified": false,
+      "score": "pieces/largo-new-world/score.musicxml"
+    },
+    {
+      "slug": "brahms-lullaby",
+      "title": "Lullaby (Wiegenlied)",
+      "composer": "Johannes Brahms",
+      "difficulty": 2,
+      "licence": "CC0-1.0",
+      "verified": false,
+      "score": "pieces/brahms-lullaby/score.musicxml"
+    },
+    {
       "slug": "minuet-in-g",
       "title": "Minuet in G (opening)",
       "composer": "Christian Petzold",
@@ -45,6 +207,78 @@
       "licence": "CC0-1.0",
       "verified": false,
       "score": "pieces/minuet-in-g/score.musicxml"
+    },
+    {
+      "slug": "silent-night",
+      "title": "Silent Night",
+      "composer": "Franz Xaver Gruber",
+      "difficulty": 2,
+      "licence": "CC0-1.0",
+      "verified": false,
+      "score": "pieces/silent-night/score.musicxml"
+    },
+    {
+      "slug": "we-wish-you-a-merry-christmas",
+      "title": "We Wish You a Merry Christmas",
+      "composer": "Traditional (English carol)",
+      "difficulty": 2,
+      "licence": "CC0-1.0",
+      "verified": false,
+      "score": "pieces/we-wish-you-a-merry-christmas/score.musicxml"
+    },
+    {
+      "slug": "when-the-saints",
+      "title": "When the Saints Go Marching In",
+      "composer": "Traditional (African-American spiritual)",
+      "difficulty": 2,
+      "licence": "CC0-1.0",
+      "verified": false,
+      "score": "pieces/when-the-saints/score.musicxml"
+    },
+    {
+      "slug": "canon-in-d",
+      "title": "Canon in D (simplified)",
+      "composer": "Johann Pachelbel",
+      "difficulty": 3,
+      "licence": "CC0-1.0",
+      "verified": false,
+      "score": "pieces/canon-in-d/score.musicxml"
+    },
+    {
+      "slug": "eine-kleine-nachtmusik",
+      "title": "Eine kleine Nachtmusik (opening)",
+      "composer": "Wolfgang Amadeus Mozart",
+      "difficulty": 3,
+      "licence": "CC0-1.0",
+      "verified": false,
+      "score": "pieces/eine-kleine-nachtmusik/score.musicxml"
+    },
+    {
+      "slug": "greensleeves",
+      "title": "Greensleeves",
+      "composer": "Traditional (English, 16th century)",
+      "difficulty": 3,
+      "licence": "CC0-1.0",
+      "verified": false,
+      "score": "pieces/greensleeves/score.musicxml"
+    },
+    {
+      "slug": "hall-of-the-mountain-king",
+      "title": "In the Hall of the Mountain King (opening)",
+      "composer": "Edvard Grieg",
+      "difficulty": 3,
+      "licence": "CC0-1.0",
+      "verified": false,
+      "score": "pieces/hall-of-the-mountain-king/score.musicxml"
+    },
+    {
+      "slug": "prelude-in-c",
+      "title": "Prelude in C (opening)",
+      "composer": "Johann Sebastian Bach",
+      "difficulty": 3,
+      "licence": "CC0-1.0",
+      "verified": false,
+      "score": "pieces/prelude-in-c/score.musicxml"
     }
   ]
 }

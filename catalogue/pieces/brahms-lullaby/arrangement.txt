@@ -1,0 +1,18 @@
+# Wiegenlied (Lullaby), Op. 49 No. 4 (1868), by Johannes Brahms: the melody in C. No lyrics.
+# Original simplified arrangement for OpenTiles, released under CC0 1.0.
+title: Lullaby (Wiegenlied)
+composer: Johannes Brahms
+key: 0
+time: 3/4
+tempo: 76
+pickup: yes
+RH: E4e@1 E4e
+RH: | G4q.@3 E4e E4q | G4h E4e G4e | C5q@5 B4q. A4e | A4q G4q D4e E4e
+RH: | F4q D4q D4e E4e | F4h D4e F4e | B4e A4e G4q B4q | C5h C4e C4e
+RH: | C5h A4e F4e | G4h E4e C4e | F4q G4q A4q | G4h C4e C4e
+RH: | C5h A4e F4e | G4h E4e C4e | F4q E4q D4q | C4h.
+LH: rq
+LH: | C3h. | C3h. | G2h. | G2h.
+LH: | G2h. | G2h. | G2h. | C3h.
+LH: | F2h. | C3h. | F2h. | C3h.
+LH: | F2h. | C3h. | G2h. | C3h.

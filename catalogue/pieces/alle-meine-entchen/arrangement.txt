@@ -1,0 +1,11 @@
+# Alle meine Entchen: traditional German children's song (19th century).
+# Original simplified arrangement for OpenTiles, released under CC0 1.0.
+title: Alle meine Entchen
+composer: Traditional
+key: 0
+time: 4/4
+tempo: 100
+RH: C4q@1 D4q E4q F4q | G4h G4h | A4q A4q A4q A4q | G4w | A4q A4q A4q A4q | G4w
+RH: F4q@4 F4q F4q F4q | E4h E4h | D4q D4q D4q D4q | C4w
+LH: C3w | C3w | F2w | C3w | F2w | C3w
+LH: G2w | C3w | G2w | C3w

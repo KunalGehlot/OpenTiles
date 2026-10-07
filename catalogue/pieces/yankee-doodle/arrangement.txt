@@ -1,0 +1,11 @@
+# Yankee Doodle: traditional American song (18th century).
+# Original simplified arrangement for OpenTiles, released under CC0 1.0.
+title: Yankee Doodle
+composer: Traditional
+key: 0
+time: 4/4
+tempo: 112
+RH: C4q@1 C4q D4q E4q | C4q E4q D4q G3q | C4q C4q D4q E4q | C4h B3h
+RH: C4q C4q D4q E4q | F4q E4q D4q C4q | B3q G3q A3q B3q | C4h C4h
+LH: C3w | C3h G2h | C3w | C3h G2h
+LH: C3w | F2h C3h | G2w | C3w

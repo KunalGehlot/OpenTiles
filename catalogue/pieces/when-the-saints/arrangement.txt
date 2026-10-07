@@ -1,0 +1,14 @@
+# When the Saints Go Marching In: traditional African-American spiritual.
+# Original simplified arrangement for OpenTiles, released under CC0 1.0.
+title: When the Saints Go Marching In
+composer: Traditional
+key: 0
+time: 4/4
+tempo: 112
+pickup: yes
+RH: C4q@1 E4q@3 F4q@4
+RH: | G4w@5 | rq C4q@1 E4q F4q | G4w | rq C4q E4q F4q | G4h E4h | C4h E4h | D4w
+RH: | rq E4q E4q D4q | C4h. C4q | E4h G4h | G4q F4h. | rq E4q F4q G4q | E4h C4h | D4w | C4w
+LH: rh.
+LH: | C3w | C3w | C3w | C3w | C3w | C3w | G2w
+LH: | C3w | C3w | C3w | F2w | C3w | C3w | G2w | C3w

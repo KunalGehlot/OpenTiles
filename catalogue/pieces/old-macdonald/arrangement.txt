@@ -1,0 +1,11 @@
+# Old MacDonald Had a Farm: traditional folk song, first two lines.
+# Original simplified arrangement for OpenTiles, released under CC0 1.0.
+title: Old MacDonald Had a Farm
+composer: Traditional
+key: 1
+time: 4/4
+tempo: 112
+RH: G4q G4q G4q D4q | E4q E4q D4h | B4q B4q A4q A4q | G4h. D4q
+RH: G4q G4q G4q D4q | E4q E4q D4h | B4q B4q A4q A4q | G4w
+LH: G2w | C3h G2h | G2h D3h | G2w
+LH: G2w | C3h G2h | G2h D3h | G2w

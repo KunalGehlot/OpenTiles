@@ -1,0 +1,15 @@
+# Hänschen klein, known in English as Lightly Row: traditional German folk melody (19th century).
+# Original simplified arrangement for OpenTiles, released under CC0 1.0.
+title: Hänschen klein (Lightly Row)
+composer: Traditional
+key: 0
+time: 4/4
+tempo: 104
+RH: G4q@5 E4q@3 E4h | F4q@4 D4q@2 D4h | C4q@1 D4q E4q F4q | G4q G4q G4h
+RH: G4q E4q E4h | F4q D4q D4h | C4q E4q G4q G4q | C4w
+RH: D4q@2 D4q D4q D4q | D4q E4q F4h | E4q E4q E4q E4q | E4q F4q G4h
+RH: G4q E4q E4h | F4q D4q D4h | C4q E4q G4q G4q | C4w
+LH: C3w | G2w | C3w | C3w
+LH: C3w | G2w | C3h G2h | C3w
+LH: G2w | G2w | C3w | C3w
+LH: C3w | G2w | C3h G2h | C3w

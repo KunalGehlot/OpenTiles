@@ -1,0 +1,11 @@
+# Hark! The Herald Angels Sing: the opening of the tune from Felix Mendelssohn's Festgesang (1840).
+# Original simplified arrangement for OpenTiles, released under CC0 1.0.
+title: Hark! The Herald Angels Sing (opening)
+composer: Felix Mendelssohn
+key: 1
+time: 4/4
+tempo: 100
+RH: D4q@1 G4q@4 G4q. F#4e | G4q B4q B4q A4q | D5q D5q D5q. C5e | B4q A4q B4h
+RH: D4q G4q G4q. F#4e | G4q B4q B4q A4q | D5q A4q A4q. F#4e | F#4q E4q D4h
+LH: G2w | G2h D3h | G2h D3h | G2w
+LH: G2w | G2h D3h | D3w | A2h D3h

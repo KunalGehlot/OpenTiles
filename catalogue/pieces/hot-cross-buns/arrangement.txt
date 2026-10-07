@@ -1,0 +1,11 @@
+# Hot Cross Buns: traditional English street cry and nursery rhyme (18th century), played twice.
+# Original simplified arrangement for OpenTiles, released under CC0 1.0.
+title: Hot Cross Buns
+composer: Traditional
+key: 0
+time: 4/4
+tempo: 92
+RH: E4q@3 D4q@2 C4h@1 | E4q D4q C4h | C4e C4e C4e C4e D4e D4e D4e D4e | E4q D4q C4h
+RH: E4q D4q C4h | E4q D4q C4h | C4e C4e C4e C4e D4e D4e D4e D4e | E4q D4q C4h
+LH: C3w | C3w | C3h G2h | C3w
+LH: C3w | C3w | C3h G2h | C3w

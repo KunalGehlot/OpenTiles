@@ -1,0 +1,15 @@
+# Jingle Bells by James Lord Pierpont (1822–1893), published 1857: the chorus.
+# Original simplified arrangement for OpenTiles, released under CC0 1.0.
+title: Jingle Bells (chorus)
+composer: James Lord Pierpont
+key: 0
+time: 4/4
+tempo: 120
+RH: E4q@3 E4q E4h | E4q E4q E4h | E4q G4q@5 C4q.@1 D4e | E4w
+RH: F4q F4q F4q. F4e | F4q E4q E4q E4e E4e | E4q D4q D4q E4q | D4h G4h
+RH: E4q E4q E4h | E4q E4q E4h | E4q G4q C4q. D4e | E4w
+RH: F4q F4q F4q F4q | F4q E4q E4q E4e E4e | G4q G4q F4q D4q | C4w
+LH: C3w | C3w | C3w | C3w
+LH: F2w | C3w | D3w | G2w
+LH: C3w | C3w | C3w | C3w
+LH: F2w | C3w | G2w | C3w

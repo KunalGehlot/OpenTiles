@@ -1,0 +1,14 @@
+# Auld Lang Syne: traditional Scottish melody, the verse, in F. Melody only, no lyrics.
+# Original simplified arrangement for OpenTiles, released under CC0 1.0.
+title: Auld Lang Syne (verse)
+composer: Traditional
+key: -1
+time: 4/4
+tempo: 84
+pickup: yes
+RH: C4q@1
+RH: | F4q.@4 F4e F4q A4q | G4q. F4e G4q A4q | F4q. F4e A4q C5q | D5h. D5q
+RH: | C5q. A4e A4q F4q | G4q. F4e G4q A4q | F4q. D4e D4q C4q | F4h. rq
+LH: rq
+LH: | F3w | C3w | F3w | Bb2w
+LH: | F3w | C3w | Bb2h C3h | F3w

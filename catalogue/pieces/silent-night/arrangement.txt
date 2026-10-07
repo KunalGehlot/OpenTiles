@@ -1,0 +1,19 @@
+# Silent Night (Stille Nacht) by Franz Xaver Gruber (1787–1863), composed 1818. Melody only, no lyrics.
+# Original simplified arrangement for OpenTiles, released under CC0 1.0.
+title: Silent Night
+composer: Franz Xaver Gruber
+key: 0
+time: 6/8
+tempo: 80
+RH: G4q.@3 A4e@4 G4q@3 | E4h.@1 | G4q. A4e G4q | E4h.
+RH: D5h@5 D5q | B4h.@3 | C5h@4 C5q | G4h.@1
+RH: A4h@2 A4q | C5q.@4 B4e@3 A4q@2 | G4q.@1 A4e G4q | E4h.
+RH: A4h A4q | C5q. B4e A4q | G4q. A4e G4q | E4h.
+RH: D5h@3 D5q | F5q.@5 D5e@3 B4q@1 | C5h.@2 | E5h.@4
+RH: C5q. G4e E4q | G4q. F4e D4q | C4h.
+LH: C3h. | C3h. | C3h. | C3h.
+LH: G2h. | G2h. | C3h. | C3h.
+LH: F2h. | F2h. | C3h. | C3h.
+LH: F2h. | F2h. | C3h. | C3h.
+LH: G2h. | G2h. | C3h. | C3h.
+LH: C3h. | G2h. | C3h.
