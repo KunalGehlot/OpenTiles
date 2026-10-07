@@ -1,6 +1,6 @@
 // Standard MIDI File → Song (spec §8 "Rules for MIDI files").
 import { splitHands } from './handsplit';
-import { ImportError } from './musicxml';
+import { ImportError } from './errors';
 import { quantise } from './quantise';
 import { TempoMap } from './tempo';
 import type {

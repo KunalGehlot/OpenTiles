@@ -1,6 +1,6 @@
 import { useLiveQuery } from 'dexie-react-hooks';
 import { useEffect, useRef, useState } from 'react';
-import { importScore, noteName, SUPPORTED_EXTENSIONS } from '@opentiles/song-model';
+import { estimateDifficulty, noteName, SUPPORTED_EXTENSIONS } from '@opentiles/song-model';
 import type { Song } from '@opentiles/song-model';
 import { applySettings, DEFAULT_SETTINGS, handCounts } from '../lib/import-settings';
 import { href } from '../lib/router';
@@ -42,7 +42,9 @@ export function Library() {
     setError(null);
     try {
       const bytes = new Uint8Array(await file.arrayBuffer());
-      const base = importScore(file.name, bytes);
+      // The importers (and the MuseScore reader inside them) load only when a file is imported.
+      const { importAnyScore } = await import('@opentiles/importers');
+      const base = await importAnyScore(file.name, bytes);
       setPending({
         fileName: file.name,
         bytes,
@@ -87,8 +89,8 @@ export function Library() {
       <h1>My library</h1>
       <p className="lead">
         Your own scores, stored only on this device. Import MusicXML (<code>.musicxml</code>,{' '}
-        <code>.xml</code>, <code>.mxl</code>) or MIDI (<code>.mid</code>). From MuseScore, use{' '}
-        <em>File → Export → MusicXML</em>.
+        <code>.xml</code>, <code>.mxl</code>), MuseScore (<code>.mscz</code>, <code>.mscx</code>),
+        ABC (<code>.abc</code>) or MIDI (<code>.mid</code>).
       </p>
       <div className="row">
         <button className="primary" onClick={chooseFile}>
@@ -209,6 +211,7 @@ function ImportReview({
   const hands = handCounts(song);
   const bpm = Math.round(song.tempos[0]?.bpm ?? 120);
   const pitches = song.notes.map((n) => n.pitch);
+  const difficulty = estimateDifficulty(song);
   const set = (s: Partial<ImportSettings>) =>
     onChange({ ...pending, settings: { ...pending.settings, ...s } });
   return (
@@ -232,6 +235,14 @@ function ImportReview({
           </>
         )}
       </p>
+      {song.notes.length > 0 && (
+        <p
+          className="muted"
+          title="Estimated from speed, rhythm, chords, hand stretch, key and hand independence"
+        >
+          Estimated level {difficulty.level} of 5
+        </p>
+      )}
       {song.warnings.map((w) => (
         <p key={w} className="notice notice--warn">
           {w}

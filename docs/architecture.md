@@ -19,7 +19,8 @@ flowchart LR
     subgraph Import["Importers (run locally)"]
       MXL["MusicXML / .mxl"]
       SMF["MIDI + quantiser + hand split"]
-      MSCZ["MuseScore via webmscore (phase 2)"]
+      ABC["ABC notation"]
+      MSCZ["MuseScore .mscz / .mscx (own reader, lazy-loaded)"]
     end
     SONG[("Song model<br/>packages/song-model")]
     PRAC["Practice engine<br/>packages/practice"]
@@ -46,13 +47,13 @@ Two seams keep the design simple:
 
 ## Packages
 
-| Package               | Responsibility                                                                                  | Depends on              |
-| --------------------- | ----------------------------------------------------------------------------------------------- | ----------------------- |
-| `packages/song-model` | `Song` types, tempo map, MusicXML and MIDI parsing, quantiser, hand split, transpose            | `fflate` (unzip `.mxl`) |
-| `packages/practice`   | `NoteEvent`, practice steps, `WaitMode`, `PlayAlongScorer`, tempo scaling                       | `song-model`            |
-| `packages/engine`     | Rust detector compiled to `engine.wasm`; AudioWorklet processor and main-thread loader in `js/` | —                       |
-| `packages/importers`  | Heavy, lazy-loaded converters (MuseScore, OMR, audio) — later phases                            | `song-model`            |
-| `apps/web`            | React UI, canvas views, Web Audio, Web MIDI, IndexedDB, service worker                          | all of the above        |
+| Package               | Responsibility                                                                                                                      | Depends on              |
+| --------------------- | ----------------------------------------------------------------------------------------------------------------------------------- | ----------------------- |
+| `packages/song-model` | `Song` types, tempo map, shared Song builder, MusicXML, ABC and MIDI parsing, quantiser, hand split, transpose, difficulty estimate | `fflate` (unzip `.mxl`) |
+| `packages/practice`   | `NoteEvent`, practice steps, `WaitMode`, `PlayAlongScorer`, tempo scaling                                                           | `song-model`            |
+| `packages/engine`     | Rust detector compiled to `engine.wasm`; AudioWorklet processor and main-thread loader in `js/`                                     | —                       |
+| `packages/importers`  | `importAnyScore` entry point; lazy-loaded converters: MuseScore (ADR 0005), later OMR and audio                                     | `song-model`, `fflate`  |
+| `apps/web`            | React UI, canvas views, Web Audio, Web MIDI, IndexedDB, service worker                                                              | all of the above        |
 
 `song-model` and `practice` are DOM-free (ADR 0004) so they run in tests, web workers and the iOS
 shell unchanged.

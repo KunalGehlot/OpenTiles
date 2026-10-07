@@ -15,6 +15,7 @@
   },
   "dependencies": {
     "@opentiles/engine": "workspace:*",
+    "@opentiles/importers": "workspace:*",
     "@opentiles/practice": "workspace:*",
     "@opentiles/song-model": "workspace:*",
     "dexie": "^4.4.0",
