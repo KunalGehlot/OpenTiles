@@ -341,6 +341,36 @@ describe('parseMscx structure', () => {
     expect(song.notes[0]?.hand).toBe('left');
   });
 
+  it('plays measure-repeat signs as the bar they repeat', () => {
+    const song = parse(
+      mscx({
+        parts: [piano],
+        staves: {
+          1: [
+            measure({ voices: [timeSig(2, 4) + chord('quarter', [60]) + chord('quarter', [64])] }),
+            measure({
+              voices: [
+                '<RepeatMeasure><durationType>measure</durationType><duration>2/4</duration></RepeatMeasure>',
+              ],
+            }),
+          ],
+          2: [
+            measure({ voices: [timeSig(2, 4) + chord('half', [48])] }),
+            measure({ voices: [chord('half', [43])] }),
+          ],
+        },
+      }),
+    );
+    expect(song.notes.map((n) => [n.pitch, n.startBeat, n.hand])).toEqual([
+      [48, 0, 'left'],
+      [60, 0, 'right'],
+      [64, 1, 'right'],
+      [43, 2, 'left'],
+      [60, 2, 'right'],
+      [64, 3, 'right'],
+    ]);
+  });
+
   it('warns about jumps it does not follow', () => {
     const song = parse(
       mscx({

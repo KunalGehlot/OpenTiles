@@ -11,10 +11,11 @@
 // A piece is about as hard as its hardest demand; the mean moves it up when several demands
 // come together and down when only one stands out. The upper thresholds sit below plain rounding
 // because even advanced pieces rarely max out every measure at once, which compresses the top of
-// the score. The tables are calibrated so the
-// catalogue's beginner arrangements land on their recorded levels (see
-// test/difficulty.test.ts) and typical intermediate material (sixteenths at a moderate tempo,
-// octave stretches, three-note chords, independent hands) lands on 3–4.
+// the score.
+//
+// Calibration (test/difficulty.test.ts): the catalogue's beginner arrangements land on their
+// recorded levels 1–2; running sixteenths at a moderate tempo over three-note chords in four
+// sharps land on 3; fast running sixteenths with four-note chords in six flats land on 5.
 //
 // The catalogue pipeline may later blend in PDMX's own complexity rating; this function only
 // uses what is in the Song, so it also works for private imports.
@@ -34,7 +35,10 @@ export interface DifficultyMeasures {
   maxSimultaneous: number;
   /** Sharps or flats in the key signature with the most (estimated from the notes if none). */
   accidentals: number;
-  /** 0–5: finest subdivision (0 quarters … 3 thirty-seconds), +1 for tuplets, +1 for syncopation. */
+  /**
+   * 0–5: finest subdivision used (0 quarters, 1 eighths, 2 sixteenths, 3 thirty-seconds, 4 finer),
+   * plus 1 for tuplets and up to 1 for syncopation.
+   */
   rhythmComplexity: number;
   /** 0–1: share of beats with notes in which each hand starts a note the other does not. */
   handIndependence: number;

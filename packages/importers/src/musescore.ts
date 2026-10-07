@@ -373,6 +373,26 @@ export function parseMscx(xml: string, options: MuseScoreOptions = {}): Song {
             case 'Jump':
               warnings.add(JUMP_WARNING);
               break;
+            case 'RepeatMeasure': // MuseScore 3
+            case 'MeasureRepeat': {
+              // "Repeat the previous bar": copy that staff's notes from the bar before.
+              const count = xmlNumber(xmlChild(el, 'subtype')) ?? 1;
+              const source = count === 1 ? measures[mIdx - 1] : undefined;
+              if (count !== 1) warnings.add('Repeat signs for several bars are not played yet.');
+              if (source) {
+                for (const n of source.notes) {
+                  if (n.part === part && n.staff === staffInPart) {
+                    raw.notes.push({ ...n, posBeats: n.posBeats + pos });
+                  }
+                }
+              }
+              pos +=
+                fractionBeats(xmlText(xmlChild(el, 'duration'))) ??
+                len ??
+                (time.numerator * 4) / time.denominator;
+              maxPos = Math.max(maxPos, pos);
+              break;
+            }
             case 'Chord':
             case 'Rest': {
               if (xmlChildren(el).some((c) => GRACE.has(c.nodeName))) break;
