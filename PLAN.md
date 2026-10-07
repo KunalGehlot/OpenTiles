@@ -15,10 +15,11 @@ file says **in which order**, **who picks up what**, and **what is done**.
 
 ## Current focus
 
-**Phase 0 — prove microphone recognition on an iPad.** Nothing in later phases matters if the
-microphone path fails, so the detector and its test harness come first. The `Song` model, the
-practice engine and a minimal web app are being built in parallel because the detector lab and the
-gate measurements need them.
+**Phase 0 — prove microphone recognition on an iPad.** The detector, its synthetic test harness,
+the evaluation CLI and the Detector Lab are built; what is left is human work on real pianos:
+record the test set (P0-04), measure latency on iPads (P0-11), tune on real recordings and write
+the gate report (P0-13). A first version of the core practice loop (Phase 1) exists alongside, so
+the microphone can be tried in real practice.
 
 ## Phases and gates
 
@@ -71,8 +72,9 @@ on an iPad in Safari?" before any app polish.
       Synthetic results are a smoke test only; G0 is judged on real recordings.
 - [x] **P0-09** ENG — `evaluate` CLI: runs the detector over a WAV recording plus a CSV answer key
       and prints the accuracy report used in the gate report.
-- [ ] **P0-10** APP — Detector Lab page: microphone → worklet → detector with live display of
-      onsets, accepted and rejected notes, and the recorder used for P0-04.
+- [x] **P0-10** APP — Detector Lab page: microphone → worklet → detector with live display of
+      onsets, accepted, rejected and wrong notes; thresholds, noise and tuning calibration, the
+      WAV recorder for P0-04, a speaker-click latency test for P0-11 and a speed benchmark.
 - [ ] **P0-11** (human) Measure end-to-end latency on an older (A12-class) and a current iPad
       using the Detector Lab latency test.
 - [ ] **P0-12** ENG — SIMD build plus non-SIMD fallback, chosen at runtime by feature detection.
@@ -102,8 +104,9 @@ Goal: Journeys A and B from spec §3 work end to end, offline, on iPad Safari an
 - [x] **P1-05** MIDI quantiser: coarsest grid that keeps ≥ 95 % of onsets within ±30 ms.
 - [x] **P1-06** MIDI hand split: two tracks → lower average pitch is the left hand; one track →
       split around middle C with smoothing; user-movable split point.
-- [ ] **P1-07** Import review screen: swap staves / move split point, base tempo, transpose, trim
-      bars, title and tags. (Basic version done: title, tempo, transpose, split point.)
+- [~] **P1-07** Import review screen: swap staves / move split point, base tempo, transpose, trim
+  bars, title and tags. Done: title, tempo, transpose, swap hands, MIDI split point. Left:
+  trim bars and tags in the UI (`trimMeasures` exists in song-model).
 
 ### Practice engine (PRAC)
 
@@ -112,38 +115,47 @@ Goal: Journeys A and B from spec §3 work end to end, offline, on iPad Safari an
       notes reported.
 - [x] **P1-10** Play-along scoring: hit / early / late / missed with ±75 ms / ±150 ms windows that
       widen at slower tempos and shift by the measured input latency.
-- [ ] **P1-11** Listen mode: app plays the piece with cursor and keyboard animated.
-- [ ] **P1-12** Hand separation: practise left, right or both; the app can play the other hand.
-- [ ] **P1-13** Tempo control 25–150 % with count-in and metronome.
+- [x] **P1-11** Listen mode: app plays the piece with cursor and keyboard animated.
+- [x] **P1-12** Hand separation: practise left, right or both; the app can play the other hand.
+- [~] **P1-13** Tempo control 25–150 % with count-in and metronome. Done: tempo slider,
+  count-in clicks. Left: metronome during practice.
 
 ### Views (APP)
 
-- [ ] **P1-14** Animated keyboard, Canvas 2D, expected keys highlighted per hand colour.
+- [x] **P1-14** Animated keyboard, Canvas 2D, expected keys highlighted per hand colour.
 - [ ] **P1-15** Scrolling score with Verovio: single staff line under a fixed cursor, each `Song`
       note linked to its glyph for colour feedback.
-- [ ] **P1-16** Falling-notes view (Canvas 2D) — the first practice view, and the only one for
+- [x] **P1-16** Falling-notes view (Canvas 2D) — the first practice view, and the only one for
       MIDI imports in v1.
 
 ### Audio and input (APP)
 
-- [ ] **P1-17** Web Audio sampler with an openly licensed grand piano sample set (check licence);
-      small synth fallback. (Synth fallback done.)
-- [ ] **P1-18** Audio context started only from a user gesture (Safari).
-- [ ] **P1-19** Web MIDI input. Latency measurement and compensation still to do.
-- [ ] **P1-20** Microphone input in practice, with the 10-second calibration flow (noise floor,
-      harmonic profile, tuning offset).
-- [ ] **P1-21** On-screen keyboard: touch, mouse and computer-keyboard keys.
+- [~] **P1-17** Web Audio sampler with an openly licensed grand piano sample set (check licence);
+  small synth fallback. Done: additive synth fallback. Left: choose and load a sample set.
+- [x] **P1-18** Audio context started only from a user gesture (Safari).
+- [~] **P1-19** Web MIDI input with latency compensation. Done: input via Web MIDI with event
+  timestamps mapped to the audio clock, feature-detected. Left: measure and compensate latency.
+- [~] **P1-20** Microphone input in practice, with the 10-second calibration flow (noise floor,
+  harmonic profile, tuning offset). Done: `MicInput` in wait and play-along modes, expected
+  pitches follow the current step, stale decisions dropped by generation; noise and tuning
+  calibration in the Detector Lab. Left: guided 10-second calibration in the practice flow,
+  harmonic profile, storing calibration per device.
+- [x] **P1-21** On-screen keyboard: touch, mouse and computer-keyboard keys.
 
 ### Storage, app shell and feedback (STORE, APP)
 
-- [ ] **P1-22** Private library in IndexedDB (Dexie); `navigator.storage.persist()` on first
+- [x] **P1-22** Private library in IndexedDB (Dexie); `navigator.storage.persist()` on first
       import; upload-rights confirmation before the first import.
 - [ ] **P1-23** PWA: service worker, manifest, full offline practice; Add to Home Screen prompt on
       iPad after the first import.
-- [ ] **P1-24** Live feedback (green / red / grey, early / late) and after-run summary (accuracy,
-      timing deviation, hardest bars). Live feedback and accuracy done.
-- [ ] **P1-25** Progress: per-piece best score, practice minutes per day, streaks.
-- [ ] **P1-26** Playwright end-to-end tests on Chromium, Firefox and WebKit in CI.
+- [~] **P1-24** Live feedback (green / red / grey, early / late) and after-run summary (accuracy,
+  timing deviation, hardest bars). Done: key and note colours, summary with accuracy, timing
+  and hardest bars. Left: early/late shown live, hardest bars marked on the score (needs
+  P1-15).
+- [x] **P1-25** Progress: per-piece best score, practice minutes per day, streaks.
+- [~] **P1-26** Playwright end-to-end tests on Chromium, Firefox and WebKit in CI. Done: suite
+  and CI job for Chromium, Firefox, WebKit and an iPad profile; passing on Chromium. Left:
+  confirm Firefox and WebKit runs in CI.
 - [ ] **P1-27** Safari checklist (spec §5): split view, rotation, score usable at ⅓ width.
 
 **G1 criteria:** Journey A and Journey B pass on iPad Safari (microphone) and desktop Chrome (MIDI)
@@ -161,7 +173,7 @@ engines.
       transcriptions.
 - [ ] **P2-04** Automatic file validation: renders, plays, survives a `Song` round trip.
 - [ ] **P2-05** Difficulty scoring (PDMX complexity + own measures → 5 levels).
-- [ ] **P2-06** Human review workflow: catalogue PR template, `verified: true`, ~10 min per piece.
+- [~] **P2-06** Human review workflow: catalogue PR template, `verified: true`, ~10 min per piece.
 - [ ] **P2-07** Publish static `.mxl` + JSON index with stable URLs; **150 verified pieces**.
 
 ### Practice and import breadth (PRAC, SONG, APP)
@@ -170,7 +182,8 @@ engines.
 - [ ] **P2-09** ABC notation import.
 - [ ] **P2-10** MuseScore `.mscz` via webmscore, lazy-loaded; confirm licence fits AGPL-3.0 first.
 - [ ] **P2-11** Page score view.
-- [ ] **P2-12** Fingering display from score marks.
+- [~] **P2-12** Fingering display from score marks. Done: numbers on falling notes. Left: in the
+  score views.
 
 ### Storage, accessibility, legal (STORE, APP, GOV)
 
@@ -238,6 +251,10 @@ Record the outcome as an ADR in `docs/adr/` and tick it here.
 
 ## Changelog
 
+- **2026-10-07** — First implementation pass: engine (P0-05…P0-09), Detector Lab (P0-10), song
+  model and importers (P1-01…P1-06), practice engine (P1-08…P1-10), web app with wait, listen and
+  play-along modes, library import and progress (several P1 tasks done or partly done), catalogue
+  tooling (P2-01a) with five unverified CC0 arrangements.
 - **2026-10-07** — Plan created from the project specification. Added `packages/practice` to the
   repository layout (ADR 0004). Split catalogue tooling task P2-01a (schema, validator, CI) out of
   P2-01 because the catalogue CI check is needed from the first piece onwards.

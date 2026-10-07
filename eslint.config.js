@@ -35,8 +35,14 @@ export default tseslint.config(
     },
   },
   {
+    // The classic hook rules. The React-Compiler rules in the plugin's recommended set would forbid
+    // the deliberate pattern of a mutable controller (PracticeSession) driving the canvas outside
+    // React; the app does not use the React Compiler.
     files: ['apps/web/**/*.{ts,tsx}'],
     plugins: { 'react-hooks': reactHooks },
-    rules: reactHooks.configs.recommended.rules,
+    rules: {
+      'react-hooks/rules-of-hooks': 'error',
+      'react-hooks/exhaustive-deps': 'warn',
+    },
   },
 );

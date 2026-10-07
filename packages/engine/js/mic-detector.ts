@@ -27,6 +27,11 @@ export async function openMicrophone(deviceId?: string): Promise<MediaStream> {
   });
 }
 
+export interface DetectorStats {
+  droppedEvents: number;
+  tuningEstimate: number;
+}
+
 export interface MicDetectorOptions {
   /** URL of the bundled detector worklet script. */
   workletUrl: string;
@@ -46,6 +51,7 @@ export class MicDetector {
 
   private generation = 0;
   private noiseWaiters: ((db: number) => void)[] = [];
+  private statsWaiters: ((s: DetectorStats) => void)[] = [];
 
   private constructor(
     readonly context: AudioContext,
@@ -115,6 +121,11 @@ export class MicDetector {
       case 'noise-calibrated':
         for (const w of this.noiseWaiters.splice(0)) w(msg.noiseDb);
         break;
+      case 'stats':
+        for (const w of this.statsWaiters.splice(0)) {
+          w({ droppedEvents: msg.droppedEvents, tuningEstimate: msg.tuningEstimate });
+        }
+        break;
       default:
         break;
     }
@@ -149,6 +160,12 @@ export class MicDetector {
       this.noiseWaiters.push(resolve);
       setTimeout(() => this.send({ type: 'calibrate-noise-end' }), ms);
     });
+  }
+
+  /** Diagnostics from the engine: dropped events and the estimated tuning offset (cents). */
+  stats(): Promise<DetectorStats> {
+    this.send({ type: 'stats' });
+    return new Promise((resolve) => this.statsWaiters.push(resolve));
   }
 
   setRecording(on: boolean): void {

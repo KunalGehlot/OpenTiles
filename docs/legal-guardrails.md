@@ -17,7 +17,7 @@ Reviewers: a pull request that breaks one of these rules is blocked, however use
       README use public-domain or self-made CC0 pieces only.
 - [x] **No import tools aimed at other sites.** Imports take local files only; no URL import from
       score-sharing sites or video platforms.
-- [ ] **Upload terms.** Before the first import, users confirm they only import files they have the
+- [x] **Upload terms.** Before the first import, users confirm they only import files they have the
       right to use for personal practice.
 - [ ] **Notice-and-takedown contact.** Published in the Impressum (P2-17).
 - [x] **Catalogue provenance.** Every public piece records its source, licence, creator death years
