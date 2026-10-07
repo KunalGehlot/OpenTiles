@@ -1,102 +1,28 @@
 // MusicXML (partwise) → Song. Runs in the browser with the global DOMParser; tests and workers
 // can pass any DOMParser-compatible implementation.
+import { assembleSong, parseEndingNumbers, rawMeasure } from './builder';
+import type { RawMeasure, RawPart } from './builder';
+import { ImportError } from './errors';
 import { stepToMidi } from './pitch';
-import { DEFAULT_BPM } from './tempo';
-import type {
-  Hand,
-  KeySignatureEvent,
-  Measure,
-  Part,
-  Song,
-  SongFormat,
-  SongNote,
-  TempoEvent,
-  TimeSignatureEvent,
-} from './types';
+import type { Song, SongFormat } from './types';
+import {
+  parseXmlDocument,
+  xmlChild as child,
+  xmlChildren as elements,
+  xmlNumber as num,
+  xmlPath as path,
+  xmlText as text,
+} from './xml';
+import type { DomParserLike } from './xml';
 
-export interface DomParserLike {
-  parseFromString(xml: string, type: string): Document;
-}
+export { ImportError } from './errors';
+export { playbackOrder } from './builder';
+export type { DomParserLike } from './xml';
 
 export interface MusicXmlOptions {
   domParser?: DomParserLike;
   /** Recorded on the song; `mxl` when the XML came out of a compressed file. */
   format?: SongFormat;
-}
-
-export class ImportError extends Error {
-  override name = 'ImportError';
-}
-
-interface RawNote {
-  part: number;
-  pitch: number;
-  posBeats: number;
-  durBeats: number;
-  staff: number;
-  voice: number;
-  tieStart: boolean;
-  tieStop: boolean;
-  fingering?: number;
-  ref: string;
-}
-
-interface RawMeasure {
-  number: string;
-  lengthBeats: number;
-  notes: RawNote[];
-  tempos: { posBeats: number; bpm: number }[];
-  time?: { numerator: number; denominator: number };
-  key?: { fifths: number; mode?: 'major' | 'minor' };
-  forwardRepeat: boolean;
-  backwardRepeat: boolean;
-  repeatTimes: number;
-  endingStart?: number[];
-  endingStop: boolean;
-}
-
-interface PartInfo {
-  name: string;
-  staves: number;
-  clefs: Map<number, string>;
-}
-
-// --- DOM helpers that work with both browser DOM and xmldom -----------------------------------
-
-function elements(parent: Element | Document, name?: string): Element[] {
-  const out: Element[] = [];
-  for (let n = parent.firstChild; n; n = n.nextSibling) {
-    if (n.nodeType === 1 && (name === undefined || n.nodeName === name)) out.push(n as Element);
-  }
-  return out;
-}
-
-function child(parent: Element, name: string): Element | undefined {
-  for (let n = parent.firstChild; n; n = n.nextSibling) {
-    if (n.nodeType === 1 && n.nodeName === name) return n as Element;
-  }
-  return undefined;
-}
-
-function path(parent: Element, ...names: string[]): Element | undefined {
-  let el: Element | undefined = parent;
-  for (const n of names) {
-    if (!el) return undefined;
-    el = child(el, n);
-  }
-  return el;
-}
-
-function text(el: Element | undefined): string | undefined {
-  const t = el?.textContent?.trim();
-  return t === undefined || t === '' ? undefined : t;
-}
-
-function num(el: Element | undefined): number | undefined {
-  const t = text(el);
-  if (t === undefined) return undefined;
-  const v = Number(t);
-  return Number.isFinite(v) ? v : undefined;
 }
 
 // --- Parsing ------------------------------------------------------------------------------------
@@ -126,22 +52,8 @@ function parseTempo(direction: Element): number | undefined {
   return undefined;
 }
 
-function parseEndingNumbers(attr: string | null): number[] {
-  if (!attr) return [];
-  return attr
-    .split(/[,\s]+/)
-    .map((s) => Number.parseInt(s, 10))
-    .filter((n) => Number.isFinite(n) && n > 0);
-}
-
 export function parseMusicXml(xml: string, options: MusicXmlOptions = {}): Song {
-  const parser: DomParserLike | undefined =
-    options.domParser ?? (typeof DOMParser !== 'undefined' ? new DOMParser() : undefined);
-  if (!parser) throw new ImportError('No XML parser is available in this environment.');
-  const doc = parser.parseFromString(xml, 'application/xml');
-  if (doc.getElementsByTagName('parsererror').length > 0) {
-    throw new ImportError('This file is not valid XML.');
-  }
+  const doc = parseXmlDocument(xml, options.domParser);
   const root = doc.documentElement;
   if (!root) throw new ImportError('This file is empty.');
   if (root.nodeName === 'score-timewise') {
@@ -171,12 +83,12 @@ export function parseMusicXml(xml: string, options: MusicXmlOptions = {}): Song 
   }
 
   const measures: RawMeasure[] = [];
-  const parts: PartInfo[] = [];
+  const parts: RawPart[] = [];
   const partEls = elements(root, 'part');
   if (partEls.length === 0) throw new ImportError('This score has no parts.');
 
   partEls.forEach((partEl, partIdx) => {
-    const info: PartInfo = {
+    const info: RawPart = {
       name: partNames.get(partEl.getAttribute('id') ?? '') || `Part ${partIdx + 1}`,
       staves: 1,
       clefs: new Map(),
@@ -188,16 +100,7 @@ export function parseMusicXml(xml: string, options: MusicXmlOptions = {}): Song 
     elements(partEl, 'measure').forEach((mEl, mIdx) => {
       let raw = measures[mIdx];
       if (!raw) {
-        raw = {
-          number: mEl.getAttribute('number') ?? String(mIdx + 1),
-          lengthBeats: 0,
-          notes: [],
-          tempos: [],
-          forwardRepeat: false,
-          backwardRepeat: false,
-          repeatTimes: 2,
-          endingStop: false,
-        };
+        raw = rawMeasure(mEl.getAttribute('number') ?? String(mIdx + 1));
         measures[mIdx] = raw;
       }
       let pos = 0;
@@ -340,7 +243,7 @@ export function parseMusicXml(xml: string, options: MusicXmlOptions = {}): Song 
     });
   });
 
-  return assemble({
+  return assembleSong({
     title,
     ...(composer ? { composer } : {}),
     format: options.format ?? 'musicxml',
@@ -358,217 +261,4 @@ function noteJumps(sound: Element, warnings: Set<string>): void {
       );
     }
   }
-}
-
-// --- Assembly -----------------------------------------------------------------------------------
-
-/** Playback order of source measures with simple repeats and numbered endings unrolled. */
-export function playbackOrder(
-  measures: readonly Pick<
-    RawMeasure,
-    'forwardRepeat' | 'backwardRepeat' | 'repeatTimes' | 'endingStart' | 'endingStop'
-  >[],
-): number[] {
-  // Which ending numbers each measure belongs to (from an ending start through its stop).
-  const endings: (number[] | undefined)[] = [];
-  let open: number[] | undefined;
-  measures.forEach((m, i) => {
-    if (m.endingStart && m.endingStart.length > 0) open = m.endingStart;
-    endings[i] = open;
-    if (m.endingStop) open = undefined;
-  });
-
-  const order: number[] = [];
-  const limit = measures.length * 8 + 8;
-  let i = 0;
-  let repeatStart = 0;
-  let pass = 1;
-  let jumped = false;
-  while (i < measures.length && order.length < limit) {
-    const m = measures[i];
-    if (!m) break;
-    if (m.forwardRepeat && !jumped) {
-      repeatStart = i;
-      pass = 1;
-    }
-    jumped = false;
-    const inEnding = endings[i];
-    if (inEnding && !inEnding.includes(pass)) {
-      i += 1;
-      continue;
-    }
-    order.push(i);
-    if (m.backwardRepeat && pass < m.repeatTimes) {
-      pass += 1;
-      i = repeatStart;
-      jumped = true;
-      continue;
-    }
-    if (m.backwardRepeat) {
-      pass = 1;
-      repeatStart = i + 1;
-    } else if (inEnding && m.endingStop && !m.backwardRepeat) {
-      // Last ending of a repeated section: the section is done.
-      pass = 1;
-      repeatStart = i + 1;
-    }
-    i += 1;
-  }
-  return order;
-}
-
-interface AssembleInput {
-  title: string;
-  composer?: string;
-  format: SongFormat;
-  measures: RawMeasure[];
-  parts: PartInfo[];
-  warnings: Set<string>;
-}
-
-interface Draft extends Omit<SongNote, 'id' | 'hand'> {
-  tieStart: boolean;
-  tieStop: boolean;
-}
-
-function assemble(input: AssembleInput): Song {
-  const order = playbackOrder(input.measures);
-  const measures: Measure[] = [];
-  const tempos: TempoEvent[] = [];
-  const timeSignatures: TimeSignatureEvent[] = [];
-  const keySignatures: KeySignatureEvent[] = [];
-  const drafts: Draft[] = [];
-  let beat = 0;
-  let lastTime: string | undefined;
-  let lastKey: string | undefined;
-
-  order.forEach((src, index) => {
-    const raw = input.measures[src];
-    if (!raw) return;
-    measures.push({
-      index,
-      number: raw.number,
-      sourceIndex: src,
-      startBeat: beat,
-      lengthBeats: raw.lengthBeats,
-    });
-    if (raw.time) {
-      const key = `${raw.time.numerator}/${raw.time.denominator}`;
-      if (key !== lastTime) {
-        timeSignatures.push({ beat, ...raw.time });
-        lastTime = key;
-      }
-    }
-    if (raw.key) {
-      const key = `${raw.key.fifths}${raw.key.mode ?? ''}`;
-      if (key !== lastKey) {
-        keySignatures.push({ beat, ...raw.key });
-        lastKey = key;
-      }
-    }
-    for (const t of raw.tempos) {
-      const prev = tempos[tempos.length - 1];
-      if (!prev || prev.bpm !== t.bpm) tempos.push({ beat: beat + t.posBeats, bpm: t.bpm });
-    }
-    for (const n of raw.notes) {
-      drafts.push({
-        pitch: n.pitch,
-        startBeat: beat + n.posBeats,
-        durationBeats: n.durBeats,
-        staff: n.staff,
-        voice: n.voice,
-        part: n.part,
-        measureIndex: index,
-        ...(n.fingering !== undefined ? { fingering: n.fingering } : {}),
-        sourceRefs: [n.ref],
-        tieStart: n.tieStart,
-        tieStop: n.tieStop,
-      });
-    }
-    beat += raw.lengthBeats;
-  });
-
-  if (tempos.length === 0 || (tempos[0]?.beat ?? 0) > 1e-9) {
-    if (tempos.length === 0) {
-      input.warnings.add(
-        `This score has no tempo marking; ${DEFAULT_BPM} beats per minute is assumed.`,
-      );
-    }
-    tempos.unshift({ beat: 0, bpm: tempos[0]?.bpm ?? DEFAULT_BPM });
-  }
-
-  const merged = mergeTies(drafts);
-  const hands = handAssigner(input.parts, merged);
-  const notes: SongNote[] = merged
-    .map(({ tieStart: _a, tieStop: _b, ...n }) => ({ ...n, id: '', hand: hands(n) }))
-    .sort((a, b) => a.startBeat - b.startBeat || a.pitch - b.pitch);
-  notes.forEach((n, i) => (n.id = `n${i}`));
-
-  if (notes.length === 0) input.warnings.add('This score contains no notes to play.');
-
-  return {
-    title: input.title,
-    ...(input.composer ? { composer: input.composer } : {}),
-    format: input.format,
-    notes,
-    measures,
-    tempos,
-    timeSignatures,
-    keySignatures,
-    parts: input.parts.map((p): Part => ({ name: p.name })),
-    lengthBeats: beat,
-    warnings: [...input.warnings],
-  };
-}
-
-/** Merges tied notes (same part and pitch, contiguous) into single notes. */
-function mergeTies(drafts: Draft[]): Draft[] {
-  const sorted = [...drafts].sort((a, b) => a.startBeat - b.startBeat || a.pitch - b.pitch);
-  const open = new Map<string, Draft>();
-  const out: Draft[] = [];
-  for (const n of sorted) {
-    const key = `${n.part}:${n.pitch}`;
-    const o = open.get(key);
-    if (n.tieStop && o && Math.abs(o.startBeat + o.durationBeats - n.startBeat) < 1e-3) {
-      o.durationBeats += n.durationBeats;
-      o.sourceRefs.push(...n.sourceRefs);
-      if (!n.tieStart) open.delete(key);
-      continue;
-    }
-    out.push(n);
-    if (n.tieStart) open.set(key, n);
-    else open.delete(key);
-  }
-  return out;
-}
-
-/**
- * Hands from the score's layout: on a grand staff the upper staff is the right hand; separate
- * single-staff parts are split by average pitch; otherwise a bass clef means the left hand.
- */
-function handAssigner(
-  parts: PartInfo[],
-  notes: Draft[],
-): (n: { part: number; staff: number }) => Hand {
-  const singleStaffParts = parts.length >= 2 && parts.every((p) => p.staves < 2);
-  let leftPart = -1;
-  if (singleStaffParts) {
-    let lowest = Infinity;
-    parts.forEach((_, i) => {
-      const own = notes.filter((n) => n.part === i);
-      if (own.length === 0) return;
-      const avg = own.reduce((s, n) => s + n.pitch, 0) / own.length;
-      if (avg < lowest) {
-        lowest = avg;
-        leftPart = i;
-      }
-    });
-  }
-  return (n) => {
-    const part = parts[n.part];
-    if (!part) return 'right';
-    if (part.staves >= 2) return n.staff >= 2 ? 'left' : 'right';
-    if (singleStaffParts) return n.part === leftPart ? 'left' : 'right';
-    return part.clefs.get(n.staff) === 'F' ? 'left' : 'right';
-  };
 }

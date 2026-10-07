@@ -6,7 +6,7 @@
 
 export type Hand = 'left' | 'right';
 
-export type SongFormat = 'musicxml' | 'mxl' | 'midi';
+export type SongFormat = 'musicxml' | 'mxl' | 'midi' | 'abc' | 'mscz' | 'audio';
 
 export interface SongNote {
   /** Stable within the song: `n0`, `n1`, … in sorted order. */

@@ -1,6 +1,6 @@
 // Compressed MusicXML (.mxl): a zip whose META-INF/container.xml names the score file.
 import { unzipSync } from 'fflate';
-import { ImportError } from './musicxml';
+import { ImportError } from './errors';
 
 /** Decodes XML bytes, honouring a UTF-16 byte-order mark (some exporters write UTF-16). */
 export function decodeXml(bytes: Uint8Array): string {
