@@ -93,6 +93,11 @@ test('practice works offline after the first visit', async ({ page, context, bro
 
     // The detector (wasm in an AudioWorklet) loads from the cache too.
     await page.getByRole('button', { name: 'Use microphone' }).click();
+    // First use of the microphone offers the guided set-up (P1-20); skip it here.
+    await page
+      .getByRole('dialog', { name: 'Microphone set-up' })
+      .getByRole('button', { name: 'Skip', exact: true })
+      .click({ timeout: 10_000 });
     await expect(page.getByText('Microphone listening')).toBeVisible({ timeout: 10_000 });
   } finally {
     await context.setOffline(false);

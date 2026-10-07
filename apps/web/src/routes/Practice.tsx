@@ -9,8 +9,18 @@ import type { MidiKeyboardInput } from '../input/midi-input';
 import type { MicInput } from '../input/mic-input';
 import { TouchInput } from '../input/touch-input';
 import { href } from '../lib/router';
+import { connectClickTrack, MetronomeControl } from '../practice/MetronomeControl';
+import { MicCalibration } from '../practice/MicCalibration';
+import { MidiLatencyCalibration } from '../practice/MidiLatencyCalibration';
+import { SectionBar } from '../practice/SectionBar';
+import {
+  getMicCalibration,
+  getMidiCalibration,
+  micCalibrationSkipped,
+} from '../storage/calibration';
 import { db, recordRun } from '../storage/db';
 import { hitTest, rangeFor } from '../views/keyboard';
+import { LoopDrag } from '../views/loop-drag';
 import { PracticeRenderer } from '../views/renderer';
 import { PracticeSession } from '../views/session';
 import type { PracticeMode, SessionStatus } from '../views/session';
@@ -75,30 +85,49 @@ function PracticeView({ song, title, subtitle, progressKey }: Loaded) {
   const [mic, setMic] = useState<MicInput | null>(null);
   const [inputError, setInputError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const [showLoop, setShowLoop] = useState(false);
+  const [midiCalibrating, setMidiCalibrating] = useState(false);
+  const [micCalibrating, setMicCalibrating] = useState<MicInput | null>(null);
   const wrapRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const rendererRef = useRef<PracticeRenderer | null>(null);
   const touch = useRef(new TouchInput());
   const pointers = useRef(new Map<number, number>());
+  const [loopDrag] = useState(() => new LoopDrag(session, () => rendererRef.current));
 
   // Wire the session to React and inputs.
   useEffect(() => {
     session.onStatus = setStatus;
     session.onFinish = (summary, seconds) => void recordRun(progressKey, summary.accuracy, seconds);
+    session.onTempo = setTempo;
+    // Loop runs count as practice time but not as a best score for the whole piece.
+    const unsubscribe = session.addLoopListener(
+      (run) => void recordRun(progressKey, 0, run.seconds),
+    );
     const t = touch.current;
     t.onNote = (e) => session.input(e);
     t.onRelease = (p) => session.release(p);
     void t.start();
     return () => {
+      unsubscribe();
       t.stop();
       session.stop();
     };
   }, [session, progressKey]);
 
   useEffect(() => {
+    // While the microphone is being set up, the set-up decides what it listens for.
+    if (micCalibrating) {
+      session.onExpected = () => {};
+      return;
+    }
     session.onExpected = (pitches) => mic?.setExpected(pitches);
     mic?.setExpected(session.mode === 'wait' ? (session.wait.current?.pitches ?? []) : []);
-  }, [session, mic]);
+  }, [session, mic, micCalibrating]);
+
+  // A microphone being set up for the first time is not the session's yet; stop it on leaving.
+  const pendingMic = useRef<MicInput | null>(null);
+  useEffect(() => () => pendingMic.current?.stop(), []);
 
   useEffect(
     () => () => {
@@ -158,6 +187,7 @@ function PracticeView({ song, title, subtitle, progressKey }: Loaded) {
   const ensureAudio = async () => {
     const ctx = await unlockAudio();
     session.setSynth(synthFor(ctx));
+    await connectClickTrack(session);
   };
 
   const toggle = async () => {
@@ -179,12 +209,34 @@ function PracticeView({ song, title, subtitle, progressKey }: Loaded) {
   const onPointerDown = (e: React.PointerEvent) => {
     void ensureAudio();
     const pitch = pitchAt(e);
-    if (pitch === null) return;
+    if (pitch === null) {
+      // Above the keyboard: a drag selects bars to loop (P2-08).
+      const canvas = canvasRef.current;
+      if (canvas && e.target === canvas) {
+        const y = e.clientY - canvas.getBoundingClientRect().top;
+        if (loopDrag.down(e.pointerId, y)) canvas.setPointerCapture?.(e.pointerId);
+      }
+      return;
+    }
     (e.target as Element).setPointerCapture?.(e.pointerId);
     pointers.current.set(e.pointerId, pitch);
     touch.current.press(pitch);
   };
+  const canvasY = (e: React.PointerEvent) =>
+    e.clientY - (canvasRef.current?.getBoundingClientRect().top ?? 0);
+  const onPointerMove = (e: React.PointerEvent) => {
+    if (loopDrag.dragging) loopDrag.move(e.pointerId, canvasY(e));
+  };
   const onPointerUp = (e: React.PointerEvent) => {
+    if (loopDrag.dragging) {
+      const range = e.type === 'pointercancel' ? null : loopDrag.up(e.pointerId, canvasY(e));
+      loopDrag.cancel();
+      if (range) {
+        session.setLoop(range);
+        setShowLoop(true);
+      }
+      return;
+    }
     const pitch = pointers.current.get(e.pointerId);
     if (pitch === undefined) return;
     pointers.current.delete(e.pointerId);
@@ -200,9 +252,27 @@ function PracticeView({ song, title, subtitle, progressKey }: Loaded) {
       input.onDevicesChanged = (devices) => setMidi((m) => (m ? { ...m, devices } : m));
       await input.start();
       setMidi({ input, devices: input.deviceNames });
+      await applyMidiCalibration(input.deviceNames);
     } catch (e) {
       setInputError(e instanceof Error ? e.message : String(e));
     }
+  };
+
+  const midiDevice = (names: string[]) => names.join(', ') || 'default';
+  const applyMidiCalibration = async (names: string[]) => {
+    const c = await getMidiCalibration(midiDevice(names));
+    session.latency = { ...session.latency, midi: c?.latency, 'native-midi': c?.latency };
+  };
+
+  /** Hands a started microphone to the session, with its stored calibration applied (P1-20). */
+  const attachMic = async (input: MicInput) => {
+    const c = await getMicCalibration(input.deviceKey);
+    if (c?.tuningCents != null) input.setTuning(c.tuningCents);
+    session.latency = { ...session.latency, microphone: c?.latency ?? undefined };
+    if (pendingMic.current === input) pendingMic.current = null;
+    input.onNote = (e) => session.input(e);
+    input.setExpected(session.mode === 'wait' ? (session.wait.current?.pitches ?? []) : []);
+    setMic(input);
   };
 
   const connectMic = async () => {
@@ -212,9 +282,21 @@ function PracticeView({ song, title, subtitle, progressKey }: Loaded) {
       await ensureAudio();
       const { MicInput } = await import('../input/mic-input');
       const input = new MicInput(session.mode === 'play-along' ? 'play-along' : 'wait');
-      input.onNote = (e) => session.input(e);
       await input.start();
-      setMic(input);
+      const device = input.deviceKey;
+      const [stored, skipped] = await Promise.all([
+        getMicCalibration(device),
+        micCalibrationSkipped(device),
+      ]);
+      if (!stored && !skipped) {
+        // First use of this microphone: the guided 10-second set-up, which can be skipped.
+        pendingMic.current = input;
+        setMicCalibrating(input);
+      } else {
+        // The room may have changed since: re-measure its noise floor for a second.
+        void input.calibrateNoise(1000);
+        await attachMic(input);
+      }
     } catch (e) {
       setInputError(
         e instanceof Error ? `Microphone: ${e.message}` : 'The microphone could not be started.',
@@ -302,6 +384,18 @@ function PracticeView({ song, title, subtitle, progressKey }: Loaded) {
             Play other hand
           </label>
         )}
+        <MetronomeControl session={session} on={status.metronome} />
+        <button
+          aria-expanded={showLoop || status.loop !== null}
+          aria-pressed={status.loop !== null}
+          onClick={() => {
+            if (status.loop) session.setLoop(null);
+            setShowLoop(!(showLoop || status.loop !== null));
+          }}
+          title="Loop a range of bars (or drag across the falling notes)"
+        >
+          Loop
+        </button>
         {mode !== 'wait' && (
           <button className="primary" onClick={() => void toggle()}>
             {status.playing ? 'Stop' : mode === 'listen' ? 'Listen' : 'Start'}
@@ -314,7 +408,14 @@ function PracticeView({ song, title, subtitle, progressKey }: Loaded) {
         <span className="badge">On-screen keys / computer keys A–;</span>
         {midiSupported() ? (
           midi ? (
-            <span className="badge">MIDI: {midi.devices.join(', ') || 'no device connected'}</span>
+            <>
+              <span className="badge">
+                MIDI: {midi.devices.join(', ') || 'no device connected'}
+              </span>
+              <button onClick={() => setMidiCalibrating(true)} title="Measure keyboard delay">
+                Calibrate timing
+              </button>
+            </>
           ) : (
             <button onClick={() => void connectMidi()}>Connect MIDI keyboard</button>
           )
@@ -324,7 +425,18 @@ function PracticeView({ song, title, subtitle, progressKey }: Loaded) {
           </span>
         )}
         {mic ? (
-          <span className="badge">Microphone listening</span>
+          <>
+            <span className="badge">Microphone listening</span>
+            <button
+              onClick={() => {
+                session.stop();
+                mic.onNote = () => {};
+                setMicCalibrating(mic);
+              }}
+            >
+              Set up microphone
+            </button>
+          </>
         ) : (
           <button disabled={busy} onClick={() => void connectMic()}>
             {busy ? 'Starting…' : 'Use microphone'}
@@ -341,10 +453,14 @@ function PracticeView({ song, title, subtitle, progressKey }: Loaded) {
         </span>
         {inputError && <span className="error">{inputError}</span>}
       </div>
+      {(showLoop || status.loop !== null) && (
+        <SectionBar session={session} song={song} status={status} />
+      )}
       <div
         ref={wrapRef}
         className="practice-canvas-wrap"
         onPointerDown={onPointerDown}
+        onPointerMove={onPointerMove}
         onPointerUp={onPointerUp}
         onPointerCancel={onPointerUp}
       >
@@ -383,6 +499,26 @@ function PracticeView({ song, title, subtitle, progressKey }: Loaded) {
               </div>
             </div>
           </div>
+        )}
+        {midiCalibrating && midi && (
+          <MidiLatencyCalibration
+            input={midi.input}
+            device={midiDevice(midi.devices)}
+            onClose={() => {
+              setMidiCalibrating(false);
+              void applyMidiCalibration(midi.devices);
+            }}
+          />
+        )}
+        {micCalibrating && (
+          <MicCalibration
+            mic={micCalibrating}
+            onClose={() => {
+              const input = micCalibrating;
+              setMicCalibrating(null);
+              void attachMic(input);
+            }}
+          />
         )}
       </div>
     </>
