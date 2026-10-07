@@ -8,7 +8,6 @@ export type Hand = 'left' | 'right';
 
 export type SongFormat = 'musicxml' | 'mxl' | 'midi' | 'abc' | 'mscz' | 'audio';
 /** `audio`: approximate notes transcribed from a recording (P4-02). */
-export type SongFormat = 'musicxml' | 'mxl' | 'midi' | 'audio';
 
 export interface SongNote {
   /** Stable within the song: `n0`, `n1`, … in sorted order. */

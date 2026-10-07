@@ -181,30 +181,6 @@ These come from spec §5. Every item must hold before G1. A ticked item is done 
 a desktop browser can show it, covered by the Playwright suite; each one still gets checked on
 real devices in the device lab before a release.
 
-- [ ] Create or resume the `AudioContext` only from a user tap; show a "Tap to start" state until
-      then.
-- [ ] Request the microphone with `echoCancellation: false`, `noiseSuppression: false`,
-      `autoGainControl: false`.
-- [ ] Feature-detect Web MIDI; never show a broken MIDI option on WebKit.
-- [ ] Handle split view and rotation; keep practice usable at ⅓ iPad width.
-- [x] Ship a WebAssembly SIMD build and a non-SIMD fallback (P0-12): `engine-simd.wasm` where
-      WebAssembly SIMD validates (Safari 16.4+), `engine.wasm` everywhere else.
-- [ ] Sound playback uses a Web Audio sampler, never Web MIDI output.
-- [ ] Request persistent storage on first import and prompt iPad users to Add to Home Screen
-      (Safari can delete script-written data after seven days without a visit).
-- [ ] Device lab before each release: older iPad (A12-class), current iPad, iPhone, Android tablet,
-      low-end Windows laptop.
-
-## iPad app (Capacitor shell)
-
-`apps/ios-shell` wraps the built web app in Capacitor 8 and adds one native piece, the CoreMIDI
-plugin in `apps/ios-shell/plugins/core-midi` (spec §5: no iOS browser has Web MIDI). The web app
-detects the shell through the `window.Capacitor` global the native bridge injects
-(`apps/web/src/lib/native-shell.ts`) and imports the plugin lazily, so browsers never load
-Capacitor. `createMidiInput()` then returns `NativeMidiInput`, which maps CoreMIDI host-clock
-timestamps onto `performance.now()` with NTP-style round trips and from there onto the audio
-clock, like Web MIDI events. Build steps, App Store and privacy-manifest notes:
-[apps/ios-shell/README.md](../apps/ios-shell/README.md).
 - [~] Create or resume the `AudioContext` only from a user tap (`unlockAudio()` in
   `apps/web/src/audio/context.ts`, P1-18). Left: a visible "Tap to start" state while audio is
   still locked.
@@ -220,23 +196,24 @@ clock, like Web MIDI events. Build steps, App Store and privacy-manifest notes:
       `apps/web/e2e/layout.spec.ts` checks every page at 320 × 768, practice at 320 × 768, and
       resizing 1180 × 820 → 820 × 1180 → 375 × 820 → 820 × 375 with a key tap after each step.
       Still needs a real iPad: Split View and Slide Over at ⅓ and ½ width, Stage Manager windows,
-      rotating mid-run, taps near the home indicator in a Home Screen app. The scrolling score
-      (P1-15) must pass the same ⅓-width check when it lands. At 320 px the on-screen keyboard's
-      white keys are 11–21 px wide, depending on the piece's range (two to four octaves): they
-      register taps, but MIDI or the microphone are the better inputs there.
-- [ ] Ship a WebAssembly SIMD build and a non-SIMD fallback (P0-12).
-- [ ] Sound playback uses a Web Audio sampler, never Web MIDI output. (Playback is Web Audio
-      today, with a synthesiser; the sampler is P1-17.)
+      rotating mid-run, taps near the home indicator in a Home Screen app.
+- [x] Ship a WebAssembly SIMD build and a non-SIMD fallback (P0-12): `engine-simd.wasm` where
+      WebAssembly SIMD validates (Safari 16.4+), `engine.wasm` everywhere else.
+- [x] Sound playback uses a Web Audio sampler (Salamander Grand Piano subset, P1-17, ADR 0007),
+      never Web MIDI output; the additive synthesiser plays until the samples are loaded.
 - [x] Request persistent storage on first import and prompt iPad users to Add to Home Screen
       (Safari can delete script-written data after seven days without a visit). `persist()` runs
       on first import; the Library shows the hint after an import and the Home page shows a
       dismissible hint to iPad and iPhone users in a browser tab (dismissal kept in
       `localStorage`).
-- [x] Work fully offline after the first visit and install as an app (P1-23). See below. Still
+- [x] Work fully offline after the first visit and install as an app (P1-23), see below. Still
       needs a real device: Add to Home Screen from Safari's Share menu, launch from the Home Screen
-      in flight mode, practise a catalogue piece and a library piece, and confirm the library is
-      still there after more than seven days without opening Safari.
+      in flight mode, and confirm the library is still there after more than seven days.
+- [ ] Device lab before each release: older iPad (A12-class), current iPad, iPhone, Android tablet,
+      low-end Windows laptop.
+
 ### Offline and installation
+
 `vite-plugin-pwa` (Workbox `generateSW`, configured in `apps/web/vite.config.ts`) builds the web
 app manifest and a service worker that precaches everything a practice session needs on the first
 visit: the app shell, the engine `.wasm` and its AudioWorklet, the catalogue index and scores, and
@@ -244,10 +221,19 @@ the piano samples in `apps/web/public/samples/piano/`. The private library is in
 in the cache. The worker takes control of the first page at once (`clientsClaim`) so a tab that
 goes offline without reloading can still open catalogue pieces, but an update never activates by
 itself: `apps/web/src/pwa/` shows a small "Update available" bar with Reload and Dismiss, so a
-practice run is never interrupted. While the app is open it looks for a new version when it
-returns to the foreground, at most hourly, and only on its own origin. App icons are rendered from
-`public/icon.svg` by `pnpm --filter @opentiles/web icons`; iOS uses the full-bleed 180 px
-`apple-touch-icon.png`.
+practice run is never interrupted. App icons are rendered from `public/icon.svg` by
+`pnpm --filter @opentiles/web icons`; iOS uses the 180 px `apple-touch-icon.png`.
+
+## iPad app (Capacitor shell)
+
+`apps/ios-shell` wraps the built web app in Capacitor 8 and adds one native piece, the CoreMIDI
+plugin in `apps/ios-shell/plugins/core-midi` (spec §5: no iOS browser has Web MIDI). The web app
+detects the shell through the `window.Capacitor` global the native bridge injects
+(`apps/web/src/lib/native-shell.ts`) and imports the plugin lazily, so browsers never load
+Capacitor. `createMidiInput()` then returns `NativeMidiInput`, which maps CoreMIDI host-clock
+timestamps onto `performance.now()` with NTP-style round trips and from there onto the audio
+clock, like Web MIDI events. Build steps, App Store and privacy-manifest notes:
+[apps/ios-shell/README.md](../apps/ios-shell/README.md).
 
 ## Deviations from the spec's repository layout
 

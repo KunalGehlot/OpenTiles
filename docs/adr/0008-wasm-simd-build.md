@@ -1,4 +1,4 @@
-# 0005 — Ship a WebAssembly SIMD build next to the baseline, chosen at runtime
+# 0008 — Ship a WebAssembly SIMD build next to the baseline, chosen at runtime
 
 - **Status:** accepted
 - **Date:** 2026-10-07
