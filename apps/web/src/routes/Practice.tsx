@@ -4,7 +4,8 @@ import type { Song } from '@opentiles/song-model';
 import { now, unlockAudio } from '../audio/context';
 import { synthFor } from '../audio/synth';
 import { loadCatalogueSong } from '../catalogue/catalogue';
-import { midiSupported, MidiInput } from '../input/midi-input';
+import { createMidiInput, midiSupported } from '../input/midi-input';
+import type { MidiKeyboardInput } from '../input/midi-input';
 import type { MicInput } from '../input/mic-input';
 import { TouchInput } from '../input/touch-input';
 import { href } from '../lib/router';
@@ -70,7 +71,7 @@ function PracticeView({ song, title, subtitle, progressKey }: Loaded) {
   const [hands, setHands] = useState<HandFilter>('both');
   const [tempo, setTempo] = useState(1);
   const [accompany, setAccompany] = useState(true);
-  const [midi, setMidi] = useState<{ input: MidiInput; devices: string[] } | null>(null);
+  const [midi, setMidi] = useState<{ input: MidiKeyboardInput; devices: string[] } | null>(null);
   const [mic, setMic] = useState<MicInput | null>(null);
   const [inputError, setInputError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
@@ -193,7 +194,7 @@ function PracticeView({ song, title, subtitle, progressKey }: Loaded) {
   const connectMidi = async () => {
     setInputError(null);
     try {
-      const input = new MidiInput();
+      const input = createMidiInput();
       input.onNote = (e) => session.input(e);
       input.onRelease = (p) => session.release(p);
       input.onDevicesChanged = (devices) => setMidi((m) => (m ? { ...m, devices } : m));

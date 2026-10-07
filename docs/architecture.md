@@ -165,8 +165,21 @@ These come from spec §5. Every item must hold before G1.
 - [ ] Device lab before each release: older iPad (A12-class), current iPad, iPhone, Android tablet,
       low-end Windows laptop.
 
+## iPad app (Capacitor shell)
+
+`apps/ios-shell` wraps the built web app in Capacitor 8 and adds one native piece, the CoreMIDI
+plugin in `apps/ios-shell/plugins/core-midi` (spec §5: no iOS browser has Web MIDI). The web app
+detects the shell through the `window.Capacitor` global the native bridge injects
+(`apps/web/src/lib/native-shell.ts`) and imports the plugin lazily, so browsers never load
+Capacitor. `createMidiInput()` then returns `NativeMidiInput`, which maps CoreMIDI host-clock
+timestamps onto `performance.now()` with NTP-style round trips and from there onto the audio
+clock, like Web MIDI events. Build steps, App Store and privacy-manifest notes:
+[apps/ios-shell/README.md](../apps/ios-shell/README.md).
+
 ## Deviations from the spec's repository layout
 
 - `packages/practice` was added for the practice engine (ADR 0004).
 - `packages/engine` also holds the AudioWorklet processor and loader (`js/`) so the wasm module and
   the code that drives it are versioned together.
+- `apps/ios-shell/plugins/core-midi` is a workspace package (`@opentiles/capacitor-core-midi`) so
+  `cap sync` can link its Swift code and the web app can import its TypeScript definitions.

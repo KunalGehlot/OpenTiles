@@ -1,13 +1,35 @@
-// MIDI keyboard input via Web MIDI. Not available in any iOS/iPadOS browser or macOS Safari
-// (spec §5): callers must feature-detect with midiSupported() and offer the microphone instead.
+// MIDI keyboard input. Browsers use Web MIDI, which no iOS/iPadOS browser and no macOS Safari has
+// (spec §5); the iPad app reads keyboards through CoreMIDI instead (native-midi-input.ts). Callers
+// feature-detect with midiSupported(), get the right input from createMidiInput(), and offer the
+// microphone when there is none.
 import type { InputAdapter, NoteEvent } from '@opentiles/practice';
 import { now } from '../audio/context';
+import { audioTimeOf } from './clock-sync';
+import { parseMidiMessage } from './midi-message';
+import { NativeMidiInput, nativeMidiAvailable } from './native-midi-input';
 
-export function midiSupported(): boolean {
+/** What the practice screen needs from a MIDI keyboard, wherever its notes come from. */
+export interface MidiKeyboardInput extends InputAdapter {
+  onRelease: (pitch: number, time: number) => void;
+  onDevicesChanged: (names: string[]) => void;
+  readonly deviceNames: string[];
+}
+
+export function webMidiSupported(): boolean {
   return typeof navigator !== 'undefined' && typeof navigator.requestMIDIAccess === 'function';
 }
 
-export class MidiInput implements InputAdapter {
+/** True when a MIDI keyboard can be used: CoreMIDI in the iPad app, Web MIDI in a browser. */
+export function midiSupported(): boolean {
+  return nativeMidiAvailable() || webMidiSupported();
+}
+
+/** The MIDI input for this platform: CoreMIDI in the iPad app, Web MIDI everywhere else. */
+export function createMidiInput(): MidiKeyboardInput {
+  return nativeMidiAvailable() ? new NativeMidiInput() : new MidiInput();
+}
+
+export class MidiInput implements MidiKeyboardInput {
   readonly source = 'midi' as const;
   onNote: (event: NoteEvent) => void = () => {};
   onRelease: (pitch: number, time: number) => void = () => {};
@@ -15,7 +37,7 @@ export class MidiInput implements InputAdapter {
   private access: MIDIAccess | null = null;
 
   async start(): Promise<void> {
-    if (!midiSupported()) throw new Error('This browser has no MIDI support.');
+    if (!webMidiSupported()) throw new Error('This browser has no MIDI support.');
     this.access = await navigator.requestMIDIAccess();
     this.attach();
     this.access.onstatechange = () => this.attach();
@@ -35,18 +57,15 @@ export class MidiInput implements InputAdapter {
   }
 
   private onMessage(e: MIDIMessageEvent): void {
-    const data = e.data;
-    if (!data || data.length < 3) return;
-    const status = (data[0] ?? 0) & 0xf0;
-    const pitch = data[1] ?? 0;
-    const velocity = data[2] ?? 0;
-    // Map the event's own timestamp onto the audio clock.
-    const age = Math.max(0, (performance.now() - e.timeStamp) / 1000);
-    const time = now() - age;
-    if (status === 0x90 && velocity > 0) {
+    const message = parseMidiMessage(e.data);
+    if (!message) return;
+    // Map the event's own timestamp (performance clock) onto the audio clock.
+    const time = audioTimeOf(e.timeStamp / 1000, performance.now() / 1000, now());
+    if (message.on) {
+      const { pitch, velocity } = message;
       this.onNote({ pitch, time, velocity, confidence: 1, source: 'midi' });
-    } else if (status === 0x80 || (status === 0x90 && velocity === 0)) {
-      this.onRelease(pitch, time);
+    } else {
+      this.onRelease(message.pitch, time);
     }
   }
 

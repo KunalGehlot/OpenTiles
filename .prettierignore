@@ -7,3 +7,5 @@ LICENSE
 catalogue/index.json
 catalogue/pieces/
 CODE_OF_CONDUCT.md
+# Xcode project files and the built web app that `cap sync` copies in
+apps/ios-shell/ios/
