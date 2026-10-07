@@ -13,17 +13,17 @@ says what to record, how, and in which format, so results are comparable across 
 - Cover the gate's scope: single notes and 2–3 note chords between **C2 and C7**, at slow and
   moderate tempos, with and without the sustain pedal. Suggested mix:
 
-| # | Content | Pedal |
-| --- | --- | --- |
-| 1–4 | Scales and arpeggios, right hand, C4–C6 | off |
-| 5–6 | Scales, left hand, C2–C4 | off |
-| 7–9 | Melody with repeated notes (e.g. *Ode to Joy* theme) | off / on |
-| 10–12 | Two-note intervals: seconds, thirds, octaves | off |
-| 13–15 | Three-note triads and inversions across the range | off / on |
-| 16–17 | Melody + bass (two hands), simple accompaniment | on |
-| 18 | Very high register (C6–C7) | off |
-| 19 | Very low register (C2–C3) | off |
-| 20 | Soft playing (pp) of a simple melody | off |
+| #     | Content                                              | Pedal    |
+| ----- | ---------------------------------------------------- | -------- |
+| 1–4   | Scales and arpeggios, right hand, C4–C6              | off      |
+| 5–6   | Scales, left hand, C2–C4                             | off      |
+| 7–9   | Melody with repeated notes (e.g. _Ode to Joy_ theme) | off / on |
+| 10–12 | Two-note intervals: seconds, thirds, octaves         | off      |
+| 13–15 | Three-note triads and inversions across the range    | off / on |
+| 16–17 | Melody + bass (two hands), simple accompaniment      | on       |
+| 18    | Very high register (C6–C7)                           | off      |
+| 19    | Very low register (C2–C3)                            | off      |
+| 20    | Soft playing (pp) of a simple melody                 | off      |
 
 ## How to record
 

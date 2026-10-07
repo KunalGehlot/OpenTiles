@@ -1,0 +1,50 @@
+{
+  "version": 1,
+  "pieces": [
+    {
+      "slug": "frere-jacques",
+      "title": "Frère Jacques",
+      "composer": "Traditional (French round, 18th century)",
+      "difficulty": 1,
+      "licence": "CC0-1.0",
+      "verified": false,
+      "score": "pieces/frere-jacques/score.musicxml"
+    },
+    {
+      "slug": "ode-to-joy",
+      "title": "Ode to Joy (theme)",
+      "composer": "Ludwig van Beethoven",
+      "difficulty": 1,
+      "licence": "CC0-1.0",
+      "verified": false,
+      "score": "pieces/ode-to-joy/score.musicxml"
+    },
+    {
+      "slug": "twinkle-twinkle",
+      "title": "Twinkle, Twinkle, Little Star",
+      "composer": "Traditional (French melody, 18th century)",
+      "difficulty": 1,
+      "licence": "CC0-1.0",
+      "verified": false,
+      "score": "pieces/twinkle-twinkle/score.musicxml"
+    },
+    {
+      "slug": "fur-elise-opening",
+      "title": "Für Elise (opening)",
+      "composer": "Ludwig van Beethoven",
+      "difficulty": 2,
+      "licence": "CC0-1.0",
+      "verified": false,
+      "score": "pieces/fur-elise-opening/score.musicxml"
+    },
+    {
+      "slug": "minuet-in-g",
+      "title": "Minuet in G (opening)",
+      "composer": "Christian Petzold",
+      "difficulty": 2,
+      "licence": "CC0-1.0",
+      "verified": false,
+      "score": "pieces/minuet-in-g/score.musicxml"
+    }
+  ]
+}

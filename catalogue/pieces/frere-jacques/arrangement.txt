@@ -1,0 +1,11 @@
+# Frère Jacques: traditional French round (18th century), over a simple drone.
+# Original simplified arrangement for OpenTiles, released under CC0 1.0.
+title: Frère Jacques
+composer: Traditional
+key: 0
+time: 4/4
+tempo: 104
+RH: C4q@1 D4q E4q C4q | C4q D4q E4q C4q | E4q@3 F4q G4h | E4q F4q G4h
+RH: G4e A4e G4e F4e E4q C4q | G4e A4e G4e F4e E4q C4q | C4q G3q C4h | C4q G3q C4h
+LH: C3w | C3w | C3w | C3w
+LH: C3w | C3w | C3w | C3w

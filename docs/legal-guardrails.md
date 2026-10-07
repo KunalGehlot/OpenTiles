@@ -10,7 +10,7 @@ Reviewers: a pull request that breaks one of these rules is blocked, however use
 
 - [x] **No distribution path exists in the code.** There is no share link, export-to-public or
       "publish" button for library items. The only export is the user's own encrypted backup.
-      *(Enforced by review; ESLint blocks `navigator.share` as a tripwire.)*
+      _(Enforced by review; ESLint blocks `navigator.share` as a tripwire.)_
 - [ ] **The operator cannot see library contents.** Sync blobs, file names and titles are end-to-end
       encrypted (P3-03), so there is nothing for the operator to select, curate or promote.
 - [x] **No copyrighted titles in marketing.** Screenshots, demo videos, docs, test fixtures and the
@@ -20,7 +20,7 @@ Reviewers: a pull request that breaks one of these rules is blocked, however use
 - [ ] **Upload terms.** Before the first import, users confirm they only import files they have the
       right to use for personal practice.
 - [ ] **Notice-and-takedown contact.** Published in the Impressum (P2-17).
-- [ ] **Catalogue provenance.** Every public piece records its source, licence, creator death years
+- [x] **Catalogue provenance.** Every public piece records its source, licence, creator death years
       and the transcriber/arranger; CI rejects incomplete records (P2-01a).
 - [ ] **Legal review before public launch** (P2-18).
 

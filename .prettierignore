@@ -2,6 +2,8 @@ pnpm-lock.yaml
 dist
 coverage
 target
-catalogue/pieces/**/*.musicxml
 docs/spec/
 LICENSE
+catalogue/index.json
+catalogue/pieces/
+CODE_OF_CONDUCT.md

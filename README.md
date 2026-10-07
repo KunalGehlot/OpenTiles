@@ -17,14 +17,14 @@ music is either public domain or your own.
 
 ## Principles
 
-| Principle | In practice |
-| --- | --- |
-| Free forever | No paywall, ads or premium tier on any learning feature |
-| Bring your own music | Your library is private; the platform never shares or distributes your files |
+| Principle                    | In practice                                                                      |
+| ---------------------------- | -------------------------------------------------------------------------------- |
+| Free forever                 | No paywall, ads or premium tier on any learning feature                          |
+| Bring your own music         | Your library is private; the platform never shares or distributes your files     |
 | Public-domain-only catalogue | Every catalogue piece is verified public domain or CC0, with provenance recorded |
-| Works everywhere | Installable web app; iPad Safari is a first-class target |
-| Local-first and private | Works offline; files stay on your device; optional sync is end-to-end encrypted |
-| Open by default | AGPL-3.0 code, open formats (MusicXML, MIDI), CC0 catalogue metadata |
+| Works everywhere             | Installable web app; iPad Safari is a first-class target                         |
+| Local-first and private      | Works offline; files stay on your device; optional sync is end-to-end encrypted  |
+| Open by default              | AGPL-3.0 code, open formats (MusicXML, MIDI), CC0 catalogue metadata             |
 
 ## How it works
 
@@ -57,16 +57,16 @@ python3 tools/pipeline/validate_catalogue.py
 
 ## Repository layout
 
-| Path | Contents |
-| --- | --- |
-| `apps/web` | The web app (React + Vite, PWA) |
-| `apps/ios-shell` | Capacitor wrapper + CoreMIDI plugin (phase 3) |
-| `packages/engine` | Rust note-detection engine → WebAssembly, with its AudioWorklet |
-| `packages/song-model` | The `Song` model and MusicXML / MIDI parsers |
-| `packages/practice` | Practice engine: wait mode, play-along scoring |
-| `packages/importers` | Lazy-loaded heavy converters (later phases) |
-| `catalogue/` | Public-domain scores and their provenance records |
-| `tools/pipeline` | Catalogue validation and build scripts |
+| Path                  | Contents                                                        |
+| --------------------- | --------------------------------------------------------------- |
+| `apps/web`            | The web app (React + Vite, PWA)                                 |
+| `apps/ios-shell`      | Capacitor wrapper + CoreMIDI plugin (phase 3)                   |
+| `packages/engine`     | Rust note-detection engine → WebAssembly, with its AudioWorklet |
+| `packages/song-model` | The `Song` model and MusicXML / MIDI parsers                    |
+| `packages/practice`   | Practice engine: wait mode, play-along scoring                  |
+| `packages/importers`  | Lazy-loaded heavy converters (later phases)                     |
+| `catalogue/`          | Public-domain scores and their provenance records               |
+| `tools/pipeline`      | Catalogue validation and build scripts                          |
 
 ## Contributing
 

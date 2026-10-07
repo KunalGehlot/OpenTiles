@@ -1,0 +1,74 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/KunalGehlot/OpenTiles/catalogue/schema/provenance.schema.json",
+  "title": "OpenTiles catalogue provenance record",
+  "description": "One per piece (spec §9). tools/pipeline/validate_catalogue.py enforces these rules plus the EU copyright-term check.",
+  "type": "object",
+  "required": [
+    "title",
+    "composer",
+    "composer_death_year",
+    "traditional",
+    "transcriber",
+    "arranger",
+    "source_url",
+    "source_licence",
+    "edition_note",
+    "eu_term_check",
+    "difficulty",
+    "reviewed_by",
+    "verified",
+    "score_file"
+  ],
+  "properties": {
+    "title": { "type": "string", "minLength": 1 },
+    "composer": {
+      "type": "string",
+      "description": "Name, or 'Traditional (…)' for anonymous tunes."
+    },
+    "composer_death_year": {
+      "type": ["integer", "null"],
+      "description": "null only for traditional tunes."
+    },
+    "traditional": { "type": "boolean" },
+    "lyricist": { "type": ["string", "null"], "description": "Only when the score has lyrics." },
+    "lyricist_death_year": { "type": ["integer", "null"] },
+    "transcriber": {
+      "type": "string",
+      "description": "Who made this specific transcription (e.g. PDMX uploader ID)."
+    },
+    "arranger": {
+      "type": ["string", "null"],
+      "description": "Who simplified or arranged it, if anyone."
+    },
+    "source_url": { "type": "string", "pattern": "^https://" },
+    "source_licence": { "enum": ["CC0-1.0", "PDM-1.0", "public-domain", "CC-BY-3.0", "CC-BY-4.0"] },
+    "attribution": {
+      "type": "string",
+      "description": "Required for CC BY pieces; shown on the piece page."
+    },
+    "edition_note": {
+      "type": "string",
+      "description": "Why this is not a copy of a protected edition (§§ 70/71 UrhG)."
+    },
+    "eu_term_check": {
+      "type": "object",
+      "required": ["result", "date"],
+      "properties": {
+        "result": { "const": "pass" },
+        "date": { "type": "string", "format": "date" }
+      }
+    },
+    "difficulty": { "type": "integer", "minimum": 1, "maximum": 5 },
+    "reviewed_by": {
+      "type": ["string", "null"],
+      "description": "GitHub handle of the human reviewer."
+    },
+    "verified": {
+      "type": "boolean",
+      "description": "Set to true only by a human reviewer after listening and checking."
+    },
+    "score_file": { "type": "string" }
+  },
+  "additionalProperties": false
+}

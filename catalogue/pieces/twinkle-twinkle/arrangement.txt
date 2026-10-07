@@ -1,0 +1,13 @@
+# Twinkle, Twinkle, Little Star: the traditional French melody "Ah ! vous dirai-je, maman"
+# (18th century). Original simplified arrangement for OpenTiles, released under CC0 1.0.
+title: Twinkle, Twinkle, Little Star
+composer: Traditional
+key: 0
+time: 4/4
+tempo: 100
+RH: C4q@1 C4q G4q@5 G4q | A4q A4q G4h | F4q@4 F4q E4q E4q | D4q D4q C4h
+RH: G4q G4q F4q F4q | E4q E4q D4h | G4q G4q F4q F4q | E4q E4q D4h
+RH: C4q C4q G4q G4q | A4q A4q G4h | F4q F4q E4q E4q | D4q D4q C4h
+LH: C3h C3h | F3h C3h | F3h C3h | G2h C3h
+LH: C3h G2h | C3h G2h | C3h G2h | C3h G2h
+LH: C3h C3h | F3h C3h | F3h C3h | G2h C3h

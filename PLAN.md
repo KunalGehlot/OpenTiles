@@ -154,7 +154,7 @@ engines.
 
 ### Catalogue (CAT)
 
-- [ ] **P2-01a** Provenance schema, validator with EU-term check, index builder, catalogue CI.
+- [x] **P2-01a** Provenance schema, validator with EU-term check, index builder, catalogue CI.
 - [ ] **P2-01** PDMX metadata filter: `no_license_conflict` subset, piano-only, rating threshold.
 - [ ] **P2-02** EU term check against Wikidata death years (composer and lyricist).
 - [ ] **P2-03** Protected-edition exclusion (§§ 70/71 UrhG): only uploader's own CC0
