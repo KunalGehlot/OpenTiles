@@ -9,6 +9,20 @@ repository = "https://github.com/KunalGehlot/OpenTiles"
 
 [profile.release]
 opt-level = 3
+
+# The WebAssembly build: small, fast, and no unwinding machinery (no JS imports needed).
+[profile.wasm]
+inherits = "release"
 lto = true
 codegen-units = 1
 panic = "abort"
+
+# The synthetic accuracy harness renders and analyses minutes of audio; keep tests fast.
+[profile.test]
+opt-level = 3
+
+[profile.dev]
+opt-level = 1
+
+[profile.dev.package."*"]
+opt-level = 3

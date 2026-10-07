@@ -25,27 +25,27 @@ gate measurements need them.
 v1.0 is planned for August 2027 at roughly 8–10 hours a week, with December 2026 kept light. Each
 phase ends at a gate. If a gate fails, re-plan the next phase before continuing.
 
-| Phase | Window | Outcome | Gate at the end |
-| --- | --- | --- | --- |
-| 0 — Feasibility | Oct 7 – Nov 18, 2026 (6 weeks) | Microphone detector proven (or not) on iPad Safari | **G0 Go/no-go:** accuracy and latency targets on the recorded test set |
-| 1 — Core practice loop | Nov 19, 2026 – Mar 31, 2027 | Journeys A and B work end to end, offline | **G1 Alpha:** a beginner can import or pick a piece and practise it in wait mode on iPad and desktop |
-| 2 — Catalogue and breadth | Apr – Jun 2027 | 150 verified pieces, looping, ABC/MuseScore import, backup | **G2 Public beta:** legal guardrails all met, device lab passes |
-| 3 — v1.0 | Jul – Aug 2027 | iPad MIDI shell, 300 pieces, release hardening | **G3 v1.0 release:** the definition of success in spec §1 holds |
-| 4 — After v1.0 | Sep 2027 → | OMR, audio import, courses, community arrangements | — |
+| Phase                     | Window                         | Outcome                                                    | Gate at the end                                                                                      |
+| ------------------------- | ------------------------------ | ---------------------------------------------------------- | ---------------------------------------------------------------------------------------------------- |
+| 0 — Feasibility           | Oct 7 – Nov 18, 2026 (6 weeks) | Microphone detector proven (or not) on iPad Safari         | **G0 Go/no-go:** accuracy and latency targets on the recorded test set                               |
+| 1 — Core practice loop    | Nov 19, 2026 – Mar 31, 2027    | Journeys A and B work end to end, offline                  | **G1 Alpha:** a beginner can import or pick a piece and practise it in wait mode on iPad and desktop |
+| 2 — Catalogue and breadth | Apr – Jun 2027                 | 150 verified pieces, looping, ABC/MuseScore import, backup | **G2 Public beta:** legal guardrails all met, device lab passes                                      |
+| 3 — v1.0                  | Jul – Aug 2027                 | iPad MIDI shell, 300 pieces, release hardening             | **G3 v1.0 release:** the definition of success in spec §1 holds                                      |
+| 4 — After v1.0            | Sep 2027 →                     | OMR, audio import, courses, community arrangements         | —                                                                                                    |
 
 If **G0** fails, v1.0 becomes MIDI-first and the microphone ships marked as beta (spec §11).
 
 ## Workstreams
 
-| Code | Workstream | Main paths |
-| --- | --- | --- |
-| ENG | Note detection engine (Rust → WebAssembly) | `packages/engine` |
-| SONG | `Song` model and importers | `packages/song-model`, `packages/importers` |
-| PRAC | Practice engine (modes, scoring, steps) | `packages/practice` |
-| APP | Web app, views, input, audio, PWA | `apps/web` |
-| CAT | Public-domain catalogue and pipeline | `catalogue/`, `tools/pipeline` |
-| STORE | Local library, backup, encrypted sync | `apps/web/src/storage`, sync service (phase 3) |
-| GOV | Legal, licences, docs, CI, community | repo root, `docs/`, `.github/` |
+| Code  | Workstream                                 | Main paths                                     |
+| ----- | ------------------------------------------ | ---------------------------------------------- |
+| ENG   | Note detection engine (Rust → WebAssembly) | `packages/engine`                              |
+| SONG  | `Song` model and importers                 | `packages/song-model`, `packages/importers`    |
+| PRAC  | Practice engine (modes, scoring, steps)    | `packages/practice`                            |
+| APP   | Web app, views, input, audio, PWA          | `apps/web`                                     |
+| CAT   | Public-domain catalogue and pipeline       | `catalogue/`, `tools/pipeline`                 |
+| STORE | Local library, backup, encrypted sync      | `apps/web/src/storage`, sync service (phase 3) |
+| GOV   | Legal, licences, docs, CI, community       | repo root, `docs/`, `.github/`                 |
 
 ---
 
@@ -55,21 +55,21 @@ Goal: answer "can the microphone reliably tell whether the expected notes were p
 on an iPad in Safari?" before any app polish.
 
 - [~] **P0-02** (human) Working name **OpenTiles** chosen and monorepo created. Still open: domain,
-      trademark check, GitHub organisation.
+  trademark check, GitHub organisation.
 - [x] **P0-03** GOV — Monorepo scaffolding: pnpm + Cargo workspaces, licence, contributor docs,
       ADRs, CI workflow.
 - [ ] **P0-04** (human) Record the real test set: 20 short passages on one acoustic and one digital
       piano, captured on an iPad in Safari, with matching MIDI answer keys. Protocol in
       [docs/phase-0/test-set.md](docs/phase-0/test-set.md).
-- [ ] **P0-05** ENG — AudioWorklet capture into the engine, off the main thread
+- [x] **P0-05** ENG — AudioWorklet capture into the engine, off the main thread
       (`packages/engine/js`).
-- [ ] **P0-06** ENG — Rust FFT, spectral-flux onset detector, compiled to a dependency-free
+- [x] **P0-06** ENG — Rust FFT, spectral-flux onset detector, compiled to a dependency-free
       `wasm32` module with a C ABI (ADR 0002).
-- [ ] **P0-07** ENG — Expected-note test for single notes and 2–3 note chords, plus the wrong-note
+- [x] **P0-07** ENG — Expected-note test for single notes and 2–3 note chords, plus the wrong-note
       test (neighbouring semitones and octave errors), with per-mode thresholds.
-- [ ] **P0-08** ENG — Synthetic piano test set and accuracy harness, run by `cargo test` in CI.
+- [x] **P0-08** ENG — Synthetic piano test set and accuracy harness, run by `cargo test` in CI.
       Synthetic results are a smoke test only; G0 is judged on real recordings.
-- [ ] **P0-09** ENG — `evaluate` CLI: runs the detector over a WAV recording plus a CSV answer key
+- [x] **P0-09** ENG — `evaluate` CLI: runs the detector over a WAV recording plus a CSV answer key
       and prints the accuracy report used in the gate report.
 - [ ] **P0-10** APP — Detector Lab page: microphone → worklet → detector with live display of
       onsets, accepted and rejected notes, and the recorder used for P0-04.
@@ -217,11 +217,11 @@ compatibility matrix (spec §5).
 
 These are tracked in their own documents and must be green before the gate named.
 
-| Checklist | Document | Needed by |
-| --- | --- | --- |
-| Legal guardrails | [docs/legal-guardrails.md](docs/legal-guardrails.md) | G2 (public beta) |
-| Safari / iPad engineering | [docs/architecture.md#safari-and-ipad-rules](docs/architecture.md#safari-and-ipad-rules) | G1 |
-| GDPR and German requirements | [docs/legal-guardrails.md#data-protection](docs/legal-guardrails.md#data-protection) | G2 |
+| Checklist                    | Document                                                                                 | Needed by        |
+| ---------------------------- | ---------------------------------------------------------------------------------------- | ---------------- |
+| Legal guardrails             | [docs/legal-guardrails.md](docs/legal-guardrails.md)                                     | G2 (public beta) |
+| Safari / iPad engineering    | [docs/architecture.md#safari-and-ipad-rules](docs/architecture.md#safari-and-ipad-rules) | G1               |
+| GDPR and German requirements | [docs/legal-guardrails.md#data-protection](docs/legal-guardrails.md#data-protection)     | G2               |
 
 ## Open decisions
 

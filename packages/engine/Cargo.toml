@@ -1,0 +1,15 @@
+[package]
+name = "opentiles-engine"
+version = "0.1.0"
+description = "Score-informed piano note detection for OpenTiles, compiled to WebAssembly"
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+publish = false
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+
+[dependencies]
+# MIT OR Apache-2.0; pure Rust, no JS imports on wasm32.
+realfft = "3.5"

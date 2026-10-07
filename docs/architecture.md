@@ -46,13 +46,13 @@ Two seams keep the design simple:
 
 ## Packages
 
-| Package | Responsibility | Depends on |
-| --- | --- | --- |
-| `packages/song-model` | `Song` types, tempo map, MusicXML and MIDI parsing, quantiser, hand split, transpose | `fflate` (unzip `.mxl`) |
-| `packages/practice` | `NoteEvent`, practice steps, `WaitMode`, `PlayAlongScorer`, tempo scaling | `song-model` |
-| `packages/engine` | Rust detector compiled to `engine.wasm`; AudioWorklet processor and main-thread loader in `js/` | — |
-| `packages/importers` | Heavy, lazy-loaded converters (MuseScore, OMR, audio) — later phases | `song-model` |
-| `apps/web` | React UI, canvas views, Web Audio, Web MIDI, IndexedDB, service worker | all of the above |
+| Package               | Responsibility                                                                                  | Depends on              |
+| --------------------- | ----------------------------------------------------------------------------------------------- | ----------------------- |
+| `packages/song-model` | `Song` types, tempo map, MusicXML and MIDI parsing, quantiser, hand split, transpose            | `fflate` (unzip `.mxl`) |
+| `packages/practice`   | `NoteEvent`, practice steps, `WaitMode`, `PlayAlongScorer`, tempo scaling                       | `song-model`            |
+| `packages/engine`     | Rust detector compiled to `engine.wasm`; AudioWorklet processor and main-thread loader in `js/` | —                       |
+| `packages/importers`  | Heavy, lazy-loaded converters (MuseScore, OMR, audio) — later phases                            | `song-model`            |
+| `apps/web`            | React UI, canvas views, Web Audio, Web MIDI, IndexedDB, service worker                          | all of the above        |
 
 `song-model` and `practice` are DOM-free (ADR 0004) so they run in tests, web workers and the iOS
 shell unchanged.
@@ -101,21 +101,43 @@ mic ─▶ AudioWorklet (128-sample blocks) ─▶ engine.wasm
 Design rules:
 
 - **Score-informed, not a transcriber.** The detector is told which pitches are expected next and
-  only tests those plus a short list of likely mistakes.
-- **Harmonic score.** For a candidate pitch, the energy at its first 6–8 partials (with
-  inharmonicity `fₙ = n·f₀·√(1 + B·n²)`) is compared with the local spectral floor. Odd partials are
-  checked separately so an octave above or below cannot pass for the expected note.
-- **Novelty.** A note must show new energy at its partials compared with just before the onset, so
-  a note still ringing under the sustain pedal is not counted again.
-- **Two resolutions.** Pitches below C3 are evaluated on a 4096-sample window (later decision);
-  everything else on 2048 samples.
+  only tests those plus a short list of likely mistakes (±1, ±2 semitones, ±12).
+- **Harmonic evidence.** For a candidate pitch, the first 8 partials (12 for bass notes) are
+  predicted with piano inharmonicity `fₙ = n·f₀·√(1 + B·n²)` and looked up in the post-onset
+  spectrum. Each partial is rated by `match × level × freshness`: how close the nearest peak is to
+  the prediction, how far it stands above the local floor, and how much louder it is than the
+  loudest of three frames just before the onset. A second view, the power-difference spectrum
+  (post minus twice the pre-onset maximum), catches new partials hidden next to louder ringing
+  ones under the pedal; each partial keeps the better of the two.
+- **Odd partials decide octaves.** A pitch's score is the geometric mean of the evidence over all
+  partials and over its odd partials, which the octave above cannot supply. Partials that another
+  expected note explains count less. If the octave _below_ shows fresh odd-partial energy, it was
+  played: it is reported as a wrong note and the expected note is not accepted at that onset.
+- **Freshness, not presence.** A note still ringing under the sustain pedal, or brightening as its
+  strings beat, has little fresh energy, so it is neither re-accepted nor mistaken for a wrong note.
+- **Two resolutions.** Pitches below C3 are evaluated on a 4096-sample window 66 ms after the
+  onset; everything else on 2048 samples 36 ms after it.
 - **Per-mode thresholds.** Wait mode errs towards accepting; play-along towards precision.
 - **No allocation on the audio path; no JS imports.** The wasm module exports a C ABI and is
   instantiated inside the AudioWorklet from a `WebAssembly.Module` compiled on the main thread
   (ADR 0002).
 
+Known weak spot: bass notes under heavy pedal (see the synthetic results below and P0-13).
+
 Accuracy is measured by `cargo test` on a synthetic piano test set (smoke test) and by the
 `evaluate` CLI on real recordings (gate). See [phase-0/test-set.md](phase-0/test-set.md).
+
+Synthetic results at the time of writing (`cargo test --release -p opentiles-engine --test
+synthetic_accuracy -- --nocapture`), single notes and 2–3 note chords between C2 and C7:
+
+| Scenario                               | Correct notes accepted | Wrong notes accepted |
+| -------------------------------------- | ---------------------- | -------------------- |
+| Wait mode, no pedal, 48 kHz            | 98.3 %                 | 1.3 %                |
+| Wait mode, heavy sustain pedal, 48 kHz | 87.8 %                 | 2.5 %                |
+| Play-along mode, no pedal, 44.1 kHz    | 92.0 %                 | 0.2 %                |
+
+Median decision latency is about 40 ms after the true onset (66 ms for notes below C3). These
+numbers come from a synthesiser, not a piano in a room; the G0 gate is judged on real recordings.
 
 ## Storage
 
