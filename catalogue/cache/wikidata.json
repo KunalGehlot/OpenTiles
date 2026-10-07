@@ -1,0 +1,381 @@
+{
+  "version": 1,
+  "source": "Wikidata (https://www.wikidata.org), CC0 1.0. Written by tools/pipeline/wikidata.py.",
+  "names": {
+    "antonín dvořák": {
+      "ids": [
+        "Q7298"
+      ],
+      "fetched": "2026-10-07"
+    },
+    "christian petzold": {
+      "ids": [
+        "Q537804"
+      ],
+      "fetched": "2026-10-07"
+    },
+    "edvard grieg": {
+      "ids": [
+        "Q80621"
+      ],
+      "fetched": "2026-10-07"
+    },
+    "felix mendelssohn": {
+      "ids": [
+        "Q46096"
+      ],
+      "fetched": "2026-10-07"
+    },
+    "james lord pierpont": {
+      "ids": [
+        "Q1344188"
+      ],
+      "fetched": "2026-10-07"
+    },
+    "johann pachelbel": {
+      "ids": [
+        "Q76485"
+      ],
+      "fetched": "2026-10-07"
+    },
+    "johann sebastian bach": {
+      "ids": [
+        "Q1339"
+      ],
+      "fetched": "2026-10-07"
+    },
+    "johannes brahms": {
+      "ids": [
+        "Q7294"
+      ],
+      "fetched": "2026-10-07"
+    },
+    "lowell mason": {
+      "ids": [
+        "Q1349257",
+        "Q108665361"
+      ],
+      "fetched": "2026-10-07"
+    },
+    "ludwig van beethoven": {
+      "ids": [
+        "Q255",
+        "Q12368917"
+      ],
+      "fetched": "2026-10-07"
+    },
+    "wolfgang amadeus mozart": {
+      "ids": [
+        "Q254",
+        "Q156023"
+      ],
+      "fetched": "2026-10-07"
+    }
+  },
+  "entities": {
+    "Q254": {
+      "label": "Wolfgang Amadeus Mozart",
+      "description": "Austrian composer of the Classical period (1756-1791)",
+      "aliases": [
+        "Apollo Mozzart",
+        "Joannes Chrysostomus Wolfgangus Amadeus Mozart",
+        "Johann Chrysostomos Wolfgang Gottlieb Mozart",
+        "Mozhate",
+        "V. A. Mocartas",
+        "Volphnkank Amedaios Motsart",
+        "Wolfgang Amadeus Chrysostom Mozart",
+        "Wolfgang Amadè Mozart",
+        "Wolfgang Gottlieb Mozart",
+        "Wolfgango Amadeo Mozart"
+      ],
+      "human": true,
+      "occupations": [
+        "Q1259917",
+        "Q158852",
+        "Q36834",
+        "Q486748",
+        "Q639669",
+        "Q765778"
+      ],
+      "birth_year": 1756,
+      "death_year": 1791,
+      "death_precision": 11,
+      "death_unknown": false,
+      "fetched": "2026-10-07"
+    },
+    "Q255": {
+      "label": "Ludwig van Beethoven",
+      "description": "German composer (1770-1827)",
+      "aliases": [
+        "L. Bethovenas",
+        "L. v. Beethoven",
+        "L. van Betkhoven",
+        "Louis van Beethoven",
+        "Ludvig van Beethoven",
+        "Ludwig von Beethoven",
+        "Ludwik van Beethoven"
+      ],
+      "human": true,
+      "occupations": [
+        "Q36834"
+      ],
+      "birth_year": 1770,
+      "death_year": 1827,
+      "death_precision": 11,
+      "death_unknown": false,
+      "fetched": "2026-10-07"
+    },
+    "Q1339": {
+      "label": "Johann Sebastian Bach",
+      "description": "German composer (1685–1750)",
+      "aliases": [
+        "J S Bach"
+      ],
+      "human": true,
+      "occupations": [
+        "Q1259917",
+        "Q14915627",
+        "Q158852",
+        "Q36834",
+        "Q765778"
+      ],
+      "birth_year": 1685,
+      "death_year": 1750,
+      "death_precision": 11,
+      "death_unknown": false,
+      "fetched": "2026-10-07"
+    },
+    "Q7294": {
+      "label": "Johannes Brahms",
+      "description": "German composer (1833–1897)",
+      "aliases": [
+        "Brahms",
+        "J. Brahms",
+        "Marks, G. W."
+      ],
+      "human": true,
+      "occupations": [
+        "Q158852",
+        "Q36834",
+        "Q486748"
+      ],
+      "birth_year": 1833,
+      "death_year": 1897,
+      "death_precision": 11,
+      "death_unknown": false,
+      "fetched": "2026-10-07"
+    },
+    "Q7298": {
+      "label": "Antonín Dvořák",
+      "description": "Czech composer (1841–1904)",
+      "aliases": [
+        "Antonin Dvorák",
+        "Antonín Dvorák",
+        "Dvořák"
+      ],
+      "human": true,
+      "occupations": [
+        "Q1259917",
+        "Q14915627",
+        "Q158852",
+        "Q36834",
+        "Q486748",
+        "Q765778"
+      ],
+      "birth_year": 1841,
+      "death_year": 1904,
+      "death_precision": 11,
+      "death_unknown": false,
+      "fetched": "2026-10-07"
+    },
+    "Q46096": {
+      "label": "Felix Mendelssohn",
+      "description": "German composer, pianist, organist and conductor of Jewish descent (1809-1847)",
+      "aliases": [
+        "Felix Mendelssohn Bartholdy",
+        "Felix Mendelssohn-Bartholdy",
+        "Jakob Ludwig Felix Mendelssohn Bartholdy",
+        "Mendelssohn",
+        "Mendelssohn-Bartholdy"
+      ],
+      "human": true,
+      "occupations": [
+        "Q14915627",
+        "Q158852",
+        "Q36180",
+        "Q36834",
+        "Q486748",
+        "Q639669",
+        "Q765778"
+      ],
+      "birth_year": 1809,
+      "death_year": 1847,
+      "death_precision": 11,
+      "death_unknown": false,
+      "fetched": "2026-10-07"
+    },
+    "Q76485": {
+      "label": "Johann Pachelbel",
+      "description": "German composer, organist and teacher",
+      "aliases": [
+        "Johan Chrispontius Pechbel"
+      ],
+      "human": true,
+      "occupations": [
+        "Q36834",
+        "Q765778"
+      ],
+      "birth_year": 1653,
+      "death_year": 1706,
+      "death_precision": 11,
+      "death_unknown": false,
+      "fetched": "2026-10-07"
+    },
+    "Q80621": {
+      "label": "Edvard Grieg",
+      "description": "Norwegian composer and pianist (1843–1907)",
+      "aliases": [
+        "Edoard Grieg"
+      ],
+      "human": true,
+      "occupations": [
+        "Q36834",
+        "Q486748"
+      ],
+      "birth_year": 1843,
+      "death_year": 1907,
+      "death_precision": 11,
+      "death_unknown": false,
+      "fetched": "2026-10-07"
+    },
+    "Q156023": {
+      "label": "Franz Xaver Wolfgang Mozart",
+      "description": "Austrian composer, teacher and performer; youngest son of Wolfgang Amadeus Mozart (1791-1844)",
+      "aliases": [
+        "F. X. Mozart",
+        "Franz Xaver Mozart",
+        "Franz Xavier Mozart",
+        "Franz Xavier Wolfgang Mozart",
+        "Wolfgang Amade Mozart, Jr.",
+        "Wolfgang Amadeus Mozart, Jr."
+      ],
+      "human": true,
+      "occupations": [
+        "Q158852",
+        "Q36834",
+        "Q486748",
+        "Q639669"
+      ],
+      "birth_year": 1791,
+      "death_year": 1844,
+      "death_precision": 11,
+      "death_unknown": false,
+      "fetched": "2026-10-07"
+    },
+    "Q513185": {
+      "label": "Franz Xaver Gruber",
+      "description": "Austrian composer (1787–1863)",
+      "aliases": [
+        "El Grube",
+        "Franz Gruber",
+        "Franz Xaver Huber"
+      ],
+      "human": true,
+      "occupations": [
+        "Q36834",
+        "Q49757",
+        "Q765778"
+      ],
+      "birth_year": 1787,
+      "death_year": 1863,
+      "death_precision": 11,
+      "death_unknown": false,
+      "fetched": "2026-10-07"
+    },
+    "Q537804": {
+      "label": "Christian Petzold",
+      "description": "German composer and organist",
+      "aliases": [],
+      "human": true,
+      "occupations": [
+        "Q36834"
+      ],
+      "birth_year": 1677,
+      "death_year": 1733,
+      "death_precision": 11,
+      "death_unknown": false,
+      "fetched": "2026-10-07"
+    },
+    "Q1344188": {
+      "label": "James Pierpont",
+      "description": "songwriter, arranger, and composer, best known for writing and composing \"Jingle Bells\" (1822–1893)",
+      "aliases": [
+        "J. Pierpont",
+        "James Lord Pierpont"
+      ],
+      "human": true,
+      "occupations": [
+        "Q36834",
+        "Q753110",
+        "Q822146"
+      ],
+      "birth_year": 1822,
+      "death_year": 1893,
+      "death_precision": 11,
+      "death_unknown": false,
+      "fetched": "2026-10-07"
+    },
+    "Q1349257": {
+      "label": "Lowell Mason",
+      "description": "American composer; leading figure in American church music",
+      "aliases": [
+        "Dr Lowell Mason"
+      ],
+      "human": true,
+      "occupations": [
+        "Q158852",
+        "Q36834",
+        "Q639669"
+      ],
+      "birth_year": 1792,
+      "death_year": 1872,
+      "death_precision": 11,
+      "death_unknown": false,
+      "fetched": "2026-10-07"
+    },
+    "Q12368917": {
+      "label": "Ludwig van Beethoven",
+      "description": "grandfather of composer Ludwig van Beethoven",
+      "aliases": [
+        "Louis van Beethoven"
+      ],
+      "human": true,
+      "occupations": [
+        "Q177220",
+        "Q36834",
+        "Q639669"
+      ],
+      "birth_year": 1712,
+      "death_year": 1773,
+      "death_precision": 11,
+      "death_unknown": false,
+      "fetched": "2026-10-07"
+    },
+    "Q108665361": {
+      "label": "Lowell M. Greenlaw",
+      "description": "American author and businessperson",
+      "aliases": [
+        "Lowell Mason Greenlaw"
+      ],
+      "human": true,
+      "occupations": [
+        "Q36180"
+      ],
+      "birth_year": null,
+      "death_year": null,
+      "death_precision": null,
+      "death_unknown": false,
+      "fetched": "2026-10-07"
+    }
+  }
+}

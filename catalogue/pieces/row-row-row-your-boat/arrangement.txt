@@ -1,0 +1,11 @@
+# Row, Row, Row Your Boat: traditional nursery round (19th century).
+# Original simplified arrangement for OpenTiles, released under CC0 1.0.
+title: Row, Row, Row Your Boat
+composer: Traditional
+key: 0
+time: 6/8
+tempo: 90
+RH: C4q.@1 C4q. | C4q D4e E4q. | E4q D4e E4q F4e | G4h.@5
+RH: C5e C5e C5e G4e G4e G4e | E4e E4e E4e C4e C4e C4e | G4q F4e E4q D4e | C4h.
+LH: C3h. | C3h. | C3h. | C3h.
+LH: C3h. | C3h. | G2h. | C3h.

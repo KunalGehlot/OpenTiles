@@ -19,6 +19,9 @@ __pycache__/
 *.pyc
 .venv/
 .pytest_cache/
+# PDMX downloads and pipeline output (hundreds of MB; see tools/pipeline/pdmx_filter.py)
+tools/pipeline/data/
+PDMX.csv
 
 # Test artefacts
 playwright-report/

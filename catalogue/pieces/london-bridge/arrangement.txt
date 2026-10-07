@@ -1,0 +1,11 @@
+# London Bridge Is Falling Down: traditional English nursery rhyme.
+# Original simplified arrangement for OpenTiles, released under CC0 1.0.
+title: London Bridge Is Falling Down
+composer: Traditional
+key: 0
+time: 4/4
+tempo: 104
+RH: G4q. A4e G4q F4q | E4q F4q G4h | D4q E4q F4h | E4q F4q G4h
+RH: G4q. A4e G4q F4q | E4q F4q G4h | D4h G4h | E4q C4h.
+LH: C3w | C3w | G2w | C3w
+LH: C3w | C3w | G2w | C3w

@@ -1,0 +1,15 @@
+# Au clair de la lune: traditional French song (18th century).
+# Original simplified arrangement for OpenTiles, released under CC0 1.0.
+title: Au clair de la lune
+composer: Traditional
+key: 0
+time: 4/4
+tempo: 96
+RH: C4q@1 C4q C4q D4q | E4h D4h | C4q E4q D4q D4q | C4w
+RH: C4q C4q C4q D4q | E4h D4h | C4q E4q D4q D4q | C4w
+RH: D4q@5 D4q D4q D4q | A3h@2 A3h | D4q@5 C4q B3q A3q | G3w@1
+RH: C4q@1 C4q C4q D4q | E4h D4h | C4q E4q D4q D4q | C4w
+LH: C3w | C3h G2h | C3h G2h | C3w
+LH: C3w | C3h G2h | C3h G2h | C3w
+LH: G2w | D3w | G2w | G2w
+LH: C3w | C3h G2h | C3h G2h | C3w

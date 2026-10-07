@@ -1,0 +1,18 @@
+# Greensleeves: traditional English melody (16th century), in A minor.
+# Original simplified arrangement for OpenTiles, released under CC0 1.0.
+title: Greensleeves
+composer: Traditional
+key: 0
+time: 6/8
+tempo: 120
+pickup: yes
+RH: A4e@1
+RH: | C5q@2 D5e E5e. F5s E5e | D5q B4e G4e. A4s B4e | C5q A4e A4e. G#4s A4e | B4q G#4e E4q A4e
+RH: | C5q D5e E5e. F5s E5e | D5q B4e G4e. A4s B4e | C5e. B4s A4e G#4e. F#4s G#4e | A4h.
+RH: | G5q. G5e. F#5s E5e | D5q B4e G4e. A4s B4e | C5q A4e A4e. G#4s A4e | B4q G#4e E4q.
+RH: | G5q. G5e. F#5s E5e | D5q B4e G4e. A4s B4e | C5e. B4s A4e G#4e. F#4s G#4e | A4h.
+LH: re
+LH: | A2h. | G2h. | A2h. | E2h.
+LH: | A2h. | G2h. | A2q. E2q. | A2h.
+LH: | C3h. | G2h. | A2h. | E2h.
+LH: | C3h. | G2h. | A2q. E2q. | A2h.

@@ -1,0 +1,14 @@
+# We Wish You a Merry Christmas: traditional English carol, the first part.
+# Original simplified arrangement for OpenTiles, released under CC0 1.0.
+title: We Wish You a Merry Christmas
+composer: Traditional
+key: 0
+time: 3/4
+tempo: 120
+pickup: yes
+RH: G4q@1
+RH: | C5q@4 C5e D5e C5e B4e | A4q@2 A4q A4q | D5q@5 D5e E5e D5e C5e | B4q G4q G4q
+RH: | E5q E5e F5e E5e D5e | C5q A4q G4e G4e | A4q D5q B4q | C5h.
+LH: rq
+LH: | C3h. | F2h. | D3h. | G2h.
+LH: | E3h. | A2h. | F2q G2h | C3h.

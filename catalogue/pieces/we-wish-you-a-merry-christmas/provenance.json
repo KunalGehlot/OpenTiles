@@ -1,0 +1,19 @@
+{
+  "title": "We Wish You a Merry Christmas",
+  "composer": "Traditional (English carol)",
+  "composer_death_year": null,
+  "traditional": true,
+  "transcriber": "OpenTiles contributors",
+  "arranger": "OpenTiles contributors",
+  "source_url": "https://github.com/KunalGehlot/OpenTiles/tree/main/catalogue/pieces/we-wish-you-a-merry-christmas",
+  "source_licence": "CC0-1.0",
+  "edition_note": "Original simplified arrangement written for OpenTiles from the public-domain melody; not copied from any published edition. Source: arrangement.txt, rendered with tools/pipeline/arrange.py.",
+  "eu_term_check": {
+    "result": "pass",
+    "date": "2026-10-07"
+  },
+  "difficulty": 2,
+  "reviewed_by": null,
+  "verified": false,
+  "score_file": "score.musicxml"
+}

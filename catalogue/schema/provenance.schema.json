@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://github.com/KunalGehlot/OpenTiles/catalogue/schema/provenance.schema.json",
   "title": "OpenTiles catalogue provenance record",
-  "description": "One per piece (spec §9). tools/pipeline/validate_catalogue.py enforces these rules plus the EU copyright-term check.",
+  "description": "One per piece (spec §9). tools/pipeline/validate_catalogue.py enforces these rules plus the EU copyright-term check, the Wikidata death-year comparison, the edition rules and the score checks.",
   "type": "object",
   "required": [
     "title",
@@ -21,7 +21,10 @@
     "score_file"
   ],
   "properties": {
-    "title": { "type": "string", "minLength": 1 },
+    "title": {
+      "type": "string",
+      "minLength": 1
+    },
     "composer": {
       "type": "string",
       "description": "Name, or 'Traditional (…)' for anonymous tunes."
@@ -30,9 +33,26 @@
       "type": ["integer", "null"],
       "description": "null only for traditional tunes."
     },
-    "traditional": { "type": "boolean" },
-    "lyricist": { "type": ["string", "null"], "description": "Only when the score has lyrics." },
-    "lyricist_death_year": { "type": ["integer", "null"] },
+    "composer_wikidata": {
+      "type": "string",
+      "pattern": "^Q[1-9][0-9]*$",
+      "description": "Wikidata item of the composer. Set it when the name alone is ambiguous; the term check then compares the death year with this item."
+    },
+    "traditional": {
+      "type": "boolean"
+    },
+    "lyricist": {
+      "type": ["string", "null"],
+      "description": "Only when the score has lyrics."
+    },
+    "lyricist_death_year": {
+      "type": ["integer", "null"]
+    },
+    "lyricist_wikidata": {
+      "type": "string",
+      "pattern": "^Q[1-9][0-9]*$",
+      "description": "Wikidata item of the lyricist, when the name alone is ambiguous."
+    },
     "transcriber": {
       "type": "string",
       "description": "Who made this specific transcription (e.g. PDMX uploader ID)."
@@ -41,8 +61,13 @@
       "type": ["string", "null"],
       "description": "Who simplified or arranged it, if anyone."
     },
-    "source_url": { "type": "string", "pattern": "^https://" },
-    "source_licence": { "enum": ["CC0-1.0", "PDM-1.0", "public-domain", "CC-BY-3.0", "CC-BY-4.0"] },
+    "source_url": {
+      "type": "string",
+      "pattern": "^https://"
+    },
+    "source_licence": {
+      "enum": ["CC0-1.0", "PDM-1.0", "public-domain", "CC-BY-3.0", "CC-BY-4.0"]
+    },
     "attribution": {
       "type": "string",
       "description": "Required for CC BY pieces; shown on the piece page."
@@ -55,11 +80,20 @@
       "type": "object",
       "required": ["result", "date"],
       "properties": {
-        "result": { "const": "pass" },
-        "date": { "type": "string", "format": "date" }
+        "result": {
+          "const": "pass"
+        },
+        "date": {
+          "type": "string",
+          "format": "date"
+        }
       }
     },
-    "difficulty": { "type": "integer", "minimum": 1, "maximum": 5 },
+    "difficulty": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 5
+    },
     "reviewed_by": {
       "type": ["string", "null"],
       "description": "GitHub handle of the human reviewer."
@@ -68,7 +102,39 @@
       "type": "boolean",
       "description": "Set to true only by a human reviewer after listening and checking."
     },
-    "score_file": { "type": "string" }
+    "reviewed_on": {
+      "type": "string",
+      "format": "date",
+      "description": "Date of the human review (YYYY-MM-DD). Required when verified is true."
+    },
+    "score_file": {
+      "type": "string"
+    },
+    "single_hand": {
+      "enum": ["right", "left"],
+      "description": "Only for pieces written for one hand: the hand that plays. Without it the score must have notes for both hands."
+    }
   },
-  "additionalProperties": false
+  "additionalProperties": false,
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "verified": {
+            "const": true
+          }
+        },
+        "required": ["verified"]
+      },
+      "then": {
+        "required": ["reviewed_on"],
+        "properties": {
+          "reviewed_by": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      }
+    }
+  ]
 }

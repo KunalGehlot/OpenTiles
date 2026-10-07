@@ -2,13 +2,17 @@
 
 from __future__ import annotations
 
+import datetime
 import json
 import re
 import xml.etree.ElementTree as ET
+import zipfile
 from dataclasses import dataclass
 from pathlib import Path
 
+import editions
 from eu_term import is_free, latest_free_death_year
+from score_checks import check_score, load_score
 
 ROOT = Path(__file__).resolve().parents[2]
 CATALOGUE = ROOT / "catalogue"
@@ -34,6 +38,17 @@ REQUIRED = {
     "verified": bool,
     "score_file": str,
 }
+OPTIONAL = {
+    "lyricist": (str, type(None)),
+    "lyricist_death_year": (int, type(None)),
+    "attribution": str,
+    "composer_wikidata": str,
+    "lyricist_wikidata": str,
+    "single_hand": str,
+    "reviewed_on": str,
+}
+QID = re.compile(r"^Q[1-9][0-9]*$")
+DATE = re.compile(r"^\d{4}-\d{2}-\d{2}$")
 
 
 @dataclass
@@ -54,12 +69,14 @@ def load_pieces(pieces_dir: Path = PIECES) -> list[Piece]:
     return out
 
 
-def count_notes(score: Path) -> int:
-    """Pitched notes in a partwise MusicXML file (raises on malformed XML)."""
-    root = ET.parse(score).getroot()
-    if root.tag != "score-partwise":
-        raise ValueError(f"root element is <{root.tag}>, expected <score-partwise>")
-    return sum(1 for n in root.iter("note") if n.find("pitch") is not None)
+def _is_date(value: object) -> bool:
+    if not isinstance(value, str) or not DATE.match(value):
+        return False
+    try:
+        datetime.date.fromisoformat(value)
+    except ValueError:
+        return False
+    return True
 
 
 def validate_piece(piece: Piece, release_year: int) -> list[str]:
@@ -75,6 +92,13 @@ def validate_piece(piece: Piece, release_year: int) -> list[str]:
         if key not in r:
             field_errors.append(f"missing field '{key}'")
         elif not isinstance(r[key], types) or (isinstance(r[key], bool) and types is int):
+            field_errors.append(f"field '{key}' has the wrong type")
+    for key, value in r.items():
+        if key in REQUIRED:
+            continue
+        if key not in OPTIONAL:
+            field_errors.append(f"unknown field '{key}' (see catalogue/schema/provenance.schema.json)")
+        elif not isinstance(value, OPTIONAL[key]) or (isinstance(value, bool) and int in OPTIONAL[key]):
             field_errors.append(f"field '{key}' has the wrong type")
     if field_errors:
         return errors + field_errors
@@ -104,19 +128,49 @@ def validate_piece(piece: Piece, release_year: int) -> list[str]:
     if check.get("result") != "pass" or not isinstance(check.get("date"), str):
         errors.append("eu_term_check must record result 'pass' and the date it was checked")
 
-    if r["verified"] and not r["reviewed_by"]:
-        errors.append("a verified piece needs reviewed_by (the reviewer's GitHub handle)")
+    if not _is_date(check.get("date")):
+        errors.append("eu_term_check date must be a real date written YYYY-MM-DD")
+    for key in ("composer_wikidata", "lyricist_wikidata"):
+        if key in r and not QID.match(r[key]):
+            errors.append(f"{key} must be a Wikidata item ID like Q7294")
+    if "single_hand" in r and r["single_hand"] not in ("right", "left"):
+        errors.append("single_hand must be 'right' or 'left'")
 
+    if r["verified"]:
+        if not r["reviewed_by"]:
+            errors.append("a verified piece needs reviewed_by (the reviewer's GitHub handle)")
+        if not _is_date(r.get("reviewed_on")):
+            errors.append("a verified piece needs reviewed_on, the review date as YYYY-MM-DD")
+    elif r["reviewed_by"]:
+        errors.append("reviewed_by is set but verified is false; finish the review or clear it")
+
+    # Spec §9 step 3: only the transcriber's own work, never a copy of a protected edition.
+    edition_errors, _ = editions.check_provenance(r)
+    errors += edition_errors
+
+    # Spec §9 step 4: the file must parse and make musical sense.
     score = piece.path / r["score_file"]
     if not score.exists():
         errors.append(f"score file '{r['score_file']}' not found")
     else:
         try:
-            if count_notes(score) == 0:
-                errors.append("score has no notes")
-        except (ET.ParseError, ValueError) as e:
+            root = load_score(score)
+        except (ET.ParseError, ValueError, KeyError, zipfile.BadZipFile) as e:
             errors.append(f"score is not valid partwise MusicXML: {e}")
+        else:
+            if not any(n.find("pitch") is not None for n in root.iter("note")):
+                errors.append("score has no notes")
+            else:
+                errors += [f"score: {e}" for e in check_score(root, r.get("single_hand"))]
     return errors
+
+
+def review_notes(piece: Piece) -> list[str]:
+    """Things a reviewer should look at that do not fail the check (REVIEWING.md)."""
+    if not piece.record:
+        return []
+    _, notes = editions.check_provenance(piece.record)
+    return notes
 
 
 def index_entry(piece: Piece) -> dict:

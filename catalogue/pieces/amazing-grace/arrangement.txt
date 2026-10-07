@@ -1,0 +1,14 @@
+# Amazing Grace: the anonymous American hymn tune 'New Britain' (first printed 1829), in F.
+# Original simplified arrangement for OpenTiles, released under CC0 1.0.
+title: Amazing Grace
+composer: Traditional
+key: -1
+time: 3/4
+tempo: 80
+pickup: yes
+RH: C4q@1
+RH: | F4h A4e F4e | A4h G4q | F4h D4q | C4h C4q | F4h A4e F4e | A4h G4q | C5h A4q
+RH: | C5h A4e F4e | A4h G4q | F4h D4q | C4h C4q | F4h A4e F4e | A4h G4q | F4h.
+LH: rq
+LH: | F3h. | F3h C3q | Bb2h. | F3h. | F3h. | F3h C3q | C3h F3q
+LH: | F3h. | F3h C3q | Bb2h. | F3h. | F3h. | F3h C3q | F3h.
