@@ -8,10 +8,13 @@
       content="Free, open-source piano trainer. Practise public-domain pieces or your own files, with instant feedback."
     />
     <meta name="theme-color" content="#1f6f5c" />
+    <meta name="mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-title" content="OpenTiles" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
     <link rel="icon" href="./icon.svg" type="image/svg+xml" />
-    <link rel="apple-touch-icon" href="./icon.svg" />
+    <!-- iOS ignores SVG touch icons; a full-bleed 180 px PNG (scripts/generate-icons.mjs). -->
+    <link rel="apple-touch-icon" href="./apple-touch-icon.png" />
     <title>OpenTiles — free piano practice</title>
   </head>
   <body>

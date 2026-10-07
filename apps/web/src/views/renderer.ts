@@ -1,6 +1,6 @@
 // Canvas 2D drawing of falling notes and the keyboard, 60 fps, outside React (spec §6).
 import type { Song, SongNote } from '@opentiles/song-model';
-import { BLACK_HEIGHT, keyAt, layoutKeyboard } from './keyboard';
+import { BLACK_HEIGHT, keyAt, keyboardHeightFor, layoutKeyboard } from './keyboard';
 import type { KeyboardLayout } from './keyboard';
 import type { PracticeSession } from './session';
 
@@ -67,7 +67,7 @@ export class PracticeRenderer {
   }
 
   get keyboardHeight(): number {
-    return Math.min(170, Math.max(70, this.height * 0.3, this.layout.whiteWidth * 4.2));
+    return keyboardHeightFor(this.height, this.layout.whiteWidth);
   }
 
   get keyboardTop(): number {
