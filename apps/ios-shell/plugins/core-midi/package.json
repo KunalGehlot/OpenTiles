@@ -1,0 +1,25 @@
+{
+  "name": "@opentiles/capacitor-core-midi",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Capacitor plugin: MIDI keyboard input through CoreMIDI for the OpenTiles iPad app",
+  "license": "AGPL-3.0-or-later",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "capacitor": {
+    "ios": {
+      "src": "ios"
+    }
+  },
+  "scripts": {
+    "typecheck": "tsc -p tsconfig.json"
+  },
+  "dependencies": {
+    "@capacitor/core": "^8.5.3"
+  },
+  "devDependencies": {
+    "typescript": "~6.0.3"
+  }
+}

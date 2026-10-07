@@ -11,6 +11,8 @@ export default tseslint.config(
       'target/**',
       '**/node_modules/**',
       'apps/web/public/**',
+      // The Xcode project, including the copy of the built web app that `cap sync` puts there.
+      'apps/ios-shell/ios/**',
     ],
   },
   js.configs.recommended,
