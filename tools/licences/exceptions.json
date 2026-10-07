@@ -1,0 +1,4 @@
+{
+  "$comment": "Reviewed dependencies whose licence the scanner cannot accept on its own. Each entry matches an ecosystem (npm, cargo or asset), a package name and the exact licence string reported; 'version' is optional. 'reason' says why the licence is compatible with AGPL-3.0-or-later, and who reviewed it when. See CONTRIBUTING.md.",
+  "exceptions": []
+}

@@ -61,7 +61,10 @@ jobs:
       - run: pnpm format:check
       - run: pnpm lint
       - run: pnpm typecheck
+      # Builds both engine artefacts (baseline and SIMD); the app picks one at runtime.
       - run: pnpm build:engine
+      - run: test -s packages/engine/dist/engine.wasm && test -s packages/engine/dist/engine-simd.wasm
+      # Every workspace package's Vitest suite, plus the node:test suites under tools/.
       - run: pnpm test
       - run: pnpm build
 
@@ -82,12 +85,50 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - run: pnpm --filter @opentiles/web exec playwright install --with-deps chromium firefox webkit
       - run: pnpm build:engine
+      - run: test -s packages/engine/dist/engine.wasm && test -s packages/engine/dist/engine-simd.wasm
       - run: pnpm --filter @opentiles/web e2e
       - uses: actions/upload-artifact@v4
         if: failure()
         with:
           name: playwright-report
           path: apps/web/test-results
+
+  sync-api:
+    name: Sync API (Node 22)
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        # The lowest version package.json allows (node:sqlite without a flag) and the latest 22.x.
+        node: ['22.13', '22']
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm --filter @opentiles/sync-api typecheck
+      - run: pnpm --filter @opentiles/sync-api test
+      - run: pnpm --filter @opentiles/sync-api build
+
+  licences:
+    name: Licences
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+      # Only `cargo metadata` runs; nothing is compiled.
+      - uses: dtolnay/rust-toolchain@stable
+      - run: pnpm install --frozen-lockfile
+      - name: Scanner unit tests
+        run: pnpm test:tools
+      - name: Licences of npm packages, Rust crates and vendored assets
+        run: pnpm licences
 
   catalogue:
     name: Catalogue provenance

@@ -51,6 +51,54 @@ OpenTiles never distributes copyrighted music. Please:
 
 The full list, and why, is in [docs/legal-guardrails.md](docs/legal-guardrails.md).
 
+## Licences of dependencies and assets
+
+OpenTiles is AGPL-3.0-or-later, so everything it ships must be under a compatible licence. The
+**Licences** CI job runs `pnpm licences` (`tools/check-licences.mjs`), which checks:
+
+- the production npm dependencies of every workspace package (`pnpm licenses list --prod`);
+- every Rust crate in `Cargo.lock` (`cargo metadata`, nothing is built);
+- every file under `apps/web/public`, which must be declared in
+  [`tools/licences/assets.json`](tools/licences/assets.json) together with a licence file whose
+  text matches the declared licence.
+
+Allowed for code: MIT, MIT-0, ISC, BSD-2-Clause, BSD-3-Clause, 0BSD, Apache-2.0, Zlib, Unlicense,
+CC0-1.0, BlueOak-1.0.0, MPL-2.0, LGPL-2.1-or-later, LGPL-3.0, GPL-2.0-or-later, GPL-3.0,
+AGPL-3.0 and Python-2.0. Media assets may also be CC-BY-3.0 or CC-BY-4.0. SPDX expressions are
+understood: `A OR B` passes when either side is allowed, `A AND B` only when both are.
+
+If the job fails:
+
+1. **Read the report.** It names the package, its version, the licence string and why it failed:
+   _not on the allowlist_, _no licence declared_ or _not a valid SPDX expression_.
+2. **Prefer another dependency** when the licence is incompatible with the AGPL (GPL-2.0-only,
+   SSPL, BUSL, any non-commercial or share-alike Creative Commons licence, proprietary terms).
+   Do not add an exception for those.
+3. **When the licence is in fact compatible** but the scanner cannot tell (a missing or non-SPDX
+   `license` field, a `LicenseRef-…`, a permissive licence not on the list such as Unicode-3.0),
+   read the package's licence text yourself and add an entry to
+   [`tools/licences/exceptions.json`](tools/licences/exceptions.json):
+
+   ```json
+   {
+     "ecosystem": "cargo",
+     "name": "unicode-ident",
+     "licence": "(MIT OR Apache-2.0) AND Unicode-3.0",
+     "reason": "Unicode-3.0 is a permissive, GPL-compatible licence (reviewed 2026-10-07)."
+   }
+   ```
+
+   The `licence` must be the exact string in the report, so a later licence change is flagged
+   again; add `"version"` to limit the entry to one version. Name the exception in the PR
+   description so a maintainer reviews it. If you are unsure whether a licence is compatible, ask
+   in the PR instead of adding an exception.
+
+4. **For a new vendored asset** (sound, model, font, image), add an entry to `assets.json` with its
+   path, SPDX licence, the licence file shipped next to it and its source, and put a README with
+   the attribution in the folder.
+
+The scanner also warns about exceptions that no longer match anything; remove those.
+
 ## Catalogue contributions
 
 Each piece lives in `catalogue/pieces/<slug>/` with a `score.musicxml` (or `.mxl`) and a
