@@ -334,4 +334,17 @@ describe('importScore with ABC', () => {
     const untitled = strToU8('X:1\nL:1/4\nK:C\nCDEF|\n');
     expect(importScore('My Tune.abc', untitled).title).toBe('My Tune');
   });
+
+  it('reads Latin-1 files as well as UTF-8', () => {
+    const latin1 = new Uint8Array(
+      [...'X:1\nT:Caf']
+        .map((c) => c.charCodeAt(0))
+        .concat(
+          [0xe9],
+          [...'\nK:C\nC|\n'].map((c) => c.charCodeAt(0)),
+        ),
+    );
+    expect(importScore('old.abc', latin1).title).toBe('Café');
+    expect(importScore('new.abc', strToU8('X:1\nT:Café\nK:C\nC|\n')).title).toBe('Café');
+  });
 });

@@ -26,6 +26,21 @@ export interface ImportOptions extends MidiImportOptions {
   domParser?: DomParserLike;
 }
 
+/**
+ * Text of an ABC file. Older ABC files are often Latin-1 rather than UTF-8, so bytes that are not
+ * valid UTF-8 are read as Windows-1252 (a superset of Latin-1).
+ */
+function decodeAbc(bytes: Uint8Array): string {
+  if ((bytes[0] === 0xff && bytes[1] === 0xfe) || (bytes[0] === 0xfe && bytes[1] === 0xff)) {
+    return decodeXml(bytes);
+  }
+  try {
+    return new TextDecoder('utf-8', { fatal: true }).decode(bytes);
+  } catch {
+    return new TextDecoder('windows-1252').decode(bytes);
+  }
+}
+
 /** File name without folders and extension, for songs whose file has no title. */
 export function baseName(fileName: string): string {
   return fileName.replace(/^.*[\\/]/, '').replace(/\.[^.]+$/, '') || 'Untitled';
@@ -51,7 +66,7 @@ export function importScore(
   }
   const text = decodeXml(bytes);
   if (lower.endsWith('.abc') || looksLikeAbc(text)) {
-    return parseAbc(text, { fallbackTitle: baseName(fileName) });
+    return parseAbc(decodeAbc(bytes), { fallbackTitle: baseName(fileName) });
   }
   const song = parseMusicXml(text, xmlOptions);
   return song.title === 'Untitled' ? { ...song, title: baseName(fileName) } : song;
