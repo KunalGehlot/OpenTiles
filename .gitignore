@@ -9,6 +9,7 @@ build/
 coverage/
 *.tsbuildinfo
 target/
+/target-*/
 # The web app copies these in at build time; never commit them
 apps/web/public/engine/
 apps/web/public/catalogue/
