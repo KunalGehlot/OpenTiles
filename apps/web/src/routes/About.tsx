@@ -32,6 +32,21 @@ export function About() {
         GitHub page; pieces are removed within 48 hours while the claim is checked. The full
         Impressum and notice-and-takedown address will be published before the public launch.
       </p>
+      <h2>Piano sound</h2>
+      <p>
+        The piano you hear is adapted from the{' '}
+        <a href="https://archive.org/details/SalamanderGrandPianoV3" rel="noreferrer">
+          Salamander Grand Piano V3
+        </a>{' '}
+        by Alexander Holm, used under the{' '}
+        <a href="https://creativecommons.org/licenses/by/3.0/" rel="noreferrer">
+          Creative Commons Attribution 3.0
+        </a>{' '}
+        licence. For OpenTiles the recordings were shortened, mixed to mono, evened out in level and
+        converted to MP3: see <a href="samples/piano/README.md">where they come from</a> and the{' '}
+        <a href="samples/piano/LICENSE.txt">licence text</a>. Until the samples have loaded, or if
+        they cannot load, a simple built-in synthesiser plays instead.
+      </p>
       <h2>Open source</h2>
       <p>
         The app is licensed under the GNU AGPL-3.0; catalogue metadata under CC0. Source code, plans
