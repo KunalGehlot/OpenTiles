@@ -36,3 +36,18 @@ packages/engine/testdata/recordings/
 .env
 .env.*
 !.env.example
+
+# AI agent harness files stay local and are never committed
+CLAUDE.md
+CLAUDE.local.md
+AGENTS.md
+GEMINI.md
+.claude/
+.mcp.json
+.cursor/
+.cursorrules
+.windsurfrules
+.codex/
+.aider*
+.continue/
+.github/copilot-instructions.md
