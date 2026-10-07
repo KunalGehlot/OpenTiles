@@ -3,6 +3,7 @@ import type { Song, SongNote } from '@opentiles/song-model';
 import { BLACK_HEIGHT, keyAt, keyboardHeightFor, layoutKeyboard } from './keyboard';
 import type { KeyboardLayout } from './keyboard';
 import type { PracticeSession } from './session';
+import { labelScale } from '../settings/store';
 
 export interface Palette {
   background: string;
@@ -163,7 +164,7 @@ export class PracticeRenderer {
     }
     if (n.fingering && w > 12) {
       ctx.fillStyle = '#fff';
-      ctx.font = `600 ${Math.min(14, w * 0.6)}px system-ui, sans-serif`;
+      ctx.font = `600 ${Math.min(14 * labelScale(), w * 0.8)}px system-ui, sans-serif`;
       ctx.textAlign = 'center';
       ctx.fillText(String(n.fingering), x + w / 2, yTop + h - 4);
     }
@@ -205,7 +206,9 @@ export class PracticeRenderer {
       ctx.fillRect(k.x + k.width - 1, top, 1, height);
       if (k.pitch % 12 === 0) {
         ctx.fillStyle = p.missed;
-        ctx.font = `${Math.max(9, Math.min(12, k.width * 0.45))}px system-ui, sans-serif`;
+        // Large print (P2-15) makes the octave labels bigger, as far as the key allows.
+        const scale = labelScale();
+        ctx.font = `${scale > 1 ? 600 : 400} ${Math.max(9, Math.min(12 * scale, k.width * 0.45 * scale))}px system-ui, sans-serif`;
         ctx.textAlign = 'center';
         ctx.fillText(`C${Math.floor(k.pitch / 12) - 1}`, k.x + k.width / 2, top + height - 6);
       }

@@ -110,6 +110,12 @@ importers:
       '@opentiles/song-model':
         specifier: workspace:*
         version: link:../../packages/song-model
+      '@opentiles/sync-client':
+        specifier: workspace:*
+        version: link:../../packages/sync-client
+      '@opentiles/vault':
+        specifier: workspace:*
+        version: link:../../packages/vault
       dexie:
         specifier: ^4.4.0
         version: 4.4.6
@@ -126,6 +132,9 @@ importers:
         specifier: ^7.4.1
         version: 7.4.1
     devDependencies:
+      '@opentiles/sync-api':
+        specifier: workspace:*
+        version: link:../sync-api
       '@playwright/test':
         specifier: 1.63.0
         version: 1.63.0

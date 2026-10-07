@@ -167,6 +167,20 @@ docker build -f apps/sync-api/Dockerfile -t opentiles-sync .
 docker run --env-file apps/sync-api/.env -p 8787:8787 -v opentiles-sync:/data opentiles-sync
 ```
 
+### The web app side
+
+The web app turns sync on only when it is built with `VITE_SYNC_URL` (an `https://` URL, or
+`http://localhost` for development); without it, Settings shows no sync section and crash reports
+cannot be switched on. The UI lives in `apps/web/src/sync/`: `local.ts` maps the IndexedDB library
+to sync records (library items get random ids; progress, practice days and settings get ids from
+an HMAC under a key derived from the library key, so devices agree on them while the server learns
+nothing) and keeps its own state in a separate IndexedDB database, `opentiles-sync`.
+
+The app is served from static hosting with a hash router, so set
+`MAGIC_LINK_URL=https://<app origin>/#/sign-in/{token}`; the default
+`…/sync/sign-in#token={token}` only works where the host serves `index.html` for every path. The app
+also accepts a bare `#token=…` fragment at its root.
+
 ### Settings
 
 All settings are environment variables; `apps/sync-api/.env.example` lists every one.

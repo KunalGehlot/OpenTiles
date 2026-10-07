@@ -2,6 +2,13 @@ import { useLiveQuery } from 'dexie-react-hooks';
 import { useEffect, useRef, useState } from 'react';
 import { estimateDifficulty, noteName, SUPPORTED_EXTENSIONS } from '@opentiles/song-model';
 import type { Song } from '@opentiles/song-model';
+import {
+  AUDIO_EXTENSIONS,
+  audioProgressValue,
+  importAudioFile,
+  isAudioFile,
+} from '../lib/audio-import';
+import type { AudioImportStage } from '../lib/audio-import';
 import { applySettings, DEFAULT_SETTINGS, handCounts } from '../lib/import-settings';
 import { href } from '../lib/router';
 import { db, getSetting, setSetting } from '../storage/db';
@@ -14,7 +21,21 @@ interface Pending {
   base: Song;
   title: string;
   settings: ImportSettings;
+  /** Transcribed from a recording (P4-02): the notes are a best guess. */
+  approximate: boolean;
 }
+
+interface AudioProgress {
+  stage: AudioImportStage;
+  fraction: number;
+  controller: AbortController;
+}
+
+const AUDIO_STAGE_LABELS: Record<AudioImportStage, string> = {
+  loading: 'Loading the note detector…',
+  decoding: 'Reading the recording…',
+  transcribing: 'Listening for notes…',
+};
 
 export function Library() {
   const items = useLiveQuery(() => db.library.orderBy('addedAt').reverse().toArray(), []);
@@ -23,6 +44,7 @@ export function Library() {
   const [pending, setPending] = useState<Pending | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [homeScreenHint, setHomeScreenHint] = useState(false);
+  const [audio, setAudio] = useState<AudioProgress | null>(null);
   const fileInput = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -42,6 +64,28 @@ export function Library() {
     setError(null);
     try {
       const bytes = new Uint8Array(await file.arrayBuffer());
+      if (isAudioFile(file.name, file.type)) {
+        // Recordings are transcribed on this device; the model loads only now (P4-02).
+        const controller = new AbortController();
+        setAudio({ stage: 'loading', fraction: 0, controller });
+        try {
+          const base = await importAudioFile(file, {
+            signal: controller.signal,
+            onProgress: (stage, fraction) => setAudio({ stage, fraction, controller }),
+          });
+          setPending({
+            fileName: file.name,
+            bytes,
+            base,
+            title: base.title,
+            settings: { ...DEFAULT_SETTINGS },
+            approximate: true,
+          });
+        } finally {
+          setAudio(null);
+        }
+        return;
+      }
       // The importers (and the MuseScore reader inside them) load only when a file is imported.
       const { importAnyScore } = await import('@opentiles/importers');
       const base = await importAnyScore(file.name, bytes);
@@ -51,8 +95,10 @@ export function Library() {
         base,
         title: base.title,
         settings: { ...DEFAULT_SETTINGS },
+        approximate: false,
       });
     } catch (e) {
+      if (e instanceof DOMException && e.name === 'AbortError') return;
       setError(e instanceof Error ? e.message : String(e));
     } finally {
       if (fileInput.current) fileInput.current.value = '';
@@ -90,20 +136,43 @@ export function Library() {
       <p className="lead">
         Your own scores, stored only on this device. Import MusicXML (<code>.musicxml</code>,{' '}
         <code>.xml</code>, <code>.mxl</code>), MuseScore (<code>.mscz</code>, <code>.mscx</code>),
-        ABC (<code>.abc</code>) or MIDI (<code>.mid</code>).
+        ABC (<code>.abc</code>) or MIDI (<code>.mid</code>). You can also import a recording (
+        <code>.wav</code>, <code>.mp3</code>, <code>.m4a</code>, <code>.ogg</code>,{' '}
+        <code>.flac</code>); its notes are detected on this device and are only approximate.
       </p>
       <div className="row">
-        <button className="primary" onClick={chooseFile}>
+        <button className="primary" onClick={chooseFile} disabled={audio !== null}>
           Import a file…
         </button>
         <input
           ref={fileInput}
           type="file"
           hidden
-          accept={SUPPORTED_EXTENSIONS.join(',')}
+          accept={[...SUPPORTED_EXTENSIONS, ...AUDIO_EXTENSIONS].join(',')}
           onChange={(e) => void onFile(e.target.files?.[0])}
         />
       </div>
+      {audio && (
+        <div className="panel stack" aria-live="polite">
+          <h2>Importing a recording</h2>
+          <progress
+            max={1}
+            value={audioProgressValue(audio.stage, audio.fraction)}
+            aria-label="Recording import progress"
+          />
+          <span className="muted">
+            {AUDIO_STAGE_LABELS[audio.stage]}
+            {audio.stage === 'transcribing' && ` ${Math.round(audio.fraction * 100)} %`}
+          </span>
+          <p className="notice notice--warn">
+            Notes detected from a recording are approximate: some may be missing or wrong, and the
+            rhythm is a guess. You can check them on the next screen.
+          </p>
+          <div className="row">
+            <button onClick={() => audio.controller.abort()}>Cancel</button>
+          </div>
+        </div>
+      )}
       {error && <p className="error">{error}</p>}
       {homeScreenHint && (
         <div className="notice notice--warn">
@@ -217,6 +286,12 @@ function ImportReview({
   return (
     <div className="panel stack" aria-labelledby="review-title">
       <h2 id="review-title">Check the import</h2>
+      {pending.approximate && (
+        <p className="row">
+          <span className="badge badge--warn">Approximate</span>
+          <span className="muted">Transcribed from a recording on this device.</span>
+        </p>
+      )}
       <label>
         Title
         <input

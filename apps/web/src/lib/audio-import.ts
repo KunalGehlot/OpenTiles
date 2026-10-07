@@ -26,6 +26,13 @@ export function isAudioFile(name: string, type = ''): boolean {
 
 export type AudioImportStage = 'loading' | 'decoding' | 'transcribing';
 
+/** Overall progress (0–1) across the stages, for one progress bar; transcribing takes longest. */
+export function audioProgressValue(stage: AudioImportStage, fraction: number): number {
+  if (stage === 'loading') return 0.05;
+  if (stage === 'decoding') return 0.1;
+  return 0.1 + 0.9 * Math.min(1, Math.max(0, fraction));
+}
+
 export interface AudioImportOptions {
   /** Called with the current stage and, while transcribing, the fraction done (0–1). */
   onProgress?: (stage: AudioImportStage, fraction: number) => void;

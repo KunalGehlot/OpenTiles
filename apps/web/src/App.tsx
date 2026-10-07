@@ -3,14 +3,23 @@ import { DetectorLab } from './routes/DetectorLab';
 import { Home } from './routes/Home';
 import { Library } from './routes/Library';
 import { Practice } from './routes/Practice';
+import { Impressum, Privacy } from './legal/LegalPages';
+import { lazy, Suspense } from 'react';
 import { href, useRoute } from './lib/router';
 import type { Route } from './lib/router';
+
+// Settings pulls in the encryption code (Argon2id, zip, sync client); load it only when opened.
+const Settings = lazy(() => import('./routes/Settings'));
+const SignInLink = lazy(() =>
+  import('./sync/SyncSection').then((m) => ({ default: m.SignInLink })),
+);
 
 const NAV: { route: Route; label: string }[] = [
   { route: { name: 'home' }, label: 'Pieces' },
   { route: { name: 'library' }, label: 'My library' },
   { route: { name: 'lab' }, label: 'Detector Lab' },
   { route: { name: 'about' }, label: 'About' },
+  { route: { name: 'settings' }, label: 'Settings' },
 ];
 
 export function App() {
@@ -41,7 +50,25 @@ export function App() {
         {route.name === 'practice' && <Practice source={route.source} id={route.id} />}
         {route.name === 'lab' && <DetectorLab />}
         {route.name === 'about' && <About />}
+        {(route.name === 'settings' || route.name === 'sign-in') && (
+          <Suspense fallback={<p className="muted">Loading…</p>}>
+            {route.name === 'settings' ? <Settings /> : <SignInLink token={route.token} />}
+          </Suspense>
+        )}
+        {route.name === 'privacy' && <Privacy lang={route.lang} />}
+        {route.name === 'impressum' && <Impressum lang={route.lang} />}
       </main>
+      {!practising && (
+        <footer className="footer">
+          <nav aria-label="Legal">
+            <a href={href({ name: 'privacy', lang: 'en' })}>Privacy</a>
+            <a href={href({ name: 'impressum', lang: 'en' })}>Impressum</a>
+            <a href={href({ name: 'settings' })}>Settings</a>
+            <a href={href({ name: 'about' })}>About</a>
+          </nav>
+          <span className="muted">Free and open source · no tracking · no cookies</span>
+        </footer>
+      )}
     </div>
   );
 }
