@@ -11,7 +11,7 @@ publish = false
 crate-type = ["cdylib", "rlib"]
 
 [dependencies]
-# MIT OR Apache-2.0; pure Rust, no JS imports on wasm32.
+# realfft is MIT, its rustfft dependency MIT OR Apache-2.0; pure Rust, no JS imports on wasm32.
 realfft = "3.5"
 
 [features]
