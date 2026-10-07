@@ -4,6 +4,8 @@ import { defineConfig, devices } from '@playwright/test';
 // early; real iPads are still checked before each release.
 // PW_CHROMIUM_PATH lets sandboxes with a preinstalled Chromium skip the browser download.
 const chromiumPath = process.env.PW_CHROMIUM_PATH;
+// E2E_PORT lets several checkouts run the suite side by side.
+const port = Number(process.env.E2E_PORT ?? 4173);
 
 export default defineConfig({
   testDir: 'e2e',
@@ -11,12 +13,12 @@ export default defineConfig({
   retries: process.env.CI ? 1 : 0,
   reporter: process.env.CI ? 'github' : 'list',
   use: {
-    baseURL: 'http://127.0.0.1:4173/',
+    baseURL: `http://127.0.0.1:${port}/`,
     trace: 'retain-on-failure',
   },
   webServer: {
-    command: 'pnpm build && pnpm preview --port 4173 --strictPort --host 127.0.0.1',
-    url: 'http://127.0.0.1:4173/',
+    command: `pnpm build && pnpm preview --port ${port} --strictPort --host 127.0.0.1`,
+    url: `http://127.0.0.1:${port}/`,
     reuseExistingServer: !process.env.CI,
     timeout: 180_000,
     env: { VITE_SHOW_UNVERIFIED: '1' },
