@@ -584,3 +584,34 @@ table.facts td {
     min-height: 150px;
   }
 }
+
+/* Practice tools: metronome, loop section, calibration (P1-13, P2-08, P3-04, P1-19, P1-20). */
+.metronome-control {
+  gap: 0.35rem;
+  flex-wrap: nowrap;
+}
+
+.metronome-control input[type='range'] {
+  width: 5rem;
+}
+
+.section-bar .loop-status {
+  margin-left: auto;
+  font-variant-numeric: tabular-nums;
+}
+
+.overlay.calibration {
+  z-index: 2;
+}
+
+.click-dots {
+  display: flex;
+  gap: 0.4rem;
+  font-size: 1.2rem;
+  color: var(--line);
+  margin: 0;
+}
+
+.click-dots .on {
+  color: var(--accent);
+}

@@ -20,6 +20,10 @@ export interface Palette {
   black: string;
   nowLine: string;
   text: string;
+  /** Early or late: the right note at the wrong moment (P1-24). */
+  timing: string;
+  loopBand: string;
+  loopEdge: string;
 }
 
 export function readPalette(el: Element): Palette {
@@ -41,6 +45,9 @@ export function readPalette(el: Element): Palette {
     black: v('--key-black', '#222222'),
     nowLine: v('--now-line', 'rgba(0,0,0,0.35)'),
     text: v('--text', '#222'),
+    timing: v('--warn', '#b7791f'),
+    loopBand: v('--loop-band', 'rgba(31,111,92,0.10)'),
+    loopEdge: v('--accent', '#1f6f5c'),
   };
 }
 
@@ -52,6 +59,8 @@ export interface RenderOptions {
 
 export class PracticeRenderer {
   layout: KeyboardLayout;
+  /** Bars being selected by a drag, drawn as a dashed band until the pointer is released. */
+  preview: { fromBeat: number; toBeat: number } | null = null;
   private width = 0;
   private height = 0;
   private dpr = 1;
@@ -72,6 +81,13 @@ export class PracticeRenderer {
 
   get keyboardTop(): number {
     return this.height - this.keyboardHeight;
+  }
+
+  /** The beat drawn at canvas height `y` (CSS pixels) while `nowBeat` is at the now-line. */
+  beatAtY(y: number, nowBeat: number): number {
+    const top = this.keyboardTop;
+    const pxPerBeat = top / this.options.lookahead;
+    return nowBeat + (top - y) / pxPerBeat;
   }
 
   resize(width: number, height: number, dpr = window.devicePixelRatio || 1): void {
@@ -100,6 +116,11 @@ export class PracticeRenderer {
     const yOf = (b: number) => top - (b - beat) * pxPerBeat;
 
     this.drawGrid(ctx, session.song, yOf, top);
+    const loop = session.loopSpan;
+    if (loop) this.drawBand(ctx, yOf(loop.fromBeat), yOf(loop.toBeat), top, false);
+    if (this.preview) {
+      this.drawBand(ctx, yOf(this.preview.fromBeat), yOf(this.preview.toBeat), top, true);
+    }
     const current = new Set(
       session.mode === 'wait' ? (session.wait.current?.notes ?? []).map((n) => n.id) : [],
     );
@@ -113,6 +134,65 @@ export class PracticeRenderer {
     ctx.fillStyle = p.nowLine;
     ctx.fillRect(0, top - 2, this.width, 2);
     this.drawKeyboard(ctx, session, now, top);
+    this.drawLabels(ctx, session, now, top);
+  }
+
+  /** The looped bars: a tinted band with solid edges (dashed while still being dragged). */
+  private drawBand(
+    ctx: CanvasRenderingContext2D,
+    yStart: number,
+    yEnd: number,
+    top: number,
+    dashed: boolean,
+  ): void {
+    const y0 = Math.max(0, Math.min(yStart, yEnd));
+    const y1 = Math.min(top, Math.max(yStart, yEnd));
+    if (y1 <= 0 || y0 >= top) return;
+    const p = this.palette;
+    ctx.fillStyle = p.loopBand;
+    ctx.fillRect(0, y0, this.width, y1 - y0);
+    ctx.strokeStyle = p.loopEdge;
+    ctx.lineWidth = 2;
+    ctx.setLineDash(dashed ? [6, 4] : []);
+    ctx.beginPath();
+    for (const y of [yStart, yEnd]) {
+      if (y < 0 || y > top) continue;
+      ctx.moveTo(0, y);
+      ctx.lineTo(this.width, y);
+    }
+    ctx.stroke();
+    ctx.setLineDash([]);
+  }
+
+  /** "early" / "late" just above the key that was played off the beat (P1-24). */
+  private drawLabels(
+    ctx: CanvasRenderingContext2D,
+    session: PracticeSession,
+    now: number,
+    top: number,
+  ): void {
+    if (session.labels.length === 0) return;
+    const p = this.palette;
+    ctx.font = '600 12px system-ui, sans-serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    for (const l of session.labels) {
+      const key = keyAt(this.layout, l.pitch);
+      if (!key || l.until <= now) continue;
+      const text = l.kind === 'early' ? 'early' : 'late';
+      const w = ctx.measureText(text).width + 10;
+      const cx = Math.min(this.width - w / 2, Math.max(w / 2, key.x + key.width / 2));
+      // Early labels sit a little higher than late ones, so the direction reads at a glance.
+      const cy = top - (l.kind === 'early' ? 30 : 16);
+      ctx.globalAlpha = Math.min(1, (l.until - now) / 0.3);
+      ctx.fillStyle = p.timing;
+      roundRect(ctx, cx - w / 2, cy - 8, w, 16, 8);
+      ctx.fill();
+      ctx.fillStyle = '#fff';
+      ctx.fillText(text, cx, cy + 0.5);
+      ctx.globalAlpha = 1;
+    }
+    ctx.textBaseline = 'alphabetic';
   }
 
   private drawGrid(
@@ -152,7 +232,10 @@ export class PracticeRenderer {
     const h = Math.max(4, yBottom - yTop - 2);
     let fill = n.hand === 'right' ? p.right : p.left;
     if (!practised) fill = n.hand === 'right' ? p.rightSoft : p.leftSoft;
-    if (session.done.has(n.id)) fill = p.done;
+    const judgement = session.judged.get(n.id);
+    if (judgement === 'early' || judgement === 'late') fill = p.timing;
+    else if (judgement === 'missed') fill = p.missed;
+    else if (session.done.has(n.id)) fill = p.done;
     ctx.fillStyle = fill;
     roundRect(ctx, x, yTop + 1, w, h, Math.min(6, w / 3));
     ctx.fill();
@@ -187,7 +270,13 @@ export class PracticeRenderer {
       if (f.until > now)
         flashOf.set(
           f.pitch,
-          f.kind === 'correct' ? p.correct : f.kind === 'wrong' ? p.wrong : p.missed,
+          f.kind === 'correct'
+            ? p.correct
+            : f.kind === 'wrong'
+              ? p.wrong
+              : f.kind === 'missed'
+                ? p.missed
+                : p.timing,
         );
     }
     const colourFor = (pitch: number, base: string) => {

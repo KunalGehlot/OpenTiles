@@ -4,7 +4,8 @@ import engineUrl from '@opentiles/engine/engine.wasm?url';
 import engineSimdUrl from '@opentiles/engine/engine-simd.wasm?url';
 import workletUrl from '@opentiles/engine/worklet?worker&url';
 import { compileBestEngine, MicDetector, openMicrophone } from '@opentiles/engine';
-import type { DetectorEvent, DetectorMode, EngineBuild } from '@opentiles/engine';
+import type { DetectorEvent, DetectorMode, DetectorStats, EngineBuild } from '@opentiles/engine';
+import { rmsDb } from '@opentiles/practice';
 import type { InputAdapter, NoteEvent } from '@opentiles/practice';
 import { unlockAudio } from '../audio/context';
 
@@ -59,13 +60,17 @@ export class MicInput implements InputAdapter {
   private stream: MediaStream | null = null;
   private generation = -1;
   private pendingExpected: number[] | null = null;
+  private context: AudioContext | null = null;
+  private meter: { source: MediaStreamAudioSourceNode; analyser: AnalyserNode } | null = null;
+  private meterBuffer: Float32Array<ArrayBuffer> | null = null;
 
   constructor(private mode: DetectorMode = 'wait') {}
 
   async start(): Promise<void> {
-    const { detector, stream } = await createMicDetector(this.mode);
+    const { detector, stream, context } = await createMicDetector(this.mode);
     this.detector = detector;
     this.stream = stream;
+    this.context = context;
     detector.onEvents = (events) => {
       this.onDetector(events);
       for (const e of events) {
@@ -102,7 +107,50 @@ export class MicInput implements InputAdapter {
     return this.detector ? this.detector.calibrateNoise(ms) : Promise.resolve(Number.NaN);
   }
 
+  /** Corrects the detector for a piano tuned away from A = 440 Hz (cents). */
+  setTuning(cents: number): void {
+    this.detector?.setTuning(cents);
+  }
+
+  stats(): Promise<DetectorStats | null> {
+    return this.detector ? this.detector.stats() : Promise.resolve(null);
+  }
+
+  /**
+   * Names this microphone for per-device calibration: the browser's label, else its device id.
+   * Labels are only read locally and only stored on this device.
+   */
+  get deviceKey(): string {
+    const track = this.stream?.getAudioTracks()[0];
+    return track?.label || track?.getSettings().deviceId || 'default';
+  }
+
+  /** Output latency of the audio context (seconds), for the speaker-click test. */
+  get outputLatency(): number {
+    const ctx = this.context;
+    if (!ctx) return 0;
+    return (ctx.outputLatency || 0) + (ctx.baseLatency || 0);
+  }
+
+  /** Current input level (RMS dBFS) over the last ~20 ms, for the calibration level check. */
+  level(): number {
+    if (!this.meter) {
+      if (!this.context || !this.stream) return -Infinity;
+      const source = this.context.createMediaStreamSource(this.stream);
+      const analyser = this.context.createAnalyser();
+      analyser.fftSize = 1024;
+      source.connect(analyser);
+      this.meter = { source, analyser };
+      this.meterBuffer = new Float32Array(analyser.fftSize);
+    }
+    const buf = this.meterBuffer as Float32Array<ArrayBuffer>;
+    this.meter.analyser.getFloatTimeDomainData(buf);
+    return rmsDb(buf);
+  }
+
   stop(): void {
+    this.meter?.source.disconnect();
+    this.meter = null;
     this.detector?.dispose();
     for (const t of this.stream?.getTracks() ?? []) t.stop();
     this.detector = null;
