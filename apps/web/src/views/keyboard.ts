@@ -74,3 +74,12 @@ export function rangeFor(pitches: readonly number[], minSpan = 24): { low: numbe
 export function keyAt(layout: KeyboardLayout, pitch: number): KeyRect | undefined {
   return layout.keys.find((k) => k.pitch === pitch);
 }
+
+/**
+ * Height of the on-screen keyboard at the bottom of a practice canvas: tall enough to tap, but
+ * never more than 40 % of the canvas, so short landscape windows (phones, small Stage Manager
+ * windows) keep room for the falling notes (P1-27).
+ */
+export function keyboardHeightFor(canvasHeight: number, whiteWidth: number): number {
+  return Math.min(170, canvasHeight * 0.4, Math.max(70, canvasHeight * 0.3, whiteWidth * 4.2));
+}

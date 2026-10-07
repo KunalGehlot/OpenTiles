@@ -177,7 +177,9 @@ numbers come from a synthesiser, not a piano in a room; the G0 gate is judged on
 
 ## Safari and iPad rules
 
-These come from spec §5. Every item must hold before G1.
+These come from spec §5. Every item must hold before G1. A ticked item is done in code and, where
+a desktop browser can show it, covered by the Playwright suite; each one still gets checked on
+real devices in the device lab before a release.
 
 - [ ] Create or resume the `AudioContext` only from a user tap; show a "Tap to start" state until
       then.
@@ -203,6 +205,49 @@ Capacitor. `createMidiInput()` then returns `NativeMidiInput`, which maps CoreMI
 timestamps onto `performance.now()` with NTP-style round trips and from there onto the audio
 clock, like Web MIDI events. Build steps, App Store and privacy-manifest notes:
 [apps/ios-shell/README.md](../apps/ios-shell/README.md).
+- [~] Create or resume the `AudioContext` only from a user tap (`unlockAudio()` in
+  `apps/web/src/audio/context.ts`, P1-18). Left: a visible "Tap to start" state while audio is
+  still locked.
+- [x] Request the microphone with `echoCancellation: false`, `noiseSuppression: false`,
+      `autoGainControl: false` (`packages/engine/js/mic-detector.ts`).
+- [x] Feature-detect Web MIDI; never show a broken MIDI option on WebKit (`midiSupported()`; the
+      practice bar says MIDI is not available instead).
+- [x] Handle split view and rotation; keep practice usable at ⅓ iPad width (P1-27). Below 640 px
+      wide or 520 px high the practice bars turn compact (one-row top bar, smaller controls that
+      wrap, secondary hints hidden), the canvas takes the rest of the height, the on-screen
+      keyboard never takes more than 40 % of it, and the canvas keeps clear of the home indicator
+      and notch (`env(safe-area-inset-*)`). No page scrolls sideways at 320 px.
+      `apps/web/e2e/layout.spec.ts` checks every page at 320 × 768, practice at 320 × 768, and
+      resizing 1180 × 820 → 820 × 1180 → 375 × 820 → 820 × 375 with a key tap after each step.
+      Still needs a real iPad: Split View and Slide Over at ⅓ and ½ width, Stage Manager windows,
+      rotating mid-run, taps near the home indicator in a Home Screen app. The scrolling score
+      (P1-15) must pass the same ⅓-width check when it lands. At 320 px the on-screen keyboard's
+      white keys are 11–21 px wide, depending on the piece's range (two to four octaves): they
+      register taps, but MIDI or the microphone are the better inputs there.
+- [ ] Ship a WebAssembly SIMD build and a non-SIMD fallback (P0-12).
+- [ ] Sound playback uses a Web Audio sampler, never Web MIDI output. (Playback is Web Audio
+      today, with a synthesiser; the sampler is P1-17.)
+- [x] Request persistent storage on first import and prompt iPad users to Add to Home Screen
+      (Safari can delete script-written data after seven days without a visit). `persist()` runs
+      on first import; the Library shows the hint after an import and the Home page shows a
+      dismissible hint to iPad and iPhone users in a browser tab (dismissal kept in
+      `localStorage`).
+- [x] Work fully offline after the first visit and install as an app (P1-23). See below. Still
+      needs a real device: Add to Home Screen from Safari's Share menu, launch from the Home Screen
+      in flight mode, practise a catalogue piece and a library piece, and confirm the library is
+      still there after more than seven days without opening Safari.
+### Offline and installation
+`vite-plugin-pwa` (Workbox `generateSW`, configured in `apps/web/vite.config.ts`) builds the web
+app manifest and a service worker that precaches everything a practice session needs on the first
+visit: the app shell, the engine `.wasm` and its AudioWorklet, the catalogue index and scores, and
+the piano samples in `apps/web/public/samples/piano/`. The private library is in IndexedDB, not
+in the cache. The worker takes control of the first page at once (`clientsClaim`) so a tab that
+goes offline without reloading can still open catalogue pieces, but an update never activates by
+itself: `apps/web/src/pwa/` shows a small "Update available" bar with Reload and Dismiss, so a
+practice run is never interrupted. While the app is open it looks for a new version when it
+returns to the foreground, at most hourly, and only on its own origin. App icons are rendered from
+`public/icon.svg` by `pnpm --filter @opentiles/web icons`; iOS uses the full-bleed 180 px
+`apple-touch-icon.png`.
 
 ## Deviations from the spec's repository layout
 

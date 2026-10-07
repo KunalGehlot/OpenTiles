@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import { DIFFICULTY_LABELS, loadCatalogue } from '../catalogue/catalogue';
 import type { CataloguePiece } from '../catalogue/catalogue';
 import { href } from '../lib/router';
+import { HomeScreenHint } from '../pwa/HomeScreenHint';
 import { db, localDay, streak } from '../storage/db';
 
 export function Home() {
@@ -33,6 +34,7 @@ export function Home() {
         keyboard, an acoustic piano (microphone) or the on-screen keys. No account, no payment —
         your files never leave this device.
       </p>
+      <HomeScreenHint />
       {(currentStreak > 0 || today) && (
         <p className="muted">
           {currentStreak > 0 && <>🔥 {currentStreak}-day streak. </>}

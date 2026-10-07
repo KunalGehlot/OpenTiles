@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { parseNoteNames } from '../src/lib/notes';
 import { encodeWav } from '../src/lib/wav';
-import { hitTest, layoutKeyboard, rangeFor } from '../src/views/keyboard';
+import { hitTest, keyboardHeightFor, layoutKeyboard, rangeFor } from '../src/views/keyboard';
 
 // The router and storage modules touch `window`/IndexedDB at import time, so they are tested
 // through the end-to-end suite instead; these are the pure pieces.
@@ -58,5 +58,18 @@ describe('encodeWav', () => {
     expect(view.getUint32(40, true)).toBe(6);
     expect(view.getInt16(46, true)).toBe(16384);
     expect(view.getInt16(48, true)).toBe(32767);
+  });
+});
+
+describe('keyboard height', () => {
+  it('keeps the usual size on tall canvases', () => {
+    expect(keyboardHeightFor(650, 78)).toBe(170);
+    expect(keyboardHeightFor(490, 14.5)).toBeCloseTo(147);
+  });
+
+  it('never takes more than 40 % of a short canvas', () => {
+    // A phone in landscape: wide keys would ask for 170 px of a 240 px canvas.
+    expect(keyboardHeightFor(240, 37)).toBeCloseTo(96);
+    expect(keyboardHeightFor(150, 50)).toBeCloseTo(60);
   });
 });

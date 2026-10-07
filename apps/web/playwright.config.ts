@@ -15,6 +15,9 @@ export default defineConfig({
   use: {
     baseURL: `http://127.0.0.1:${port}/`,
     trace: 'retain-on-failure',
+    // The offline service worker would answer requests that tests mock with page.route();
+    // e2e/pwa.spec.ts turns it back on to test offline use and updates.
+    serviceWorkers: 'block',
   },
   webServer: {
     command: `pnpm build && pnpm preview --port ${port} --strictPort --host 127.0.0.1`,

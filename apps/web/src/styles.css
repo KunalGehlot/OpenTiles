@@ -58,6 +58,8 @@
 body {
   margin: 0;
   background: var(--bg);
+  /* Long words and URLs must not widen the page at ⅓ iPad width (P1-27). */
+  overflow-wrap: break-word;
 }
 
 a {
@@ -147,7 +149,7 @@ h2 {
 
 .grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(min(230px, 100%), 1fr));
   gap: 0.75rem;
 }
 
@@ -208,6 +210,8 @@ button,
   align-items: center;
   gap: 0.4rem;
   min-height: 40px;
+  /* No double-tap zoom on iPad: taps register at once. */
+  touch-action: manipulation;
 }
 
 button:disabled {
@@ -249,6 +253,14 @@ label {
   display: inline-flex;
   align-items: center;
   gap: 0.4rem;
+  flex-wrap: wrap;
+  max-width: 100%;
+}
+
+input,
+select,
+textarea {
+  max-width: 100%;
 }
 
 input[type='text'],
@@ -320,9 +332,13 @@ select {
   position: relative;
   flex: 1;
   min-height: 320px;
+  /* Keep the bottom keys clear of the home indicator and the sides clear of the notch when
+     running as a Home Screen app. */
+  margin: 0 env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
   touch-action: none;
   user-select: none;
   -webkit-user-select: none;
+  -webkit-touch-callout: none;
 }
 
 .practice-canvas-wrap canvas {
@@ -386,6 +402,7 @@ select {
   background: var(--line);
   overflow: hidden;
   width: 200px;
+  max-width: 100%;
 }
 
 .meter > div {
@@ -404,5 +421,166 @@ table.facts td {
 @media (max-width: 600px) {
   .topbar nav a {
     padding: 0.3rem 0.5rem;
+  }
+}
+
+/* Service-worker update bar (src/pwa/UpdateBar.tsx). Fixed at the top so it never covers the
+   keyboard during practice. */
+.update-bar {
+  position: fixed;
+  z-index: 20;
+  top: calc(env(safe-area-inset-top) + 0.5rem);
+  left: 50%;
+  transform: translateX(-50%);
+  max-width: calc(100vw - 1rem);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.3rem 0.3rem 0.3rem 0.9rem;
+  border-radius: 999px;
+  background: var(--text);
+  color: var(--bg);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+  font-size: 0.9rem;
+  white-space: nowrap;
+}
+
+.update-bar button {
+  min-height: 32px;
+  padding: 0.25rem 0.8rem;
+}
+
+.update-bar .update-bar__close {
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font-size: 1.2rem;
+  padding: 0.25rem 0.6rem;
+}
+
+/* Add to Home Screen hint (src/pwa/HomeScreenHint.tsx). */
+.home-screen-hint {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem 1rem;
+  max-width: 70ch;
+}
+
+.home-screen-hint p {
+  flex: 1 1 24ch;
+  margin: 0;
+  line-height: 1.45;
+}
+
+/*
+ * Practice at ⅓ iPad width (Split View, Slide Over), on phones and in short landscape windows
+ * (spec §5, PLAN.md P1-27): one compact top row, smaller controls that wrap, secondary hints
+ * hidden, and the canvas takes whatever height is left. The selectors avoid new markup so the
+ * practice controls can keep growing without touching this block.
+ */
+@media (max-width: 640px), (max-height: 520px) {
+  .app--practice .topbar {
+    flex-wrap: nowrap;
+    gap: 0.5rem;
+    padding-top: 0.3rem;
+    padding-bottom: 0.3rem;
+  }
+
+  /* Logo only; the name stays available to screen readers. */
+  .app--practice .brand span {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+
+  /* One row of links that scrolls sideways if it has to. */
+  .app--practice .topbar nav {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    min-width: 0;
+    scrollbar-width: none;
+  }
+
+  .app--practice .topbar nav::-webkit-scrollbar {
+    display: none;
+  }
+
+  .app--practice .topbar nav a {
+    white-space: nowrap;
+    padding: 0.25rem 0.55rem;
+    font-size: 0.875rem;
+  }
+
+  .practice-bar {
+    gap: 0.35rem 0.4rem;
+    padding: 0.35rem max(0.5rem, env(safe-area-inset-left));
+    font-size: 0.875rem;
+  }
+
+  .practice-bar button,
+  .practice-bar .button {
+    min-height: 34px;
+    padding: 0.25rem 0.65rem;
+  }
+
+  .practice-bar .segmented button {
+    padding: 0.25rem 0.55rem;
+  }
+
+  .practice-bar .title {
+    flex: 1 1 8rem;
+    min-width: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  /* The tempo slider takes the spare width of its row. */
+  .practice-bar label:has(> input[type='range']) {
+    flex: 1 1 10rem;
+    flex-wrap: nowrap;
+    white-space: nowrap;
+  }
+
+  .practice-bar input[type='range'] {
+    flex: 1 1 auto;
+    width: 5rem;
+    min-width: 4rem;
+  }
+
+  /* The input bar's "Play with:" caption and keyboard-keys hint go first. */
+  .practice-bar + .practice-bar > .muted:first-child,
+  .practice-bar + .practice-bar > .muted:first-child + .badge {
+    display: none;
+  }
+
+  .practice-bar .stats {
+    gap: 0.6rem;
+    margin-left: auto;
+  }
+
+  .practice-canvas-wrap {
+    min-height: 200px;
+  }
+}
+
+@media (max-width: 640px) {
+  .practice-bar .title {
+    flex-basis: 100%;
+  }
+
+  /* At ⅓ width the links overflow: fade the edge to show there is more. */
+  .app--practice .topbar nav {
+    mask-image: linear-gradient(to right, #000 calc(100% - 1.5rem), transparent);
+  }
+}
+
+@media (max-height: 520px) {
+  .practice-canvas-wrap {
+    min-height: 150px;
   }
 }
