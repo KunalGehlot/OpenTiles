@@ -11,5 +11,14 @@ publish = false
 crate-type = ["cdylib", "rlib"]
 
 [dependencies]
-# MIT OR Apache-2.0; pure Rust, no JS imports on wasm32.
+# realfft is MIT, its rustfft dependency MIT OR Apache-2.0; pure Rust, no JS imports on wasm32.
 realfft = "3.5"
+
+[features]
+# The WebAssembly SIMD build (P0-12). `scripts/build.mjs` enables it together with
+# RUSTFLAGS="-C target-feature=+simd128" to produce dist/engine-simd.wasm. It switches RustFFT to
+# its wasm SIMD kernels, which use only `core::arch::wasm32` intrinsics (no JS imports). Never
+# enable it for the baseline build: those kernels emit SIMD instructions whatever the global target
+# features are, so the module would stop loading on browsers without WebAssembly SIMD. On other
+# targets it changes nothing.
+simd = ["realfft/wasm_simd"]

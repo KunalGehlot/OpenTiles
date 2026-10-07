@@ -8,10 +8,12 @@
   "exports": {
     ".": "./js/index.ts",
     "./worklet": "./js/detector-worklet.ts",
-    "./engine.wasm": "./dist/engine.wasm"
+    "./engine.wasm": "./dist/engine.wasm",
+    "./engine-simd.wasm": "./dist/engine-simd.wasm"
   },
   "scripts": {
     "build": "node scripts/build.mjs",
+    "bench": "node scripts/bench-wasm.mjs",
     "test": "vitest run",
     "typecheck": "tsc -p tsconfig.json"
   },

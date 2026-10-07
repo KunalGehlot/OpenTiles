@@ -121,6 +121,28 @@ Design rules:
 - **No allocation on the audio path; no JS imports.** The wasm module exports a C ABI and is
   instantiated inside the AudioWorklet from a `WebAssembly.Module` compiled on the main thread
   (ADR 0002).
+- **Two builds, chosen at runtime (P0-12).** `pnpm build:engine` makes `dist/engine.wasm`
+  (baseline, no SIMD instructions) and `dist/engine-simd.wasm` (`--features simd`, which turns on
+  RustFFT's wasm SIMD kernels, plus `-C target-feature=+simd128`). The app validates a tiny SIMD
+  module (`wasmSimdSupported()`), downloads only the build that fits and falls back to the baseline
+  if the SIMD build fails to load (`compileBestEngine`). `scripts/check-wasm.mjs` decodes both
+  modules to prove the baseline has no SIMD instruction; a Vitest suite checks both builds make
+  identical decisions on the same audio. `ot_build_features()` reports which build is running.
+
+Speed per hop (`pnpm --filter @opentiles/engine bench`: a 20 s synthetic passage at 48 kHz, one
+5.3 ms hop per call, fastest of five runs per hop; Node 22 on an x86-64 server core, at the time of
+writing):
+
+| Build              | Mean    | Median  | p99      | Slowest hop | Download (brotli) |
+| ------------------ | ------- | ------- | -------- | ----------- | ----------------- |
+| `engine.wasm`      | 14.3 µs | 12.0 µs | 151.3 µs | 308 µs      | 82 KiB            |
+| `engine-simd.wasm` | 12.1 µs | 10.1 µs | 135.3 µs | 273 µs      | 139 KiB           |
+
+SIMD saves about 15 % per hop. A V8 CPU profile of the baseline puts only about a third of a
+hop in the FFT; most of the rest is per-sample and per-bin scalar work (ring buffer, window,
+magnitudes and the `log10`/`ln` calls in the same loops), which SIMD barely helps yet. Both builds
+are far inside the 2 ms budget on a desktop; the G0 check on an older iPad uses the Detector Lab
+speed benchmark, which runs whichever build the browser picked.
 
 Known weak spot: bass notes under heavy pedal (see the synthetic results below and P0-13).
 
@@ -158,7 +180,8 @@ These come from spec §5. Every item must hold before G1.
       `autoGainControl: false`.
 - [ ] Feature-detect Web MIDI; never show a broken MIDI option on WebKit.
 - [ ] Handle split view and rotation; keep practice usable at ⅓ iPad width.
-- [ ] Ship a WebAssembly SIMD build and a non-SIMD fallback (P0-12).
+- [x] Ship a WebAssembly SIMD build and a non-SIMD fallback (P0-12): `engine-simd.wasm` where
+      WebAssembly SIMD validates (Safari 16.4+), `engine.wasm` everywhere else.
 - [ ] Sound playback uses a Web Audio sampler, never Web MIDI output.
 - [ ] Request persistent storage on first import and prompt iPad users to Add to Home Screen
       (Safari can delete script-written data after seven days without a visit).

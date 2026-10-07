@@ -1,20 +1,38 @@
 // Microphone input through the Rust detector in an AudioWorklet. Loaded lazily (dynamic import)
 // so the app works even before the engine has been built.
 import engineUrl from '@opentiles/engine/engine.wasm?url';
+import engineSimdUrl from '@opentiles/engine/engine-simd.wasm?url';
 import workletUrl from '@opentiles/engine/worklet?worker&url';
-import { compileEngine, MicDetector, openMicrophone } from '@opentiles/engine';
-import type { DetectorEvent, DetectorMode } from '@opentiles/engine';
+import { compileBestEngine, MicDetector, openMicrophone } from '@opentiles/engine';
+import type { DetectorEvent, DetectorMode, EngineBuild } from '@opentiles/engine';
 import type { InputAdapter, NoteEvent } from '@opentiles/practice';
 import { unlockAudio } from '../audio/context';
 
 let modulePromise: Promise<WebAssembly.Module> | null = null;
+let loadedBuild: EngineBuild | null = null;
 
+/**
+ * Compiles the note detector once: the WebAssembly SIMD build where the browser supports it, the
+ * baseline build otherwise (P0-12). Only the chosen build is downloaded, plus the baseline if the
+ * SIMD build fails to load.
+ */
 export function loadEngine(): Promise<WebAssembly.Module> {
-  modulePromise ??= compileEngine(engineUrl).catch((e: unknown) => {
-    modulePromise = null;
-    throw e;
-  });
+  modulePromise ??= compileBestEngine({ baseline: engineUrl, simd: engineSimdUrl }).then(
+    ({ module, build }) => {
+      loadedBuild = build;
+      return module;
+    },
+    (e: unknown) => {
+      modulePromise = null;
+      throw e;
+    },
+  );
   return modulePromise;
+}
+
+/** Which engine build {@link loadEngine} loaded, or null before it has finished. */
+export function engineBuild(): EngineBuild | null {
+  return loadedBuild;
 }
 
 export async function createMicDetector(

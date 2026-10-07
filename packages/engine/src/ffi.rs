@@ -36,6 +36,20 @@ pub extern "C" fn ot_version() -> u32 {
     1
 }
 
+/// Bit in [`ot_build_features`] set when the module was compiled with WebAssembly SIMD.
+pub const FEATURE_SIMD128: u32 = 1;
+
+/// How this module was built, as a bit set ([`FEATURE_SIMD128`]). Lets hosts and the build check
+/// confirm which of the two web builds (baseline or SIMD, P0-12) they loaded.
+#[no_mangle]
+pub extern "C" fn ot_build_features() -> u32 {
+    if cfg!(target_feature = "simd128") {
+        FEATURE_SIMD128
+    } else {
+        0
+    }
+}
+
 #[no_mangle]
 pub extern "C" fn ot_input_capacity() -> u32 {
     INPUT_CAPACITY as u32
@@ -209,4 +223,18 @@ pub unsafe extern "C" fn ot_detector_end_noise_calibration(h: *mut Handle) -> f3
 #[no_mangle]
 pub unsafe extern "C" fn ot_detector_dropped_events(h: *mut Handle) -> u32 {
     h.as_ref().map(|h| h.detector.dropped_events()).unwrap_or(0)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn build_features_match_the_compile_target() {
+        let simd = ot_build_features() & FEATURE_SIMD128 != 0;
+        assert_eq!(simd, cfg!(target_feature = "simd128"));
+        // Native test builds never carry wasm SIMD; only scripts/build.mjs produces that module.
+        #[cfg(not(target_arch = "wasm32"))]
+        assert!(!simd);
+    }
 }
