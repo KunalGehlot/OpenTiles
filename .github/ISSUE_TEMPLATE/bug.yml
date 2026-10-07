@@ -1,0 +1,29 @@
+name: Bug report
+description: Something does not work as it should
+labels: [bug]
+body:
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened, and what did you expect?
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      description: Please use a public-domain piece from the catalogue if a score is involved. Do not attach copyrighted files.
+    validations:
+      required: true
+  - type: input
+    id: device
+    attributes:
+      label: Device, OS and browser
+      placeholder: iPad (9th gen), iPadOS 26.1, Safari — Home Screen app
+    validations:
+      required: true
+  - type: dropdown
+    id: input
+    attributes:
+      label: Input method
+      options: [Microphone, MIDI keyboard, On-screen keyboard, Not relevant]

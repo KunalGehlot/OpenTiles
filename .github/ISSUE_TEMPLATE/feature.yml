@@ -1,0 +1,22 @@
+name: Feature request
+description: Suggest an improvement
+labels: [enhancement]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: What problem would this solve for a learner?
+    validations:
+      required: true
+  - type: textarea
+    id: idea
+    attributes:
+      label: Your idea
+  - type: checkboxes
+    id: guardrails
+    attributes:
+      label: Guardrails
+      description: OpenTiles never shares library items between users, never imports from other websites, and never tracks users.
+      options:
+        - label: This idea fits those rules (docs/legal-guardrails.md)
+          required: true

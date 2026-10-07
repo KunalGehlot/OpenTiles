@@ -1,0 +1,7 @@
+pnpm-lock.yaml
+dist
+coverage
+target
+catalogue/pieces/**/*.musicxml
+docs/spec/
+LICENSE

@@ -1,0 +1,5 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Security or conduct report
+    url: https://github.com/KunalGehlot/OpenTiles/security/advisories/new
+    about: Please report security problems and conduct issues privately.

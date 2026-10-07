@@ -1,0 +1,29 @@
+name: Catalogue piece proposal
+description: Propose a public-domain piece for the catalogue
+labels: [catalogue]
+body:
+  - type: input
+    id: title
+    attributes:
+      label: Title
+    validations:
+      required: true
+  - type: input
+    id: composer
+    attributes:
+      label: Composer (and lyricist, if any) with death years
+      placeholder: Erik Satie (1866–1925)
+    validations:
+      required: true
+  - type: input
+    id: source
+    attributes:
+      label: Source of the transcription (URL) and its licence
+      description: Must be the transcriber's own work under CC0, public domain or CC BY — never a scan or copy of a publisher's edition.
+    validations:
+      required: true
+  - type: dropdown
+    id: difficulty
+    attributes:
+      label: Suggested difficulty
+      options: ['1', '2', '3', '4', '5']

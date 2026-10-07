@@ -1,0 +1,38 @@
+# Dependencies
+node_modules/
+.pnpm-store/
+
+# Build output
+dist/
+dist-ssr/
+build/
+coverage/
+*.tsbuildinfo
+target/
+# The web app copies these in at build time; never commit them
+apps/web/public/engine/
+apps/web/public/catalogue/
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+.pytest_cache/
+
+# Test artefacts
+playwright-report/
+test-results/
+# Real-recording test sets live outside git (see docs/phase-0/test-set.md)
+packages/engine/testdata/recordings/
+
+# Editors and OS
+.DS_Store
+.idea/
+.vscode/*
+!.vscode/extensions.json
+*.swp
+
+# Local env
+.env
+.env.*
+!.env.example
