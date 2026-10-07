@@ -1,0 +1,144 @@
+/* Score views (PLAN.md P1-15, P2-11). Colours come from the app's tokens in styles.css, so dark
+   mode and high contrast follow automatically. */
+
+.ot-score-panel {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  margin: 0 env(safe-area-inset-right) 0 env(safe-area-inset-left);
+  background: var(--surface);
+  border-bottom: 1px solid var(--line);
+  color: var(--text);
+}
+
+.ot-score-panel.scroll {
+  flex: 0 0 auto;
+}
+
+.ot-score-panel.page {
+  flex: 1 1 60%;
+}
+
+/* With a score on screen the falling notes shrink to a strip above the keyboard; the strip stays
+   tall enough for the after-run summary. */
+.ot-score-panel ~ .practice-canvas-wrap {
+  min-height: 230px;
+}
+
+.ot-score-panel.page ~ .practice-canvas-wrap {
+  flex: 0 0 clamp(230px, 32vh, 320px);
+}
+
+.ot-score-host {
+  position: relative;
+  overflow-x: auto;
+  overflow-y: hidden;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
+}
+
+.ot-score-panel.scroll .ot-score-host {
+  max-height: 45vh;
+  overflow-y: auto;
+}
+
+.ot-score-panel.page .ot-score-host {
+  flex: 1;
+  overflow: hidden;
+  min-height: 160px;
+}
+
+.ot-score-strip {
+  position: relative;
+  display: inline-block;
+  vertical-align: top;
+}
+
+/* The playing position stays 30 % in from the left; padding lets the first and last notes reach it. */
+.ot-score-panel.scroll .ot-score-strip {
+  padding: 0 70% 0 30%;
+}
+
+.ot-score-strip svg {
+  display: block;
+  color: var(--text);
+  fill: var(--text);
+}
+
+.ot-score-cursor {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 3px;
+  margin-left: -1.5px;
+  border-radius: 2px;
+  background: var(--accent);
+  opacity: 0.75;
+  pointer-events: none;
+  will-change: transform;
+}
+
+.ot-score-strip g.note.ot-expected {
+  fill: var(--hand-right);
+  color: var(--hand-right);
+}
+
+.ot-score-strip g.note.ot-expected.ot-lh {
+  fill: var(--hand-left);
+  color: var(--hand-left);
+}
+
+.ot-score-strip g.note.ot-correct {
+  fill: var(--ok);
+  color: var(--ok);
+}
+
+.ot-score-strip g.note.ot-wrong {
+  fill: var(--bad);
+  color: var(--bad);
+}
+
+.ot-score-strip g.note.ot-done {
+  fill: var(--muted);
+  color: var(--muted);
+}
+
+.ot-score-strip g.note.ot-other {
+  opacity: 0.55;
+}
+
+.ot-score-strip .ot-hardest {
+  fill: var(--bad);
+  fill-opacity: 0.14;
+  stroke: var(--bad);
+  stroke-opacity: 0.6;
+  stroke-width: 18;
+}
+
+.ot-score-strip .ot-fing {
+  font-weight: bold;
+}
+
+.ot-score-status {
+  padding: 0.75rem 1rem;
+}
+
+.ot-score-pager {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem;
+  padding: 0.3rem 0.5rem;
+  border-top: 1px solid var(--line);
+  font-variant-numeric: tabular-nums;
+}
+
+.ot-score-pager button {
+  min-height: 34px;
+  padding: 0.2rem 0.8rem;
+}
+
+.ot-view-note {
+  font-size: 0.85em;
+}

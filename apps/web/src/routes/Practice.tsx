@@ -24,13 +24,20 @@ import { LoopDrag } from '../views/loop-drag';
 import { PracticeRenderer } from '../views/renderer';
 import { PracticeSession } from '../views/session';
 import type { PracticeMode, SessionStatus } from '../views/session';
+import { formatOfPath, notationFor } from '../views/score/notation';
+import type { NotationSource } from '../views/score/notation';
+import { ScoreView } from '../views/score/ScoreView';
+import { usePracticeView, ViewToggle } from '../views/score/ViewToggle';
 
 interface Loaded {
   song: Song;
   title: string;
   subtitle?: string;
   progressKey: string;
+  notation: NotationSource;
 }
+
+const NO_BARS: readonly number[] = [];
 
 export function Practice({ source, id }: { source: 'catalogue' | 'library'; id: string }) {
   const [loaded, setLoaded] = useState<Loaded | null>(null);
@@ -42,17 +49,23 @@ export function Practice({ source, id }: { source: 'catalogue' | 'library'; id: 
     setError(null);
     const load = async (): Promise<Loaded> => {
       if (source === 'catalogue') {
-        const { piece, song } = await loadCatalogueSong(id);
+        const { piece, song, bytes } = await loadCatalogueSong(id);
         return {
           song,
           title: piece.title,
           subtitle: piece.composer,
           progressKey: `catalogue:${id}`,
+          notation: notationFor(formatOfPath(piece.score), bytes),
         };
       }
       const item = await db.library.get(Number(id));
       if (!item) throw new Error('This piece is not in your library on this device.');
-      return { song: item.song, title: item.title, progressKey: `library:${id}` };
+      return {
+        song: item.song,
+        title: item.title,
+        progressKey: `library:${id}`,
+        notation: notationFor(item.format, item.bytes, item.settings.transpose),
+      };
     };
     load()
       .then((l) => !cancelled && setLoaded(l))
@@ -74,7 +87,7 @@ export function Practice({ source, id }: { source: 'catalogue' | 'library'; id: 
   return <PracticeView key={loaded.progressKey} {...loaded} />;
 }
 
-function PracticeView({ song, title, subtitle, progressKey }: Loaded) {
+function PracticeView({ song, title, subtitle, progressKey, notation }: Loaded) {
   const [session] = useState(() => new PracticeSession(song, now));
   const [status, setStatus] = useState<SessionStatus>(() => session.status());
   const [mode, setMode] = useState<PracticeMode>('wait');
@@ -94,6 +107,7 @@ function PracticeView({ song, title, subtitle, progressKey }: Loaded) {
   const touch = useRef(new TouchInput());
   const pointers = useRef(new Map<number, number>());
   const [loopDrag] = useState(() => new LoopDrag(session, () => rendererRef.current));
+  const [view, setView] = usePracticeView(notation);
 
   // Wire the session to React and inputs.
   useEffect(() => {
@@ -452,9 +466,22 @@ function PracticeView({ song, title, subtitle, progressKey }: Loaded) {
           <span style={{ color: 'var(--bad)' }}>✗ {status.wrong}</span>
         </span>
         {inputError && <span className="error">{inputError}</span>}
+        <ViewToggle view={view} onChange={setView} notation={notation} />
       </div>
       {(showLoop || status.loop !== null) && (
         <SectionBar session={session} song={song} status={status} />
+      )}
+      {view !== 'falling' && notation.kind !== 'none' && (
+        <ScoreView
+          session={session}
+          notation={notation}
+          layout={view}
+          hardest={
+            status.finished && summary
+              ? summary.hardestMeasures.map((m) => m.measureIndex)
+              : NO_BARS
+          }
+        />
       )}
       <div
         ref={wrapRef}

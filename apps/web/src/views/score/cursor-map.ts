@@ -1,0 +1,100 @@
+// Beat → position on the rendered score, for the cursor (PLAN.md P1-15, P2-11). Pure.
+//
+// Anchors are built per playback measure: the barline on the left, each linked note's head, the
+// barline on the right. Between two anchors of the same measure the cursor moves linearly, so it
+// glides through a bar in time with the music and jumps back at a repeat.
+import type { Song } from '@opentiles/song-model';
+
+/** Where a source measure was drawn (pixels, relative to the rendered page). */
+export interface MeasureBox {
+  left: number;
+  right: number;
+  /** Top and height of the system (line of music) the measure is on. */
+  top: number;
+  height: number;
+  /** 1-based page number (always 1 in the scrolling view). */
+  page: number;
+}
+
+export interface Anchor {
+  beat: number;
+  x: number;
+  top: number;
+  height: number;
+  page: number;
+}
+
+export type CursorPosition = Omit<Anchor, 'beat'>;
+
+/**
+ * `measureBoxes` is indexed by source measure; `noteX` gives the centre of a note's head. Notes
+ * whose glyph is on another page than their measure box are ignored.
+ */
+export function buildAnchors(
+  song: Song,
+  measureBoxes: ReadonlyMap<number, MeasureBox>,
+  noteX: ReadonlyMap<string, number>,
+): Anchor[] {
+  const notesByMeasure = new Map<number, { beat: number; x: number }[]>();
+  for (const n of song.notes) {
+    const x = noteX.get(n.id);
+    if (x === undefined) continue;
+    const list = notesByMeasure.get(n.measureIndex) ?? [];
+    list.push({ beat: n.startBeat, x });
+    notesByMeasure.set(n.measureIndex, list);
+  }
+  const anchors: Anchor[] = [];
+  for (const m of song.measures) {
+    const box = measureBoxes.get(m.sourceIndex);
+    if (!box) continue;
+    const row = { top: box.top, height: box.height, page: box.page };
+    const end = m.startBeat + m.lengthBeats;
+    // Chord notes share a beat: one anchor at their mean x.
+    const byBeat = new Map<number, number[]>();
+    for (const p of notesByMeasure.get(m.index) ?? []) {
+      if (p.x < box.left - 1 || p.x > box.right + 1) continue;
+      const k = Math.round(p.beat * 960) / 960;
+      byBeat.set(k, [...(byBeat.get(k) ?? []), p.x]);
+    }
+    const notes = [...byBeat.entries()]
+      .map(([beat, xs]) => ({ beat, x: xs.reduce((a, b) => a + b, 0) / xs.length }))
+      .sort((a, b) => a.beat - b.beat);
+    // A note on the downbeat replaces the barline, so a cursor waiting there sits on the note.
+    if (!notes.some((p) => Math.abs(p.beat - m.startBeat) < 1e-6)) {
+      anchors.push({ beat: m.startBeat, x: box.left, ...row });
+    }
+    let lastX = box.left;
+    for (const p of notes) {
+      // Keep x monotonic inside a bar (grace notes or cross-voice spacing can jitter).
+      lastX = Math.max(lastX, p.x);
+      anchors.push({ beat: p.beat, x: lastX, ...row });
+    }
+    anchors.push({ beat: end, x: box.right, ...row });
+  }
+  return anchors;
+}
+
+/** Cursor position at `beat`; null when there are no anchors. */
+export function positionAt(anchors: readonly Anchor[], beat: number): CursorPosition | null {
+  if (anchors.length === 0) return null;
+  // Last anchor at or before `beat` (later anchors win at equal beats: the next bar's start).
+  let lo = 0;
+  let hi = anchors.length - 1;
+  const first = anchors[0];
+  if (!first || beat <= first.beat) return first ? strip(first) : null;
+  while (lo < hi) {
+    const mid = (lo + hi + 1) >> 1;
+    if ((anchors[mid]?.beat ?? Infinity) <= beat + 1e-9) lo = mid;
+    else hi = mid - 1;
+  }
+  const a = anchors[lo];
+  const b = anchors[lo + 1];
+  if (!a) return null;
+  if (!b || b.page !== a.page || b.top !== a.top || b.beat <= a.beat) return strip(a);
+  const f = (beat - a.beat) / (b.beat - a.beat);
+  return { ...strip(a), x: a.x + (b.x - a.x) * f };
+}
+
+function strip(a: Anchor): CursorPosition {
+  return { x: a.x, top: a.top, height: a.height, page: a.page };
+}

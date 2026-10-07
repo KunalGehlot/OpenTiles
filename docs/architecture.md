@@ -165,6 +165,17 @@ synthetic_accuracy -- --nocapture`), single notes and 2–3 note chords between 
 Median decision latency is about 40 ms after the true onset (66 ms for notes below C3). These
 numbers come from a synthesiser, not a piano in a room; the G0 gate is judged on real recordings.
 
+## Score views
+
+`apps/web/src/views/score/` draws the original MusicXML or ABC file with Verovio (LGPL-3.0,
+lazy-loaded WebAssembly, precached for offline use; ADR 0009) in two layouts: a scrolling score
+(one long system under a fixed cursor, P1-15) and a page view with page turns (P2-11). Each `Song`
+note is linked to its glyph by source measure, onset and pitch (`glyph-map.ts`), so both passes of
+a repeat share a glyph. `ScoreController` colours glyphs from `PracticeSession.marks` (expected,
+correct, wrong, passed), moves the cursor from per-bar anchors (`cursor-map.ts`), turns pages and
+marks the hardest bars after a run, all from `requestAnimationFrame`. MIDI, audio and MuseScore
+pieces have no notation to draw and keep the falling-notes view.
+
 ## Storage
 
 - **Private library:** IndexedDB via Dexie — original file bytes, the parsed `Song`, practice

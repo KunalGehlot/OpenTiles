@@ -107,6 +107,11 @@ export class PracticeSession {
   /** The looped bars, if any (P2-08). */
   loop: LoopRange | null = null;
   readonly loopTrainer = new LoopTrainer();
+  /**
+   * Per-note feedback for the score views: `wrong` when a wrong key was played while the note was
+   * expected (wait mode) or the note was missed (play-along); it stays red for the rest of the run.
+   */
+  readonly marks = new Map<string, 'correct' | 'wrong'>();
 
   private timeline: Timeline | null = null;
   private scorer: PlayAlongScorer | null = null;
@@ -211,6 +216,7 @@ export class PracticeSession {
     this.done.clear();
     this.judged.clear();
     this.labels = [];
+    this.marks.clear();
     this.flashes = [];
     this.summary = null;
     this.startedAt = 0;
@@ -330,17 +336,24 @@ export class PracticeSession {
       if (out.kind === 'correct') {
         this.keys.set(e.pitch, 'correct');
         this.flash(e.pitch, 'correct', t);
-        for (const n of before?.notes ?? []) if (n.pitch === e.pitch) this.done.add(n.id);
+        for (const n of before?.notes ?? []) {
+          if (n.pitch !== e.pitch) continue;
+          this.done.add(n.id);
+          if (!this.marks.has(n.id)) this.marks.set(n.id, 'correct');
+        }
         if (out.completed && before) this.accompanyStep(before, t);
       } else if (out.kind === 'wrong') {
         this.keys.set(e.pitch, 'wrong');
         this.flash(e.pitch, 'wrong', t);
+        for (const n of before?.notes ?? [])
+          if (!this.done.has(n.id)) this.marks.set(n.id, 'wrong');
       }
     } else if (this.mode === 'play-along' && this.scorer) {
       const out = this.scorer.handle(e);
       if (out.kind === 'judged') {
         const { judgement, note, offset } = out.result;
         this.judged.set(note.id, judgement);
+        this.marks.set(note.id, 'correct');
         this.done.add(note.id);
         if (judgement === 'early' || judgement === 'late') {
           // The right note at the wrong moment: a timing colour and a label, not the red of a
@@ -454,6 +467,7 @@ export class PracticeSession {
     this.labels = [];
     if (!span || !this.startedAt) this.startedAt = t + LEAD_IN;
     this.runStartedAt = t + LEAD_IN;
+    this.marks.clear();
     this.finishedAt = 0;
     const tl = this.timeline;
     const audible = this.song.notes.filter(
@@ -523,6 +537,7 @@ export class PracticeSession {
         for (const r of this.scorer.update(t)) {
           this.judged.set(r.note.id, 'missed');
           this.flash(r.note.pitch, 'missed', t);
+          this.marks.set(r.note.id, 'wrong');
         }
         if (this.mode === 'play-along') {
           this.onExpected(this.upcomingPitches(t));
