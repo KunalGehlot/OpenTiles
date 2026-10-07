@@ -8,7 +8,14 @@
 // Nothing leaves the device unencrypted: each record (kind, data, times, device id) is sealed
 // with the library key, bound to its record id and version so the server cannot swap or replay
 // blobs.
-import { decryptRecord, encryptRecord, randomBytes, toBase64Url } from '@opentiles/vault';
+import {
+  VaultError,
+  decryptRecord,
+  encryptRecord,
+  isVaultError,
+  randomBytes,
+  toBase64Url,
+} from '@opentiles/vault';
 import type { RemoteBlob, SyncApi } from './api';
 import { VersionConflictError } from './errors';
 import type { StoredRecord, SyncRecord, SyncStore } from './store';
@@ -49,6 +56,9 @@ function envelope(record: SyncRecord) {
 
 function parseEnvelope(value: unknown, id: string): SyncRecord {
   const e = value as Record<string, unknown> | null;
+  if (typeof e?.v === 'number' && e.v > ENVELOPE_VERSION) {
+    throw new VaultError('unsupported', 'This record was synced by a newer version of OpenTiles');
+  }
   if (
     typeof e !== 'object' ||
     e === null ||
@@ -59,7 +69,7 @@ function parseEnvelope(value: unknown, id: string): SyncRecord {
     typeof e.modifiedAt !== 'number' ||
     typeof e.deviceId !== 'string'
   ) {
-    throw new Error('A synced record has an unexpected shape');
+    throw new VaultError('corrupt', 'A synced record has an unexpected shape');
   }
   return {
     id,
@@ -90,6 +100,11 @@ export interface SyncResult {
   pushed: number;
   /** Concurrent changes resolved by last-writer-wins. */
   conflicts: number;
+  /**
+   * Records that could not be decrypted (damaged, or written by a newer app version). They are
+   * skipped so one bad record cannot block the rest; they are retried when they change again.
+   */
+  failed: string[];
 }
 
 interface Remote {
@@ -174,7 +189,7 @@ export class SyncEngine {
   sync(): Promise<SyncResult> {
     this.running ??= (async () => {
       try {
-        const result: SyncResult = { pulled: 0, pushed: 0, conflicts: 0 };
+        const result: SyncResult = { pulled: 0, pushed: 0, conflicts: 0, failed: [] };
         await this.pull(result);
         await this.push(result);
         return result;
@@ -203,10 +218,15 @@ export class SyncEngine {
         const known = await this.store.get(change.id);
         // Our own uploads, or something we already merged.
         if (known !== undefined && change.version <= known.version) continue;
-        const remote = change.deleted
-          ? { version: change.version, record: null }
-          : await this.fetchRemote(change.id);
-        if (remote !== null) await this.merge(remote, change.id, result);
+        try {
+          const remote = change.deleted
+            ? { version: change.version, record: null }
+            : await this.fetchRemote(change.id);
+          if (remote !== null) await this.merge(remote, change.id, result);
+        } catch (error) {
+          if (!isVaultError(error)) throw error;
+          result.failed.push(change.id);
+        }
       }
       cursor = page.cursor;
       await this.store.setCursor(cursor);
@@ -269,7 +289,15 @@ export class SyncEngine {
         if (done) return;
       } catch (error) {
         if (!(error instanceof VersionConflictError)) throw error;
-        const remote = await this.fetchRemote(id);
+        let remote: Remote | null;
+        try {
+          remote = await this.fetchRemote(id);
+        } catch (fetchError) {
+          if (!isVaultError(fetchError)) throw fetchError;
+          // The newer copy cannot be read, so last-writer-wins cannot be decided; keep ours.
+          result.failed.push(id);
+          return;
+        }
         if (remote === null) {
           // The conflict came from a record that has since vanished; rebase on what we were told.
           await this.exclusive(async () => {

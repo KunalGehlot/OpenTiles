@@ -1,4 +1,4 @@
-import { randomBytes, utf8Encode } from '@opentiles/vault';
+import { encryptRecord, randomBytes, utf8Encode } from '@opentiles/vault';
 import { describe, expect, it } from 'vitest';
 import type { SyncApi } from '../src/api';
 import { QuotaExceededError } from '../src/errors';
@@ -40,9 +40,9 @@ describe('two devices', () => {
     await a.engine.change(itemId, 'library', libraryItem);
     await a.engine.change('progress-library-1', 'progress', { bestAccuracy: 0.9, runs: 3 });
     await a.engine.change('setting-theme-0001', 'setting', { value: 'dark' });
-    expect(await a.engine.sync()).toEqual({ pulled: 0, pushed: 3, conflicts: 0 });
+    expect(await a.engine.sync()).toEqual({ pulled: 0, pushed: 3, conflicts: 0, failed: [] });
 
-    expect(await b.engine.sync()).toEqual({ pulled: 3, pushed: 0, conflicts: 0 });
+    expect(await b.engine.sync()).toEqual({ pulled: 3, pushed: 0, conflicts: 0, failed: [] });
     const got = b.store.records().find((r) => r.id === itemId)!;
     expect(got.kind).toBe('library');
     expect(got.data).toEqual(libraryItem);
@@ -50,8 +50,8 @@ describe('two devices', () => {
     expect(b.seen.map((r) => r.kind).sort()).toEqual(['library', 'progress', 'setting']);
 
     // Nothing new on either side now.
-    expect(await a.engine.sync()).toEqual({ pulled: 0, pushed: 0, conflicts: 0 });
-    expect(await b.engine.sync()).toEqual({ pulled: 0, pushed: 0, conflicts: 0 });
+    expect(await a.engine.sync()).toEqual({ pulled: 0, pushed: 0, conflicts: 0, failed: [] });
+    expect(await b.engine.sync()).toEqual({ pulled: 0, pushed: 0, conflicts: 0, failed: [] });
   });
 
   it('never sends titles, file names, contents, the passphrase or the key in the clear', async () => {
@@ -243,7 +243,27 @@ describe('a hostile or broken server', () => {
     const kx = keys.find((k) => k.includes(`/${x}/`))!;
     const ky = keys.find((k) => k.includes(`/${y}/`))!;
     await server.blobs.put(ky, (await server.blobs.get(kx))!);
-    await expect(b.engine.sync()).rejects.toMatchObject({ code: 'corrupt' });
+    // The swapped record is refused; the genuine one still syncs.
+    const result = await b.engine.sync();
+    expect(result.failed).toEqual([y]);
+    expect(b.store.records().map((r) => r.id)).toEqual([x]);
+    expect(b.store.records()[0]!.data).toEqual({ title: 'x' });
+  });
+
+  it('skips a record written by a newer app version and keeps syncing the rest', async () => {
+    const { a, b } = await twoDevices();
+    const id = 'record-from-future-01';
+    const sealed = await encryptRecord(
+      a.engine['key'],
+      { v: 2, id, kind: 'library', deleted: false, modifiedAt: 1, deviceId: 'x', data: {} },
+      `sync/${id}/1`,
+    );
+    await a.api.putBlob(id, sealed, 0);
+    await a.engine.change(newRecordId(), 'progress', { ok: true });
+    await a.engine.sync();
+    const result = await b.engine.sync();
+    expect(result.failed).toEqual([id]);
+    expect(b.store.records().map((r) => r.data)).toEqual([{ ok: true }]);
   });
 
   it('cannot read anything with a different library key', async () => {
@@ -258,7 +278,9 @@ describe('a hostile or broken server', () => {
       'decrypt',
     ]);
     const intruder = device(api, wrongKey, 'device-x');
-    await expect(intruder.engine.sync()).rejects.toMatchObject({ code: 'corrupt' });
+    const result = await intruder.engine.sync();
+    expect(result.failed).toHaveLength(1);
+    expect(intruder.store.records()).toEqual([]);
   });
 });
 
