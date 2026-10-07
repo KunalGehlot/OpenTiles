@@ -2,6 +2,8 @@
 // benchmarks. Live microphone input goes through MicDetector and the AudioWorklet instead.
 import { EVENT_KINDS, THRESHOLD_IDS } from './protocol';
 import type { DetectorEvent, DetectorMode, ThresholdName } from './protocol';
+import { selectEngineBuild, wasmSimdSupported } from './simd';
+import type { EngineBuild, EngineUrls } from './simd';
 
 interface Exports {
   memory: WebAssembly.Memory;
@@ -31,6 +33,25 @@ export async function compileEngine(url: string): Promise<WebAssembly.Module> {
   const res = await fetch(url);
   if (!res.ok) throw new Error(`Could not load the note detector (${res.status})`);
   return WebAssembly.compile(await res.arrayBuffer());
+}
+
+/**
+ * Compiles the engine build that suits this browser (P0-12): the SIMD build where WebAssembly SIMD
+ * is supported, the baseline otherwise. If the SIMD build cannot be loaded or compiled, falls back
+ * to the baseline, so a wrong feature guess costs one extra download rather than the detector.
+ */
+export async function compileBestEngine(
+  urls: EngineUrls,
+  simd = wasmSimdSupported(),
+): Promise<{ module: WebAssembly.Module; build: EngineBuild }> {
+  if (selectEngineBuild(urls, simd) === 'simd' && urls.simd) {
+    try {
+      return { module: await compileEngine(urls.simd), build: 'simd' };
+    } catch {
+      // Fall through to the baseline build.
+    }
+  }
+  return { module: await compileEngine(urls.baseline), build: 'baseline' };
 }
 
 /** A detector instance driven synchronously from JavaScript. Times are seconds of input. */

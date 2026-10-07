@@ -27,10 +27,21 @@ jobs:
       - run: cargo clippy --workspace --all-targets -- -D warnings
       - name: Unit tests and synthetic accuracy harness
         run: cargo test --workspace --release -- --nocapture
-      - name: Build wasm and check it has no imports
-        run: |
-          cargo build --profile wasm --target wasm32-unknown-unknown -p opentiles-engine --lib
-          node packages/engine/scripts/check-wasm.mjs target/wasm32-unknown-unknown/wasm/opentiles_engine.wasm
+      - name: Clippy on the SIMD build
+        env:
+          RUSTFLAGS: -C target-feature=+simd128
+        run: >-
+          cargo clippy --target wasm32-unknown-unknown --target-dir target/wasm-simd
+          -p opentiles-engine --lib --features simd -- -D warnings
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+      # Builds dist/engine.wasm (baseline) and dist/engine-simd.wasm, then check-wasm.mjs checks
+      # both: no imports, every export, silence stays silent, and SIMD only in the SIMD build.
+      - name: Build both wasm modules and check them
+        run: node packages/engine/scripts/build.mjs
+      - name: Benchmark both wasm modules
+        run: node packages/engine/scripts/bench-wasm.mjs --seconds 10 --runs 3
 
   web:
     name: TypeScript packages and web app
