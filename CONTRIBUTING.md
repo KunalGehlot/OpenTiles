@@ -15,7 +15,7 @@ a pull request, and the few rules that keep the project legally safe.
 
 ## Setup
 
-See the "Setup and commands" section of [AGENTS.md](AGENTS.md). In short: Node ≥ 22.12, pnpm 10,
+See "Setup and commands" in the [development guide](docs/development.md). In short: Node ≥ 22.12, pnpm 10,
 Rust stable with `wasm32-unknown-unknown`, Python ≥ 3.11.
 
 ## Pull requests

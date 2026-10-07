@@ -1,5 +1,5 @@
 // Tests for the metronome, loop, step-practice and calibration helpers. Songs are generated in
-// code (AGENTS.md: no third-party material in fixtures).
+// code (docs/development.md: no third-party material in fixtures).
 import type { Measure, Song, SongNote, TimeSignatureEvent } from '@opentiles/song-model';
 import { describe, expect, it } from 'vitest';
 import { clickTrain, latencyFromAnswers, median, micLevelVerdict, rmsDb } from '../src/calibration';

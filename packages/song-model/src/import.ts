@@ -1,5 +1,5 @@
 // One entry point for the formats this package reads: detects the format and returns a Song.
-// Runs entirely on the device; nothing is uploaded (hard rule 3 in AGENTS.md). MuseScore files
+// Runs entirely on the device; nothing is uploaded (hard rule 3 in docs/development.md). MuseScore files
 // are read by the lazy-loaded reader in @opentiles/importers (`importAnyScore`).
 import { looksLikeAbc, parseAbc } from './abc';
 import { ImportError } from './errors';

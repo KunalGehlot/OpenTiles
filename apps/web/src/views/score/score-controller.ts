@@ -1,6 +1,6 @@
 // Draws the score with Verovio and keeps it in step with the practice session: cursor, note
 // colours, page turns, hardest bars (PLAN.md P1-15, P1-24, P2-11, P2-12). Plain DOM work from
-// requestAnimationFrame; React only mounts the host elements (AGENTS.md: timing-critical drawing
+// requestAnimationFrame; React only mounts the host elements (docs/development.md: timing-critical drawing
 // bypasses React).
 import type { Song } from '@opentiles/song-model';
 import type { PracticeSession } from '../session';

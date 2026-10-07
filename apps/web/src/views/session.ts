@@ -1,5 +1,5 @@
 // The practice controller: song + mode + inputs → state the canvas draws each frame. Plain
-// TypeScript, so timing-critical work never waits for React (AGENTS.md).
+// TypeScript, so timing-critical work never waits for React (docs/development.md).
 import {
   accompanimentBetween,
   buildSteps,

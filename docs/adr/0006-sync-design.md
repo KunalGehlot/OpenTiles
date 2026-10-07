@@ -10,7 +10,7 @@ Spec §10 asks for a private library that works with no account, a one-tap encry
 optional sync where the operator stores only data it cannot read: Argon2id-wrapped library key,
 AES-GCM records with titles and file names encrypted, a printable recovery code, EU object
 storage, a 250 MB quota, one-step account deletion, and sign-in with passkeys or an email link.
-Crash reports, if any, must be opt-in and anonymous (AGENTS.md hard rule 5).
+Crash reports, if any, must be opt-in and anonymous (docs/development.md hard rule 5).
 
 Two open decisions in PLAN.md are settled by the maintainer: **sync ships in v1.0**, and sign-in
 offers **both passkeys and an email link**.

@@ -127,7 +127,7 @@ function PieceCard({ piece, best }: { piece: CataloguePiece; best: number | unde
 
 /**
  * Teacher links (P4-05): the stable public link to a catalogue piece, to give to a student. Only
- * catalogue pieces have one; library items are private and have no link (AGENTS.md hard rule 1).
+ * catalogue pieces have one; library items are private and have no link (docs/development.md hard rule 1).
  */
 export function CopyLink({ url, title }: { url: string; title: string }) {
   const [copied, setCopied] = useState<boolean | null>(null);

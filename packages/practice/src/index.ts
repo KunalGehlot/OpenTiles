@@ -37,3 +37,24 @@ export {
   rmsDb,
 } from './calibration';
 export type { LatencyOptions, LatencyResult, MicLevelVerdict } from './calibration';
+export { fingerHand, suggestFingering, withFingering } from './fingering';
+export type { Finger } from './fingering';
+export {
+  bestOctaveShift,
+  customKeyboard,
+  fitToKeyboard,
+  FULL_PIANO,
+  KEYBOARD_PRESETS,
+  keyCount,
+  notesOutside,
+  presetById,
+} from './keyboard-size';
+export type { KeyboardPreset, KeyboardRange } from './keyboard-size';
+export { asPlayed, HOLD_TOLERANCE, judgeHolds, PerformanceRecorder, polished } from './performance';
+export type {
+  HoldJudgement,
+  HoldResult,
+  PlayedNote,
+  RenderNote,
+  TimedNoteWithLength,
+} from './performance';

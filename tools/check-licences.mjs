@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 // Licence scanner (P2-16). Lists the licences of everything OpenTiles ships and checks them
-// against an allowlist compatible with AGPL-3.0-or-later (AGENTS.md hard rule 7):
+// against an allowlist compatible with AGPL-3.0-or-later (docs/development.md hard rule 7):
 //
 // - npm: the production dependency tree of every workspace package (`pnpm licenses list --prod`),
 //   which covers apps/web, apps/sync-api, apps/ios-shell and packages/*;

@@ -1,7 +1,7 @@
 // SPDX licence expressions: parsing and evaluation against the OpenTiles allowlist (P2-16).
 //
 // The code is AGPL-3.0-or-later, so every dependency that ships must be under a licence that can be
-// combined with it (AGENTS.md hard rule 7). Media assets (samples, models) may additionally be
+// combined with it (docs/development.md hard rule 7). Media assets (samples, models) may additionally be
 // under Creative Commons Attribution, which works for data files served next to the code but not
 // for code linked into it.
 //

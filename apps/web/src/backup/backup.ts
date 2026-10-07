@@ -1,6 +1,6 @@
 // One-tap encrypted backup and restore (P2-13, spec §10 "Backup file"). The file is built by
 // @opentiles/vault on this device; everything but a short README and the wrapped key is encrypted.
-// It is the user's own copy: OpenTiles never uploads it anywhere (AGENTS.md hard rule 1).
+// It is the user's own copy: OpenTiles never uploads it anywhere (docs/development.md hard rule 1).
 import {
   backupFileName,
   createVault,

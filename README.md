@@ -71,8 +71,8 @@ python3 tools/pipeline/validate_catalogue.py
 ## Contributing
 
 Contributions are welcome — code, catalogue reviews, recordings for the detector test set,
-translations. Start with [CONTRIBUTING.md](CONTRIBUTING.md). Coding agents: read
-[AGENTS.md](AGENTS.md). All participants follow the [Code of Conduct](CODE_OF_CONDUCT.md).
+translations. Start with [CONTRIBUTING.md](CONTRIBUTING.md) and the
+[development guide](docs/development.md). All participants follow the [Code of Conduct](CODE_OF_CONDUCT.md).
 
 ## Licences
 

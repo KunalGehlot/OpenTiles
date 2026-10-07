@@ -10,7 +10,7 @@
 //
 // Every encrypted entry is bound to this backup's id and its own path, and the encrypted index
 // lists every entry, so entries cannot be dropped, swapped or mixed in from another backup without
-// the import failing. The only export is the user's own encrypted file (AGENTS.md hard rule 1).
+// the import failing. The only export is the user's own encrypted file (docs/development.md hard rule 1).
 import { unzipSync, zipSync, type Zippable } from 'fflate';
 import { randomBytes, toBase64Url, utf8Decode, utf8Encode, type Bytes } from './bytes';
 import { VaultError } from './errors';

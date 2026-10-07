@@ -47,7 +47,7 @@ hardest bars after a run. Constraints:
    view, turns pages automatically when the cursor reaches another page, and turns them with the
    page buttons or the keys a Bluetooth page-turn pedal sends (PageDown/PageUp, arrows, Space in
    wait mode) while no timed run is playing. `ScoreController` does all DOM work from
-   `requestAnimationFrame`; React only mounts it (AGENTS.md).
+   `requestAnimationFrame`; React only mounts it (docs/development.md).
 6. **Feedback marks in the session.** `PracticeSession.marks` records per note `correct` or `wrong`
    (a wrong key while the note was expected, or a miss in play-along). The score colours from it.
 7. **Fingering.** Verovio draws MusicXML fingering itself. Its ABC reader ignores fingering, so
