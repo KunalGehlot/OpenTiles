@@ -107,10 +107,10 @@ Goal: Journeys A and B from spec §3 work end to end, offline, on iPad Safari an
 
 ### Practice engine (PRAC)
 
-- [ ] **P1-08** `NoteEvent` type and input abstraction shared by MIDI, touch and microphone.
-- [ ] **P1-09** Wait mode: cursor stops at each step until all expected notes are played; wrong
+- [x] **P1-08** `NoteEvent` type and input abstraction shared by MIDI, touch and microphone.
+- [x] **P1-09** Wait mode: cursor stops at each step until all expected notes are played; wrong
       notes reported.
-- [ ] **P1-10** Play-along scoring: hit / early / late / missed with ±75 ms / ±150 ms windows that
+- [x] **P1-10** Play-along scoring: hit / early / late / missed with ±75 ms / ±150 ms windows that
       widen at slower tempos and shift by the measured input latency.
 - [ ] **P1-11** Listen mode: app plays the piece with cursor and keyboard animated.
 - [ ] **P1-12** Hand separation: practise left, right or both; the app can play the other hand.

@@ -1,0 +1,22 @@
+{
+  "name": "@opentiles/practice",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Practice engine: note events, steps, wait mode and play-along scoring",
+  "license": "AGPL-3.0-or-later",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "test": "vitest run",
+    "typecheck": "tsc -p tsconfig.json"
+  },
+  "dependencies": {
+    "@opentiles/song-model": "workspace:*"
+  },
+  "devDependencies": {
+    "typescript": "~6.0.3",
+    "vitest": "^5.0.3"
+  }
+}
