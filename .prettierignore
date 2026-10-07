@@ -7,3 +7,5 @@ LICENSE
 catalogue/index.json
 catalogue/pieces/
 CODE_OF_CONDUCT.md
+catalogue/cache/
+tools/pipeline/tests/fixtures/

@@ -1,0 +1,3047 @@
+{
+ "wbsearchentities:Johannes Brahms": {
+  "search": [
+   {
+    "id": "Q7294",
+    "label": "Johannes Brahms",
+    "description": "German composer (1833–1897)"
+   },
+   {
+    "id": "Q132717835",
+    "label": "Johannes Brahms",
+    "description": "statue in Lübeck, Germany"
+   },
+   {
+    "id": "Q62615393",
+    "label": "Johannes Brahms",
+    "description": "German article in Die Gartenlaube, 1880, no. 14"
+   },
+   {
+    "id": "Q19214246",
+    "label": "Johannes Brahms",
+    "description": "German article in Die Gartenlaube, 1897, no. 18"
+   },
+   {
+    "id": "Q99244566",
+    "label": "Johannes-Brahms-Straße",
+    "description": "street in Dresden, Germany"
+   },
+   {
+    "id": "Q37881044",
+    "label": "Johannes Brahms Denkmal, Vienna",
+    "description": null
+   },
+   {
+    "id": "Q58015799",
+    "label": "Johannes Brahms Organ and Chambermusic Festival",
+    "description": null
+   },
+   {
+    "id": "Q15821426",
+    "label": "Johannes Brahms Medal",
+    "description": "German music award"
+   },
+   {
+    "id": "Q111012405",
+    "label": "Johannes-Brahms-Platz",
+    "description": "public square in Hamburg, Germany"
+   },
+   {
+    "id": "Q58401572",
+    "label": "Johannes-Brahms-Schule, campus Lindenstraße",
+    "description": "school campus in Pinneberg, Germany"
+   }
+  ]
+ },
+ "wbgetentities:Q7294|Q132717835|Q62615393|Q19214246|Q99244566|Q37881044|Q58015799|Q15821426|Q111012405|Q58401572": {
+  "entities": {
+   "Q7294": {
+    "type": "item",
+    "id": "Q7294",
+    "labels": {
+     "en": {
+      "language": "en",
+      "value": "Johannes Brahms"
+     }
+    },
+    "descriptions": {
+     "en": {
+      "language": "en",
+      "value": "German composer (1833–1897)"
+     }
+    },
+    "aliases": {
+     "en": [
+      {
+       "language": "en",
+       "value": "J. Brahms"
+      },
+      {
+       "language": "en",
+       "value": "Marks, G. W."
+      },
+      {
+       "language": "en",
+       "value": "Brahms"
+      }
+     ]
+    },
+    "claims": {
+     "P106": [
+      {
+       "mainsnak": {
+        "snaktype": "value",
+        "property": "P106",
+        "datavalue": {
+         "value": {
+          "entity-type": "item",
+          "numeric-id": 36834,
+          "id": "Q36834"
+         },
+         "type": "wikibase-entityid"
+        },
+        "datatype": "wikibase-item"
+       },
+       "rank": "normal",
+       "type": "statement"
+      },
+      {
+       "mainsnak": {
+        "snaktype": "value",
+        "property": "P106",
+        "datavalue": {
+         "value": {
+          "entity-type": "item",
+          "numeric-id": 158852,
+          "id": "Q158852"
+         },
+         "type": "wikibase-entityid"
+        },
+        "datatype": "wikibase-item"
+       },
+       "rank": "normal",
+       "type": "statement"
+      },
+      {
+       "mainsnak": {
+        "snaktype": "value",
+        "property": "P106",
+        "datavalue": {
+         "value": {
+          "entity-type": "item",
+          "numeric-id": 486748,
+          "id": "Q486748"
+         },
+         "type": "wikibase-entityid"
+        },
+        "datatype": "wikibase-item"
+       },
+       "rank": "normal",
+       "type": "statement"
+      }
+     ],
+     "P569": [
+      {
+       "mainsnak": {
+        "snaktype": "value",
+        "property": "P569",
+        "datavalue": {
+         "value": {
+          "time": "+1833-05-07T00:00:00Z",
+          "timezone": 0,
+          "before": 0,
+          "after": 0,
+          "precision": 11,
+          "calendarmodel": "http://www.wikidata.org/entity/Q1985727"
+         },
+         "type": "time"
+        },
+        "datatype": "time"
+       },
+       "rank": "normal",
+       "type": "statement"
+      },
+      {
+       "mainsnak": {
+        "snaktype": "value",
+        "property": "P569",
+        "datavalue": {
+         "value": {
+          "time": "+1834-05-07T00:00:00Z",
+          "timezone": 0,
+          "before": 0,
+          "after": 0,
+          "precision": 11,
+          "calendarmodel": "http://www.wikidata.org/entity/Q1985727"
+         },
+         "type": "time"
+        },
+        "datatype": "time"
+       },
+       "rank": "deprecated",
+       "type": "statement"
+      }
+     ],
+     "P570": [
+      {
+       "mainsnak": {
+        "snaktype": "value",
+        "property": "P570",
+        "datavalue": {
+         "value": {
+          "time": "+1897-04-03T00:00:00Z",
+          "timezone": 0,
+          "before": 0,
+          "after": 0,
+          "precision": 11,
+          "calendarmodel": "http://www.wikidata.org/entity/Q1985727"
+         },
+         "type": "time"
+        },
+        "datatype": "time"
+       },
+       "rank": "normal",
+       "type": "statement"
+      }
+     ],
+     "P31": [
+      {
+       "mainsnak": {
+        "snaktype": "value",
+        "property": "P31",
+        "datavalue": {
+         "value": {
+          "entity-type": "item",
+          "numeric-id": 5,
+          "id": "Q5"
+         },
+         "type": "wikibase-entityid"
+        },
+        "datatype": "wikibase-item"
+       },
+       "rank": "normal",
+       "type": "statement"
+      }
+     ]
+    }
+   },
+   "Q132717835": {
+    "type": "item",
+    "id": "Q132717835",
+    "labels": {
+     "en": {
+      "language": "en",
+      "value": "Johannes Brahms"
+     }
+    },
+    "descriptions": {
+     "en": {
+      "language": "en",
+      "value": "statue in Lübeck, Germany"
+     }
+    },
+    "aliases": {},
+    "claims": {
+     "P31": [
+      {
+       "mainsnak": {
+        "snaktype": "value",
+        "property": "P31",
+        "datavalue": {
+         "value": {
+          "entity-type": "item",
+          "numeric-id": 179700,
+          "id": "Q179700"
+         },
+         "type": "wikibase-entityid"
+        },
+        "datatype": "wikibase-item"
+       },
+       "rank": "normal",
+       "type": "statement"
+      }
+     ]
+    }
+   },
+   "Q62615393": {
+    "type": "item",
+    "id": "Q62615393",
+    "labels": {
+     "en": {
+      "language": "en",
+      "value": "Johannes Brahms"
+     }
+    },
+    "descriptions": {
+     "en": {
+      "language": "en",
+      "value": "German article in Die Gartenlaube, 1880, no. 14"
+     }
+    },
+    "aliases": {},
+    "claims": {
+     "P31": [
+      {
+       "mainsnak": {
+        "snaktype": "value",
+        "property": "P31",
+        "datavalue": {
+         "value": {
+          "entity-type": "item",
+          "numeric-id": 191067,
+          "id": "Q191067"
+         },
+         "type": "wikibase-entityid"
+        },
+        "datatype": "wikibase-item"
+       },
+       "rank": "normal",
+       "type": "statement"
+      }
+     ]
+    }
+   },
+   "Q19214246": {
+    "type": "item",
+    "id": "Q19214246",
+    "labels": {
+     "en": {
+      "language": "en",
+      "value": "Johannes Brahms"
+     }
+    },
+    "descriptions": {
+     "en": {
+      "language": "en",
+      "value": "German article in Die Gartenlaube, 1897, no. 18"
+     }
+    },
+    "aliases": {},
+    "claims": {
+     "P31": [
+      {
+       "mainsnak": {
+        "snaktype": "value",
+        "property": "P31",
+        "datavalue": {
+         "value": {
+          "entity-type": "item",
+          "numeric-id": 191067,
+          "id": "Q191067"
+         },
+         "type": "wikibase-entityid"
+        },
+        "datatype": "wikibase-item"
+       },
+       "rank": "normal",
+       "type": "statement"
+      }
+     ]
+    }
+   },
+   "Q99244566": {
+    "type": "item",
+    "id": "Q99244566",
+    "labels": {
+     "en": {
+      "language": "en",
+      "value": "Johannes-Brahms-Straße"
+     }
+    },
+    "descriptions": {
+     "en": {
+      "language": "en",
+      "value": "street in Dresden, Germany"
+     }
+    },
+    "aliases": {},
+    "claims": {
+     "P31": [
+      {
+       "mainsnak": {
+        "snaktype": "value",
+        "property": "P31",
+        "datavalue": {
+         "value": {
+          "entity-type": "item",
+          "numeric-id": 79007,
+          "id": "Q79007"
+         },
+         "type": "wikibase-entityid"
+        },
+        "datatype": "wikibase-item"
+       },
+       "rank": "normal",
+       "type": "statement"
+      }
+     ]
+    }
+   },
+   "Q37881044": {
+    "type": "item",
+    "id": "Q37881044",
+    "labels": {
+     "en": {
+      "language": "en",
+      "value": "Johannes Brahms Denkmal, Vienna"
+     }
+    },
+    "descriptions": {},
+    "aliases": {},
+    "claims": {
+     "P31": [
+      {
+       "mainsnak": {
+        "snaktype": "value",
+        "property": "P31",
+        "datavalue": {
+         "value": {
+          "entity-type": "item",
+          "numeric-id": 4989906,
+          "id": "Q4989906"
+         },
+         "type": "wikibase-entityid"
+        },
+        "datatype": "wikibase-item"
+       },
+       "rank": "normal",
+       "type": "statement"
+      }
+     ]
+    }
+   },
+   "Q58015799": {
+    "type": "item",
+    "id": "Q58015799",
+    "labels": {
+     "en": {
+      "language": "en",
+      "value": "Johannes Brahms Organ and Chambermusic Festival"
+     }
+    },
+    "descriptions": {},
+    "aliases": {},
+    "claims": {}
+   },
+   "Q15821426": {
+    "type": "item",
+    "id": "Q15821426",
+    "labels": {
+     "en": {
+      "language": "en",
+      "value": "Johannes Brahms Medal"
+     }
+    },
+    "descriptions": {
+     "en": {
+      "language": "en",
+      "value": "German music award"
+     }
+    },
+    "aliases": {},
+    "claims": {
+     "P31": [
+      {
+       "mainsnak": {
+        "snaktype": "value",
+        "property": "P31",
+        "datavalue": {
+         "value": {
+          "entity-type": "item",
+          "numeric-id": 618779,
+          "id": "Q618779"
+         },
+         "type": "wikibase-entityid"
+        },
+        "datatype": "wikibase-item"
+       },
+       "rank": "normal",
+       "type": "statement"
+      }
+     ]
+    }
+   },
+   "Q111012405": {
+    "type": "item",
+    "id": "Q111012405",
+    "labels": {
+     "en": {
+      "language": "en",
+      "value": "Johannes-Brahms-Platz"
+     }
+    },
+    "descriptions": {
+     "en": {
+      "language": "en",
+      "value": "public square in Hamburg, Germany"
+     }
+    },
+    "aliases": {},
+    "claims": {
+     "P31": [
+      {
+       "mainsnak": {
+        "snaktype": "value",
+        "property": "P31",
+        "datavalue": {
+         "value": {
+          "entity-type": "item",
+          "numeric-id": 174782,
+          "id": "Q174782"
+         },
+         "type": "wikibase-entityid"
+        },
+        "datatype": "wikibase-item"
+       },
+       "rank": "normal",
+       "type": "statement"
+      }
+     ]
+    }
+   },
+   "Q58401572": {
+    "type": "item",
+    "id": "Q58401572",
+    "labels": {
+     "en": {
+      "language": "en",
+      "value": "Johannes-Brahms-Schule, campus Lindenstraße"
+     }
+    },
+    "descriptions": {
+     "en": {
+      "language": "en",
+      "value": "school campus in Pinneberg, Germany"
+     }
+    },
+    "aliases": {},
+    "claims": {
+     "P31": [
+      {
+       "mainsnak": {
+        "snaktype": "value",
+        "property": "P31",
+        "datavalue": {
+         "value": {
+          "entity-type": "item",
+          "numeric-id": 1244442,
+          "id": "Q1244442"
+         },
+         "type": "wikibase-entityid"
+        },
+        "datatype": "wikibase-item"
+       },
+       "rank": "normal",
+       "type": "statement"
+      }
+     ]
+    }
+   }
+  },
+  "success": 1
+ },
+ "wbsearchentities:John Williams": {
+  "search": [
+   {
+    "id": "Q131285",
+    "label": "John Williams",
+    "description": "American composer and conductor (born 1932)"
+   },
+   {
+    "id": "Q921945",
+    "label": "John Williams",
+    "description": "English actor (1903–1983)"
+   },
+   {
+    "id": "Q370293",
+    "label": "John Williams",
+    "description": "Australian classical guitarist (born 1941)"
+   },
+   {
+    "id": "Q460926",
+    "label": "John Williams",
+    "description": "American lawyer, soldier, and U.S. Senator (1778-1837)"
+   },
+   {
+    "id": "Q2492966",
+    "label": "John Williams",
+    "description": "Welsh recipient of the Victoria Cross (1857–1932)"
+   },
+   {
+    "id": "Q16066202",
+    "label": "John Williams",
+    "description": "Welsh cleric, Archdeacon of Cardigan, rector of Edinburgh Academy and warden of Llandovery College (1792-1858)"
+   },
+   {
+    "id": "Q1411100",
+    "label": "John Williams",
+    "description": "American lawyer, politician, judge; member of Continental Congress; signer of Articles of Confederation (1731-1799)"
+   },
+   {
+    "id": "Q1702179",
+    "label": "John Williams",
+    "description": "American leader from Caswell County, North Carolina during the American Revolution (1740-1804)"
+   },
+   {
+    "id": "Q102157728",
+    "label": "John Williams",
+    "description": "(1680–1742)"
+   },
+   {
+    "id": "Q6264336",
+    "label": "John Williams",
+    "description": "bishop of Connecticut"
+   }
+  ]
+ },
+ "wbgetentities:Q131285|Q921945|Q370293|Q460926|Q2492966|Q16066202|Q1411100|Q1702179|Q102157728|Q6264336": {
+  "entities": {
+   "Q131285": {
+    "type": "item",
+    "id": "Q131285",
+    "labels": {
+     "en": {
+      "language": "en",
+      "value": "John Williams"
+     }
+    },
+    "descriptions": {
+     "en": {
+      "language": "en",
+      "value": "American composer and conductor (born 1932)"
+     }
+    },
+    "aliases": {},
+    "claims": {
+     "P106": [
+      {
+       "mainsnak": {
+        "snaktype": "value",
+        "property": "P106",
+        "datavalue": {
+         "value": {
+          "entity-type": "item",
+          "numeric-id": 158852,
+          "id": "Q158852"
+         },
+         "type": "wikibase-entityid"
+        },
+        "datatype": "wikibase-item"
+       },
+       "rank": "normal",
+       "type": "statement"
+      },
+      {
+       "mainsnak": {
+        "snaktype": "value",
+        "property": "P106",
+        "datavalue": {
+         "value": {
+          "entity-type": "item",
+          "numeric-id": 36834,
+          "id": "Q36834"
+         },
+         "type": "wikibase-entityid"
+        },
+        "datatype": "wikibase-item"
+       },
+       "rank": "normal",
+       "type": "statement"
+      },
+      {
+       "mainsnak": {
+        "snaktype": "value",
+        "property": "P106",
+        "datavalue": {
+         "value": {
+          "entity-type": "item",
+          "numeric-id": 1415090,
+          "id": "Q1415090"
+         },
+         "type": "wikibase-entityid"
+        },
+        "datatype": "wikibase-item"
+       },
+       "rank": "normal",
+       "type": "statement"
+      },
+      {
+       "mainsnak": {
+        "snaktype": "value",
+        "property": "P106",
+        "datavalue": {
+         "value": {
+          "entity-type": "item",
+          "numeric-id": 1643514,
+          "id": "Q1643514"
+         },
+         "type": "wikibase-entityid"
+        },
+        "datatype": "wikibase-item"
+       },
+       "rank": "normal",
+       "type": "statement"
+      },
+      {
+       "mainsnak": {
+        "snaktype": "value",
+        "property": "P106",
+        "datavalue": {
+         "value": {
+          "entity-type": "item",
+          "numeric-id": 486748,
+          "id": "Q486748"
+         },
+         "type": "wikibase-entityid"
+        },
+        "datatype": "wikibase-item"
+       },
+       "rank": "normal",
+       "type": "statement"
+      },
+      {
+       "mainsnak": {
+        "snaktype": "value",
+        "property": "P106",
+        "datavalue": {
+         "value": {
+          "entity-type": "item",
+          "numeric-id": 806349,
+          "id": "Q806349"
+         },
+         "type": "wikibase-entityid"
+        },
+        "datatype": "wikibase-item"
+       },
+       "rank": "normal",
+       "type": "statement"
+      }
+     ],
+     "P569": [
+      {
+       "mainsnak": {
+        "snaktype": "value",
+        "property": "P569",
+        "datavalue": {
+         "value": {
+          "time": "+1932-02-08T00:00:00Z",
+          "timezone": 0,
+          "before": 0,
+          "after": 0,
+          "precision": 11,
+          "calendarmodel": "http://www.wikidata.org/entity/Q1985727"
+         },
+         "type": "time"
+        },
+        "datatype": "time"
+       },
+       "rank": "normal",
+       "type": "statement"
+      }
+     ],
+     "P31": [
+      {
+       "mainsnak": {
+        "snaktype": "value",
+        "property": "P31",
+        "datavalue": {
+         "value": {
+          "entity-type": "item",
+          "numeric-id": 5,
+          "id": "Q5"
+         },
+         "type": "wikibase-entityid"
+        },
+        "datatype": "wikibase-item"
+       },
+       "rank": "normal",
+       "type": "statement"
+      }
+     ]
+    }
+   },
+   "Q921945": {
+    "type": "item",
+    "id": "Q921945",
+    "labels": {
+     "en": {
+      "language": "en",
+      "value": "John Williams"
+     }
+    },
+    "descriptions": {
+     "en": {
+      "language": "en",
+      "value": "English actor (1903–1983)"
+     }
+    },
+    "aliases": {},
+    "claims": {
+     "P106": [
+      {
+       "mainsnak": {
+        "snaktype": "value",
+        "property": "P106",
+        "datavalue": {
+         "value": {
+          "entity-type": "item",
+          "numeric-id": 28389,
+          "id": "Q28389"
+         },
+         "type": "wikibase-entityid"
+        },
+        "datatype": "wikibase-item"
+       },
+       "rank": "normal",
+       "type": "statement"
+      },
+      {
+       "mainsnak": {
+        "snaktype": "value",
+        "property": "P106",
+        "datavalue": {
+         "value": {
+          "entity-type": "item",
+          "numeric-id": 2259451,
+          "id": "Q2259451"
+         },
+         "type": "wikibase-entityid"
+        },
+        "datatype": "wikibase-item"
+       },
+       "rank": "normal",
+       "type": "statement"
+      },
+      {
+       "mainsnak": {
+        "snaktype": "value",
+        "property": "P106",
+        "datavalue": {
+         "value": {
+          "entity-type": "item",
+          "numeric-id": 36834,
+          "id": "Q36834"
+         },
+         "type": "wikibase-entityid"
+        },
+        "datatype": "wikibase-item"
+       },
+       "rank": "normal",
+       "type": "statement"
+      },
+      {
+       "mainsnak": {
+        "snaktype": "value",
+        "property": "P106",
+        "datavalue": {
+         "value": {
+          "entity-type": "item",
+          "numeric-id": 33999,
+          "id": "Q33999"
+         },
+         "type": "wikibase-entityid"
+        },
+        "datatype": "wikibase-item"
+       },
+       "rank": "normal",
+       "type": "statement"
+      },
+      {
+       "mainsnak": {
+        "snaktype": "value",
+        "property": "P106",
+        "datavalue": {
+         "value": {
+          "entity-type": "item",
+          "numeric-id": 10798782,
+          "id": "Q10798782"
+         },
+         "type": "wikibase-entityid"
+        },
+        "datatype": "wikibase-item"
+       },
+       "rank": "normal",
+       "type": "statement"
+      }
+     ],
+     "P569": [
+      {
+       "mainsnak": {
+        "snaktype": "value",
+        "property": "P569",
+        "datavalue": {
+         "value": {
+          "time": "+1903-04-15T00:00:00Z",
+          "timezone": 0,
+          "before": 0,
+          "after": 0,
+          "precision": 11,
+          "calendarmodel": "http://www.wikidata.org/entity/Q1985727"
+         },
+         "type": "time"
+        },
+        "datatype": "time"
+       },
+       "rank": "normal",
+       "type": "statement"
+      }
+     ],
+     "P570": [
+      {
+       "mainsnak": {
+        "snaktype": "value",
+        "property": "P570",
+        "datavalue": {
+         "value": {
+          "time": "+1983-05-05T00:00:00Z",
+          "timezone": 0,
+          "before": 0,
+          "after": 0,
+          "precision": 11,
+          "calendarmodel": "http://www.wikidata.org/entity/Q1985727"
+         },
+         "type": "time"
+        },
+        "datatype": "time"
+       },
+       "rank": "normal",
+       "type": "statement"
+      }
+     ],
+     "P31": [
+      {
+       "mainsnak": {
+        "snaktype": "value",
+        "property": "P31",
+        "datavalue": {
+         "value": {
+          "entity-type": "item",
+          "numeric-id": 5,
+          "id": "Q5"
+         },
+         "type": "wikibase-entityid"
+        },
+        "datatype": "wikibase-item"
+       },
+       "rank": "normal",
+       "type": "statement"
+      }
+     ]
+    }
+   },
+   "Q370293": {
+    "type": "item",
+    "id": "Q370293",
+    "labels": {
+     "en": {
+      "language": "en",
+      "value": "John Williams"
+     }
+    },
+    "descriptions": {
+     "en": {
+      "language": "en",
+      "value": "Australian classical guitarist (born 1941)"
+     }
+    },
+    "aliases": {},
+    "claims": {
+     "P106": [
+      {
+       "mainsnak": {
+        "snaktype": "value",
+        "property": "P106",
+        "datavalue": {
+         "value": {
+          "entity-type": "item",
+          "numeric-id": 16145150,
+          "id": "Q16145150"
+         },
+         "type": "wikibase-entityid"
+        },
+        "datatype": "wikibase-item"
+       },
+       "rank": "normal",
+       "type": "statement"
+      },
+      {
+       "mainsnak": {
+        "snaktype": "value",
+        "property": "P106",
+        "datavalue": {
+         "value": {
+          "entity-type": "item",
+          "numeric-id": 24067349,
+          "id": "Q24067349"
+         },
+         "type": "wikibase-entityid"
+        },
+        "datatype": "wikibase-item"
+       },
+       "rank": "normal",
+       "type": "statement"
+      },
+      {
+       "mainsnak": {
+        "snaktype": "value",
+        "property": "P106",
+        "datavalue": {
+         "value": {
+          "entity-type": "item",
+          "numeric-id": 713200,
+          "id": "Q713200"
+         },
+         "type": "wikibase-entityid"
+        },
+        "datatype": "wikibase-item"
+       },
+       "rank": "normal",
+       "type": "statement"
+      },
+      {
+       "mainsnak": {
+        "snaktype": "value",
+        "property": "P106",
+        "datavalue": {
+         "value": {
+          "entity-type": "item",
+          "numeric-id": 36834,
+          "id": "Q36834"
+         },
+         "type": "wikibase-entityid"
+        },
+        "datatype": "wikibase-item"
+       },
+       "rank": "normal",
+       "type": "statement"
+      },
+      {
+       "mainsnak": {
+        "snaktype": "value",
+        "property": "P106",
+        "datavalue": {
+         "value": {
+          "entity-type": "item",
+          "numeric-id": 855091,
+          "id": "Q855091"
+         },
+         "type": "wikibase-entityid"
+        },
+        "datatype": "wikibase-item"
+       },
+       "rank": "normal",
+       "type": "statement"
+      },
+      {
+       "mainsnak": {
+        "snaktype": "value",
+        "property": "P106",
+        "datavalue": {
+         "value": {
+          "entity-type": "item",
+          "numeric-id": 639669,
+          "id": "Q639669"
+         },
+         "type": "wikibase-entityid"
+        },
+        "datatype": "wikibase-item"
+       },
+       "rank": "normal",
+       "type": "statement"
+      },
+      {
+       "mainsnak": {
+        "snaktype": "value",
+        "property": "P106",
+        "datavalue": {
+         "value": {
+          "entity-type": "item",
+          "numeric-id": 158852,
+          "id": "Q158852"
+         },
+         "type": "wikibase-entityid"
+        },
+        "datatype": "wikibase-item"
+       },
+       "rank": "normal",
+       "type": "statement"
+      },
+      {
+       "mainsnak": {
+        "snaktype": "value",
+        "property": "P106",
+        "datavalue": {
+         "value": {
+          "entity-type": "item",
+          "numeric-id": 1643514,
+          "id": "Q1643514"
+         },
+         "type": "wikibase-entityid"
+        },
+        "datatype": "wikibase-item"
+       },
+       "rank": "normal",
+       "type": "statement"
+      }
+     ],
+     "P569": [
+      {
+       "mainsnak": {
+        "snaktype": "value",
+        "property": "P569",
+        "datavalue": {
+         "value": {
+          "time": "+1941-04-24T00:00:00Z",
+          "timezone": 0,
+          "before": 0,
+          "after": 0,
+          "precision": 11,
+          "calendarmodel": "http://www.wikidata.org/entity/Q1985727"
+         },
+         "type": "time"
+        },
+        "datatype": "time"
+       },
+       "rank": "normal",
+       "type": "statement"
+      }
+     ],
+     "P31": [
+      {
+       "mainsnak": {
+        "snaktype": "value",
+        "property": "P31",
+        "datavalue": {
+         "value": {
+          "entity-type": "item",
+          "numeric-id": 5,
+          "id": "Q5"
+         },
+         "type": "wikibase-entityid"
+        },
+        "datatype": "wikibase-item"
+       },
+       "rank": "normal",
+       "type": "statement"
+      }
+     ]
+    }
+   },
+   "Q460926": {
+    "type": "item",
+    "id": "Q460926",
+    "labels": {
+     "en": {
+      "language": "en",
+      "value": "John Williams"
+     }
+    },
+    "descriptions": {
+     "en": {
+      "language": "en",
+      "value": "American lawyer, soldier, and U.S. Senator (1778-1837)"
+     }
+    },
+    "aliases": {},
+    "claims": {
+     "P106": [
+      {
+       "mainsnak": {
+        "snaktype": "value",
+        "property": "P106",
+        "datavalue": {
+         "value": {
+          "entity-type": "item",
+          "numeric-id": 82955,
+          "id": "Q82955"
+         },
+         "type": "wikibase-entityid"
+        },
+        "datatype": "wikibase-item"
+       },
+       "rank": "normal",
+       "type": "statement"
+      },
+      {
+       "mainsnak": {
+        "snaktype": "value",
+        "property": "P106",
+        "datavalue": {
+         "value": {
+          "entity-type": "item",
+          "numeric-id": 193391,
+          "id": "Q193391"
+         },
+         "type": "wikibase-entityid"
+        },
+        "datatype": "wikibase-item"
+       },
+       "rank": "normal",
+       "type": "statement"
+      },
+      {
+       "mainsnak": {
+        "snaktype": "value",
+        "property": "P106",
+        "datavalue": {
+         "value": {
+          "entity-type": "item",
+          "numeric-id": 40348,
+          "id": "Q40348"
+         },
+         "type": "wikibase-entityid"
+        },
+        "datatype": "wikibase-item"
+       },
+       "rank": "normal",
+       "type": "statement"
+      }
+     ],
+     "P569": [
+      {
+       "mainsnak": {
+        "snaktype": "value",
+        "property": "P569",
+        "datavalue": {
+         "value": {
+          "time": "+1778-01-29T00:00:00Z",
+          "timezone": 0,
+          "before": 0,
+          "after": 0,
+          "precision": 11,
+          "calendarmodel": "http://www.wikidata.org/entity/Q1985727"
+         },
+         "type": "time"
+        },
+        "datatype": "time"
+       },
+       "rank": "normal",
+       "type": "statement"
+      }
+     ],
+     "P570": [
+      {
+       "mainsnak": {
+        "snaktype": "value",
+        "property": "P570",
+        "datavalue": {
+         "value": {
+          "time": "+1837-08-10T00:00:00Z",
+          "timezone": 0,
+          "before": 0,
+          "after": 0,
+          "precision": 11,
+          "calendarmodel": "http://www.wikidata.org/entity/Q1985727"
+         },
+         "type": "time"
+        },
+        "datatype": "time"
+       },
+       "rank": "normal",
+       "type": "statement"
+      }
+     ],
+     "P31": [
+      {
+       "mainsnak": {
+        "snaktype": "value",
+        "property": "P31",
+        "datavalue": {
+         "value": {
+          "entity-type": "item",
+          "numeric-id": 5,
+          "id": "Q5"
+         },
+         "type": "wikibase-entityid"
+        },
+        "datatype": "wikibase-item"
+       },
+       "rank": "normal",
+       "type": "statement"
+      }
+     ]
+    }
+   },
+   "Q2492966": {
+    "type": "item",
+    "id": "Q2492966",
+    "labels": {
+     "en": {
+      "language": "en",
+      "value": "John Williams"
+     }
+    },
+    "descriptions": {
+     "en": {
+      "language": "en",
+      "value": "Welsh recipient of the Victoria Cross (1857–1932)"
+     }
+    },
+    "aliases": {
+     "en": [
+      {
+       "language": "en",
+       "value": "John Fielding"
+      }
+     ]
+    },
+    "claims": {
+     "P570": [
+      {
+       "mainsnak": {
+        "snaktype": "value",
+        "property": "P570",
+        "datavalue": {
+         "value": {
+          "time": "+1932-11-25T00:00:00Z",
+          "timezone": 0,
+          "before": 0,
+          "after": 0,
+          "precision": 11,
+          "calendarmodel": "http://www.wikidata.org/entity/Q1985727"
+         },
+         "type": "time"
+        },
+        "datatype": "time"
+       },
+       "rank": "normal",
+       "type": "statement"
+      }
+     ],
+     "P569": [
+      {
+       "mainsnak": {
+        "snaktype": "value",
+        "property": "P569",
+        "datavalue": {
+         "value": {
+          "time": "+1857-05-24T00:00:00Z",
+          "timezone": 0,
+          "before": 0,
+          "after": 0,
+          "precision": 11,
+          "calendarmodel": "http://www.wikidata.org/entity/Q1985727"
+         },
+         "type": "time"
+        },
+        "datatype": "time"
+       },
+       "rank": "normal",
+       "type": "statement"
+      }
+     ],
+     "P31": [
+      {
+       "mainsnak": {
+        "snaktype": "value",
+        "property": "P31",
+        "datavalue": {
+         "value": {
+          "entity-type": "item",
+          "numeric-id": 5,
+          "id": "Q5"
+         },
+         "type": "wikibase-entityid"
+        },
+        "datatype": "wikibase-item"
+       },
+       "rank": "normal",
+       "type": "statement"
+      }
+     ],
+     "P106": [
+      {
+       "mainsnak": {
+        "snaktype": "value",
+        "property": "P106",
+        "datavalue": {
+         "value": {
+          "entity-type": "item",
+          "numeric-id": 4991371,
+          "id": "Q4991371"
+         },
+         "type": "wikibase-entityid"
+        },
+        "datatype": "wikibase-item"
+       },
+       "rank": "normal",
+       "type": "statement"
+      }
+     ]
+    }
+   },
+   "Q16066202": {
+    "type": "item",
+    "id": "Q16066202",
+    "labels": {
+     "en": {
+      "language": "en",
+      "value": "John Williams"
+     }
+    },
+    "descriptions": {
+     "en": {
+      "language": "en",
+      "value": "Welsh cleric, Archdeacon of Cardigan, rector of Edinburgh Academy and warden of Llandovery College (1792-1858)"
+     }
+    },
+    "aliases": {
+     "en": [
+      {
+       "language": "en",
+       "value": "Rev John Williams"
+      }
+     ]
+    },
+    "claims": {
+     "P31": [
+      {
+       "mainsnak": {
+        "snaktype": "value",
+        "property": "P31",
+        "datavalue": {
+         "value": {
+          "entity-type": "item",
+          "numeric-id": 5,
+          "id": "Q5"
+         },
+         "type": "wikibase-entityid"
+        },
+        "datatype": "wikibase-item"
+       },
+       "rank": "normal",
+       "type": "statement"
+      }
+     ],
+     "P569": [
+      {
+       "mainsnak": {
+        "snaktype": "value",
+        "property": "P569",
+        "datavalue": {
+         "value": {
+          "time": "+1792-04-11T00:00:00Z",
+          "timezone": 0,
+          "before": 0,
+          "after": 0,
+          "precision": 11,
+          "calendarmodel": "http://www.wikidata.org/entity/Q1985727"
+         },
+         "type": "time"
+        },
+        "datatype": "time"
+       },
+       "rank": "normal",
+       "type": "statement"
+      }
+     ],
+     "P106": [
+      {
+       "mainsnak": {
+        "snaktype": "value",
+        "property": "P106",
+        "datavalue": {
+         "value": {
+          "entity-type": "item",
+          "numeric-id": 3111753,
+          "id": "Q3111753"
+         },
+         "type": "wikibase-entityid"
+        },
+        "datatype": "wikibase-item"
+       },
+       "rank": "normal",
+       "type": "statement"
+      },
+      {
+       "mainsnak": {
+        "snaktype": "value",
+        "property": "P106",
+        "datavalue": {
+         "value": {
+          "entity-type": "item",
+          "numeric-id": 462390,
+          "id": "Q462390"
+         },
+         "type": "wikibase-entityid"
+        },
+        "datatype": "wikibase-item"
+       },
+       "rank": "normal",
+       "type": "statement"
+      }
+     ],
+     "P570": [
+      {
+       "mainsnak": {
+        "snaktype": "value",
+        "property": "P570",
+        "datavalue": {
+         "value": {
+          "time": "+1858-12-27T00:00:00Z",
+          "timezone": 0,
+          "before": 0,
+          "after": 0,
+          "precision": 11,
+          "calendarmodel": "http://www.wikidata.org/entity/Q1985727"
+         },
+         "type": "time"
+        },
+        "datatype": "time"
+       },
+       "rank": "normal",
+       "type": "statement"
+      }
+     ]
+    }
+   },
+   "Q1411100": {
+    "type": "item",
+    "id": "Q1411100",
+    "labels": {
+     "en": {
+      "language": "en",
+      "value": "John Williams"
+     }
+    },
+    "descriptions": {
+     "en": {
+      "language": "en",
+      "value": "American lawyer, politician, judge; member of Continental Congress; signer of Articles of Confederation (1731-1799)"
+     }
+    },
+    "aliases": {},
+    "claims": {
+     "P569": [
+      {
+       "mainsnak": {
+        "snaktype": "value",
+        "property": "P569",
+        "datavalue": {
+         "value": {
+          "time": "+1731-03-14T00:00:00Z",
+          "timezone": 0,
+          "before": 0,
+          "after": 0,
+          "precision": 11,
+          "calendarmodel": "http://www.wikidata.org/entity/Q1985727"
+         },
+         "type": "time"
+        },
+        "datatype": "time"
+       },
+       "rank": "normal",
+       "type": "statement"
+      }
+     ],
+     "P570": [
+      {
+       "mainsnak": {
+        "snaktype": "value",
+        "property": "P570",
+        "datavalue": {
+         "value": {
+          "time": "+1799-10-10T00:00:00Z",
+          "timezone": 0,
+          "before": 0,
+          "after": 0,
+          "precision": 11,
+          "calendarmodel": "http://www.wikidata.org/entity/Q1985727"
+         },
+         "type": "time"
+        },
+        "datatype": "time"
+       },
+       "rank": "normal",
+       "type": "statement"
+      }
+     ],
+     "P31": [
+      {
+       "mainsnak": {
+        "snaktype": "value",
+        "property": "P31",
+        "datavalue": {
+         "value": {
+          "entity-type": "item",
+          "numeric-id": 5,
+          "id": "Q5"
+         },
+         "type": "wikibase-entityid"
+        },
+        "datatype": "wikibase-item"
+       },
+       "rank": "normal",
+       "type": "statement"
+      }
+     ],
+     "P106": [
+      {
+       "mainsnak": {
+        "snaktype": "value",
+        "property": "P106",
+        "datavalue": {
+         "value": {
+          "entity-type": "item",
+          "numeric-id": 40348,
+          "id": "Q40348"
+         },
+         "type": "wikibase-entityid"
+        },
+        "datatype": "wikibase-item"
+       },
+       "rank": "normal",
+       "type": "statement"
+      },
+      {
+       "mainsnak": {
+        "snaktype": "value",
+        "property": "P106",
+        "datavalue": {
+         "value": {
+          "entity-type": "item",
+          "numeric-id": 82955,
+          "id": "Q82955"
+         },
+         "type": "wikibase-entityid"
+        },
+        "datatype": "wikibase-item"
+       },
+       "rank": "normal",
+       "type": "statement"
+      },
+      {
+       "mainsnak": {
+        "snaktype": "value",
+        "property": "P106",
+        "datavalue": {
+         "value": {
+          "entity-type": "item",
+          "numeric-id": 16533,
+          "id": "Q16533"
+         },
+         "type": "wikibase-entityid"
+        },
+        "datatype": "wikibase-item"
+       },
+       "rank": "normal",
+       "type": "statement"
+      }
+     ]
+    }
+   },
+   "Q1702179": {
+    "type": "item",
+    "id": "Q1702179",
+    "labels": {
+     "en": {
+      "language": "en",
+      "value": "John Williams"
+     }
+    },
+    "descriptions": {
+     "en": {
+      "language": "en",
+      "value": "American leader from Caswell County, North Carolina during the American Revolution (1740-1804)"
+     }
+    },
+    "aliases": {},
+    "claims": {
+     "P569": [
+      {
+       "mainsnak": {
+        "snaktype": "value",
+        "property": "P569",
+        "datavalue": {
+         "value": {
+          "time": "+1740-07-07T00:00:00Z",
+          "timezone": 0,
+          "before": 0,
+          "after": 0,
+          "precision": 11,
+          "calendarmodel": "http://www.wikidata.org/entity/Q1985727"
+         },
+         "type": "time"
+        },
+        "datatype": "time"
+       },
+       "rank": "normal",
+       "type": "statement"
+      }
+     ],
+     "P570": [
+      {
+       "mainsnak": {
+        "snaktype": "value",
+        "property": "P570",
+        "datavalue": {
+         "value": {
+          "time": "+1804-12-01T00:00:00Z",
+          "timezone": 0,
+          "before": 0,
+          "after": 0,
+          "precision": 11,
+          "calendarmodel": "http://www.wikidata.org/entity/Q1985727"
+         },
+         "type": "time"
+        },
+        "datatype": "time"
+       },
+       "rank": "normal",
+       "type": "statement"
+      }
+     ],
+     "P31": [
+      {
+       "mainsnak": {
+        "snaktype": "value",
+        "property": "P31",
+        "datavalue": {
+         "value": {
+          "entity-type": "item",
+          "numeric-id": 5,
+          "id": "Q5"
+         },
+         "type": "wikibase-entityid"
+        },
+        "datatype": "wikibase-item"
+       },
+       "rank": "normal",
+       "type": "statement"
+      }
+     ],
+     "P106": [
+      {
+       "mainsnak": {
+        "snaktype": "value",
+        "property": "P106",
+        "datavalue": {
+         "value": {
+          "entity-type": "item",
+          "numeric-id": 82955,
+          "id": "Q82955"
+         },
+         "type": "wikibase-entityid"
+        },
+        "datatype": "wikibase-item"
+       },
+       "rank": "normal",
+       "type": "statement"
+      }
+     ]
+    }
+   },
+   "Q102157728": {
+    "type": "item",
+    "id": "Q102157728",
+    "labels": {
+     "en": {
+      "language": "en",
+      "value": "John Williams"
+     }
+    },
+    "descriptions": {
+     "en": {
+      "language": "en",
+      "value": "(1680–1742)"
+     }
+    },
+    "aliases": {
+     "en": [
+      {
+       "language": "en",
+       "value": "Capt. John Williams"
+      }
+     ]
+    },
+    "claims": {
+     "P31": [
+      {
+       "mainsnak": {
+        "snaktype": "value",
+        "property": "P31",
+        "datavalue": {
+         "value": {
+          "entity-type": "item",
+          "numeric-id": 5,
+          "id": "Q5"
+         },
+         "type": "wikibase-entityid"
+        },
+        "datatype": "wikibase-item"
+       },
+       "rank": "normal",
+       "type": "statement"
+      }
+     ],
+     "P570": [
+      {
+       "mainsnak": {
+        "snaktype": "value",
+        "property": "P570",
+        "datavalue": {
+         "value": {
+          "time": "+1742-01-11T00:00:00Z",
+          "timezone": 0,
+          "before": 0,
+          "after": 0,
+          "precision": 11,
+          "calendarmodel": "http://www.wikidata.org/entity/Q1985727"
+         },
+         "type": "time"
+        },
+        "datatype": "time"
+       },
+       "rank": "normal",
+       "type": "statement"
+      }
+     ],
+     "P569": [
+      {
+       "mainsnak": {
+        "snaktype": "value",
+        "property": "P569",
+        "datavalue": {
+         "value": {
+          "time": "+1680-02-17T00:00:00Z",
+          "timezone": 0,
+          "before": 0,
+          "after": 0,
+          "precision": 11,
+          "calendarmodel": "http://www.wikidata.org/entity/Q1985727"
+         },
+         "type": "time"
+        },
+        "datatype": "time"
+       },
+       "rank": "normal",
+       "type": "statement"
+      }
+     ]
+    }
+   },
+   "Q6264336": {
+    "type": "item",
+    "id": "Q6264336",
+    "labels": {
+     "en": {
+      "language": "en",
+      "value": "John Williams"
+     }
+    },
+    "descriptions": {
+     "en": {
+      "language": "en",
+      "value": "bishop of Connecticut"
+     }
+    },
+    "aliases": {
+     "en": [
+      {
+       "language": "en",
+       "value": "J. Williams"
+      }
+     ]
+    },
+    "claims": {
+     "P31": [
+      {
+       "mainsnak": {
+        "snaktype": "value",
+        "property": "P31",
+        "datavalue": {
+         "value": {
+          "entity-type": "item",
+          "numeric-id": 5,
+          "id": "Q5"
+         },
+         "type": "wikibase-entityid"
+        },
+        "datatype": "wikibase-item"
+       },
+       "rank": "normal",
+       "type": "statement"
+      }
+     ],
+     "P106": [
+      {
+       "mainsnak": {
+        "snaktype": "value",
+        "property": "P106",
+        "datavalue": {
+         "value": {
+          "entity-type": "item",
+          "numeric-id": 3409375,
+          "id": "Q3409375"
+         },
+         "type": "wikibase-entityid"
+        },
+        "datatype": "wikibase-item"
+       },
+       "rank": "normal",
+       "type": "statement"
+      },
+      {
+       "mainsnak": {
+        "snaktype": "value",
+        "property": "P106",
+        "datavalue": {
+         "value": {
+          "entity-type": "item",
+          "numeric-id": 29182,
+          "id": "Q29182"
+         },
+         "type": "wikibase-entityid"
+        },
+        "datatype": "wikibase-item"
+       },
+       "rank": "normal",
+       "type": "statement"
+      }
+     ],
+     "P569": [
+      {
+       "mainsnak": {
+        "snaktype": "value",
+        "property": "P569",
+        "datavalue": {
+         "value": {
+          "time": "+1817-08-30T00:00:00Z",
+          "timezone": 0,
+          "before": 0,
+          "after": 0,
+          "precision": 11,
+          "calendarmodel": "http://www.wikidata.org/entity/Q1985727"
+         },
+         "type": "time"
+        },
+        "datatype": "time"
+       },
+       "rank": "preferred",
+       "type": "statement"
+      },
+      {
+       "mainsnak": {
+        "snaktype": "value",
+        "property": "P569",
+        "datavalue": {
+         "value": {
+          "time": "+1817-00-00T00:00:00Z",
+          "timezone": 0,
+          "before": 0,
+          "after": 0,
+          "precision": 9,
+          "calendarmodel": "http://www.wikidata.org/entity/Q1985727"
+         },
+         "type": "time"
+        },
+        "datatype": "time"
+       },
+       "rank": "normal",
+       "type": "statement"
+      }
+     ],
+     "P570": [
+      {
+       "mainsnak": {
+        "snaktype": "value",
+        "property": "P570",
+        "datavalue": {
+         "value": {
+          "time": "+1899-02-07T00:00:00Z",
+          "timezone": 0,
+          "before": 0,
+          "after": 0,
+          "precision": 11,
+          "calendarmodel": "http://www.wikidata.org/entity/Q1985727"
+         },
+         "type": "time"
+        },
+        "datatype": "time"
+       },
+       "rank": "normal",
+       "type": "statement"
+      }
+     ]
+    }
+   }
+  },
+  "success": 1
+ },
+ "wbsearchentities:Franz Xaver Gruber": {
+  "search": [
+   {
+    "id": "Q513185",
+    "label": "Franz Xaver Gruber",
+    "description": "Austrian composer (1787–1863)"
+   },
+   {
+    "id": "Q1449623",
+    "label": "Franz Xaver Gruber",
+    "description": "Austrian painter (1801-1862)"
+   },
+   {
+    "id": "Q1449624",
+    "label": "Franz Xaver Gruber",
+    "description": "Austrian politician"
+   },
+   {
+    "id": "Q66794231",
+    "label": "Franz Xaver Gruber",
+    "description": null
+   },
+   {
+    "id": "Q94792625",
+    "label": "Franz Xaver Gruber",
+    "description": null
+   },
+   {
+    "id": "Q1449619",
+    "label": "Franz Xaver Gruber",
+    "description": "Austrian writer (1826–1871)"
+   },
+   {
+    "id": "Q38133172",
+    "label": "Franz Xaver Gruber Gedächtnishaus",
+    "description": "building in Hochburg-Ach, Upper Austria"
+   },
+   {
+    "id": "Q98671573",
+    "label": "Franz Xaver Gruber Memorial",
+    "description": "cultural heritage monument D-3-62-000-460 (0) in Regensburg, Bavaria"
+   },
+   {
+    "id": "Q84601653",
+    "label": "Stille Nacht Museum Arnsdorf",
+    "description": "museum in Austria"
+   },
+   {
+    "id": "Q1449622",
+    "label": "Franz Xaver Gruber",
+    "description": "Wikimedia disambiguation page"
+   }
+  ]
+ },
+ "wbgetentities:Q513185|Q1449623|Q1449624|Q66794231|Q94792625|Q1449619|Q38133172|Q98671573|Q84601653|Q1449622": {
+  "entities": {
+   "Q513185": {
+    "type": "item",
+    "id": "Q513185",
+    "labels": {
+     "en": {
+      "language": "en",
+      "value": "Franz Xaver Gruber"
+     }
+    },
+    "descriptions": {
+     "en": {
+      "language": "en",
+      "value": "Austrian composer (1787–1863)"
+     }
+    },
+    "aliases": {
+     "en": [
+      {
+       "language": "en",
+       "value": "El Grube"
+      },
+      {
+       "language": "en",
+       "value": "Franz Gruber"
+      },
+      {
+       "language": "en",
+       "value": "Franz Xaver Huber"
+      }
+     ]
+    },
+    "claims": {
+     "P569": [
+      {
+       "mainsnak": {
+        "snaktype": "value",
+        "property": "P569",
+        "datavalue": {
+         "value": {
+          "time": "+1787-11-25T00:00:00Z",
+          "timezone": 0,
+          "before": 0,
+          "after": 0,
+          "precision": 11,
+          "calendarmodel": "http://www.wikidata.org/entity/Q1985727"
+         },
+         "type": "time"
+        },
+        "datatype": "time"
+       },
+       "rank": "preferred",
+       "type": "statement"
+      },
+      {
+       "mainsnak": {
+        "snaktype": "value",
+        "property": "P569",
+        "datavalue": {
+         "value": {
+          "time": "+1787-01-01T00:00:00Z",
+          "timezone": 0,
+          "before": 0,
+          "after": 0,
+          "precision": 9,
+          "calendarmodel": "http://www.wikidata.org/entity/Q1985727"
+         },
+         "type": "time"
+        },
+        "datatype": "time"
+       },
+       "rank": "normal",
+       "type": "statement"
+      }
+     ],
+     "P31": [
+      {
+       "mainsnak": {
+        "snaktype": "value",
+        "property": "P31",
+        "datavalue": {
+         "value": {
+          "entity-type": "item",
+          "numeric-id": 5,
+          "id": "Q5"
+         },
+         "type": "wikibase-entityid"
+        },
+        "datatype": "wikibase-item"
+       },
+       "rank": "normal",
+       "type": "statement"
+      }
+     ],
+     "P106": [
+      {
+       "mainsnak": {
+        "snaktype": "value",
+        "property": "P106",
+        "datavalue": {
+         "value": {
+          "entity-type": "item",
+          "numeric-id": 36834,
+          "id": "Q36834"
+         },
+         "type": "wikibase-entityid"
+        },
+        "datatype": "wikibase-item"
+       },
+       "rank": "normal",
+       "type": "statement"
+      },
+      {
+       "mainsnak": {
+        "snaktype": "value",
+        "property": "P106",
+        "datavalue": {
+         "value": {
+          "entity-type": "item",
+          "numeric-id": 49757,
+          "id": "Q49757"
+         },
+         "type": "wikibase-entityid"
+        },
+        "datatype": "wikibase-item"
+       },
+       "rank": "normal",
+       "type": "statement"
+      },
+      {
+       "mainsnak": {
+        "snaktype": "value",
+        "property": "P106",
+        "datavalue": {
+         "value": {
+          "entity-type": "item",
+          "numeric-id": 765778,
+          "id": "Q765778"
+         },
+         "type": "wikibase-entityid"
+        },
+        "datatype": "wikibase-item"
+       },
+       "rank": "normal",
+       "type": "statement"
+      },
+      {
+       "mainsnak": {
+        "snaktype": "value",
+        "property": "P106",
+        "datavalue": {
+         "value": {
+          "entity-type": "item",
+          "numeric-id": 37226,
+          "id": "Q37226"
+         },
+         "type": "wikibase-entityid"
+        },
+        "datatype": "wikibase-item"
+       },
+       "rank": "normal",
+       "type": "statement"
+      }
+     ],
+     "P570": [
+      {
+       "mainsnak": {
+        "snaktype": "value",
+        "property": "P570",
+        "datavalue": {
+         "value": {
+          "time": "+1863-06-07T00:00:00Z",
+          "timezone": 0,
+          "before": 0,
+          "after": 0,
+          "precision": 11,
+          "calendarmodel": "http://www.wikidata.org/entity/Q1985727"
+         },
+         "type": "time"
+        },
+        "datatype": "time"
+       },
+       "rank": "preferred",
+       "type": "statement"
+      },
+      {
+       "mainsnak": {
+        "snaktype": "value",
+        "property": "P570",
+        "datavalue": {
+         "value": {
+          "time": "+1863-01-01T00:00:00Z",
+          "timezone": 0,
+          "before": 0,
+          "after": 0,
+          "precision": 9,
+          "calendarmodel": "http://www.wikidata.org/entity/Q1985727"
+         },
+         "type": "time"
+        },
+        "datatype": "time"
+       },
+       "rank": "normal",
+       "type": "statement"
+      },
+      {
+       "mainsnak": {
+        "snaktype": "value",
+        "property": "P570",
+        "datavalue": {
+         "value": {
+          "time": "+1863-06-06T00:00:00Z",
+          "timezone": 0,
+          "before": 0,
+          "after": 0,
+          "precision": 11,
+          "calendarmodel": "http://www.wikidata.org/entity/Q1985727"
+         },
+         "type": "time"
+        },
+        "datatype": "time"
+       },
+       "rank": "deprecated",
+       "type": "statement"
+      }
+     ]
+    }
+   },
+   "Q1449623": {
+    "type": "item",
+    "id": "Q1449623",
+    "labels": {
+     "en": {
+      "language": "en",
+      "value": "Franz Xaver Gruber"
+     }
+    },
+    "descriptions": {
+     "en": {
+      "language": "en",
+      "value": "Austrian painter (1801-1862)"
+     }
+    },
+    "aliases": {
+     "en": [
+      {
+       "language": "en",
+       "value": "Franz X. Gruber"
+      },
+      {
+       "language": "en",
+       "value": "francis x. gruber"
+      },
+      {
+       "language": "en",
+       "value": "franz x. gruber"
+      },
+      {
+       "language": "en",
+       "value": "fr. gruber"
+      }
+     ]
+    },
+    "claims": {
+     "P31": [
+      {
+       "mainsnak": {
+        "snaktype": "value",
+        "property": "P31",
+        "datavalue": {
+         "value": {
+          "entity-type": "item",
+          "numeric-id": 5,
+          "id": "Q5"
+         },
+         "type": "wikibase-entityid"
+        },
+        "datatype": "wikibase-item"
+       },
+       "rank": "normal",
+       "type": "statement"
+      }
+     ],
+     "P569": [
+      {
+       "mainsnak": {
+        "snaktype": "value",
+        "property": "P569",
+        "datavalue": {
+         "value": {
+          "time": "+1801-09-29T00:00:00Z",
+          "timezone": 0,
+          "before": 0,
+          "after": 0,
+          "precision": 11,
+          "calendarmodel": "http://www.wikidata.org/entity/Q1985727"
+         },
+         "type": "time"
+        },
+        "datatype": "time"
+       },
+       "rank": "normal",
+       "type": "statement"
+      },
+      {
+       "mainsnak": {
+        "snaktype": "value",
+        "property": "P569",
+        "datavalue": {
+         "value": {
+          "time": "+1801-09-10T00:00:00Z",
+          "timezone": 0,
+          "before": 0,
+          "after": 0,
+          "precision": 11,
+          "calendarmodel": "http://www.wikidata.org/entity/Q1985727"
+         },
+         "type": "time"
+        },
+        "datatype": "time"
+       },
+       "rank": "normal",
+       "type": "statement"
+      }
+     ],
+     "P570": [
+      {
+       "mainsnak": {
+        "snaktype": "value",
+        "property": "P570",
+        "datavalue": {
+         "value": {
+          "time": "+1862-04-12T00:00:00Z",
+          "timezone": 0,
+          "before": 0,
+          "after": 0,
+          "precision": 11,
+          "calendarmodel": "http://www.wikidata.org/entity/Q1985727"
+         },
+         "type": "time"
+        },
+        "datatype": "time"
+       },
+       "rank": "normal",
+       "type": "statement"
+      }
+     ],
+     "P106": [
+      {
+       "mainsnak": {
+        "snaktype": "value",
+        "property": "P106",
+        "datavalue": {
+         "value": {
+          "entity-type": "item",
+          "numeric-id": 1028181,
+          "id": "Q1028181"
+         },
+         "type": "wikibase-entityid"
+        },
+        "datatype": "wikibase-item"
+       },
+       "rank": "normal",
+       "type": "statement"
+      }
+     ]
+    }
+   },
+   "Q1449624": {
+    "type": "item",
+    "id": "Q1449624",
+    "labels": {
+     "en": {
+      "language": "en",
+      "value": "Franz Xaver Gruber"
+     }
+    },
+    "descriptions": {
+     "en": {
+      "language": "en",
+      "value": "Austrian politician"
+     }
+    },
+    "aliases": {},
+    "claims": {
+     "P31": [
+      {
+       "mainsnak": {
+        "snaktype": "value",
+        "property": "P31",
+        "datavalue": {
+         "value": {
+          "entity-type": "item",
+          "numeric-id": 5,
+          "id": "Q5"
+         },
+         "type": "wikibase-entityid"
+        },
+        "datatype": "wikibase-item"
+       },
+       "rank": "normal",
+       "type": "statement"
+      }
+     ],
+     "P569": [
+      {
+       "mainsnak": {
+        "snaktype": "value",
+        "property": "P569",
+        "datavalue": {
+         "value": {
+          "time": "+1968-01-21T00:00:00Z",
+          "timezone": 0,
+          "before": 0,
+          "after": 0,
+          "precision": 11,
+          "calendarmodel": "http://www.wikidata.org/entity/Q1985727"
+         },
+         "type": "time"
+        },
+        "datatype": "time"
+       },
+       "rank": "normal",
+       "type": "statement"
+      }
+     ],
+     "P106": [
+      {
+       "mainsnak": {
+        "snaktype": "value",
+        "property": "P106",
+        "datavalue": {
+         "value": {
+          "entity-type": "item",
+          "numeric-id": 82955,
+          "id": "Q82955"
+         },
+         "type": "wikibase-entityid"
+        },
+        "datatype": "wikibase-item"
+       },
+       "rank": "normal",
+       "type": "statement"
+      }
+     ]
+    }
+   },
+   "Q66794231": {
+    "type": "item",
+    "id": "Q66794231",
+    "labels": {
+     "en": {
+      "language": "en",
+      "value": "Franz Xaver Gruber"
+     }
+    },
+    "descriptions": {},
+    "aliases": {},
+    "claims": {
+     "P31": [
+      {
+       "mainsnak": {
+        "snaktype": "value",
+        "property": "P31",
+        "datavalue": {
+         "value": {
+          "entity-type": "item",
+          "numeric-id": 5,
+          "id": "Q5"
+         },
+         "type": "wikibase-entityid"
+        },
+        "datatype": "wikibase-item"
+       },
+       "rank": "normal",
+       "type": "statement"
+      }
+     ],
+     "P569": [
+      {
+       "mainsnak": {
+        "snaktype": "value",
+        "property": "P569",
+        "datavalue": {
+         "value": {
+          "time": "+1765-01-01T00:00:00Z",
+          "timezone": 0,
+          "before": 0,
+          "after": 0,
+          "precision": 9,
+          "calendarmodel": "http://www.wikidata.org/entity/Q1985727"
+         },
+         "type": "time"
+        },
+        "datatype": "time"
+       },
+       "rank": "normal",
+       "type": "statement"
+      }
+     ],
+     "P570": [
+      {
+       "mainsnak": {
+        "snaktype": "value",
+        "property": "P570",
+        "datavalue": {
+         "value": {
+          "time": "+1814-11-00T00:00:00Z",
+          "timezone": 0,
+          "before": 0,
+          "after": 0,
+          "precision": 10,
+          "calendarmodel": "http://www.wikidata.org/entity/Q1985727"
+         },
+         "type": "time"
+        },
+        "datatype": "time"
+       },
+       "rank": "normal",
+       "type": "statement"
+      }
+     ]
+    }
+   },
+   "Q94792625": {
+    "type": "item",
+    "id": "Q94792625",
+    "labels": {
+     "en": {
+      "language": "en",
+      "value": "Franz Xaver Gruber"
+     }
+    },
+    "descriptions": {},
+    "aliases": {},
+    "claims": {
+     "P31": [
+      {
+       "mainsnak": {
+        "snaktype": "value",
+        "property": "P31",
+        "datavalue": {
+         "value": {
+          "entity-type": "item",
+          "numeric-id": 5,
+          "id": "Q5"
+         },
+         "type": "wikibase-entityid"
+        },
+        "datatype": "wikibase-item"
+       },
+       "rank": "normal",
+       "type": "statement"
+      }
+     ],
+     "P569": [
+      {
+       "mainsnak": {
+        "snaktype": "value",
+        "property": "P569",
+        "datavalue": {
+         "value": {
+          "time": "+1875-01-01T00:00:00Z",
+          "timezone": 0,
+          "before": 0,
+          "after": 0,
+          "precision": 9,
+          "calendarmodel": "http://www.wikidata.org/entity/Q1985727"
+         },
+         "type": "time"
+        },
+        "datatype": "time"
+       },
+       "rank": "normal",
+       "type": "statement"
+      },
+      {
+       "mainsnak": {
+        "snaktype": "value",
+        "property": "P569",
+        "datavalue": {
+         "value": {
+          "time": "+1875-07-16T00:00:00Z",
+          "timezone": 0,
+          "before": 0,
+          "after": 0,
+          "precision": 11,
+          "calendarmodel": "http://www.wikidata.org/entity/Q1985727"
+         },
+         "type": "time"
+        },
+        "datatype": "time"
+       },
+       "rank": "preferred",
+       "type": "statement"
+      }
+     ],
+     "P570": [
+      {
+       "mainsnak": {
+        "snaktype": "value",
+        "property": "P570",
+        "datavalue": {
+         "value": {
+          "time": "+1926-01-01T00:00:00Z",
+          "timezone": 0,
+          "before": 0,
+          "after": 0,
+          "precision": 9,
+          "calendarmodel": "http://www.wikidata.org/entity/Q1985727"
+         },
+         "type": "time"
+        },
+        "datatype": "time"
+       },
+       "rank": "normal",
+       "type": "statement"
+      },
+      {
+       "mainsnak": {
+        "snaktype": "value",
+        "property": "P570",
+        "datavalue": {
+         "value": {
+          "time": "+1926-03-12T00:00:00Z",
+          "timezone": 0,
+          "before": 0,
+          "after": 0,
+          "precision": 11,
+          "calendarmodel": "http://www.wikidata.org/entity/Q1985727"
+         },
+         "type": "time"
+        },
+        "datatype": "time"
+       },
+       "rank": "preferred",
+       "type": "statement"
+      }
+     ],
+     "P106": [
+      {
+       "mainsnak": {
+        "snaktype": "value",
+        "property": "P106",
+        "datavalue": {
+         "value": {
+          "entity-type": "item",
+          "numeric-id": 42603,
+          "id": "Q42603"
+         },
+         "type": "wikibase-entityid"
+        },
+        "datatype": "wikibase-item"
+       },
+       "rank": "normal",
+       "type": "statement"
+      },
+      {
+       "mainsnak": {
+        "snaktype": "value",
+        "property": "P106",
+        "datavalue": {
+         "value": {
+          "entity-type": "item",
+          "numeric-id": 1076502,
+          "id": "Q1076502"
+         },
+         "type": "wikibase-entityid"
+        },
+        "datatype": "wikibase-item"
+       },
+       "rank": "normal",
+       "type": "statement"
+      },
+      {
+       "mainsnak": {
+        "snaktype": "value",
+        "property": "P106",
+        "datavalue": {
+         "value": {
+          "entity-type": "item",
+          "numeric-id": 215793,
+          "id": "Q215793"
+         },
+         "type": "wikibase-entityid"
+        },
+        "datatype": "wikibase-item"
+       },
+       "rank": "normal",
+       "type": "statement"
+      }
+     ]
+    }
+   },
+   "Q1449619": {
+    "type": "item",
+    "id": "Q1449619",
+    "labels": {
+     "en": {
+      "language": "en",
+      "value": "Franz Xaver Gruber"
+     }
+    },
+    "descriptions": {
+     "en": {
+      "language": "en",
+      "value": "Austrian writer (1826–1871)"
+     }
+    },
+    "aliases": {},
+    "claims": {
+     "P31": [
+      {
+       "mainsnak": {
+        "snaktype": "value",
+        "property": "P31",
+        "datavalue": {
+         "value": {
+          "entity-type": "item",
+          "numeric-id": 5,
+          "id": "Q5"
+         },
+         "type": "wikibase-entityid"
+        },
+        "datatype": "wikibase-item"
+       },
+       "rank": "normal",
+       "type": "statement"
+      }
+     ],
+     "P569": [
+      {
+       "mainsnak": {
+        "snaktype": "value",
+        "property": "P569",
+        "datavalue": {
+         "value": {
+          "time": "+1826-11-27T00:00:00Z",
+          "timezone": 0,
+          "before": 0,
+          "after": 0,
+          "precision": 11,
+          "calendarmodel": "http://www.wikidata.org/entity/Q1985727"
+         },
+         "type": "time"
+        },
+        "datatype": "time"
+       },
+       "rank": "normal",
+       "type": "statement"
+      }
+     ],
+     "P570": [
+      {
+       "mainsnak": {
+        "snaktype": "value",
+        "property": "P570",
+        "datavalue": {
+         "value": {
+          "time": "+1871-04-18T00:00:00Z",
+          "timezone": 0,
+          "before": 0,
+          "after": 0,
+          "precision": 11,
+          "calendarmodel": "http://www.wikidata.org/entity/Q1985727"
+         },
+         "type": "time"
+        },
+        "datatype": "time"
+       },
+       "rank": "normal",
+       "type": "statement"
+      }
+     ],
+     "P106": [
+      {
+       "mainsnak": {
+        "snaktype": "value",
+        "property": "P106",
+        "datavalue": {
+         "value": {
+          "entity-type": "item",
+          "numeric-id": 36834,
+          "id": "Q36834"
+         },
+         "type": "wikibase-entityid"
+        },
+        "datatype": "wikibase-item"
+       },
+       "rank": "normal",
+       "type": "statement"
+      },
+      {
+       "mainsnak": {
+        "snaktype": "value",
+        "property": "P106",
+        "datavalue": {
+         "value": {
+          "entity-type": "item",
+          "numeric-id": 36180,
+          "id": "Q36180"
+         },
+         "type": "wikibase-entityid"
+        },
+        "datatype": "wikibase-item"
+       },
+       "rank": "normal",
+       "type": "statement"
+      },
+      {
+       "mainsnak": {
+        "snaktype": "value",
+        "property": "P106",
+        "datavalue": {
+         "value": {
+          "entity-type": "item",
+          "numeric-id": 37226,
+          "id": "Q37226"
+         },
+         "type": "wikibase-entityid"
+        },
+        "datatype": "wikibase-item"
+       },
+       "rank": "normal",
+       "type": "statement"
+      },
+      {
+       "mainsnak": {
+        "snaktype": "value",
+        "property": "P106",
+        "datavalue": {
+         "value": {
+          "entity-type": "item",
+          "numeric-id": 765778,
+          "id": "Q765778"
+         },
+         "type": "wikibase-entityid"
+        },
+        "datatype": "wikibase-item"
+       },
+       "rank": "normal",
+       "type": "statement"
+      }
+     ]
+    }
+   },
+   "Q38133172": {
+    "type": "item",
+    "id": "Q38133172",
+    "labels": {
+     "en": {
+      "language": "en",
+      "value": "Franz Xaver Gruber Gedächtnishaus"
+     }
+    },
+    "descriptions": {
+     "en": {
+      "language": "en",
+      "value": "building in Hochburg-Ach, Upper Austria"
+     }
+    },
+    "aliases": {},
+    "claims": {
+     "P31": [
+      {
+       "mainsnak": {
+        "snaktype": "value",
+        "property": "P31",
+        "datavalue": {
+         "value": {
+          "entity-type": "item",
+          "numeric-id": 41176,
+          "id": "Q41176"
+         },
+         "type": "wikibase-entityid"
+        },
+        "datatype": "wikibase-item"
+       },
+       "rank": "normal",
+       "type": "statement"
+      },
+      {
+       "mainsnak": {
+        "snaktype": "value",
+        "property": "P31",
+        "datavalue": {
+         "value": {
+          "entity-type": "item",
+          "numeric-id": 33506,
+          "id": "Q33506"
+         },
+         "type": "wikibase-entityid"
+        },
+        "datatype": "wikibase-item"
+       },
+       "rank": "normal",
+       "type": "statement"
+      }
+     ]
+    }
+   },
+   "Q98671573": {
+    "type": "item",
+    "id": "Q98671573",
+    "labels": {
+     "en": {
+      "language": "en",
+      "value": "Franz Xaver Gruber Memorial"
+     }
+    },
+    "descriptions": {
+     "en": {
+      "language": "en",
+      "value": "cultural heritage monument D-3-62-000-460 (0) in Regensburg, Bavaria"
+     }
+    },
+    "aliases": {},
+    "claims": {
+     "P31": [
+      {
+       "mainsnak": {
+        "snaktype": "value",
+        "property": "P31",
+        "datavalue": {
+         "value": {
+          "entity-type": "item",
+          "numeric-id": 4989906,
+          "id": "Q4989906"
+         },
+         "type": "wikibase-entityid"
+        },
+        "datatype": "wikibase-item"
+       },
+       "rank": "normal",
+       "type": "statement"
+      }
+     ]
+    }
+   },
+   "Q84601653": {
+    "type": "item",
+    "id": "Q84601653",
+    "labels": {
+     "en": {
+      "language": "en",
+      "value": "Stille Nacht Museum Arnsdorf"
+     }
+    },
+    "descriptions": {
+     "en": {
+      "language": "en",
+      "value": "museum in Austria"
+     }
+    },
+    "aliases": {},
+    "claims": {
+     "P31": [
+      {
+       "mainsnak": {
+        "snaktype": "value",
+        "property": "P31",
+        "datavalue": {
+         "value": {
+          "entity-type": "item",
+          "numeric-id": 33506,
+          "id": "Q33506"
+         },
+         "type": "wikibase-entityid"
+        },
+        "datatype": "wikibase-item"
+       },
+       "rank": "normal",
+       "type": "statement"
+      }
+     ]
+    }
+   },
+   "Q1449622": {
+    "type": "item",
+    "id": "Q1449622",
+    "labels": {
+     "en": {
+      "language": "en",
+      "value": "Franz Xaver Gruber"
+     }
+    },
+    "descriptions": {
+     "en": {
+      "language": "en",
+      "value": "Wikimedia disambiguation page"
+     }
+    },
+    "aliases": {},
+    "claims": {
+     "P31": [
+      {
+       "mainsnak": {
+        "snaktype": "value",
+        "property": "P31",
+        "datavalue": {
+         "value": {
+          "entity-type": "item",
+          "numeric-id": 4167410,
+          "id": "Q4167410"
+         },
+         "type": "wikibase-entityid"
+        },
+        "datatype": "wikibase-item"
+       },
+       "rank": "normal",
+       "type": "statement"
+      }
+     ]
+    }
+   }
+  },
+  "success": 1
+ },
+ "wbsearchentities:Nobody Atall Xyzzy": {
+  "search": []
+ }
+}

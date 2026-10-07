@@ -107,7 +107,53 @@ class ValidateTest(unittest.TestCase):
     def test_verified_needs_reviewer(self):
         r = copy.deepcopy(GOOD)
         r["verified"] = True
-        self.assertTrue(any("reviewed_by" in e for e in self.check(r)))
+        errors = self.check(r)
+        self.assertTrue(any("reviewed_by" in e for e in errors))
+        self.assertTrue(any("reviewed_on" in e for e in errors))
+        r.update(reviewed_by="someone", reviewed_on="2026-10-08")
+        self.assertEqual(self.check(r), [])
+        r["reviewed_on"] = "2026-02-30"
+        self.assertTrue(any("reviewed_on" in e for e in self.check(r)))
+
+    def test_reviewer_without_verification(self):
+        r = copy.deepcopy(GOOD)
+        r["reviewed_by"] = "someone"
+        self.assertTrue(any("verified is false" in e for e in self.check(r)))
+
+    def test_optional_fields(self):
+        r = copy.deepcopy(GOOD)
+        r.update(composer_wikidata="Q23441", lyricist=None, lyricist_death_year=None)
+        self.assertEqual(self.check(r), [])
+        r["composer_wikidata"] = "Satie"
+        self.assertTrue(any("Wikidata item ID" in e for e in self.check(r)))
+        r = copy.deepcopy(GOOD)
+        r["colour"] = "blue"
+        self.assertIn("unknown field 'colour' (see catalogue/schema/provenance.schema.json)", self.check(r))
+        r = copy.deepcopy(GOOD)
+        r["single_hand"] = "both"
+        self.assertTrue(any("single_hand" in e for e in self.check(r)))
+
+    def test_edition_evidence(self):
+        r = copy.deepcopy(GOOD)
+        r["edition_note"] = "A nice score."
+        self.assertTrue(any("own transcription" in e for e in self.check(r)))
+        r["edition_note"] = "Own transcription of the Bärenreiter Urtext."
+        self.assertTrue(any("Urtext" in e for e in self.check(r)))
+
+    def test_score_sanity_is_checked(self):
+        (self.dir / "score.musicxml").write_text(
+            arrange.to_musicxml(arrange.parse("time: 2/4\nRH: C4q E4q | G4h\nLH: rh | rh\n")), encoding="utf-8"
+        )
+        errors = self.check(copy.deepcopy(GOOD))
+        self.assertTrue(any("left hand has no notes" in e for e in errors))
+        r = copy.deepcopy(GOOD)
+        r["single_hand"] = "right"
+        self.assertEqual(self.check(r), [])
+
+    def test_bad_term_check_date(self):
+        r = copy.deepcopy(GOOD)
+        r["eu_term_check"] = {"result": "pass", "date": "07/10/2026"}
+        self.assertTrue(any("YYYY-MM-DD" in e for e in self.check(r)))
 
     def test_licence_and_attribution(self):
         r = copy.deepcopy(GOOD)
