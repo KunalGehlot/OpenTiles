@@ -17,6 +17,14 @@ export function About() {
         </li>
         <li>There are no analytics, cookies or third-party requests.</li>
         <li>
+          Read exactly what is stored, and what the optional sync server sees, in the{' '}
+          <a href={href({ name: 'privacy', lang: 'en' })}>privacy policy</a> (
+          <a href={href({ name: 'privacy', lang: 'de' })} lang="de">
+            Datenschutzerklärung
+          </a>
+          ).
+        </li>
+        <li>
           Browsers can clear website data. On iPad and iPhone, add OpenTiles to your Home Screen so
           Safari keeps your library.
         </li>
@@ -29,8 +37,9 @@ export function About() {
       </p>
       <p>
         To report a catalogue piece you believe is still protected, open an issue on the project's
-        GitHub page; pieces are removed within 48 hours while the claim is checked. The full
-        Impressum and notice-and-takedown address will be published before the public launch.
+        GitHub page or write to the notice-and-takedown address in the{' '}
+        <a href={href({ name: 'impressum', lang: 'en' })}>Impressum</a>; pieces are removed within
+        48 hours while the claim is checked.
       </p>
       <h2>Piano sound</h2>
       <p>

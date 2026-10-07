@@ -21,6 +21,8 @@
     "@opentiles/importers": "workspace:*",
     "@opentiles/practice": "workspace:*",
     "@opentiles/song-model": "workspace:*",
+    "@opentiles/sync-client": "workspace:*",
+    "@opentiles/vault": "workspace:*",
     "dexie": "^4.4.0",
     "dexie-react-hooks": "^4.2.0",
     "react": "^19.3.0",
@@ -29,6 +31,7 @@
     "workbox-window": "^7.4.1"
   },
   "devDependencies": {
+    "@opentiles/sync-api": "workspace:*",
     "@playwright/test": "1.63.0",
     "@types/node": "^22.0.0",
     "@types/react": "^19.3.0",
