@@ -1,8 +1,22 @@
 import { useState } from 'react';
 import { BackupSection } from '../backup/BackupSection';
 import { href } from '../lib/router';
-import { KEYBOARD_SHORTCUTS, PEDAL_KEYS, pedalKeyLabel } from '../settings/model';
-import type { AppSettings, PedalSettings, TriState } from '../settings/model';
+import { customKeyboard, KEYBOARD_PRESETS } from '@opentiles/practice';
+import {
+  KEYBOARD_SHORTCUTS,
+  keyboardLabel,
+  lowestKeyChoices,
+  MIN_CUSTOM_KEYS,
+  PEDAL_KEYS,
+  pedalKeyLabel,
+} from '../settings/model';
+import type {
+  AppSettings,
+  FingeringDisplay,
+  KeyboardSetting,
+  PedalSettings,
+  TriState,
+} from '../settings/model';
 import { updateAppSettings, useAppSettings } from '../settings/store';
 import { syncServerUrl } from '../sync/config';
 import { SyncSection } from '../sync/SyncSection';
@@ -40,6 +54,7 @@ export default function Settings() {
         )}
       </section>
 
+      <Practice settings={settings} set={set} />
       <Accessibility settings={settings} set={set} />
       <BackupSection />
       <SyncSection />
@@ -113,6 +128,125 @@ function TriSelect({
         <option value="on">On</option>
         <option value="off">Off</option>
       </select>
+    </label>
+  );
+}
+
+const LOWEST_KEYS = lowestKeyChoices();
+
+/** Your keyboard (P4-07) and fingering (P4-08). */
+function Practice({
+  settings,
+  set,
+}: {
+  settings: AppSettings;
+  set: (p: Partial<AppSettings>) => void;
+}) {
+  const k = settings.keyboard;
+  const setKeyboard = (p: Partial<KeyboardSetting>) => set({ keyboard: { ...k, ...p } });
+  const custom = customKeyboard(k.low, k.keys);
+  const maxKeys = 108 - k.low + 1;
+  return (
+    <section aria-labelledby="practice-title" className="stack">
+      <h2 id="practice-title">Practice</h2>
+      <h3>Your keyboard</h3>
+      <p className="muted">
+        The practice screen draws the keys your instrument has. A piece that goes beyond them is
+        moved by octaves so you can still play it, and the screen says so.
+      </p>
+      <label>
+        Keyboard size
+        <select value={k.size} onChange={(e) => setKeyboard({ size: e.target.value })}>
+          <option value="auto">Fit the keys to each piece</option>
+          {KEYBOARD_PRESETS.map((p) => (
+            <option key={p.id} value={p.id}>
+              {keyboardLabel(p)}
+            </option>
+          ))}
+          <option value="custom">Custom</option>
+        </select>
+      </label>
+      {k.size === 'custom' && (
+        <div className="row">
+          <label>
+            Lowest key
+            <select
+              value={k.low}
+              onChange={(e) => {
+                const low = Number(e.target.value);
+                setKeyboard({ low, keys: Math.min(k.keys, 108 - low + 1) });
+              }}
+            >
+              {LOWEST_KEYS.map((c) => (
+                <option key={c.pitch} value={c.pitch}>
+                  {c.label}
+                </option>
+              ))}
+            </select>
+          </label>
+          <KeyCountInput value={k.keys} max={maxKeys} onChange={(keys) => setKeyboard({ keys })} />
+          <span className="muted" data-testid="custom-keyboard">
+            {keyboardLabel(custom)}
+          </span>
+        </div>
+      )}
+
+      <h3>Fingering</h3>
+      <label>
+        Fingers to show
+        <select
+          value={settings.fingering}
+          onChange={(e) => set({ fingering: e.target.value as FingeringDisplay })}
+        >
+          <option value="suggested">Suggested where the score has none</option>
+          <option value="written">Only those written in the score</option>
+          <option value="off">None</option>
+        </select>
+      </label>
+      <p className="muted">
+        Suggested fingers follow common piano fingering and keep any the score already has. They
+        appear on the falling notes, the keys to play next and, lighter, in the score.
+      </p>
+    </section>
+  );
+}
+
+/** Number of keys, saved once it is a whole number in range; the field may hold a draft. */
+function KeyCountInput({
+  value,
+  max,
+  onChange,
+}: {
+  value: number;
+  max: number;
+  onChange: (keys: number) => void;
+}) {
+  const [draft, setDraft] = useState(String(value));
+  const [lastValue, setLastValue] = useState(value);
+  if (value !== lastValue) {
+    // Changed elsewhere (another lowest key, a restored backup): show it.
+    setLastValue(value);
+    setDraft(String(value));
+  }
+  const n = Number(draft);
+  const valid = Number.isInteger(n) && n >= MIN_CUSTOM_KEYS && n <= max;
+  return (
+    <label>
+      Number of keys
+      <input
+        type="number"
+        inputMode="numeric"
+        min={MIN_CUSTOM_KEYS}
+        max={max}
+        value={draft}
+        aria-invalid={!valid}
+        onChange={(e) => {
+          setDraft(e.target.value);
+          const keys = Number(e.target.value);
+          if (Number.isInteger(keys) && keys >= MIN_CUSTOM_KEYS && keys <= max) onChange(keys);
+        }}
+        onBlur={() => setDraft(String(value))}
+      />
     </label>
   );
 }

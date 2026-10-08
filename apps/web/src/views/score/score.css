@@ -120,6 +120,13 @@
   font-weight: bold;
 }
 
+/* Suggested fingers (P4-08) are lighter than the ones written in the score. */
+.ot-score-strip .ot-fing-suggested {
+  font-weight: normal;
+  font-style: italic;
+  fill: var(--muted, #6b6b6b);
+}
+
 .ot-score-status {
   padding: 0.75rem 1rem;
 }

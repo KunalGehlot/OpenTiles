@@ -1,5 +1,9 @@
-// App-wide settings (P2-15 accessibility, language, crash reports), as plain data. Pure: no DOM or
-// IndexedDB here, so the rules are unit-tested in Node. The store in ./store.ts persists them.
+// App-wide settings (P2-15 accessibility, language, crash reports, P4-07 keyboard size, P4-08
+// fingering), as plain data. Pure: no DOM or IndexedDB here, so the rules are unit-tested in Node.
+// The store in ./store.ts persists them.
+import { customKeyboard, keyCount, presetById } from '@opentiles/practice';
+import type { KeyboardRange } from '@opentiles/practice';
+import { isBlackKey, noteName, PIANO_HIGH, PIANO_LOW } from '@opentiles/song-model';
 
 /** `system` follows the operating system's preference (prefers-contrast, prefers-reduced-motion). */
 export type TriState = 'system' | 'on' | 'off';
@@ -14,6 +18,21 @@ export interface PedalSettings {
   previousKey: string;
 }
 
+/**
+ * The learner's keyboard (P4-07). `auto` draws just the keys a piece needs, as before; a preset id
+ * or `custom` draws the learner's real keyboard and fits pieces onto it by octaves.
+ */
+export interface KeyboardSetting {
+  size: string;
+  /** Lowest key of a custom keyboard (MIDI). */
+  low: number;
+  /** Number of keys of a custom keyboard. */
+  keys: number;
+}
+
+/** Which fingers to show (P4-08): suggested ones fill the gaps the score leaves. */
+export type FingeringDisplay = 'suggested' | 'written' | 'off';
+
 export interface AppSettings {
   language: Language;
   /** Bigger UI text and keyboard labels. */
@@ -25,6 +44,8 @@ export interface AppSettings {
   pedal: PedalSettings;
   /** Opt-in anonymous crash reports (P3-08). Off unless the user switches them on. */
   crashReports: boolean;
+  keyboard: KeyboardSetting;
+  fingering: FingeringDisplay;
 }
 
 export const DEFAULT_APP_SETTINGS: Readonly<AppSettings> = Object.freeze({
@@ -35,6 +56,8 @@ export const DEFAULT_APP_SETTINGS: Readonly<AppSettings> = Object.freeze({
   leftHanded: false,
   pedal: Object.freeze({ enabled: false, nextKey: 'ArrowRight', previousKey: 'ArrowLeft' }),
   crashReports: false,
+  keyboard: Object.freeze({ size: 'auto', low: PIANO_LOW, keys: 88 }),
+  fingering: 'suggested',
 }) as Readonly<AppSettings>;
 
 /** Keys most Bluetooth page-turn pedals send, in the order the settings list offers them. */
@@ -85,7 +108,67 @@ export function normaliseSettings(value: unknown): AppSettings {
       previousKey: key(p.previousKey, d.pedal.previousKey),
     },
     crashReports: bool(v.crashReports, d.crashReports),
+    keyboard: normaliseKeyboard(v.keyboard),
+    fingering: v.fingering === 'written' || v.fingering === 'off' ? v.fingering : 'suggested',
   };
+}
+
+/** Fewest keys a custom keyboard may have: one octave, so pieces can still be folded onto it. */
+export const MIN_CUSTOM_KEYS = 12;
+
+function normaliseKeyboard(value: unknown): KeyboardSetting {
+  const d = DEFAULT_APP_SETTINGS.keyboard;
+  const v = typeof value === 'object' && value !== null ? (value as Record<string, unknown>) : {};
+  const size =
+    typeof v.size === 'string' && (v.size === 'custom' || presetById(v.size)) ? v.size : 'auto';
+  const low =
+    typeof v.low === 'number' && Number.isFinite(v.low)
+      ? Math.max(PIANO_LOW, Math.min(PIANO_HIGH - MIN_CUSTOM_KEYS + 1, Math.round(v.low)))
+      : d.low;
+  const keys =
+    typeof v.keys === 'number' && Number.isFinite(v.keys)
+      ? Math.max(MIN_CUSTOM_KEYS, Math.min(PIANO_HIGH - low + 1, Math.round(v.keys)))
+      : Math.min(d.keys, PIANO_HIGH - low + 1);
+  return { size, low, keys };
+}
+
+/** The keys to draw and fit pieces to, or null to fit the keyboard to each piece. */
+export function keyboardRange(k: KeyboardSetting): KeyboardRange | null {
+  if (k.size === 'auto') return null;
+  if (k.size === 'custom') return customKeyboard(k.low, k.keys);
+  const p = presetById(k.size);
+  return p ? { low: p.low, high: p.high } : null;
+}
+
+/** "86 keys (A0–B♭7)". */
+export function keyboardLabel(range: KeyboardRange): string {
+  return `${keyCount(range)} keys (${noteName(range.low)}–${noteName(range.high)})`;
+}
+
+/** White keys a custom keyboard can start on, lowest first (real keyboards start on one). */
+export function lowestKeyChoices(): { pitch: number; label: string }[] {
+  const out: { pitch: number; label: string }[] = [];
+  for (let p = PIANO_LOW; p <= 72; p++)
+    if (!isBlackKey(p)) out.push({ pitch: p, label: noteName(p) });
+  return out;
+}
+
+/**
+ * What the practice view says after fitting a piece to the keyboard, or null when nothing moved.
+ * `shift` is the whole-piece shift in semitones; `folded` counts single notes moved by octaves.
+ */
+export function fitMessage(
+  fit: { shift: number; folded: number },
+  range: KeyboardRange,
+): string | null {
+  const board = `your ${keyCount(range)}-key keyboard`;
+  const notes = `${fit.folded} ${fit.folded === 1 ? 'note' : 'notes'}`;
+  if (fit.shift === 0) return fit.folded > 0 ? `${notes} moved by octaves to fit ${board}.` : null;
+  const octaves = Math.abs(fit.shift) / 12;
+  const moved = `Moved ${fit.shift > 0 ? 'up' : 'down'} ${octaves === 1 ? 'an octave' : `${octaves} octaves`} to fit ${board}`;
+  return fit.folded > 0
+    ? `${moved}; ${notes} ${fit.folded === 1 ? 'was' : 'were'} also moved into range.`
+    : `${moved}.`;
 }
 
 export interface MediaPreferences {

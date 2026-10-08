@@ -2,13 +2,13 @@
 // colours, page turns, hardest bars (PLAN.md P1-15, P1-24, P2-11, P2-12). Plain DOM work from
 // requestAnimationFrame; React only mounts the host elements (docs/development.md: timing-critical drawing
 // bypasses React).
-import type { Song } from '@opentiles/song-model';
+import type { Song, SongNote } from '@opentiles/song-model';
 import type { PracticeSession } from '../session';
 import { buildAnchors, positionAt } from './cursor-map';
 import type { Anchor, MeasureBox } from './cursor-map';
 import { glyphsFromTimemap, linkNotes, measureOrderFromSvg } from './glyph-map';
 import type { ScoreLinks, TimemapEntry } from './glyph-map';
-import { glyphStates, nearestByBeat, noteStates } from './note-states';
+import { fingersToAdd, glyphStates, nearestByBeat, noteStates } from './note-states';
 import type { NoteState } from './note-states';
 import type { Toolkit } from './verovio';
 
@@ -38,6 +38,7 @@ export interface PageInfo {
 export class ScoreController {
   readonly links: ScoreLinks;
   private readonly startOf: Map<string, number>;
+  private readonly noteById: Map<string, SongNote>;
   /** Source measure index → measure element id (document order). */
   private measureIds: string[] = [];
   private pages: string[] = [];
@@ -63,8 +64,11 @@ export class ScoreController {
     private readonly host: HTMLElement,
     private readonly strip: HTMLElement,
     private readonly cursor: HTMLElement,
+    /** Ids of notes whose finger was suggested rather than written (P4-08). */
+    private readonly suggested: ReadonlySet<string> = new Set(),
   ) {
     this.startOf = new Map(song.notes.map((n) => [n.id, n.startBeat]));
+    this.noteById = new Map(song.notes.map((n) => [n.id, n]));
     this.size = { width: host.clientWidth, height: host.clientHeight };
     this.layoutPages();
     const timemap = tk.renderToTimemap({ includeMeasures: true, includeRests: false });
@@ -144,7 +148,7 @@ export class ScoreController {
       for (const g of this.links.glyphsOf.get(n.id) ?? [])
         this.elements.get(g)?.classList.add('ot-lh');
     }
-    this.addFingeringIfMissing();
+    this.addFingering();
     this.measure();
     this.decorateHardest();
     this.onPage({ page: n, pageCount: this.pages.length });
@@ -201,21 +205,21 @@ export class ScoreController {
   }
 
   /**
-   * Verovio draws fingering from MusicXML but not from ABC; when the drawing has none and the
-   * song has fingers, add them above (right hand) or below (left hand) the note heads (P2-12).
+   * Adds fingers above (right hand) or below (left hand) the note heads: the written ones Verovio
+   * did not draw (ABC) and the suggested ones (P2-12, P4-08).
    */
-  private addFingeringIfMissing(): void {
-    if (this.strip.querySelector('g.fing')) return;
-    for (const n of this.song.notes) {
-      if (n.fingering === undefined) continue;
-      const id = this.links.glyphsOf.get(n.id)?.[0];
+  private addFingering(): void {
+    const drawn = this.strip.querySelector('g.fing') !== null;
+    for (const mark of fingersToAdd(this.song.notes, drawn, this.suggested)) {
+      const n = this.noteById.get(mark.noteId);
+      const id = this.links.glyphsOf.get(mark.noteId)?.[0];
       const el = id ? this.elements.get(id) : undefined;
       const head = el?.querySelector('.notehead');
-      if (!el || !head || el.querySelector('.ot-fing')) continue;
+      if (!n || !el || !head || el.querySelector('.ot-fing')) continue;
       const box = (head as SVGGraphicsElement).getBBox?.();
       if (!box) continue;
       const text = document.createElementNS(SVG_NS, 'text');
-      text.setAttribute('class', 'ot-fing');
+      text.setAttribute('class', mark.suggested ? 'ot-fing ot-fing-suggested' : 'ot-fing');
       text.setAttribute('x', String(box.x + box.width / 2));
       text.setAttribute(
         'y',
@@ -223,7 +227,7 @@ export class ScoreController {
       );
       text.setAttribute('text-anchor', 'middle');
       text.setAttribute('font-size', '300');
-      text.textContent = String(n.fingering);
+      text.textContent = String(mark.finger);
       el.appendChild(text);
     }
   }

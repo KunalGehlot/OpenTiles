@@ -45,6 +45,11 @@ export class PianoSampler implements Instrument {
     private readonly ctx: BaseAudioContext,
     samples: readonly PianoSample[],
     destination: AudioNode = ctx.destination,
+    /**
+     * Voice limit. Rendering offline schedules a whole piece up front, while the context's clock
+     * stands at 0, so it lifts the limit: stealing would cut notes that have not started yet.
+     */
+    private readonly maxVoices = MAX_VOICES,
   ) {
     for (const s of samples) this.samples.set(s.pitch, s);
     this.pitches = [...this.samples.keys()];
@@ -119,7 +124,7 @@ export class PianoSampler implements Instrument {
       env.disconnect();
     };
     this.voices.set(voice, () => release(ctx.currentTime, STEAL_RELEASE));
-    if (this.voices.size > MAX_VOICES) {
+    if (this.voices.size > this.maxVoices) {
       const [oldest] = this.voices.keys();
       if (oldest) {
         this.voices.get(oldest)?.();

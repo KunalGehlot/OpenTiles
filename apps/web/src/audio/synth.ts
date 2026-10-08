@@ -26,6 +26,8 @@ export class Piano implements Instrument {
   constructor(
     private readonly ctx: BaseAudioContext,
     private readonly loadSamples: SampleLoader,
+    /** Passed to the sampler; see PianoSampler. */
+    private readonly maxVoices?: number,
   ) {
     const compressor = ctx.createDynamicsCompressor();
     compressor.threshold.value = -18;
@@ -60,7 +62,7 @@ export class Piano implements Instrument {
     if (performance.now() - this.failedAt < RETRY_MS) return Promise.resolve(false);
     this.loading = this.loadSamples(this.ctx).then(
       (samples) => {
-        this.sampler = new PianoSampler(this.ctx, samples, this.out);
+        this.sampler = new PianoSampler(this.ctx, samples, this.out, this.maxVoices);
         return true;
       },
       () => {
@@ -91,6 +93,11 @@ export class Piano implements Instrument {
 
 const pianos = new WeakMap<BaseAudioContext, Piano>();
 
+/** Where the vendored piano samples are served from. */
+export function pianoSampleBase(): URL {
+  return new URL('samples/piano/', document.baseURI);
+}
+
 /**
  * The piano for an unlocked audio context. The first call starts loading the samples, so they are
  * fetched only after a user gesture has started audio (Safari, spec §5).
@@ -98,7 +105,7 @@ const pianos = new WeakMap<BaseAudioContext, Piano>();
 export function synthFor(ctx: AudioContext): Piano {
   let piano = pianos.get(ctx);
   if (!piano) {
-    const base = new URL('samples/piano/', document.baseURI);
+    const base = pianoSampleBase();
     piano = new Piano(ctx, (c) => loadPianoSamples(c, base));
     pianos.set(ctx, piano);
   }

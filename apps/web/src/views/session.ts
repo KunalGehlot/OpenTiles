@@ -2,12 +2,17 @@
 // TypeScript, so timing-critical work never waits for React (docs/development.md).
 import {
   accompanimentBetween,
+  asPlayed,
   buildSteps,
+  holdOverdueAfter,
+  judgeHold,
   LoopTrainer,
   loopBeats,
   metronomeClicks,
   normaliseLoop,
+  PerformanceRecorder,
   PlayAlongScorer,
+  polished,
   pulseAt,
   summarise,
   Timeline,
@@ -15,17 +20,21 @@ import {
 } from '@opentiles/practice';
 import type {
   HandFilter,
+  HoldJudgement,
   InputSource,
   Judgement,
   LoopRange,
   LoopRunOutcome,
   NoteEvent,
+  PlayedNote,
+  RenderNote,
   RunSummary,
   Step,
   TimedNote,
+  TimedNoteWithLength,
 } from '@opentiles/practice';
 import { TempoMap } from '@opentiles/song-model';
-import type { Song, SongNote } from '@opentiles/song-model';
+import type { Hand, Song, SongNote } from '@opentiles/song-model';
 import type { PianoSynth } from '../audio/synth';
 
 export type PracticeMode = 'wait' | 'listen' | 'play-along';
@@ -38,13 +47,52 @@ export interface Flash {
   until: number;
 }
 
-/** A live "early" / "late" label drawn above a key in play-along (P1-24). */
+/**
+ * A live label drawn above a key: "early" / "late" in play-along (P1-24), "hold longer" /
+ * "let go" when a note was held too short or too long (P4-09).
+ */
 export interface TimingLabel {
   pitch: number;
-  kind: 'early' | 'late';
-  /** Played minus expected, ms. */
+  kind: 'early' | 'late' | 'short' | 'long';
+  /** Played minus expected, ms (early and late only). */
   offsetMs: number;
   until: number;
+}
+
+/**
+ * A note being held, for the draining hold bar above its key and the hold feedback (P4-09). Only
+ * inputs that report key release make one: the microphone cannot see when a key comes up.
+ */
+export interface Hold {
+  pitch: number;
+  noteId: string;
+  hand: Hand;
+  /** Key down, practice clock (s). */
+  start: number;
+  /** Written length at the practice tempo (s). */
+  length: number;
+  /** Key up, once released. */
+  end?: number;
+  /** Set on release, when held long enough (wait mode) or too long (play-along). */
+  judgement?: HoldJudgement;
+}
+
+export interface HoldStats {
+  good: number;
+  short: number;
+  long: number;
+}
+
+/**
+ * What one finished run needs for playback as played or polished (P4-09). The keys themselves
+ * stay in the recorder, which still takes the key-up of the last note after the run ends.
+ */
+export interface RunRecording {
+  mode: PracticeMode;
+  /** The practised notes, timed like the recorded keys (play-along) or from 0 (wait mode). */
+  expected: TimedNoteWithLength[];
+  /** The other hand when it was played along, timed like `expected`. */
+  accompaniment: RenderNote[];
 }
 
 /** One finished run of a looped section (P2-08). */
@@ -73,15 +121,21 @@ export interface SessionStatus {
   elapsed: number;
   loop: LoopRange | null;
   metronome: boolean;
+  holds: HoldStats;
+  /** True once a finished run has something to play back. */
+  recorded: boolean;
 }
 
 const LEAD_IN = 1.5;
 const SCHEDULE_AHEAD = 0.3;
 /** Pause between the end of a looped section and its next run in wait mode (seconds). */
 const LOOP_PAUSE = 0.6;
+/** How long a judged hold bar stays on screen after it ends (seconds). */
+const HOLD_FADE = 0.4;
 
 export class PracticeSession {
   readonly tempoMap: TempoMap;
+  private songValue: Song;
   mode: PracticeMode = 'wait';
   hands: HandFilter = 'both';
   tempo = 1;
@@ -112,6 +166,13 @@ export class PracticeSession {
    * expected (wait mode) or the note was missed (play-along); it stays red for the rest of the run.
    */
   readonly marks = new Map<string, 'correct' | 'wrong'>();
+  /** Notes being held (and judged holds fading out), by pitch (P4-09). */
+  readonly holds = new Map<number, Hold>();
+  holdStats: HoldStats = { good: 0, short: 0, long: 0 };
+  /** Every key of the current run, down and up (P4-09). */
+  readonly recorder = new PerformanceRecorder();
+  /** The last finished run, for playback; null until one finishes. */
+  recording: RunRecording | null = null;
 
   private timeline: Timeline | null = null;
   private scorer: PlayAlongScorer | null = null;
@@ -140,12 +201,28 @@ export class PracticeSession {
   onTempo: (factor: number) => void = () => {};
 
   constructor(
-    readonly song: Song,
+    song: Song,
     private readonly clock: () => number,
     private synth: PianoSynth | null = null,
   ) {
+    this.songValue = song;
     this.tempoMap = new TempoMap(song.tempos);
     this.wait = new WaitMode([]);
+    this.rebuild();
+  }
+
+  get song(): Song {
+    return this.songValue;
+  }
+
+  /**
+   * Swaps in the same piece with other pitches or fingers: fitted to the learner's keyboard
+   * (P4-07) or with suggested fingering (P4-08). Bars and tempos must be unchanged; the run
+   * restarts.
+   */
+  setSong(song: Song): void {
+    if (song === this.songValue) return;
+    this.songValue = song;
     this.rebuild();
   }
 
@@ -194,6 +271,8 @@ export class PracticeSession {
       elapsed: this.startedAt ? (this.finishedAt || this.clock()) - this.startedAt : 0,
       loop: this.loop,
       metronome: this.metronome,
+      holds: { ...this.holdStats },
+      recorded: this.recording !== null && this.recorder.notes.length > 0,
     };
   }
 
@@ -218,6 +297,7 @@ export class PracticeSession {
     this.labels = [];
     this.marks.clear();
     this.flashes = [];
+    this.resetRun();
     this.summary = null;
     this.startedAt = 0;
     this.finishedAt = 0;
@@ -287,6 +367,8 @@ export class PracticeSession {
     }));
   }
 
+  private noteIndex: Map<string, SongNote> | null = null;
+
   private onStep(step: Step | undefined): void {
     this.onExpected(step?.pitches ?? []);
     if (!step && this.mode === 'wait') {
@@ -297,16 +379,23 @@ export class PracticeSession {
 
   /** Expected pitches right now (for the keyboard highlight). */
   expected(): number[] {
-    if (this.mode === 'wait') return this.wait.remaining;
-    if (!this.timeline) return [];
+    return this.expectedNotes().map((n) => n.pitch);
+  }
+
+  /** Notes expected right now: the keys to light up and the fingers to show on them (P4-08). */
+  expectedNotes(): SongNote[] {
+    if (this.mode === 'wait') {
+      const remaining = new Set(this.wait.remaining);
+      return (this.wait.current?.notes ?? []).filter((n) => remaining.has(n.pitch));
+    }
+    const tl = this.timeline;
+    if (!tl) return [];
     const t = this.clock();
-    return this.song.notes
-      .filter((n) => this.inHands(n))
-      .filter((n) => {
-        const nt = this.timeline?.timeOf(n.startBeat) ?? 0;
-        return nt <= t + 0.05 && nt + this.secondsFor(n) >= t;
-      })
-      .map((n) => n.pitch);
+    return this.song.notes.filter((n) => {
+      if (!this.inHands(n)) return false;
+      const nt = tl.timeOf(n.startBeat);
+      return nt <= t + 0.05 && nt + this.secondsFor(n) >= t;
+    });
   }
 
   inHands(n: SongNote): boolean {
@@ -330,6 +419,9 @@ export class PracticeSession {
     if (!this.startedAt) this.startedAt = t;
     if (!this.runStartedAt) this.runStartedAt = t;
     this.keys.set(e.pitch, 'held');
+    if (this.recordingKeys()) {
+      this.recorder.noteOn({ ...e, time: e.time - (this.latency[e.source] ?? 0) });
+    }
     if (this.mode === 'wait') {
       const before = this.wait.current;
       const out = this.wait.handle(e);
@@ -338,6 +430,7 @@ export class PracticeSession {
         this.flash(e.pitch, 'correct', t);
         for (const n of before?.notes ?? []) {
           if (n.pitch !== e.pitch) continue;
+          if (!this.done.has(n.id)) this.startHold(n, e);
           this.done.add(n.id);
           if (!this.marks.has(n.id)) this.marks.set(n.id, 'correct');
         }
@@ -353,6 +446,8 @@ export class PracticeSession {
       if (out.kind === 'judged') {
         const { judgement, note, offset } = out.result;
         this.judged.set(note.id, judgement);
+        const written = this.noteById(note.id);
+        if (written) this.startHold(written, e);
         this.marks.set(note.id, 'correct');
         this.done.add(note.id);
         if (judgement === 'early' || judgement === 'late') {
@@ -378,8 +473,122 @@ export class PracticeSession {
     this.emitStatus();
   }
 
-  release(pitch: number): void {
+  /** A key came up; `time` is the input's own time for it (practice clock). */
+  release(pitch: number, time = this.clock()): void {
     this.keys.delete(pitch);
+    this.recorder.noteOff(pitch, time);
+    const hold = this.holds.get(pitch);
+    if (!hold || hold.end !== undefined) return;
+    hold.end = Math.max(hold.start, time);
+    if (hold.judgement) return;
+    let j = judgeHold(hold.length, hold.end - hold.start);
+    // In wait mode the learner sets the pace; holding on while finding the next note is fine.
+    if (j === 'long' && this.mode === 'wait') j = 'good';
+    this.judgeHoldAs(hold, j, this.clock());
+  }
+
+  /** Key presses count for the run's recording while the run is on. */
+  private recordingKeys(): boolean {
+    return this.mode === 'wait' ? !this.wait.finished : this.mode === 'play-along' && this.playing;
+  }
+
+  private noteById(id: string): SongNote | undefined {
+    this.noteIndex ??= new Map(this.song.notes.map((n) => [n.id, n]));
+    return this.noteIndex.get(id);
+  }
+
+  private startHold(n: SongNote, e: NoteEvent): void {
+    // The microphone hears a note start but not the key coming up.
+    if (e.source === 'microphone') return;
+    const start = e.time - (this.latency[e.source] ?? 0);
+    this.holds.set(n.pitch, {
+      pitch: n.pitch,
+      noteId: n.id,
+      hand: n.hand,
+      start,
+      length: this.secondsFor(n),
+    });
+  }
+
+  private judgeHoldAs(hold: Hold, judgement: HoldJudgement, t: number): void {
+    hold.judgement = judgement;
+    this.holdStats = { ...this.holdStats, [judgement]: this.holdStats[judgement] + 1 };
+    if (judgement === 'good') return;
+    this.labels = this.labels.filter((l) => l.pitch !== hold.pitch && l.until > t);
+    this.labels.push({ pitch: hold.pitch, kind: judgement, offsetMs: 0, until: t + 1.1 });
+  }
+
+  /** Hold bars drain; a note held past its length is judged (P4-09). */
+  private runHolds(t: number): void {
+    for (const [pitch, hold] of this.holds) {
+      if (hold.end !== undefined) {
+        if (t > hold.end + HOLD_FADE) this.holds.delete(pitch);
+        continue;
+      }
+      if (hold.judgement) continue;
+      const held = t - hold.start;
+      if (this.mode === 'wait') {
+        if (held >= hold.length) this.judgeHoldAs(hold, 'good', t);
+      } else if (held > holdOverdueAfter(hold.length)) {
+        this.judgeHoldAs(hold, 'long', t);
+      }
+    }
+  }
+
+  /** Clears what one run collects: holds, their counts and the recorded keys. */
+  private resetRun(): void {
+    this.holds.clear();
+    this.holdStats = { good: 0, short: 0, long: 0 };
+    this.recorder.clear();
+    this.recording = null;
+    this.noteIndex = null;
+  }
+
+  /** The last finished run as played and polished, ready for the piano (P4-09). */
+  renderings(): { asPlayed: RenderNote[]; polished: RenderNote[] } | null {
+    const r = this.recording;
+    const t = this.clock();
+    // Keys still held count up to now.
+    const played: PlayedNote[] = this.recorder.notes.map((p) =>
+      p.end === undefined ? { ...p, end: Math.max(p.start, t) } : { ...p },
+    );
+    if (!r || played.length === 0) return null;
+    const part = polished(r.expected, played, {
+      match: r.mode === 'wait' ? 'order' : 'time',
+    });
+    // polished() starts at the first practised note; the other hand may start earlier.
+    const first = Math.min(...r.expected.map((n) => n.time));
+    const t0 = Math.min(first, ...r.accompaniment.map((n) => n.time));
+    const whole = [
+      ...part.map((n) => ({ ...n, time: n.time + first - t0 })),
+      ...r.accompaniment.map((n) => ({ ...n, time: n.time - t0 })),
+    ].sort((a, b) => a.time - b.time || a.pitch - b.pitch);
+    return { asPlayed: asPlayed(played), polished: whole };
+  }
+
+  /** Keeps what playback of the finished run needs. `timeOf` maps a beat onto the run's clock. */
+  private keepRecording(timeOf: (beat: number) => number, notes: SongNote[], from: number): void {
+    const length = (n: SongNote) => timeOf(n.startBeat + n.durationBeats) - timeOf(n.startBeat);
+    const expected = notes.map((n) => ({
+      id: n.id,
+      pitch: n.pitch,
+      time: timeOf(n.startBeat),
+      duration: length(n),
+      measureIndex: n.measureIndex,
+    }));
+    const to = this.loopSpan?.toBeat ?? this.song.lengthBeats;
+    const accompaniment =
+      this.hands === 'both' || !this.accompany
+        ? []
+        : this.song.notes
+            .filter((n) => !this.inHands(n) && n.startBeat >= from - 1e-6 && n.startBeat < to)
+            .map((n) => ({
+              pitch: n.pitch,
+              time: timeOf(n.startBeat),
+              duration: Math.max(0.05, length(n)),
+              velocity: 64,
+            }));
+    this.recording = { mode: this.mode, expected, accompaniment };
   }
 
   private flash(pitch: number, kind: Flash['kind'], t: number): void {
@@ -429,6 +638,10 @@ export class PracticeSession {
   private finishWait(): void {
     const t = this.clock();
     this.finishedAt = t;
+    const notes = this.steps.flatMap((s) => s.notes);
+    const from = this.steps[0]?.beat ?? 0;
+    const tl = new Timeline(this.song, this.tempo, 0, from);
+    this.keepRecording((b) => tl.timeOf(b), notes, from);
     const stats = this.wait.stats;
     const total = stats.correct + stats.wrong;
     const summary: RunSummary = {
@@ -468,6 +681,7 @@ export class PracticeSession {
     if (!span || !this.startedAt) this.startedAt = t + LEAD_IN;
     this.runStartedAt = t + LEAD_IN;
     this.marks.clear();
+    this.resetRun();
     this.finishedAt = 0;
     const tl = this.timeline;
     const audible = this.song.notes.filter(
@@ -514,6 +728,7 @@ export class PracticeSession {
   frame(): void {
     const t = this.clock();
     this.flashes = this.flashes.filter((f) => f.until > t);
+    if (this.holds.size > 0) this.runHolds(t);
     if (this.labels.length > 0) this.labels = this.labels.filter((l) => l.until > t);
     for (const [pitch, state] of this.keys) {
       if (state !== 'held' && !this.flashes.some((f) => f.pitch === pitch))
@@ -523,6 +738,7 @@ export class PracticeSession {
       if (this.loopRestartAt && t >= this.loopRestartAt) {
         this.loopRestartAt = 0;
         this.runStartedAt = 0;
+        this.resetRun();
         this.done.clear();
         this.wait.reset();
       }
@@ -642,6 +858,13 @@ export class PracticeSession {
       }
       this.start();
       return;
+    }
+    if (summary && tl) {
+      const end = this.endBeat;
+      const notes = this.song.notes.filter(
+        (n) => this.inHands(n) && n.startBeat >= tl.startBeat - 1e-6 && n.startBeat < end - 1e-6,
+      );
+      this.keepRecording((b) => tl.timeOf(b), notes, tl.startBeat);
     }
     if (summary) {
       this.summary = summary;

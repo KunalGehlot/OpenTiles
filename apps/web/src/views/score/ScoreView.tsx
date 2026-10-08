@@ -1,6 +1,7 @@
 // The score views (PLAN.md P1-15 scrolling score, P2-11 page view). React mounts the elements and
 // shows loading, errors and page buttons; ScoreController does the drawing and per-frame work.
 import { useEffect, useRef, useState } from 'react';
+import type { Song } from '@opentiles/song-model';
 import type { PracticeSession } from '../session';
 import type { NotationSource } from './notation';
 import { ScoreController } from './score-controller';
@@ -12,6 +13,13 @@ export type PracticeView = 'falling' | ScoreLayout;
 
 interface Props {
   session: PracticeSession;
+  /**
+   * The piece as the score writes it, with the fingers to show. Note ids match the session's
+   * song, whose pitches may have been moved to fit the learner's keyboard (P4-07).
+   */
+  song: Song;
+  /** Ids of notes whose finger was suggested (P4-08). */
+  suggested: ReadonlySet<string>;
   notation: Extract<NotationSource, { kind: 'musicxml' | 'abc' }>;
   layout: ScoreLayout;
   /** Playback measure indices to mark after a run (P1-24); empty while practising. */
@@ -22,7 +30,7 @@ interface Props {
 const NEXT_KEYS = new Set(['PageDown', 'ArrowRight', 'Space']);
 const PREVIOUS_KEYS = new Set(['PageUp', 'ArrowLeft']);
 
-export function ScoreView({ session, notation, layout, hardest }: Props) {
+export function ScoreView({ session, song, suggested, notation, layout, hardest }: Props) {
   const hostRef = useRef<HTMLDivElement>(null);
   const stripRef = useRef<HTMLDivElement>(null);
   const cursorRef = useRef<HTMLDivElement>(null);
@@ -54,7 +62,7 @@ export function ScoreView({ session, notation, layout, hardest }: Props) {
           tk.destroy();
           return;
         }
-        controller = new ScoreController(tk, session.song, session, layout, host, strip, cursor);
+        controller = new ScoreController(tk, song, session, layout, host, strip, cursor, suggested);
         controllerRef.current = controller;
         controller.onPage = setPage;
         setPage({ page: controller.page, pageCount: controller.pageCount });
@@ -81,7 +89,7 @@ export function ScoreView({ session, notation, layout, hardest }: Props) {
       controller?.destroy();
       controllerRef.current = null;
     };
-  }, [session, notation, layout]);
+  }, [session, song, suggested, notation, layout]);
 
   const hardestKey = hardest.join(',');
   useEffect(() => {
@@ -116,7 +124,7 @@ export function ScoreView({ session, notation, layout, hardest }: Props) {
     >
       {state === 'loading' && <p className="ot-score-status muted">Drawing the score…</p>}
       {typeof state === 'object' && <p className="ot-score-status error">{state.error}</p>}
-      {state === 'ready' && unlinked > 0 && unlinked === session.song.notes.length && (
+      {state === 'ready' && unlinked > 0 && unlinked === song.notes.length && (
         <p className="ot-score-status muted">
           The score is shown, but its notes could not be matched to the music, so they are not
           coloured.

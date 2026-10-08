@@ -77,3 +77,29 @@ export function nearestByBeat(
   }
   return best;
 }
+
+export interface FingerMark {
+  noteId: string;
+  finger: number;
+  /** A suggested finger (P4-08), drawn lighter than the score's own. */
+  suggested: boolean;
+}
+
+/**
+ * Fingers to add to a drawn score. Verovio draws the fingering written in MusicXML but not in ABC,
+ * so when the drawing already has fingering only the suggested fingers are added (P2-12, P4-08).
+ */
+export function fingersToAdd(
+  notes: readonly SongNote[],
+  scoreDrawsWritten: boolean,
+  suggested: ReadonlySet<string>,
+): FingerMark[] {
+  const out: FingerMark[] = [];
+  for (const n of notes) {
+    if (n.fingering === undefined) continue;
+    const isSuggested = suggested.has(n.id);
+    if (scoreDrawsWritten && !isSuggested) continue;
+    out.push({ noteId: n.id, finger: n.fingering, suggested: isSuggested });
+  }
+  return out;
+}

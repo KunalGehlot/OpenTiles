@@ -167,12 +167,16 @@ describe('live timing feedback', () => {
     session.start();
     run(1.5 - 0.11 - clock.t); // 110 ms before the first note
     press(60);
+    run(0.4);
+    session.release(60, clock.t);
     run(2 + 0.12 - clock.t); // 120 ms after the second
     press(62);
     expect(session.judged.get('n0')).toBe('early');
     expect(session.judged.get('n1')).toBe('late');
     expect(session.labels.map((l) => l.kind)).toEqual(['early', 'late']);
     expect(session.labels[0]?.offsetMs).toBeLessThan(-80);
+    run(0.4);
+    session.release(62, clock.t);
     run(1);
     expect(session.labels).toHaveLength(0);
     expect(session.judged.get('n2')).toBe('missed');
@@ -186,5 +190,110 @@ describe('live timing feedback', () => {
     run(1.5 + 0.1 - clock.t);
     press(60, 'midi');
     expect(session.judged.get('n0')).toBe('hit');
+  });
+});
+
+describe('hold teaching and recording (P4-09)', () => {
+  it('judges holds in wait mode: too short, or long enough once the bar has drained', () => {
+    const { session, run, press, clock } = setup();
+    press(60);
+    expect(session.holds.get(60)).toMatchObject({ noteId: 'n0', length: 0.5 });
+    run(0.1);
+    session.release(60, clock.t);
+    expect(session.holds.get(60)?.judgement).toBe('short');
+    expect(session.labels.map((l) => l.kind)).toEqual(['short']);
+    press(62);
+    run(0.6);
+    expect(session.holds.get(62)?.judgement).toBe('good');
+    // Holding on in wait mode is fine: no "let go".
+    run(2);
+    session.release(62, clock.t);
+    expect(session.status().holds).toEqual({ good: 1, short: 1, long: 0 });
+    // Judged bars fade out.
+    run(0.5);
+    expect(session.holds.size).toBe(0);
+  });
+
+  it('makes no holds from the microphone, which cannot hear a key come up', () => {
+    const { session, press } = setup();
+    press(60, 'microphone');
+    expect(session.wait.stats.correct).toBe(1);
+    expect(session.holds.size).toBe(0);
+  });
+
+  it('says "let go" in play-along when a note is held well past its length', () => {
+    const { session, run, press, clock } = setup();
+    session.setMode('play-along');
+    session.start();
+    run(1.5 - clock.t);
+    press(60);
+    run(0.5);
+    expect(session.holds.get(60)?.judgement).toBeUndefined();
+    run(0.3);
+    expect(session.holds.get(60)?.judgement).toBe('long');
+    expect(session.labels.some((l) => l.kind === 'long')).toBe(true);
+  });
+
+  it('records a wait-mode run and renders it as played and polished', () => {
+    const { session, run, clock } = setup(scale(1));
+    const velocities = [100, 50, 70, 90];
+    [60, 62, 64, 65].forEach((p, i) => {
+      session.input({
+        pitch: p,
+        time: clock.t,
+        velocity: velocities[i],
+        confidence: 1,
+        source: 'midi',
+      });
+      run(0.7); // slower than written: wait mode follows the learner
+      session.release(p, clock.t);
+    });
+    const status = session.status();
+    expect(status.finished).toBe(true);
+    expect(status.recorded).toBe(true);
+    const r = session.renderings();
+    expect(r?.asPlayed.map((n) => n.time)).toEqual(
+      [0, 0.7, 1.4, 2.1].map((x) => expect.closeTo(x, 1)),
+    );
+    expect(r?.polished).toEqual(
+      [60, 62, 64, 65].map((pitch, i) => ({
+        pitch,
+        time: expect.closeTo(i * 0.5, 6),
+        duration: expect.closeTo(0.5, 6),
+        velocity: velocities[i],
+      })),
+    );
+    session.rebuild();
+    expect(session.renderings()).toBeNull();
+  });
+
+  it('adds the other hand to the polished version when it was played along', () => {
+    const song = scale(1);
+    song.notes = song.notes.map((n, i) => (i % 2 ? { ...n, hand: 'left' as const } : n));
+    const { session, press } = setup(song);
+    session.setHands('right');
+    press(60);
+    press(64);
+    const r = session.renderings();
+    expect(r?.asPlayed).toHaveLength(2);
+    expect(r?.polished.map((n) => [n.pitch, n.velocity])).toEqual([
+      [60, 80],
+      [62, 64],
+      [64, 80],
+      [65, 64],
+    ]);
+  });
+
+  it('swaps in a refitted song and starts again', () => {
+    const { session, press } = setup();
+    press(60);
+    const up = {
+      ...session.song,
+      notes: session.song.notes.map((n) => ({ ...n, pitch: n.pitch + 12 })),
+    };
+    session.setSong(up);
+    expect(session.wait.index).toBe(0);
+    expect(session.steps[0]?.pitches).toEqual([72]);
+    expect(session.expectedNotes().map((n) => n.id)).toEqual(['n0']);
   });
 });

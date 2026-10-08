@@ -1,4 +1,5 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { customKeyboard, KEYBOARD_PRESETS, keyCount } from '@opentiles/practice';
 import type { HandFilter } from '@opentiles/practice';
 import type { Song } from '@opentiles/song-model';
 import { now, unlockAudio } from '../audio/context';
@@ -9,10 +10,15 @@ import type { MidiKeyboardInput } from '../input/midi-input';
 import type { MicInput } from '../input/mic-input';
 import { TouchInput } from '../input/touch-input';
 import { href } from '../lib/router';
+import { ListenBack } from '../practice/ListenBack';
 import { connectClickTrack, MetronomeControl } from '../practice/MetronomeControl';
 import { MicCalibration } from '../practice/MicCalibration';
 import { MidiLatencyCalibration } from '../practice/MidiLatencyCalibration';
+import { prepareSong } from '../practice/prepare';
 import { SectionBar } from '../practice/SectionBar';
+import { fitMessage, keyboardRange } from '../settings/model';
+import type { FingeringDisplay } from '../settings/model';
+import { updateAppSettings, useAppSettings } from '../settings/store';
 import {
   getMicCalibration,
   getMidiCalibration,
@@ -30,6 +36,7 @@ import { ScoreView } from '../views/score/ScoreView';
 import { usePracticeView, ViewToggle } from '../views/score/ViewToggle';
 
 interface Loaded {
+  source: 'catalogue' | 'library';
   song: Song;
   title: string;
   subtitle?: string;
@@ -51,6 +58,7 @@ export function Practice({ source, id }: { source: 'catalogue' | 'library'; id: 
       if (source === 'catalogue') {
         const { piece, song, bytes } = await loadCatalogueSong(id);
         return {
+          source,
           song,
           title: piece.title,
           subtitle: piece.composer,
@@ -61,6 +69,7 @@ export function Practice({ source, id }: { source: 'catalogue' | 'library'; id: 
       const item = await db.library.get(Number(id));
       if (!item) throw new Error('This piece is not in your library on this device.');
       return {
+        source,
         song: item.song,
         title: item.title,
         progressKey: `library:${id}`,
@@ -87,8 +96,19 @@ export function Practice({ source, id }: { source: 'catalogue' | 'library'; id: 
   return <PracticeView key={loaded.progressKey} {...loaded} />;
 }
 
-function PracticeView({ song, title, subtitle, progressKey, notation }: Loaded) {
-  const [session] = useState(() => new PracticeSession(song, now));
+function PracticeView({ source, song, title, subtitle, progressKey, notation }: Loaded) {
+  const settings = useAppSettings();
+  // The piece fitted to the learner's keyboard (P4-07), with the fingers they chose (P4-08).
+  // Keyed on plain values: other settings changing must not restart the run.
+  const { size, low, keys } = settings.keyboard;
+  const fingering = settings.fingering;
+  const range = useMemo(() => keyboardRange({ size, low, keys }), [size, low, keys]);
+  const prepared = useMemo(() => prepareSong(song, range, fingering), [song, range, fingering]);
+  const keysRange = useMemo(
+    () => range ?? rangeFor(prepared.played.notes.map((n) => n.pitch)),
+    [range, prepared],
+  );
+  const [session] = useState(() => new PracticeSession(prepared.played, now));
   const [status, setStatus] = useState<SessionStatus>(() => session.status());
   const [mode, setMode] = useState<PracticeMode>('wait');
   const [hands, setHands] = useState<HandFilter>('both');
@@ -120,7 +140,7 @@ function PracticeView({ song, title, subtitle, progressKey, notation }: Loaded) 
     );
     const t = touch.current;
     t.onNote = (e) => session.input(e);
-    t.onRelease = (p) => session.release(p);
+    t.onRelease = (p, time) => session.release(p, time);
     void t.start();
     return () => {
       unsubscribe();
@@ -156,12 +176,19 @@ function PracticeView({ song, title, subtitle, progressKey, notation }: Loaded) 
     [mic],
   );
 
+  // A new keyboard size or fingering: the same piece with other pitches or fingers.
+  useEffect(() => {
+    session.setSong(prepared.played);
+    rendererRef.current?.setRange(keysRange);
+  }, [session, prepared, keysRange]);
+
   // Canvas: resize and draw every frame.
+  const initialRange = useRef(keysRange);
   useEffect(() => {
     const canvas = canvasRef.current;
     const wrap = wrapRef.current;
     if (!canvas || !wrap) return;
-    const renderer = new PracticeRenderer(canvas, rangeFor(song.notes.map((n) => n.pitch)));
+    const renderer = new PracticeRenderer(canvas, initialRange.current);
     rendererRef.current = renderer;
     const ro = new ResizeObserver(() => renderer.resize(wrap.clientWidth, wrap.clientHeight));
     ro.observe(wrap);
@@ -181,7 +208,7 @@ function PracticeView({ song, title, subtitle, progressKey, notation }: Loaded) 
       ro.disconnect();
       scheme.removeEventListener('change', onScheme);
     };
-  }, [session, song]);
+  }, [session]);
 
   // Space starts/stops playback, R restarts.
   useEffect(() => {
@@ -262,7 +289,7 @@ function PracticeView({ song, title, subtitle, progressKey, notation }: Loaded) 
     try {
       const input = createMidiInput();
       input.onNote = (e) => session.input(e);
-      input.onRelease = (p) => session.release(p);
+      input.onRelease = (p, time) => session.release(p, time);
       input.onDevicesChanged = (devices) => setMidi((m) => (m ? { ...m, devices } : m));
       await input.start();
       setMidi({ input, devices: input.deviceNames });
@@ -327,6 +354,9 @@ function PracticeView({ song, title, subtitle, progressKey, notation }: Loaded) 
   };
 
   const summary = status.summary;
+  const fit = range && prepared.fit ? fitMessage(prepared.fit, range) : null;
+  const holds = status.holds;
+  const holdCount = holds.good + holds.short + holds.long;
   const measureLabel = (index: number) => song.measures[index]?.number ?? String(index + 1);
 
   return (
@@ -416,6 +446,38 @@ function PracticeView({ song, title, subtitle, progressKey, notation }: Loaded) 
           </button>
         )}
         <button onClick={() => session.rebuild()}>Restart</button>
+        <label title="The keys of your own keyboard; pieces are moved by octaves to fit">
+          <span className="bar-label">Keys</span>
+          <select
+            aria-label="Keyboard size"
+            value={settings.keyboard.size}
+            onChange={(e) =>
+              void updateAppSettings({ keyboard: { ...settings.keyboard, size: e.target.value } })
+            }
+          >
+            <option value="auto">Fit piece</option>
+            {KEYBOARD_PRESETS.map((p) => (
+              <option key={p.id} value={p.id}>
+                {p.keys}
+              </option>
+            ))}
+            <option value="custom">Custom ({keyCount(customKeyboard(low, keys))})</option>
+          </select>
+        </label>
+        <label className="bar-fingers" title="Which fingers to show on the notes, keys and score">
+          <span className="bar-label">Fingers</span>
+          <select
+            aria-label="Fingering"
+            value={settings.fingering}
+            onChange={(e) =>
+              void updateAppSettings({ fingering: e.target.value as FingeringDisplay })
+            }
+          >
+            <option value="suggested">Suggested</option>
+            <option value="written">As written</option>
+            <option value="off">Off</option>
+          </select>
+        </label>
       </div>
       <div className="practice-bar">
         <span className="muted">Play with:</span>
@@ -468,12 +530,19 @@ function PracticeView({ song, title, subtitle, progressKey, notation }: Loaded) 
         {inputError && <span className="error">{inputError}</span>}
         <ViewToggle view={view} onChange={setView} notation={notation} />
       </div>
+      {fit && (
+        <p className="practice-note muted" role="status">
+          {fit}
+        </p>
+      )}
       {(showLoop || status.loop !== null) && (
         <SectionBar session={session} song={song} status={status} />
       )}
       {view !== 'falling' && notation.kind !== 'none' && (
         <ScoreView
           session={session}
+          song={prepared.score}
+          suggested={prepared.suggested}
           notation={notation}
           layout={view}
           hardest={
@@ -491,7 +560,12 @@ function PracticeView({ song, title, subtitle, progressKey, notation }: Loaded) 
         onPointerUp={onPointerUp}
         onPointerCancel={onPointerUp}
       >
-        <canvas ref={canvasRef} aria-label="Falling notes and piano keyboard" role="img" />
+        <canvas
+          ref={canvasRef}
+          aria-label="Falling notes and piano keyboard"
+          role="img"
+          data-keys={`${keysRange.low}-${keysRange.high}`}
+        />
         {status.finished && summary && (
           <div className="overlay">
             <div className="panel stack">
@@ -515,6 +589,16 @@ function PracticeView({ song, title, subtitle, progressKey, notation }: Loaded) 
                   Hardest bars:{' '}
                   {summary.hardestMeasures.map((m) => measureLabel(m.measureIndex)).join(', ')}
                 </p>
+              )}
+              {holdCount > 0 && (
+                <p className="muted" data-testid="hold-summary">
+                  Held well: {holds.good} of {holdCount}
+                  {holds.short > 0 && <> · {holds.short} too short</>}
+                  {holds.long > 0 && <> · {holds.long} too long</>}
+                </p>
+              )}
+              {status.recorded && (
+                <ListenBack session={session} title={title} allowSave={source === 'catalogue'} />
               )}
               <div className="row">
                 <button className="primary" onClick={() => session.rebuild()}>
