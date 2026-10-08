@@ -59,6 +59,17 @@
   /* ---- Layout ---- */
   --page-width: 72rem;
   --measure: 68ch;
+  /* Where the page column starts and ends, so the header and footer line up with it. */
+  --edge-start: max(
+    var(--space-4),
+    env(safe-area-inset-left),
+    calc((100% - var(--page-width)) / 2 + var(--space-4))
+  );
+  --edge-end: max(
+    var(--space-4),
+    env(safe-area-inset-right),
+    calc((100% - var(--page-width)) / 2 + var(--space-4))
+  );
   /* Smallest comfortable touch target, and the dense variant for the practice bars. */
   --tap: 2.5rem;
   --tap-sm: 2.125rem;
@@ -111,6 +122,7 @@
   --key-black: #1c2321;
   --now-line: rgba(19, 26, 24, 0.55);
   --loop-band: rgba(31, 111, 92, 0.1);
+  --glow: rgba(31, 111, 92, 0.07);
 }
 
 @media (prefers-color-scheme: dark) {
@@ -158,6 +170,7 @@
     --key-black: #090c0b;
     --now-line: rgba(232, 238, 236, 0.55);
     --loop-band: rgba(76, 194, 161, 0.12);
+    --glow: rgba(76, 194, 161, 0.1);
   }
 }
 
@@ -204,6 +217,7 @@ html[data-high-contrast] {
   --key-black: #000000;
   --now-line: #000000;
   --loop-band: rgba(0, 81, 63, 0.14);
+  --glow: transparent;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -248,6 +262,7 @@ html[data-high-contrast] {
     --key-black: #000000;
     --now-line: #ffffff;
     --loop-band: rgba(111, 240, 200, 0.16);
+    --glow: transparent;
   }
 }
 

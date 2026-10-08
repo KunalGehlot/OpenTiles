@@ -11,18 +11,23 @@
   min-height: 100dvh;
 }
 
+/* The header and footer span the window, but their contents line up with the page column. */
 .topbar {
+  position: sticky;
+  top: 0;
+  z-index: 5;
   display: flex;
   align-items: center;
   flex-wrap: wrap;
   gap: var(--space-2) var(--space-5);
   min-height: 3.5rem;
-  padding: var(--space-2) max(var(--space-4), env(safe-area-inset-right)) var(--space-2)
-    max(var(--space-4), env(safe-area-inset-left));
+  padding: var(--space-2) var(--edge-end) var(--space-2) var(--edge-start);
   /* The iPad app's WebView runs under the status bar; browsers report an inset of 0 here. */
   padding-top: max(var(--space-2), env(safe-area-inset-top));
   border-bottom: 1px solid var(--line);
-  background: var(--surface);
+  background: color-mix(in srgb, var(--surface) 90%, transparent);
+  -webkit-backdrop-filter: blur(14px) saturate(1.4);
+  backdrop-filter: blur(14px) saturate(1.4);
 }
 
 .brand {
@@ -80,6 +85,11 @@ main {
     max(var(--space-4), env(safe-area-inset-left));
 }
 
+/* A faint glow of the logo's teal behind the top of every page but the practice screen. */
+.app:not(.app--practice) {
+  background: radial-gradient(70rem 26rem at 50% -10rem, var(--glow), transparent 70%) no-repeat;
+}
+
 /* A new page eases in; the practice screen does not, its canvas must be there at once. */
 main > * {
   animation: page-in var(--dur-3) var(--ease) backwards;
@@ -98,8 +108,8 @@ main > * {
   align-items: center;
   justify-content: space-between;
   gap: var(--space-1) var(--space-4);
-  padding: var(--space-4) max(var(--space-4), env(safe-area-inset-right))
-    max(var(--space-4), env(safe-area-inset-bottom)) max(var(--space-4), env(safe-area-inset-left));
+  padding: var(--space-4) var(--edge-end) max(var(--space-4), env(safe-area-inset-bottom))
+    var(--edge-start);
   border-top: 1px solid var(--line);
   font-size: var(--text-sm);
 }
@@ -139,6 +149,12 @@ main > * {
 @media (max-width: 600px) {
   .topbar nav a {
     padding: 0.3rem 0.5rem;
+  }
+}
+
+@media (max-height: 520px) {
+  .topbar {
+    position: static;
   }
 }
 
