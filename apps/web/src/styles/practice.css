@@ -1,46 +1,273 @@
 /*
- * The practice screen (P4-10, ADR 0011): control bars, the canvas, the end-of-run overlay and the
- * compact layouts for ⅓ iPad width, phones and short landscape windows (spec §5, PLAN.md P1-27).
+ * The practice screen (P4-10, ADR 0011): a slim session header, the control rows, the canvas and
+ * the end-of-run overlay, plus the compact layouts for ⅓ iPad width, phones and short landscape
+ * windows (spec §5, PLAN.md P1-27). In the compact layouts the secondary buttons keep only their
+ * icon; their names stay for screen readers.
  */
 
-.practice-bar {
+/* ---- Bars ---- */
+
+.bar {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   gap: var(--space-2) var(--space-3);
-  padding: var(--space-2) max(var(--space-3), env(safe-area-inset-left));
+  padding: var(--space-2) max(var(--space-3), env(safe-area-inset-right)) var(--space-2)
+    max(var(--space-3), env(safe-area-inset-left));
   border-bottom: 1px solid var(--line);
   background: var(--surface);
   /* Dense rows: the page's reading line height would add a few pixels to each of them. */
   line-height: 1.3;
 }
 
-.practice-bar .title {
-  min-width: 10ch;
-  margin-right: auto;
-  font-weight: 650;
-}
-
-.practice-bar button,
-.practice-bar .button {
+.bar button,
+.bar .button {
   min-height: var(--tap-sm);
-  padding: 0.25rem 0.8rem;
+  padding: 0.25rem 0.75rem;
   font-size: var(--text-sm);
 }
 
-.practice-bar .segmented button {
-  min-height: calc(var(--tap-sm) - 6px);
+.bar .segmented {
+  padding: 2px;
 }
 
-.practice-bar select {
+.bar .segmented button {
+  min-height: calc(var(--tap-sm) - 6px);
+  padding: 0.2rem 0.75rem;
+}
+
+.bar select {
   min-height: var(--tap-sm);
   padding-top: 0.15rem;
   padding-bottom: 0.15rem;
   font-size: var(--text-sm);
 }
 
-.practice-bar input[type='range'] {
+.bar input[type='range'] {
   height: 1.25rem;
+}
+
+.group {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+/* The session header: back, title, inputs and options. */
+.session-bar {
+  flex-wrap: nowrap;
+  gap: var(--space-3);
+  min-height: 3.25rem;
+  padding-top: max(var(--space-2), env(safe-area-inset-top));
+}
+
+.back {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  gap: 0.15rem;
+  padding: 0.3rem 0.6rem 0.3rem 0.3rem;
+  border-radius: var(--radius-sm);
+  color: var(--muted);
+  font-size: var(--text-sm);
+  font-weight: 550;
+  text-decoration: none;
+  transition:
+    background-color var(--dur-1) var(--ease),
+    color var(--dur-1) var(--ease);
+}
+
+.back:hover {
+  background: var(--sunken);
+  color: var(--text);
+}
+
+.session-title {
+  display: flex;
+  flex: 1 1 auto;
+  align-items: baseline;
+  gap: var(--space-2);
+  min-width: 0;
+  margin: 0;
+  overflow: hidden;
+  font-size: var(--text-md);
+  font-weight: 650;
+  letter-spacing: -0.01em;
+  white-space: nowrap;
+}
+
+.session-title__name,
+.session-title__sub {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.session-title__sub {
+  color: var(--muted);
+  font-size: var(--text-sm);
+  font-weight: 400;
+}
+
+.session-bar__end {
+  display: flex;
+  flex: none;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+/* What is connected: a quiet label, green while live. */
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  min-height: var(--tap-sm);
+  padding: 0 0.65rem;
+  border-radius: var(--radius-sm);
+  background: var(--sunken);
+  color: var(--muted);
+  font-size: var(--text-sm);
+  white-space: nowrap;
+}
+
+.chip--live {
+  background: var(--ok-soft);
+  color: var(--ok);
+}
+
+.chip--pulse .icon {
+  animation: live-pulse 2s ease-in-out infinite;
+}
+
+@keyframes live-pulse {
+  50% {
+    opacity: 0.45;
+  }
+}
+
+/* ---- Options popover (src/ui/Popover.tsx) ---- */
+
+.popover {
+  position: relative;
+}
+
+.popover__panel {
+  position: absolute;
+  top: calc(100% + var(--space-2));
+  right: 0;
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  width: min(20rem, calc(100vw - 1rem));
+  padding: var(--space-4);
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius);
+  background: var(--surface);
+  box-shadow: var(--shadow-3);
+  font-size: var(--text-sm);
+  animation: pop-in var(--dur-2) var(--ease) backwards;
+}
+
+.popover__panel .field {
+  align-items: stretch;
+}
+
+.popover__hint {
+  margin: 0;
+}
+
+@keyframes pop-in {
+  from {
+    opacity: 0;
+    transform: translateY(-0.25rem) scale(0.98);
+  }
+}
+
+/* ---- Controls ---- */
+
+.session-controls {
+  gap: var(--space-2) var(--space-5);
+}
+
+.tempo {
+  display: inline-flex;
+  flex: 1 1 15rem;
+  flex-wrap: nowrap;
+  align-items: center;
+  gap: var(--space-2);
+  max-width: 26rem;
+}
+
+.tempo__label {
+  color: var(--muted);
+  font-size: var(--text-sm);
+}
+
+.tempo input[type='range'] {
+  flex: 1 1 auto;
+  width: auto;
+  min-width: 5rem;
+}
+
+.tempo__value {
+  min-width: 3.1rem;
+  font-size: var(--text-sm);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+label.check {
+  gap: 0.4rem;
+  color: var(--muted);
+  font-size: var(--text-sm);
+}
+
+.metronome-control {
+  display: inline-flex;
+  flex-wrap: nowrap;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.metronome-control input[type='range'] {
+  width: 5rem;
+}
+
+/* The status row: how the run is going, and which view to look at. */
+.session-status {
+  gap: var(--space-1) var(--space-4);
+  padding-top: var(--space-1);
+  padding-bottom: var(--space-1);
+  background: var(--surface-2);
+  font-size: var(--text-sm);
+}
+
+.session-status__view {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-left: auto;
+}
+
+.stats {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  font-variant-numeric: tabular-nums;
+}
+
+.stat {
+  color: var(--muted);
+}
+
+.stat--ok {
+  color: var(--ok);
+  font-weight: 600;
+}
+
+.stat--bad {
+  color: var(--bad);
+  font-weight: 600;
 }
 
 /* "Moved up an octave to fit your keyboard" (P4-07). */
@@ -51,6 +278,13 @@
   background: var(--surface);
   font-size: var(--text-sm);
 }
+
+.section-bar .loop-status {
+  margin-left: auto;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ---- The canvas and what sits on it ---- */
 
 .practice-canvas-wrap {
   position: relative;
@@ -93,135 +327,132 @@
   z-index: 2;
 }
 
+.session-message {
+  padding: var(--space-5) var(--space-4);
+}
+
+/* The end-of-run summary: the accuracy as a ring, the details beneath it. */
+.summary {
+  align-items: center;
+  text-align: center;
+}
+
+.summary h2 {
+  margin: 0;
+}
+
+.summary p {
+  margin: 0;
+}
+
+.ring {
+  --size: 8rem;
+
+  position: relative;
+  display: grid;
+  place-content: center;
+  justify-items: center;
+  gap: 0.125rem;
+  width: var(--size);
+  height: var(--size);
+}
+
+.ring::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: conic-gradient(var(--accent) calc(var(--pct) * 1%), var(--line) 0);
+  -webkit-mask: radial-gradient(
+    farthest-side,
+    transparent calc(100% - 0.6rem),
+    #000 calc(100% - 0.55rem)
+  );
+  mask: radial-gradient(farthest-side, transparent calc(100% - 0.6rem), #000 calc(100% - 0.55rem));
+}
+
+.ring__value {
+  position: relative;
+  font-size: 2.5rem;
+  font-weight: 750;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.03em;
+  line-height: 1;
+}
+
+.ring__value small {
+  color: var(--muted);
+  font-size: 1rem;
+  font-weight: 600;
+  letter-spacing: 0;
+}
+
+.ring__label {
+  position: relative;
+  color: var(--muted);
+  font-size: var(--text-xs);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.summary__actions {
+  justify-content: center;
+}
+
 .listen-back {
+  align-self: stretch;
   padding-top: var(--space-3);
   border-top: 1px solid var(--line);
+  text-align: left;
 }
 
-.stats {
-  display: flex;
-  gap: var(--space-4);
-  font-variant-numeric: tabular-nums;
-}
+/* ---- Left-handed layout: the bars are mirrored so their controls sit on the left ---- */
 
-/* Metronome, loop section, calibration (P1-13, P2-08, P3-04, P1-19, P1-20). */
-.metronome-control {
-  flex-wrap: nowrap;
-  gap: var(--space-2);
-}
-
-.metronome-control input[type='range'] {
-  width: 5rem;
-}
-
-.section-bar .loop-status {
-  margin-left: auto;
-  font-variant-numeric: tabular-nums;
-}
-
-/* Left-handed layout: the practice bar is mirrored so its controls sit on the left. Practice
-   views can also read useLeftHanded() for anything CSS cannot move. */
-html[data-left-handed] .practice-bar {
+html[data-left-handed] .bar {
   flex-direction: row-reverse;
 }
 
-html[data-left-handed] .practice-bar .title {
-  margin-right: 0;
-  margin-left: auto;
+html[data-left-handed] .session-title {
+  justify-content: flex-end;
   text-align: right;
 }
 
+html[data-left-handed] .session-status__view {
+  margin-right: auto;
+  margin-left: 0;
+}
+
 /*
- * Practice at ⅓ iPad width (Split View, Slide Over), on phones and in short landscape windows: one
- * compact top row, smaller controls that wrap, secondary hints hidden, and the canvas takes
- * whatever height is left.
+ * Compact: ⅓ iPad width (Split View, Slide Over), phones and short landscape windows. Smaller bars
+ * that wrap, icon-only secondary buttons, and the canvas takes whatever height is left.
  */
 @media (max-width: 640px), (max-height: 520px) {
-  .app--practice .topbar {
-    flex-wrap: nowrap;
-    gap: var(--space-2);
-    min-height: 0;
-    padding-top: max(0.3rem, env(safe-area-inset-top));
-    padding-bottom: 0.3rem;
+  .bar {
+    gap: 0.3rem 0.4rem;
+    padding: 0.3rem max(0.5rem, env(safe-area-inset-right)) 0.3rem
+      max(0.5rem, env(safe-area-inset-left));
   }
 
-  /* Logo only; the name stays available to screen readers. */
-  .app--practice .brand span {
-    position: absolute;
-    width: 1px;
-    height: 1px;
-    overflow: hidden;
-    clip-path: inset(50%);
-    white-space: nowrap;
+  .bar button,
+  .bar .button {
+    padding: 0.2rem 0.6rem;
   }
 
-  /* One row of links that scrolls sideways if it has to. */
-  .app--practice .topbar nav {
-    flex-wrap: nowrap;
-    min-width: 0;
-    overflow-x: auto;
-    scrollbar-width: none;
-  }
-
-  .app--practice .topbar nav::-webkit-scrollbar {
-    display: none;
-  }
-
-  .app--practice .topbar nav a {
-    padding: 0.2rem 0.55rem;
-    font-size: var(--text-sm);
-    white-space: nowrap;
-  }
-
-  .practice-bar {
-    gap: 0.35rem 0.4rem;
-    padding: 0.3rem max(0.5rem, env(safe-area-inset-left));
-    font-size: var(--text-sm);
-  }
-
-  .practice-bar button,
-  .practice-bar .button {
-    min-height: 2.125rem;
-    padding: 0.2rem 0.65rem;
-  }
-
-  .practice-bar .segmented {
-    padding: 2px;
-  }
-
-  .practice-bar .segmented button {
+  .bar .segmented button {
     min-height: 1.875rem;
     padding: 0.2rem 0.55rem;
   }
 
-  .practice-bar .title {
-    flex: 1 1 8rem;
-    min-width: 0;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
+  .session-bar {
+    gap: 0.4rem;
+    min-height: 0;
+    padding-top: max(0.3rem, env(safe-area-inset-top));
   }
 
-  /* The tempo slider takes the spare width of its row. */
-  .practice-bar label:has(> input[type='range']) {
-    flex: 1 1 10rem;
-    flex-wrap: nowrap;
-    white-space: nowrap;
-  }
-
-  .practice-bar input[type='range'] {
-    flex: 1 1 auto;
-    width: 5rem;
-    min-width: 4rem;
-  }
-
-  /* No room for the fingering picker at this size; it is in Settings. */
-  .practice-bar .bar-fingers {
-    display: none;
-  }
-
-  /* Picker captions are for screen readers only. */
-  .practice-bar .bar-label {
+  /* Icon only: the text stays for screen readers. */
+  .bar .btn-label,
+  .chip__text,
+  .tempo__label {
     position: absolute;
     width: 1px;
     height: 1px;
@@ -230,15 +461,28 @@ html[data-left-handed] .practice-bar .title {
     white-space: nowrap;
   }
 
-  /* The input bar's "Play with:" caption and keyboard-keys hint go first. */
-  .practice-bar + .practice-bar > .muted:first-child,
-  .practice-bar + .practice-bar > .muted:first-child + .badge {
-    display: none;
+  .chip {
+    padding: 0 0.5rem;
   }
 
-  .practice-bar .stats {
-    gap: var(--space-3);
-    margin-left: auto;
+  .session-controls {
+    gap: 0.3rem 0.6rem;
+  }
+
+  /* The tempo slider takes the spare width of its row. */
+  .tempo {
+    flex: 1 1 8rem;
+  }
+
+  .tempo input[type='range'] {
+    flex: 1 1 auto;
+    width: auto;
+    min-width: 4rem;
+  }
+
+  .session-status {
+    padding-top: 0.2rem;
+    padding-bottom: 0.2rem;
   }
 
   .practice-canvas-wrap {
@@ -246,19 +490,33 @@ html[data-left-handed] .practice-bar .title {
   }
 }
 
-@media (max-width: 640px) {
-  .practice-bar .title {
-    flex-basis: 100%;
+@media (max-width: 520px) {
+  .session-title__sub {
+    display: none;
   }
+}
 
-  /* At ⅓ width the links overflow: fade the edge to show there is more. */
-  .app--practice .topbar nav {
-    mask-image: linear-gradient(to right, #000 calc(100% - 1.5rem), transparent);
+@media (max-width: 420px) {
+  .back__label {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
   }
 }
 
 @media (max-height: 520px) {
   .practice-canvas-wrap {
     min-height: 150px;
+  }
+
+  .ring {
+    --size: 5.5rem;
+  }
+
+  .ring__value {
+    font-size: 1.75rem;
   }
 }

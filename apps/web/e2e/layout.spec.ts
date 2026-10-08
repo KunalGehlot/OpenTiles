@@ -111,11 +111,28 @@ test('practice is usable at ⅓ iPad width', async ({ page }) => {
   const layout = await measure(page);
   expect(layout.pageWidth).toBeLessThanOrEqual(layout.viewportWidth);
   expect(layout.canvasHeight).toBeGreaterThan(layout.viewportHeight * 0.5);
-  // Every control is still on screen.
-  for (const name of ['Wait', 'Listen', 'Play along', 'Left', 'Both', 'Right', 'Restart']) {
+  // Every control is still on screen. The secondary ones show only their icon at this width, but
+  // keep their names (P4-10), so they are found the same way. Browsers without Web MIDI show a
+  // note instead of the MIDI button.
+  const hasMidi = await page.evaluate(() => typeof navigator.requestMIDIAccess === 'function');
+  for (const name of [
+    'Wait',
+    'Listen',
+    'Play along',
+    'Left',
+    'Both',
+    'Right',
+    'Restart',
+    'Metronome',
+    'Loop',
+    'Use microphone',
+    'Options',
+    ...(hasMidi ? ['Connect MIDI keyboard'] : []),
+  ]) {
     const box = await page.getByRole('button', { name, exact: true }).boundingBox();
     expect(box, name).not.toBeNull();
     expect((box?.x ?? 0) + (box?.width ?? 0), name).toBeLessThanOrEqual(layout.viewportWidth);
+    expect(box?.x ?? -1, name).toBeGreaterThanOrEqual(0);
   }
   await expect(page.getByRole('slider')).toBeVisible();
   await tapExpectedKey(page);

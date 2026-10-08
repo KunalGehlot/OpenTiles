@@ -27,23 +27,26 @@ export function App() {
   const practising = route.name === 'practice';
   return (
     <div className={practising ? 'app app--practice' : 'app'}>
-      <header className="topbar">
-        <a className="brand" href={href({ name: 'home' })}>
-          <img src="./icon.svg" alt="" width={28} height={28} />
-          <span>OpenTiles</span>
-        </a>
-        <nav aria-label="Main">
-          {NAV.map((n) => (
-            <a
-              key={n.label}
-              href={href(n.route)}
-              aria-current={n.route.name === route.name ? 'page' : undefined}
-            >
-              {n.label}
-            </a>
-          ))}
-        </nav>
-      </header>
+      {/* The practice screen has its own slim header (routes/Practice.tsx): the canvas needs the room. */}
+      {!practising && (
+        <header className="topbar">
+          <a className="brand" href={href({ name: 'home' })}>
+            <img src="./icon.svg" alt="" width={28} height={28} />
+            <span>OpenTiles</span>
+          </a>
+          <nav aria-label="Main">
+            {NAV.map((n) => (
+              <a
+                key={n.label}
+                href={href(n.route)}
+                aria-current={n.route.name === route.name ? 'page' : undefined}
+              >
+                {n.label}
+              </a>
+            ))}
+          </nav>
+        </header>
+      )}
       <main>
         {route.name === 'home' && <Home />}
         {route.name === 'library' && <Library />}

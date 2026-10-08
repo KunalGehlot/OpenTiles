@@ -87,7 +87,7 @@ export function SectionBar({
   const bars = song.measures.map((_, i) => i);
 
   return (
-    <div className="practice-bar section-bar" role="group" aria-label="Loop a section">
+    <div className="bar section-bar" role="group" aria-label="Loop a section">
       <label>
         Loop bars
         <select

@@ -1,4 +1,16 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
+import {
+  ChevronLeft,
+  Gauge,
+  Mic,
+  Piano,
+  Play,
+  Repeat,
+  RotateCcw,
+  Settings as SettingsIcon,
+  SlidersHorizontal,
+  Square,
+} from 'lucide-react';
 import { customKeyboard, KEYBOARD_PRESETS, keyCount } from '@opentiles/practice';
 import type { HandFilter } from '@opentiles/practice';
 import type { Song } from '@opentiles/song-model';
@@ -34,6 +46,7 @@ import { formatOfPath, notationFor } from '../views/score/notation';
 import type { NotationSource } from '../views/score/notation';
 import { ScoreView } from '../views/score/ScoreView';
 import { usePracticeView, ViewToggle } from '../views/score/ViewToggle';
+import { Popover } from '../ui/Popover';
 
 interface Loaded {
   source: 'catalogue' | 'library';
@@ -86,13 +99,15 @@ export function Practice({ source, id }: { source: 'catalogue' | 'library'; id: 
 
   if (error) {
     return (
-      <div style={{ padding: '1rem' }}>
+      <div className="session-message">
         <p className="error">{error}</p>
-        <a href={href({ name: 'home' })}>Back to pieces</a>
+        <a className="button" href={href({ name: 'home' })}>
+          <ChevronLeft /> Back to pieces
+        </a>
       </div>
     );
   }
-  if (!loaded) return <p style={{ padding: '1rem' }}>Loading…</p>;
+  if (!loaded) return <p className="session-message muted">Loading…</p>;
   return <PracticeView key={loaded.progressKey} {...loaded} />;
 }
 
@@ -359,48 +374,191 @@ function PracticeView({ source, song, title, subtitle, progressKey, notation }: 
   const holdCount = holds.good + holds.short + holds.long;
   const measureLabel = (index: number) => song.measures[index]?.number ?? String(index + 1);
 
+  const backRoute =
+    source === 'library' ? ({ name: 'library' } as const) : ({ name: 'home' } as const);
+
   return (
     <>
-      <div className="practice-bar">
-        <span className="title">
-          {title}
-          {subtitle && <span className="muted"> · {subtitle}</span>}
-        </span>
-        <div className="segmented" role="group" aria-label="Mode">
-          {(
-            [
-              ['wait', 'Wait'],
-              ['listen', 'Listen'],
-              ['play-along', 'Play along'],
-            ] as const
-          ).map(([m, label]) => (
-            <button key={m} aria-pressed={mode === m} onClick={() => changeMode(m)}>
-              {label}
+      <header className="bar session-bar">
+        <a className="back" href={href(backRoute)}>
+          <ChevronLeft />
+          <span className="back__label">{source === 'library' ? 'My library' : 'Pieces'}</span>
+        </a>
+        <h1 className="session-title">
+          <span className="session-title__name">{title}</span>
+          {subtitle && <span className="session-title__sub">{subtitle}</span>}
+        </h1>
+        <div className="session-bar__end">
+          {midiSupported() ? (
+            midi ? (
+              <>
+                <span className="chip chip--live" title="A MIDI keyboard is connected">
+                  <Piano />
+                  <span className="chip__text">
+                    MIDI: {midi.devices.join(', ') || 'no device connected'}
+                  </span>
+                </span>
+                <button onClick={() => setMidiCalibrating(true)} title="Measure keyboard delay">
+                  <Gauge />
+                  <span className="btn-label">Calibrate timing</span>
+                </button>
+              </>
+            ) : (
+              <button onClick={() => void connectMidi()}>
+                <Piano />
+                <span className="btn-label">Connect MIDI keyboard</span>
+              </button>
+            )
+          ) : (
+            <span className="chip" title="Safari and iPad browsers have no Web MIDI">
+              <Piano />
+              <span className="chip__text">MIDI not available in this browser</span>
+            </span>
+          )}
+          {mic ? (
+            <>
+              <span className="chip chip--live chip--pulse">
+                <Mic />
+                <span className="chip__text">Microphone listening</span>
+              </span>
+              <button
+                onClick={() => {
+                  session.stop();
+                  mic.onNote = () => {};
+                  setMicCalibrating(mic);
+                }}
+              >
+                <SlidersHorizontal />
+                <span className="btn-label">Set up microphone</span>
+              </button>
+            </>
+          ) : (
+            <button disabled={busy} aria-busy={busy} onClick={() => void connectMic()}>
+              <Mic />
+              <span className="btn-label">{busy ? 'Starting…' : 'Use microphone'}</span>
             </button>
-          ))}
+          )}
+          <Popover label="Options" icon={<SettingsIcon />}>
+            <label className="field">
+              <span className="field__label">Keyboard size</span>
+              <select
+                aria-label="Keyboard size"
+                value={settings.keyboard.size}
+                onChange={(e) =>
+                  void updateAppSettings({
+                    keyboard: { ...settings.keyboard, size: e.target.value },
+                  })
+                }
+              >
+                <option value="auto">Fit piece</option>
+                {KEYBOARD_PRESETS.map((p) => (
+                  <option key={p.id} value={p.id}>
+                    {p.keys}
+                  </option>
+                ))}
+                <option value="custom">Custom ({keyCount(customKeyboard(low, keys))})</option>
+              </select>
+            </label>
+            <label className="field">
+              <span className="field__label">Fingers</span>
+              <select
+                aria-label="Fingering"
+                value={settings.fingering}
+                onChange={(e) =>
+                  void updateAppSettings({ fingering: e.target.value as FingeringDisplay })
+                }
+              >
+                <option value="suggested">Suggested</option>
+                <option value="written">As written</option>
+                <option value="off">Off</option>
+              </select>
+            </label>
+            <p className="muted popover__hint">
+              The on-screen keys and the computer keys A–; always play. Pieces are moved by octaves
+              to fit the keyboard you choose.
+            </p>
+            <a href={href({ name: 'settings' })}>All settings</a>
+          </Popover>
         </div>
-        <div className="segmented" role="group" aria-label="Hands">
-          {(
-            [
-              ['left', 'Left'],
-              ['both', 'Both'],
-              ['right', 'Right'],
-            ] as const
-          ).map(([h, label]) => (
-            <button
-              key={h}
-              aria-pressed={hands === h}
-              onClick={() => {
-                setHands(h);
-                session.setHands(h);
-              }}
-            >
-              {label}
+      </header>
+      <div className="bar session-controls">
+        <div className="group">
+          <div className="segmented" role="group" aria-label="Mode">
+            {(
+              [
+                ['wait', 'Wait'],
+                ['listen', 'Listen'],
+                ['play-along', 'Play along'],
+              ] as const
+            ).map(([m, label]) => (
+              <button key={m} aria-pressed={mode === m} onClick={() => changeMode(m)}>
+                {label}
+              </button>
+            ))}
+          </div>
+          {mode !== 'wait' && (
+            <button className="primary" onClick={() => void toggle()}>
+              {status.playing ? <Square /> : <Play />}
+              {status.playing ? 'Stop' : mode === 'listen' ? 'Play' : 'Start'}
             </button>
-          ))}
+          )}
+          <button onClick={() => session.rebuild()}>
+            <RotateCcw />
+            <span className="btn-label">Restart</span>
+          </button>
         </div>
-        <label title="Practice tempo">
-          Tempo
+        <div className="group">
+          <div className="segmented" role="group" aria-label="Hands">
+            {(
+              [
+                ['left', 'Left'],
+                ['both', 'Both'],
+                ['right', 'Right'],
+              ] as const
+            ).map(([h, label]) => (
+              <button
+                key={h}
+                aria-pressed={hands === h}
+                onClick={() => {
+                  setHands(h);
+                  session.setHands(h);
+                }}
+              >
+                {label}
+              </button>
+            ))}
+          </div>
+          {hands !== 'both' && (
+            <label className="check">
+              <input
+                type="checkbox"
+                checked={accompany}
+                onChange={(e) => {
+                  setAccompany(e.target.checked);
+                  session.accompany = e.target.checked;
+                }}
+              />
+              Play other hand
+            </label>
+          )}
+        </div>
+        <div className="group">
+          <MetronomeControl session={session} on={status.metronome} />
+          <button
+            aria-expanded={showLoop || status.loop !== null}
+            aria-pressed={status.loop !== null}
+            onClick={() => {
+              if (status.loop) session.setLoop(null);
+              setShowLoop(!(showLoop || status.loop !== null));
+            }}
+            title="Loop a range of bars (or drag across the falling notes)"
+          >
+            <Repeat />
+            <span className="btn-label">Loop</span>
+          </button>
+        </div>
+        <label className="tempo" title="Practice tempo">
+          <span className="tempo__label">Tempo</span>
           <input
             type="range"
             min={25}
@@ -413,122 +571,23 @@ function PracticeView({ source, song, title, subtitle, progressKey, notation }: 
               session.setTempo(t);
             }}
           />
-          {Math.round(tempo * 100)} %
-        </label>
-        {hands !== 'both' && (
-          <label>
-            <input
-              type="checkbox"
-              checked={accompany}
-              onChange={(e) => {
-                setAccompany(e.target.checked);
-                session.accompany = e.target.checked;
-              }}
-            />
-            Play other hand
-          </label>
-        )}
-        <MetronomeControl session={session} on={status.metronome} />
-        <button
-          aria-expanded={showLoop || status.loop !== null}
-          aria-pressed={status.loop !== null}
-          onClick={() => {
-            if (status.loop) session.setLoop(null);
-            setShowLoop(!(showLoop || status.loop !== null));
-          }}
-          title="Loop a range of bars (or drag across the falling notes)"
-        >
-          Loop
-        </button>
-        {mode !== 'wait' && (
-          <button className="primary" onClick={() => void toggle()}>
-            {status.playing ? 'Stop' : mode === 'listen' ? 'Listen' : 'Start'}
-          </button>
-        )}
-        <button onClick={() => session.rebuild()}>Restart</button>
-        <label title="The keys of your own keyboard; pieces are moved by octaves to fit">
-          <span className="bar-label">Keys</span>
-          <select
-            aria-label="Keyboard size"
-            value={settings.keyboard.size}
-            onChange={(e) =>
-              void updateAppSettings({ keyboard: { ...settings.keyboard, size: e.target.value } })
-            }
-          >
-            <option value="auto">Fit piece</option>
-            {KEYBOARD_PRESETS.map((p) => (
-              <option key={p.id} value={p.id}>
-                {p.keys}
-              </option>
-            ))}
-            <option value="custom">Custom ({keyCount(customKeyboard(low, keys))})</option>
-          </select>
-        </label>
-        <label className="bar-fingers" title="Which fingers to show on the notes, keys and score">
-          <span className="bar-label">Fingers</span>
-          <select
-            aria-label="Fingering"
-            value={settings.fingering}
-            onChange={(e) =>
-              void updateAppSettings({ fingering: e.target.value as FingeringDisplay })
-            }
-          >
-            <option value="suggested">Suggested</option>
-            <option value="written">As written</option>
-            <option value="off">Off</option>
-          </select>
+          <span className="tempo__value">{Math.round(tempo * 100)} %</span>
         </label>
       </div>
-      <div className="practice-bar">
-        <span className="muted">Play with:</span>
-        <span className="badge">On-screen keys / computer keys A–;</span>
-        {midiSupported() ? (
-          midi ? (
-            <>
-              <span className="badge">
-                MIDI: {midi.devices.join(', ') || 'no device connected'}
-              </span>
-              <button onClick={() => setMidiCalibrating(true)} title="Measure keyboard delay">
-                Calibrate timing
-              </button>
-            </>
-          ) : (
-            <button onClick={() => void connectMidi()}>Connect MIDI keyboard</button>
-          )
-        ) : (
-          <span className="muted" title="Safari and iPad browsers have no Web MIDI">
-            (MIDI not available in this browser)
-          </span>
-        )}
-        {mic ? (
-          <>
-            <span className="badge">Microphone listening</span>
-            <button
-              onClick={() => {
-                session.stop();
-                mic.onNote = () => {};
-                setMicCalibrating(mic);
-              }}
-            >
-              Set up microphone
-            </button>
-          </>
-        ) : (
-          <button disabled={busy} onClick={() => void connectMic()}>
-            {busy ? 'Starting…' : 'Use microphone'}
-          </button>
-        )}
+      <div className="bar session-status">
         <span className="stats" aria-live="polite">
           {mode === 'wait' ? (
-            <span>
+            <span className="stat">
               Step {Math.min(status.stepIndex + 1, status.stepCount)}/{status.stepCount}
             </span>
           ) : null}
-          <span style={{ color: 'var(--ok)' }}>✓ {status.correct}</span>
-          <span style={{ color: 'var(--bad)' }}>✗ {status.wrong}</span>
+          <span className="stat stat--ok">✓ {status.correct}</span>
+          <span className="stat stat--bad">✗ {status.wrong}</span>
         </span>
         {inputError && <span className="error">{inputError}</span>}
-        <ViewToggle view={view} onChange={setView} notation={notation} />
+        <div className="session-status__view">
+          <ViewToggle view={view} onChange={setView} notation={notation} />
+        </div>
       </div>
       {fit && (
         <p className="practice-note muted" role="status">
@@ -568,15 +627,30 @@ function PracticeView({ source, song, title, subtitle, progressKey, notation }: 
         />
         {status.finished && summary && (
           <div className="overlay">
-            <div className="panel stack">
-              <h2 style={{ marginTop: 0 }}>Well played!</h2>
-              <p>
-                Accuracy <strong>{Math.round(summary.accuracy * 100)} %</strong>
-                {status.elapsed > 0 && <> · {Math.round(status.elapsed)} s</>}
-                {mode === 'play-along' && summary.meanOffsetMs > 0 && (
-                  <> · timing ±{Math.round(summary.meanOffsetMs)} ms</>
-                )}
-              </p>
+            <div className="panel stack summary">
+              <h2>Well played!</h2>
+              <div
+                className="ring"
+                role="img"
+                aria-label={`Accuracy ${Math.round(summary.accuracy * 100)} %`}
+                style={{ '--pct': Math.round(summary.accuracy * 100) } as React.CSSProperties}
+              >
+                <span className="ring__value">
+                  {Math.round(summary.accuracy * 100)}
+                  <small> %</small>
+                </span>
+                <span className="ring__label">accuracy</span>
+              </div>
+              {(status.elapsed > 0 || (mode === 'play-along' && summary.meanOffsetMs > 0)) && (
+                <p className="muted">
+                  {status.elapsed > 0 && <>{Math.round(status.elapsed)} s</>}
+                  {mode === 'play-along' && summary.meanOffsetMs > 0 && (
+                    <>
+                      {status.elapsed > 0 && ' · '}timing ±{Math.round(summary.meanOffsetMs)} ms
+                    </>
+                  )}
+                </p>
+              )}
               {mode === 'play-along' && (
                 <p className="muted">
                   {summary.hit} on time, {summary.early} early, {summary.late} late,{' '}
@@ -600,9 +674,9 @@ function PracticeView({ source, song, title, subtitle, progressKey, notation }: 
               {status.recorded && (
                 <ListenBack session={session} title={title} allowSave={source === 'catalogue'} />
               )}
-              <div className="row">
+              <div className="row summary__actions">
                 <button className="primary" onClick={() => session.rebuild()}>
-                  Play again
+                  <RotateCcw /> Play again
                 </button>
                 <a className="button" href={href({ name: 'home' })}>
                   Choose another piece

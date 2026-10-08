@@ -1,5 +1,6 @@
 // Metronome toggle and click volume for the practice bar (PLAN.md P1-13).
 import { useState } from 'react';
+import { Metronome } from 'lucide-react';
 import { unlockAudio } from '../audio/context';
 import { clickTrackFor } from '../audio/click-track';
 import type { PracticeSession } from '../views/session';
@@ -22,7 +23,7 @@ export function MetronomeControl({ session, on }: { session: PracticeSession; on
   };
 
   return (
-    <span className="metronome-control row">
+    <span className="metronome-control">
       <button
         aria-pressed={on}
         title={
@@ -32,7 +33,8 @@ export function MetronomeControl({ session, on }: { session: PracticeSession; on
         }
         onClick={() => void toggle()}
       >
-        Metronome
+        <Metronome />
+        <span className="btn-label">Metronome</span>
       </button>
       {on && (
         <input
