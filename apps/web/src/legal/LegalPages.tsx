@@ -35,7 +35,7 @@ function LangSwitch({ page, lang }: { page: 'privacy' | 'impressum'; lang: Legal
 
 function Page({ lang, children }: { lang: LegalLang; children: ReactNode }) {
   return (
-    <article className="stack legal" lang={lang} style={{ maxWidth: '72ch' }}>
+    <article className="stack prose legal" lang={lang}>
       {children}
     </article>
   );

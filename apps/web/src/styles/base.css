@@ -49,6 +49,7 @@ h1 {
 
 h2 {
   margin-top: var(--space-6);
+  margin-bottom: var(--space-3);
   font-size: var(--text-xl);
   font-weight: 650;
   letter-spacing: -0.014em;
@@ -203,24 +204,27 @@ a.button.primary:hover {
 button.quiet,
 .button.quiet {
   --btn-bg: transparent;
+  --btn-fg: var(--accent);
   --btn-border: transparent;
   box-shadow: none;
-  color: var(--accent);
 }
 
 button.quiet:hover:not(:disabled),
 a.button.quiet:hover {
   --btn-bg: var(--accent-soft);
+  --btn-fg: var(--accent-ink);
   --btn-border: transparent;
-  color: var(--accent-ink);
 }
 
-button.danger {
+button.danger,
+button.danger.quiet {
   --btn-fg: var(--bad);
 }
 
-button.danger:hover:not(:disabled) {
+button.danger:hover:not(:disabled),
+button.danger.quiet:hover:not(:disabled) {
   --btn-bg: var(--bad-soft);
+  --btn-fg: var(--bad);
   --btn-border: var(--bad);
 }
 
@@ -440,14 +444,14 @@ progress {
   height: 0.5rem;
   border: 0;
   border-radius: 999px;
-  background: var(--sunken);
+  background: var(--line);
   overflow: hidden;
   accent-color: var(--accent);
 }
 
 progress::-webkit-progress-bar {
   border-radius: 999px;
-  background: var(--sunken);
+  background: var(--line);
 }
 
 progress::-webkit-progress-value {
@@ -459,6 +463,15 @@ progress::-webkit-progress-value {
 progress::-moz-progress-bar {
   border-radius: 999px;
   background: var(--accent);
+}
+
+html[data-high-contrast] progress,
+html[data-high-contrast] progress::-webkit-progress-bar {
+  background: var(--sunken);
+}
+
+html[data-high-contrast] progress {
+  outline: 1px solid var(--line-strong);
 }
 
 /* Reduced motion. The settings store sets the attribute from Settings, or from the system's

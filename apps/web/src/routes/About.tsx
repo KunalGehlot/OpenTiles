@@ -2,7 +2,7 @@ import { href } from '../lib/router';
 
 export function About() {
   return (
-    <article className="stack" style={{ maxWidth: '70ch' }}>
+    <article className="stack prose">
       <h1>About OpenTiles</h1>
       <p className="lead">
         OpenTiles is a free, open-source piano trainer. There is no paid tier, no advertising and no

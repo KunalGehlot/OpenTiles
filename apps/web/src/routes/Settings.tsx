@@ -26,14 +26,13 @@ export default function Settings() {
   const settings = useAppSettings();
   const set = (patch: Partial<AppSettings>) => void updateAppSettings(patch);
   return (
-    <article className="stack settings" style={{ maxWidth: '72ch' }}>
+    <article className="settings">
       <h1>Settings</h1>
       <p className="lead">Settings are kept on this device.</p>
 
-      <section aria-labelledby="language-title" className="stack">
+      <section aria-labelledby="language-title">
         <h2 id="language-title">Language</h2>
-        <label>
-          Language
+        <Setting label="Language">
           <select
             value={settings.language}
             onChange={(e) => set({ language: e.target.value === 'de' ? 'de' : 'en' })}
@@ -43,7 +42,7 @@ export default function Settings() {
               Deutsch
             </option>
           </select>
-        </label>
+        </Setting>
         {settings.language === 'de' && (
           <p className="muted" lang="de">
             Die deutsche Übersetzung kommt bald. Bis dahin ist OpenTiles auf Englisch; die{' '}
@@ -60,9 +59,9 @@ export default function Settings() {
       <SyncSection />
       <CrashReports settings={settings} set={set} />
 
-      <section aria-labelledby="legal-title" className="stack">
+      <section aria-labelledby="legal-title">
         <h2 id="legal-title">Privacy and legal</h2>
-        <ul>
+        <ul className="link-list">
           <li>
             <a href={href({ name: 'privacy', lang: 'en' })}>Privacy policy</a> ·{' '}
             <a href={href({ name: 'privacy', lang: 'de' })} lang="de">
@@ -84,6 +83,29 @@ export default function Settings() {
   );
 }
 
+/** One setting: its name (and a line of help) on the left, the control on the right. */
+function Setting({
+  label,
+  hint,
+  className,
+  children,
+}: {
+  label: string;
+  hint?: string;
+  className?: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <label className={className ? `setting ${className}` : 'setting'}>
+      <span className="setting__text">
+        <span className="setting__label">{label}</span>
+        {hint && <span className="setting__hint">{hint}</span>}
+      </span>
+      {children}
+    </label>
+  );
+}
+
 function Toggle({
   label,
   description,
@@ -96,13 +118,9 @@ function Toggle({
   onChange: (on: boolean) => void;
 }) {
   return (
-    <label className="toggle">
+    <Setting label={label} hint={description} className="toggle">
       <input type="checkbox" checked={checked} onChange={(e) => onChange(e.target.checked)} />
-      <span>
-        {label}
-        {description && <span className="muted"> — {description}</span>}
-      </span>
-    </label>
+    </Setting>
   );
 }
 
@@ -116,8 +134,7 @@ function TriSelect({
   onChange: (v: TriState) => void;
 }) {
   return (
-    <label>
-      {label}
+    <Setting label={label}>
       <select
         value={value}
         onChange={(e) =>
@@ -128,7 +145,7 @@ function TriSelect({
         <option value="on">On</option>
         <option value="off">Off</option>
       </select>
-    </label>
+    </Setting>
   );
 }
 
@@ -147,15 +164,14 @@ function Practice({
   const custom = customKeyboard(k.low, k.keys);
   const maxKeys = 108 - k.low + 1;
   return (
-    <section aria-labelledby="practice-title" className="stack">
+    <section aria-labelledby="practice-title">
       <h2 id="practice-title">Practice</h2>
       <h3>Your keyboard</h3>
       <p className="muted">
         The practice screen draws the keys your instrument has. A piece that goes beyond them is
         moved by octaves so you can still play it, and the screen says so.
       </p>
-      <label>
-        Keyboard size
+      <Setting label="Keyboard size">
         <select value={k.size} onChange={(e) => setKeyboard({ size: e.target.value })}>
           <option value="auto">Fit the keys to each piece</option>
           {KEYBOARD_PRESETS.map((p) => (
@@ -165,11 +181,10 @@ function Practice({
           ))}
           <option value="custom">Custom</option>
         </select>
-      </label>
+      </Setting>
       {k.size === 'custom' && (
-        <div className="row">
-          <label>
-            Lowest key
+        <>
+          <Setting label="Lowest key">
             <select
               value={k.low}
               onChange={(e) => {
@@ -183,17 +198,19 @@ function Practice({
                 </option>
               ))}
             </select>
-          </label>
+          </Setting>
           <KeyCountInput value={k.keys} max={maxKeys} onChange={(keys) => setKeyboard({ keys })} />
-          <span className="muted" data-testid="custom-keyboard">
+          <p className="muted" data-testid="custom-keyboard">
             {keyboardLabel(custom)}
-          </span>
-        </div>
+          </p>
+        </>
       )}
 
       <h3>Fingering</h3>
-      <label>
-        Fingers to show
+      <Setting
+        label="Fingers to show"
+        hint="Suggested fingers follow common piano fingering and keep any the score already has. They appear on the falling notes, the keys to play next and, lighter, in the score."
+      >
         <select
           value={settings.fingering}
           onChange={(e) => set({ fingering: e.target.value as FingeringDisplay })}
@@ -202,11 +219,7 @@ function Practice({
           <option value="written">Only those written in the score</option>
           <option value="off">None</option>
         </select>
-      </label>
-      <p className="muted">
-        Suggested fingers follow common piano fingering and keep any the score already has. They
-        appear on the falling notes, the keys to play next and, lighter, in the score.
-      </p>
+      </Setting>
     </section>
   );
 }
@@ -231,8 +244,7 @@ function KeyCountInput({
   const n = Number(draft);
   const valid = Number.isInteger(n) && n >= MIN_CUSTOM_KEYS && n <= max;
   return (
-    <label>
-      Number of keys
+    <Setting label="Number of keys">
       <input
         type="number"
         inputMode="numeric"
@@ -247,7 +259,7 @@ function KeyCountInput({
         }}
         onBlur={() => setDraft(String(value))}
       />
-    </label>
+    </Setting>
   );
 }
 
@@ -261,11 +273,11 @@ function Accessibility({
   const pedal = settings.pedal;
   const setPedal = (p: Partial<PedalSettings>) => set({ pedal: { ...pedal, ...p } });
   return (
-    <section aria-labelledby="a11y-title" className="stack">
+    <section aria-labelledby="a11y-title">
       <h2 id="a11y-title">Accessibility</h2>
       <Toggle
         label="Large print"
-        description="bigger text, buttons and keyboard labels"
+        description="Bigger text, buttons and keyboard labels."
         checked={settings.largePrint}
         onChange={(v) => set({ largePrint: v })}
       />
@@ -281,7 +293,7 @@ function Accessibility({
       />
       <Toggle
         label="Left-handed layout"
-        description="practice controls on the left"
+        description="Practice controls on the left."
         checked={settings.leftHanded}
         onChange={(v) => set({ leftHanded: v })}
       />
@@ -297,7 +309,7 @@ function Accessibility({
         onChange={(v) => setPedal({ enabled: v })}
       />
       {pedal.enabled && (
-        <div className="stack">
+        <>
           <PedalKey
             label="Next page"
             value={pedal.nextKey}
@@ -308,7 +320,7 @@ function Accessibility({
             value={pedal.previousKey}
             onChange={(k) => setPedal({ previousKey: k })}
           />
-        </div>
+        </>
       )}
 
       <h3>Keyboard shortcuts</h3>
@@ -346,9 +358,8 @@ function PedalKey({
   const [listening, setListening] = useState(false);
   const known = PEDAL_KEYS.some((k) => k.key === value);
   return (
-    <div className="row">
-      <label>
-        {label}
+    <div className="setting-pair">
+      <Setting label={label}>
         <select value={value} onChange={(e) => onChange(e.target.value)}>
           {PEDAL_KEYS.map((k) => (
             <option key={k.key} value={k.key}>
@@ -357,7 +368,7 @@ function PedalKey({
           ))}
           {!known && <option value={value}>{pedalKeyLabel(value)}</option>}
         </select>
-      </label>
+      </Setting>
       <button
         aria-pressed={listening}
         onClick={() => setListening(true)}
@@ -387,7 +398,7 @@ function CrashReports({
 }) {
   const available = syncServerUrl() !== null;
   return (
-    <section aria-labelledby="crash-title" className="stack">
+    <section aria-labelledby="crash-title">
       <h2 id="crash-title">Crash reports</h2>
       <p className="muted">
         Off unless you switch them on. When on, an error that stops the app sends the error message

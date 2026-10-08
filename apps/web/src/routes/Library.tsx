@@ -1,5 +1,6 @@
 import { useLiveQuery } from 'dexie-react-hooks';
 import { useEffect, useRef, useState } from 'react';
+import { FileMusic, FilePlus, Play, ShieldCheck, Trash2 } from 'lucide-react';
 import { estimateDifficulty, noteName, SUPPORTED_EXTENSIONS } from '@opentiles/song-model';
 import type { Song } from '@opentiles/song-model';
 import {
@@ -134,15 +135,21 @@ export function Library() {
     <>
       <h1>My library</h1>
       <p className="lead">
-        Your own scores, stored only on this device. Import MusicXML (<code>.musicxml</code>,{' '}
-        <code>.xml</code>, <code>.mxl</code>), MuseScore (<code>.mscz</code>, <code>.mscx</code>),
-        ABC (<code>.abc</code>) or MIDI (<code>.mid</code>). You can also import a recording (
-        <code>.wav</code>, <code>.mp3</code>, <code>.m4a</code>, <code>.ogg</code>,{' '}
-        <code>.flac</code>); its notes are detected on this device and are only approximate.
+        Your own scores, stored only on this device. Nothing here can be sent to anyone: OpenTiles
+        has no way to share or publish your files.
       </p>
-      <div className="row">
+      <div className="import-box">
+        <span className="file-tile" aria-hidden="true">
+          <FilePlus />
+        </span>
+        <div className="import-box__text">
+          <strong>Add a score or a recording</strong>
+          <span className="muted">
+            MusicXML, MuseScore, ABC or MIDI, or a recording of a piano.
+          </span>
+        </div>
         <button className="primary" onClick={chooseFile} disabled={audio !== null}>
-          Import a file…
+          <FilePlus /> Import a file…
         </button>
         <input
           ref={fileInput}
@@ -152,6 +159,17 @@ export function Library() {
           onChange={(e) => void onFile(e.target.files?.[0])}
         />
       </div>
+      <details className="formats">
+        <summary>Which files can I import?</summary>
+        <p>
+          MusicXML (<code>.musicxml</code>, <code>.xml</code>, <code>.mxl</code>), MuseScore (
+          <code>.mscz</code>, <code>.mscx</code>), ABC (<code>.abc</code>) or MIDI (
+          <code>.mid</code>
+          ). You can also import a recording (<code>.wav</code>, <code>.mp3</code>,{' '}
+          <code>.m4a</code>, <code>.ogg</code>, <code>.flac</code>); its notes are detected on this
+          device and are only approximate.
+        </p>
+      </details>
       {audio && (
         <div className="panel stack" aria-live="polite">
           <h2>Importing a recording</h2>
@@ -204,23 +222,39 @@ export function Library() {
       )}
 
       <h2>Pieces</h2>
-      {items && items.length === 0 && <p className="muted">Nothing here yet.</p>}
-      <div className="grid">
+      {items && items.length === 0 && (
+        <div className="empty">
+          <FileMusic />
+          <p>Nothing here yet.</p>
+          <p className="muted">
+            Pieces you import appear here and stay on this device. They are never added to the
+            public catalogue.
+          </p>
+        </div>
+      )}
+      <div className="grid grid--wide">
         {(items ?? []).map((item) => (
-          <div key={item.id} className="card">
-            <h3>{item.title}</h3>
-            <span className="muted">
-              {item.format.toUpperCase()} · added {new Date(item.addedAt).toLocaleDateString()}
-            </span>
+          <div key={item.id} className="card library-item">
+            <div className="library-item__head">
+              <span className="file-tile" aria-hidden="true">
+                <FileMusic />
+              </span>
+              <div className="library-item__text">
+                <h3>{item.title}</h3>
+                <span className="muted">
+                  {item.format.toUpperCase()} · added {new Date(item.addedAt).toLocaleDateString()}
+                </span>
+              </div>
+            </div>
             <div className="row">
               <a
                 className="button primary"
                 href={href({ name: 'practice', source: 'library', id: String(item.id) })}
               >
-                Practise
+                <Play /> Practise
               </a>
               <button
-                className="danger"
+                className="danger quiet"
                 onClick={() => {
                   if (
                     item.id !== undefined &&
@@ -231,7 +265,7 @@ export function Library() {
                   }
                 }}
               >
-                Delete
+                <Trash2 /> Delete
               </button>
             </div>
           </div>
@@ -244,8 +278,10 @@ export function Library() {
 function RightsDialog({ onConfirm, onCancel }: { onConfirm: () => void; onCancel: () => void }) {
   const [checked, setChecked] = useState(false);
   return (
-    <div className="panel" role="dialog" aria-labelledby="rights-title">
-      <h2 id="rights-title">Before your first import</h2>
+    <div className="panel stack" role="dialog" aria-labelledby="rights-title">
+      <h2 id="rights-title">
+        <ShieldCheck /> Before your first import
+      </h2>
       <p>
         Your library is private: files stay on this device and OpenTiles has no way to share them.
         Please only import music you have the right to use for your own practice — for example
@@ -255,7 +291,7 @@ function RightsDialog({ onConfirm, onCancel }: { onConfirm: () => void; onCancel
         <input type="checkbox" checked={checked} onChange={(e) => setChecked(e.target.checked)} />I
         only import files I have the right to use for personal practice.
       </label>
-      <div className="row" style={{ marginTop: '0.75rem' }}>
+      <div className="row">
         <button className="primary" disabled={!checked} onClick={onConfirm}>
           Continue
         </button>
@@ -292,8 +328,8 @@ function ImportReview({
           <span className="muted">Transcribed from a recording on this device.</span>
         </p>
       )}
-      <label>
-        Title
+      <label className="field">
+        <span className="field__label">Title</span>
         <input
           type="text"
           value={pending.title}
@@ -323,21 +359,23 @@ function ImportReview({
           {w}
         </p>
       ))}
-      <div className="row">
-        <label>
-          Tempo
-          <input
-            type="number"
-            min={20}
-            max={300}
-            value={pending.settings.baseBpm ?? bpm}
-            onChange={(e) => set({ baseBpm: Number(e.target.value) || undefined })}
-            style={{ width: '6em' }}
-          />
-          beats per minute
+      <div className="field-grid">
+        <label className="field">
+          <span className="field__label">Tempo</span>
+          <span className="row">
+            <input
+              type="number"
+              min={20}
+              max={300}
+              value={pending.settings.baseBpm ?? bpm}
+              onChange={(e) => set({ baseBpm: Number(e.target.value) || undefined })}
+              style={{ width: '6em' }}
+            />
+            <span className="muted">beats per minute</span>
+          </span>
         </label>
-        <label>
-          Transpose
+        <label className="field">
+          <span className="field__label">Transpose</span>
           <select
             value={pending.settings.transpose}
             onChange={(e) => set({ transpose: Number(e.target.value) })}
@@ -349,24 +387,29 @@ function ImportReview({
             ))}
           </select>
         </label>
-        <button
-          aria-pressed={pending.settings.swapHands}
-          onClick={() => set({ swapHands: !pending.settings.swapHands })}
-        >
-          Swap hands
-        </button>
+        <div className="field">
+          <span className="field__label">Hands</span>
+          <button
+            aria-pressed={pending.settings.swapHands}
+            onClick={() => set({ swapHands: !pending.settings.swapHands })}
+          >
+            Swap hands
+          </button>
+        </div>
       </div>
       {song.format === 'midi' && (
-        <label>
-          Hand split point
-          <input
-            type="range"
-            min={48}
-            max={72}
-            value={pending.settings.splitPoint ?? 60}
-            onChange={(e) => set({ splitPoint: Number(e.target.value) })}
-          />
-          {noteName(pending.settings.splitPoint ?? 60)}
+        <label className="field">
+          <span className="field__label">Hand split point</span>
+          <span className="row">
+            <input
+              type="range"
+              min={48}
+              max={72}
+              value={pending.settings.splitPoint ?? 60}
+              onChange={(e) => set({ splitPoint: Number(e.target.value) })}
+            />
+            <span>{noteName(pending.settings.splitPoint ?? 60)}</span>
+          </span>
         </label>
       )}
       <div className="row">

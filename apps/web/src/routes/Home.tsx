@@ -1,5 +1,6 @@
 import { useLiveQuery } from 'dexie-react-hooks';
 import { useEffect, useState } from 'react';
+import { CalendarCheck, Check, Clock, FilePlus, Link2, Medal, Play } from 'lucide-react';
 import { DIFFICULTY_LABELS, loadCatalogue } from '../catalogue/catalogue';
 import type { CataloguePiece } from '../catalogue/catalogue';
 import { catalogueKey, difficultyPath, MASTERY, nextPiece } from '../catalogue/path';
@@ -23,101 +24,152 @@ export function Home() {
   const shown = (pieces ?? []).filter((p) => p.verified || __SHOW_UNVERIFIED__);
   const path = difficultyPath(shown, best);
   const next = nextPiece(path, best);
+  const nextLevel = next ? path.find((l) => l.pieces.includes(next)) : undefined;
+  const started = path.some((l) => l.played > 0);
   const today = (days ?? []).find((d) => d.day === localDay());
   const currentStreak = streak(days ?? []);
+  const minutesToday = today ? Math.round(today.seconds / 60) : 0;
+  const mastered = path.reduce((sum, l) => sum + l.mastered, 0);
 
   return (
     <>
-      <h1>Free piano practice</h1>
-      <p className="lead">
-        Pick a public-domain piece or bring your own MusicXML or MIDI file, then play it on a MIDI
-        keyboard, an acoustic piano (microphone) or the on-screen keys. No account, no payment —
-        your files never leave this device.
-      </p>
+      <section className="hero">
+        <div className="hero__intro">
+          <h1>Free piano practice</h1>
+          <p className="lead">
+            Pick a public-domain piece or bring your own MusicXML or MIDI file, then play it on a
+            MIDI keyboard, an acoustic piano (microphone) or the on-screen keys. No account, no
+            payment — your files never leave this device.
+          </p>
+        </div>
+        {next && (
+          <a
+            className="continue"
+            href={href({ name: 'practice', source: 'catalogue', id: next.slug })}
+          >
+            <span className="continue__eyebrow">{started ? 'Continue' : 'Start here'}</span>
+            <span className="continue__title">{next.title}</span>
+            <span className="continue__meta">
+              {next.composer}
+              {nextLevel && <> · Level {nextLevel.level}</>}
+            </span>
+            <span className="continue__go">
+              <Play /> Practise
+            </span>
+          </a>
+        )}
+      </section>
+
       <HomeScreenHint />
-      {(currentStreak > 0 || today) && (
-        <p className="muted">
-          {currentStreak > 0 && <>🔥 {currentStreak}-day streak. </>}
-          {today && <>Practised {Math.round(today.seconds / 60)} min today.</>}
-        </p>
+
+      {(currentStreak > 0 || minutesToday > 0 || mastered > 0) && (
+        <ul className="glance" aria-label="Your practice">
+          {currentStreak > 0 && (
+            <Glance icon={<CalendarCheck />} value={currentStreak} label="day streak" />
+          )}
+          {minutesToday > 0 && <Glance icon={<Clock />} value={minutesToday} label="min today" />}
+          {mastered > 0 && (
+            <Glance
+              icon={<Medal />}
+              value={mastered}
+              label={mastered === 1 ? 'piece mastered' : 'pieces mastered'}
+            />
+          )}
+        </ul>
       )}
 
-      <h2>Your path through the public-domain pieces</h2>
-      <p className="muted">
-        Start at first steps and work upwards. A level is complete when every piece in it reaches{' '}
-        {Math.round(MASTERY * 100)} %.
-        {next && (
-          <>
-            {' '}
-            Next up:{' '}
-            <a href={href({ name: 'practice', source: 'catalogue', id: next.slug })}>
-              {next.title}
-            </a>
-            .
-          </>
-        )}
-      </p>
-      {error && <p className="error">{error}</p>}
-      {pieces && shown.length === 0 && (
+      <section aria-labelledby="path-title">
+        <h2 id="path-title">Your path through the public-domain pieces</h2>
         <p className="muted">
-          No reviewed pieces yet. Every catalogue piece is checked by a person before it appears
-          here — you can help review pieces on GitHub.
+          Start at first steps and work upwards. A level is complete when every piece in it reaches{' '}
+          {Math.round(MASTERY * 100)} %.
         </p>
-      )}
-      <ol className="path" aria-label="Difficulty path">
-        {path.map((level) => (
-          <li
-            key={level.level}
-            className={`path-level path-level--${level.status}`}
-            aria-labelledby={`level-${level.level}`}
-          >
-            <span className="path-step" aria-hidden="true">
-              {level.status === 'done' ? '✓' : level.level}
-            </span>
-            <h3 id={`level-${level.level}`}>
-              Level {level.level} · {DIFFICULTY_LABELS[level.level]}
-              {level.status === 'done' && <span className="visually-hidden"> (complete)</span>}
-            </h3>
-            <div className="level-progress">
+        {error && <p className="error">{error}</p>}
+        {pieces && shown.length === 0 && (
+          <p className="notice">
+            No reviewed pieces yet. Every catalogue piece is checked by a person before it appears
+            here — you can help review pieces on GitHub.
+          </p>
+        )}
+        <ol className="path" aria-label="Difficulty path">
+          {path.map((level) => (
+            <li
+              key={level.level}
+              className={`path-level path-level--${level.status}`}
+              aria-labelledby={`level-${level.level}`}
+            >
+              <span className="path-step" aria-hidden="true">
+                {level.status === 'done' ? <Check /> : level.level}
+              </span>
+              <div className="path-head">
+                <h3 id={`level-${level.level}`}>
+                  Level {level.level} · {DIFFICULTY_LABELS[level.level]}
+                  {level.status === 'done' && <span className="visually-hidden"> (complete)</span>}
+                </h3>
+                <span className="path-count">
+                  {level.mastered} of {level.pieces.length} mastered · {level.played} played
+                </span>
+              </div>
               <progress
+                className="path-progress"
                 max={1}
                 value={level.progress}
                 aria-label={`Level ${level.level} progress`}
               />
-              <span className="muted">
-                {level.mastered} of {level.pieces.length} mastered · {level.played} played
-              </span>
-            </div>
-            <div className="grid">
-              {level.pieces.map((p) => (
-                <PieceCard key={p.slug} piece={p} best={best.get(catalogueKey(p.slug))} />
-              ))}
-            </div>
-          </li>
-        ))}
-      </ol>
+              <div className="grid">
+                {level.pieces.map((p) => (
+                  <PieceCard key={p.slug} piece={p} best={best.get(catalogueKey(p.slug))} />
+                ))}
+              </div>
+            </li>
+          ))}
+        </ol>
+      </section>
 
-      <h2>Your own music</h2>
-      <p className="muted">
-        Import a <code>.musicxml</code>, <code>.mxl</code> or <code>.mid</code> file into your{' '}
-        <a href={href({ name: 'library' })}>private library</a>. It is converted and stored on this
-        device only.
-      </p>
+      <section className="panel panel--row" aria-labelledby="own-title">
+        <div>
+          <h2 id="own-title">Your own music</h2>
+          <p className="muted">
+            Import a <code>.musicxml</code>, <code>.mxl</code> or <code>.mid</code> file into your{' '}
+            <a href={href({ name: 'library' })}>private library</a>. It is converted and stored on
+            this device only.
+          </p>
+        </div>
+        <a className="button" href={href({ name: 'library' })}>
+          <FilePlus /> Open my library
+        </a>
+      </section>
     </>
+  );
+}
+
+function Glance({ icon, value, label }: { icon: React.ReactNode; value: number; label: string }) {
+  return (
+    <li>
+      {icon}
+      <span className="glance__value">{value}</span>
+      <span className="glance__label">{label}</span>
+    </li>
   );
 }
 
 function PieceCard({ piece, best }: { piece: CataloguePiece; best: number | undefined }) {
   const route = { name: 'practice', source: 'catalogue', id: piece.slug } as const;
   return (
-    <div className="card-wrap">
-      <a className="card" href={href(route)}>
+    <div className="piece">
+      <a className="card piece__card" href={href(route)}>
         <h3>{piece.title}</h3>
-        <span className="muted">{piece.composer}</span>
-        <span className="row">
-          <span className="badge">Level {piece.difficulty}</span>
+        <span className="piece__composer muted">{piece.composer}</span>
+        <span className="piece__foot">
+          {best === undefined ? (
+            <span className="muted">Not played yet</span>
+          ) : (
+            <span className={best >= MASTERY ? 'badge badge--ok' : 'badge'}>
+              {best >= MASTERY && <Check />}
+              Best {Math.round(best * 100)} %
+            </span>
+          )}
           {!piece.verified && <span className="badge badge--warn">Awaiting review</span>}
-          {best !== undefined && <span className="badge">Best {Math.round(best * 100)} %</span>}
         </span>
       </a>
       <CopyLink url={absoluteHref(route)} title={piece.title} />
@@ -144,16 +196,21 @@ export function CopyLink({ url, title }: { url: string; title: string }) {
     <>
       <button
         type="button"
+        className={copied ? 'copy-link copy-link--done quiet' : 'copy-link quiet'}
         aria-label={`Copy link to ${title}`}
         title={url}
         onClick={() => void copy()}
       >
-        {copied ? 'Link copied' : 'Copy link'}
+        {copied ? <Check /> : <Link2 />}
+        <span className={copied ? 'copy-link__text' : 'visually-hidden'}>
+          {copied ? 'Link copied' : 'Copy link'}
+        </span>
       </button>
       {copied === false && (
         <input
           type="text"
           readOnly
+          className="copy-link__fallback"
           value={url}
           aria-label={`Link to ${title}`}
           onFocus={(e) => e.target.select()}

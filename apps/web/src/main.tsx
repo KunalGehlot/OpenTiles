@@ -1,3 +1,4 @@
+import { LucideProvider } from 'lucide-react';
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { App } from './App';
@@ -17,8 +18,12 @@ const root = document.getElementById('root');
 if (root) {
   createRoot(root).render(
     <StrictMode>
-      <App />
-      <UpdateBar />
+      {/* The size here is only a fallback: .icon in components.css sizes icons in em, so they follow
+          the text beside them and Large print scales them too. */}
+      <LucideProvider size={18} strokeWidth={1.9} className="icon">
+        <App />
+        <UpdateBar />
+      </LucideProvider>
     </StrictMode>,
   );
 }

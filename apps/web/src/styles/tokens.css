@@ -46,9 +46,9 @@
   --radius-sm: 0.5rem;
   --radius: 0.75rem;
   --radius-lg: 1rem;
-  --shadow-1: 0 1px 2px rgba(28, 29, 26, 0.07);
-  --shadow-2: 0 1px 2px rgba(28, 29, 26, 0.06), 0 8px 20px -6px rgba(28, 29, 26, 0.16);
-  --shadow-3: 0 2px 4px rgba(28, 29, 26, 0.08), 0 20px 44px -10px rgba(28, 29, 26, 0.3);
+  --shadow-1: 0 1px 2px rgba(19, 26, 24, 0.07);
+  --shadow-2: 0 1px 2px rgba(19, 26, 24, 0.06), 0 8px 20px -6px rgba(19, 26, 24, 0.16);
+  --shadow-3: 0 2px 4px rgba(19, 26, 24, 0.08), 0 20px 44px -10px rgba(19, 26, 24, 0.3);
 
   /* ---- Motion ---- */
   --ease: cubic-bezier(0.2, 0.7, 0.2, 1);
@@ -63,17 +63,17 @@
   --tap: 2.5rem;
   --tap-sm: 2.125rem;
 
-  /* ---- Colour: neutrals (a warm grey) ---- */
-  --bg: #f6f5f1;
+  /* ---- Colour: neutrals, a cool grey with a hint of the logo's teal ---- */
+  --bg: #f3f5f4;
   --surface: #ffffff;
-  --surface-2: #faf9f6;
-  --sunken: #ebe9e2;
-  --text: #1c1d1a;
-  --muted: #5b5c55;
-  --line: #e3e0d8;
-  --line-strong: #c4c0b4;
+  --surface-2: #f8faf9;
+  --sunken: #e6ebe9;
+  --text: #131a18;
+  --muted: #54615d;
+  --line: #dce3e0;
+  --line-strong: #bfc9c5;
   /* Outline of a field, checkbox or slider track: the only cue to where an empty control is. */
-  --control: #8d897e;
+  --control: #7e8b86;
   /* The round handle of a switch. */
   --switch-thumb: #ffffff;
 
@@ -81,18 +81,18 @@
   --accent: #1f6f5c;
   --accent-hover: #185a4b;
   --accent-text: #ffffff;
-  --accent-soft: #e0f0ea;
+  --accent-soft: #def0ea;
   --accent-ink: #0e5043;
-  --accent-line: #a5d0c3;
+  --accent-line: #a3cfc2;
   --focus: #2459d6;
 
   /* ---- Colour: status. "soft" is a tinted background, the plain name is text or a mark ---- */
   --ok: #1d7a44;
-  --ok-soft: #e0f2e7;
+  --ok-soft: #def1e5;
   --bad: #bd3426;
-  --bad-soft: #fbe5e1;
+  --bad-soft: #fbe4e0;
   --warn: #8f5509;
-  --warn-soft: #f9edd5;
+  --warn-soft: #f8ecd3;
 
   /* ---- Colour: the two hands. Cobalt and copper stay apart for the colour-blind. ---- */
   --hand-right: #2b78b8;
@@ -104,12 +104,12 @@
   --done: rgba(29, 122, 68, 0.45);
 
   /* ---- Colour: the practice canvas ---- */
-  --canvas-bg: #f0eee8;
-  --canvas-grid: rgba(28, 29, 26, 0.07);
+  --canvas-bg: #eef2f0;
+  --canvas-grid: rgba(19, 26, 24, 0.07);
   --key-white: #ffffff;
-  --key-edge: #cdc9be;
-  --key-black: #22231f;
-  --now-line: rgba(28, 29, 26, 0.55);
+  --key-edge: #c9d1ce;
+  --key-black: #1c2321;
+  --now-line: rgba(19, 26, 24, 0.55);
   --loop-band: rgba(31, 111, 92, 0.1);
 }
 
@@ -119,22 +119,22 @@
     --shadow-2: 0 1px 2px rgba(0, 0, 0, 0.4), 0 8px 20px -6px rgba(0, 0, 0, 0.55);
     --shadow-3: 0 2px 4px rgba(0, 0, 0, 0.5), 0 20px 44px -10px rgba(0, 0, 0, 0.7);
 
-    --bg: #121311;
-    --surface: #1b1d1a;
-    --surface-2: #222420;
-    --sunken: #0e0f0d;
-    --text: #ecebe5;
-    --muted: #a4a49b;
-    --line: #2d2f2a;
-    --line-strong: #4a4d45;
-    --control: #7d7f76;
+    --bg: #0b100f;
+    --surface: #121918;
+    --surface-2: #19211f;
+    --sunken: #080b0b;
+    --text: #e8eeec;
+    --muted: #9aaaa4;
+    --line: #24302d;
+    --line-strong: #394844;
+    --control: #70807a;
 
     --accent: #4cc2a1;
     --accent-hover: #66d0b2;
     --accent-text: #06241c;
-    --accent-soft: #14302a;
+    --accent-soft: #11302a;
     --accent-ink: #8fe0c7;
-    --accent-line: #2b5a4d;
+    --accent-line: #2a5a4d;
     --focus: #86abff;
 
     --ok: #5fcf8d;
@@ -151,12 +151,12 @@
     --on-hand: #0b1520;
     --done: rgba(95, 207, 141, 0.4);
 
-    --canvas-bg: #161714;
-    --canvas-grid: rgba(236, 235, 229, 0.07);
-    --key-white: #e9e7e0;
-    --key-edge: #9c998f;
-    --key-black: #0b0b0a;
-    --now-line: rgba(236, 235, 229, 0.38);
+    --canvas-bg: #0e1413;
+    --canvas-grid: rgba(232, 238, 236, 0.06);
+    --key-white: #e6ebe8;
+    --key-edge: #98a39e;
+    --key-black: #090c0b;
+    --now-line: rgba(232, 238, 236, 0.55);
     --loop-band: rgba(76, 194, 161, 0.12);
   }
 }
