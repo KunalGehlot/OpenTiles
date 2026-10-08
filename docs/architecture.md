@@ -83,6 +83,15 @@ Defined in `packages/song-model/src/types.ts` (ADR 0003).
 - `PlayAlongScorer` matches `NoteEvent`s against expected onsets: ±75 ms on time, ±150 ms early or
   late, otherwise missed. Windows widen at slower practice tempos and shift by the measured input
   latency.
+- The piece the session plays is prepared from the imported `Song` by `prepareSong`
+  (`apps/web/src/practice/prepare.ts`): moved by octaves onto the learner's keyboard
+  (`fitToKeyboard`, P4-07) and given suggested fingers (`withFingering`, P4-08). Note ids stay
+  the same, so the score views link the written pitches while the session listens for the fitted
+  ones. Changing either swaps the song in place (`PracticeSession.setSong`), keeping MIDI and
+  microphone connected.
+- Every run is recorded with `PerformanceRecorder` (key down and up, velocity). Inputs that report
+  key release (MIDI, on-screen and computer keys) also get hold feedback from `judgeHold`. After a
+  run the session renders it as played or polished for playback (ADR 0010).
 
 ## The note-detection engine
 
@@ -173,7 +182,8 @@ lazy-loaded WebAssembly, precached for offline use; ADR 0009) in two layouts: a 
 note is linked to its glyph by source measure, onset and pitch (`glyph-map.ts`), so both passes of
 a repeat share a glyph. `ScoreController` colours glyphs from `PracticeSession.marks` (expected,
 correct, wrong, passed), moves the cursor from per-bar anchors (`cursor-map.ts`), turns pages and
-marks the hardest bars after a run, all from `requestAnimationFrame`. MIDI, audio and MuseScore
+marks the hardest bars after a run, all from `requestAnimationFrame`. Fingers the score does not draw itself
+(ABC, and suggested ones) are added next to the note heads, suggested ones lighter. MIDI, audio and MuseScore
 pieces have no notation to draw and keep the falling-notes view.
 
 ## Storage

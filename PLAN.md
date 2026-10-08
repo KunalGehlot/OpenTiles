@@ -220,16 +220,22 @@ compatibility matrix (spec §5).
 - [ ] **P4-03** Original courses and lessons.
 - [~] **P4-04** Community CC0 arrangements of public-domain tunes. Done: arrange.py and the catalogue PR template for CC0 contributions.
 - [~] **P4-05** Teacher features built on stable catalogue links. Done: "Copy link" for catalogue pieces (never library items). Left: other teacher features.
-- [~] **P4-07** Keyboard size: presets (25–88 keys) and custom (lowest key + number of keys, e.g.
-  86), the learner's real keyboard drawn, pieces fitted by octaves. Done: logic in
-  `packages/practice/src/keyboard-size.ts`. Left: picker in Settings/practice and drawing.
-- [~] **P4-08** Fingering for every note from piano fingering practice. Done: Viterbi fingering in
-  `packages/practice/src/fingering.ts` (keeps written fingering). Left: show on falling notes,
-  keys and score.
+- [x] **P4-07** Keyboard size: presets (25–88 keys) and custom (lowest key + number of keys, e.g.
+      86), the learner's real keyboard drawn, pieces fitted by octaves. Done: logic in
+      `packages/practice/src/keyboard-size.ts`; "Your keyboard" in Settings and a Keys picker in the
+      practice bar; the practice canvas draws exactly those keys and says when a piece was moved.
+- [x] **P4-08** Fingering for every note from piano fingering practice. Done: Viterbi fingering in
+      `packages/practice/src/fingering.ts` (keeps written fingering); fingers on falling notes, on the
+      keys to play next and, lighter, in the score views; Settings and practice bar choose suggested,
+      written only, or none.
 - [~] **P4-09** Timing teacher: when to press and how long to hold, with feedback, and a
   good-sounding playback of the learner's run (as played and polished) plus WAV download.
-  Done: `packages/practice/src/performance.ts` (recorder, hold judging, polished render).
-  Left: hold bars and feedback in the practice view, playback and export.
+  Done: `packages/practice/src/performance.ts` (recorder, hold judging, polished render); held keys
+  drain over the note's length, "hold longer" / "let go" labels and a hold count in the summary
+  (MIDI and on-screen keys; the microphone cannot see key release); every run is recorded and
+  can be heard back as played or polished; WAV rendered offline, for catalogue pieces only
+  (ADR 0010). Left: the maintainer's decision on WAV files for library pieces (ADR 0010 is
+  proposed), and a manual check on an iPad.
 - [ ] **P4-10** UI redesign: a proper visual system (type, spacing, colour, icons), refined
       practice screen and canvas, better Home and Library.
 - [ ] **P4-06** If the rule-based detector stalls below target: small onset model via ONNX Runtime
@@ -259,6 +265,10 @@ Record the outcome as an ADR in `docs/adr/` and tick it here.
 - [x] Engine exposes a plain C ABI instead of wasm-bindgen glue — ADR 0002.
 
 ## Changelog
+
+- **2026-10-08** — Phase 4 in the UI: keyboard size (P4-07), fingering display (P4-08) and the
+  timing teacher with playback and WAV files (P4-09). WAV files only for catalogue pieces until the
+  legal review says otherwise (ADR 0010, proposed).
 
 - **2026-10-07** — Rounds 1 and 2 of the remaining tasks merged (SIMD engine, ABC/MuseScore/audio
   import, catalogue pipeline, vault and sync, iPad shell, PWA, samples, metronome, loops, step

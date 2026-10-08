@@ -10,6 +10,8 @@ Reviewers: a pull request that breaks one of these rules is blocked, however use
 
 - [x] **No distribution path exists in the code.** There is no share link, export-to-public or
       "publish" button for library items. The only export is the user's own encrypted backup.
+      A run can be heard back for any piece, but saved as a WAV file only for catalogue pieces
+      (ADR 0010).
       _(Enforced by review; ESLint blocks `navigator.share` as a tripwire.)_
 - [ ] **The operator cannot see library contents.** Sync blobs, file names and titles are end-to-end
       encrypted (P3-03), so there is nothing for the operator to select, curate or promote.
