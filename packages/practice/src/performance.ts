@@ -63,6 +63,25 @@ export interface HoldResult {
 export const HOLD_TOLERANCE = { short: 0.6, long: 1.4 } as const;
 
 /**
+ * Judges one hold: `written` is how long the note should sound and `held` how long the key was
+ * down, both in seconds at the practice tempo. Very short written notes (staccato, fast runs) are
+ * hard to time, so only clear cases count as short or long.
+ */
+export function judgeHold(written: number, held: number): HoldJudgement {
+  if (written <= 0) return 'good';
+  const ratio = held / written;
+  const minLen = Math.min(written, 0.12);
+  if (ratio < HOLD_TOLERANCE.short && held < written - minLen) return 'short';
+  if (ratio > HOLD_TOLERANCE.long && held > written + 0.1) return 'long';
+  return 'good';
+}
+
+/** Seconds after the key went down from which a still-held note counts as held too long. */
+export function holdOverdueAfter(written: number): number {
+  return Math.max(written * HOLD_TOLERANCE.long, written + 0.1);
+}
+
+/**
  * Judges how long each matched note was held. Notes are matched by pitch to the nearest played
  * onset within `window` seconds; notes without a key-up time (microphone) are skipped.
  */
@@ -86,16 +105,9 @@ export function judgeHolds(
     }
     if (!best || best.end === undefined) continue;
     used.add(best);
-    const ratio = note.duration > 0 ? (best.end - best.start) / note.duration : 1;
-    // Very short written notes (staccato, fast runs) are hard to time; only flag clear cases.
-    const minLen = Math.min(note.duration, 0.12);
-    const judgement: HoldJudgement =
-      ratio < HOLD_TOLERANCE.short && best.end - best.start < note.duration - minLen
-        ? 'short'
-        : ratio > HOLD_TOLERANCE.long && best.end - best.start > note.duration + 0.1
-          ? 'long'
-          : 'good';
-    out.push({ note, played: best, ratio, judgement });
+    const held = best.end - best.start;
+    const ratio = note.duration > 0 ? held / note.duration : 1;
+    out.push({ note, played: best, ratio, judgement: judgeHold(note.duration, held) });
   }
   return out;
 }
@@ -120,33 +132,63 @@ export function asPlayed(played: readonly PlayedNote[], defaultLength = 0.5): Re
   }));
 }
 
+export interface PolishOptions {
+  /** How far a played onset may be from the written one to count as that note (s). */
+  window?: number;
+  /**
+   * `time` matches played notes to written ones by onset (play-along, where the clock runs);
+   * `order` takes the learner's notes of each pitch in the order they were played (wait mode,
+   * where the learner sets the pace and onsets do not line up with the written times).
+   */
+  match?: 'time' | 'order';
+}
+
 /**
- * A polished version: every written note the learner played (within `window` of its time) sounds
- * exactly on time and for its written length, with the learner's own velocity; written notes they
- * missed are filled in quietly so the music stays whole; wrong extra notes are left out.
+ * A polished version: every written note the learner played sounds exactly on time and for its
+ * written length, with the learner's own velocity; written notes they missed are filled in
+ * quietly so the music stays whole; wrong extra notes are left out.
  */
 export function polished(
   expected: readonly TimedNoteWithLength[],
   played: readonly PlayedNote[],
-  window = 0.25,
+  options: PolishOptions = {},
 ): RenderNote[] {
   if (expected.length === 0) return [];
+  const window = options.window ?? 0.25;
   const t0 = Math.min(...expected.map((n) => n.time));
   const used = new Set<PlayedNote>();
   const velocities = played.map((p) => p.velocity).sort((a, b) => a - b);
   const typical = velocities[Math.floor(velocities.length / 2)] ?? 72;
-  return expected.map((n) => {
+  const byPitch = new Map<number, PlayedNote[]>();
+  if (options.match === 'order') {
+    for (const p of [...played].sort((a, b) => a.start - b.start)) {
+      (byPitch.get(p.pitch) ?? byPitch.set(p.pitch, []).get(p.pitch))?.push(p);
+    }
+  }
+  const inOrder = [...expected].sort((a, b) => a.time - b.time);
+  const matched = new Map<TimedNoteWithLength, PlayedNote>();
+  for (const n of inOrder) {
     let match: PlayedNote | undefined;
-    let bestDist = Infinity;
-    for (const p of played) {
-      if (used.has(p) || p.pitch !== n.pitch) continue;
-      const d = Math.abs(p.start - n.time);
-      if (d <= window && d < bestDist) {
-        match = p;
-        bestDist = d;
+    if (options.match === 'order') {
+      match = byPitch.get(n.pitch)?.shift();
+    } else {
+      let bestDist = Infinity;
+      for (const p of played) {
+        if (used.has(p) || p.pitch !== n.pitch) continue;
+        const d = Math.abs(p.start - n.time);
+        if (d <= window && d < bestDist) {
+          match = p;
+          bestDist = d;
+        }
       }
     }
-    if (match) used.add(match);
+    if (match) {
+      used.add(match);
+      matched.set(n, match);
+    }
+  }
+  return expected.map((n) => {
+    const match = matched.get(n);
     return {
       pitch: n.pitch,
       time: n.time - t0,

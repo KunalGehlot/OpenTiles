@@ -8,7 +8,14 @@ import {
   notesOutside,
   presetById,
 } from '../src/keyboard-size';
-import { asPlayed, judgeHolds, PerformanceRecorder, polished } from '../src/performance';
+import {
+  asPlayed,
+  holdOverdueAfter,
+  judgeHold,
+  judgeHolds,
+  PerformanceRecorder,
+  polished,
+} from '../src/performance';
 
 const note = (
   pitch: number,
@@ -145,6 +152,40 @@ describe('performance', () => {
     expect(polished(expected, played)).toEqual([
       { pitch: 60, time: 0, duration: 0.5, velocity: 100 },
       { pitch: 62, time: 0.5, duration: 0.5, velocity: 75 },
+    ]);
+  });
+
+  it('judges single holds with room for very short notes', () => {
+    expect(judgeHold(1, 0.95)).toBe('good');
+    expect(judgeHold(1, 0.4)).toBe('short');
+    expect(judgeHold(1, 1.6)).toBe('long');
+    // A staccato eighth at a fast tempo: a quick tap is still fine.
+    expect(judgeHold(0.1, 0.03)).toBe('good');
+    expect(judgeHold(0, 3)).toBe('good');
+    expect(holdOverdueAfter(1)).toBeCloseTo(1.4);
+    expect(holdOverdueAfter(0.1)).toBeCloseTo(0.2);
+  });
+
+  it('polishes a wait-mode run by playing order, not by time', () => {
+    // The learner took their time: onsets are far from the written ones.
+    const played = [
+      { pitch: 60, start: 3.0, end: 3.5, velocity: 100 },
+      { pitch: 99, start: 4.0, end: 4.2, velocity: 50 },
+      { pitch: 62, start: 6.0, end: 6.4, velocity: 60 },
+      { pitch: 60, start: 9.0, end: 9.4, velocity: 40 },
+    ];
+    const expected = [
+      { id: 'a', pitch: 60, time: 0, duration: 0.5, measureIndex: 0 },
+      { id: 'b', pitch: 62, time: 0.5, duration: 0.5, measureIndex: 0 },
+      { id: 'c', pitch: 60, time: 1.0, duration: 0.5, measureIndex: 0 },
+      { id: 'd', pitch: 64, time: 1.5, duration: 0.5, measureIndex: 0 },
+    ];
+    expect(polished(expected, played).map((n) => n.velocity)).toEqual([45, 45, 45, 45]);
+    expect(polished(expected, played, { match: 'order' })).toEqual([
+      { pitch: 60, time: 0, duration: 0.5, velocity: 100 },
+      { pitch: 62, time: 0.5, duration: 0.5, velocity: 60 },
+      { pitch: 60, time: 1.0, duration: 0.5, velocity: 40 },
+      { pitch: 64, time: 1.5, duration: 0.5, velocity: 45 },
     ]);
   });
 });

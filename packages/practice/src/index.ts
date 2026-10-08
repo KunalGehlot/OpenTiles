@@ -50,11 +50,20 @@ export {
   presetById,
 } from './keyboard-size';
 export type { KeyboardPreset, KeyboardRange } from './keyboard-size';
-export { asPlayed, HOLD_TOLERANCE, judgeHolds, PerformanceRecorder, polished } from './performance';
+export {
+  asPlayed,
+  HOLD_TOLERANCE,
+  holdOverdueAfter,
+  judgeHold,
+  judgeHolds,
+  PerformanceRecorder,
+  polished,
+} from './performance';
 export type {
   HoldJudgement,
   HoldResult,
   PlayedNote,
+  PolishOptions,
   RenderNote,
   TimedNoteWithLength,
 } from './performance';
