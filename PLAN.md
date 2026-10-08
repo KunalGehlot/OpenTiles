@@ -236,8 +236,15 @@ compatibility matrix (spec §5).
   can be heard back as played or polished; WAV rendered offline, for catalogue pieces only
   (ADR 0010). Left: the maintainer's decision on WAV files for library pieces (ADR 0010 is
   proposed), and a manual check on an iPad.
-- [ ] **P4-10** UI redesign: a proper visual system (type, spacing, colour, icons), refined
-      practice screen and canvas, better Home and Library.
+- [~] **P4-10** UI redesign: a proper visual system (type, spacing, colour, icons), refined
+  practice screen and canvas, better Home and Library. Done: design tokens in light, dark and high
+  contrast with a contrast test (`apps/web/src/styles/`, ADR 0011, proposed); system fonts,
+  restyled native controls, `lucide-react` icons; a new Home (hero, "continue" card, path),
+  Library, Settings and About; a slim practice header with an Options panel, quiet control rows and
+  icon-only secondary buttons at ⅓ width; a new canvas (tiles, bar numbers, shaded black-key lanes,
+  key bloom, larger finger numbers) and end-of-run ring. Left: the maintainer's review rounds (the
+  first looks "a little better", with more to do), an iPad check, Detector Lab polish, a manual
+  light/dark switch, German strings (P2-14).
 - [ ] **P4-06** If the rule-based detector stalls below target: small onset model via ONNX Runtime
       Web.
 
@@ -265,6 +272,10 @@ Record the outcome as an ADR in `docs/adr/` and tick it here.
 - [x] Engine exposes a plain C ABI instead of wasm-bindgen glue — ADR 0002.
 
 ## Changelog
+
+- **2026-10-08** — P4-10 started: the visual system (tokens, contrast test, system fonts, icons),
+  new Home, Library, Settings, practice header and canvas. ADR 0011 (proposed). Keyboard size and
+  fingers moved into the practice screen's Options panel.
 
 - **2026-10-08** — Phase 4 in the UI: keyboard size (P4-07), fingering display (P4-08) and the
   timing teacher with playback and WAV files (P4-09). WAV files only for catalogue pieces until the

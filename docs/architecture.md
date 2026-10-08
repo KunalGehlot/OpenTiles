@@ -186,6 +186,27 @@ marks the hardest bars after a run, all from `requestAnimationFrame`. Fingers th
 (ABC, and suggested ones) are added next to the note heads, suggested ones lighter. MIDI, audio and MuseScore
 pieces have no notation to draw and keep the falling-notes view.
 
+## Design system
+
+`apps/web/src/styles/` holds the whole look (ADR 0011). `tokens.css` defines every colour, size,
+radius, shadow and duration once, in four colour sets: light, dark (`prefers-color-scheme`) and
+high contrast in each (Settings → Accessibility, or `prefers-contrast: more`). `base.css` restyles
+the native controls, `components.css` has the shared pieces (segmented control, switch, card,
+panel, notice, badge, toast), `shell.css` the header, footer and full-height practice layout,
+`pages.css` Home, Library, Settings and the text pages, and `practice.css` the practice screen and
+its compact layouts. Components refer to token names, never to colours. Colours stay plain
+`#rrggbb` / `rgba()` because the canvas reads them with `getComputedStyle` and cannot resolve
+`var()` or `color-mix()` (`views/colour.ts` takes them apart). `test/tokens.test.ts` parses
+`tokens.css` and checks the contrast of every text pair and mark in all four sets. Fonts are the
+system fonts (nothing is downloaded); icons are `lucide-react`, drawn at the size of their text. The
+CSS stays within what Safari 16.4 supports: no nesting, no `light-dark()`, no `popover` attribute.
+
+The practice screen is a slim session header (back, title, MIDI, microphone, Options), a controls
+row and a status row, then the canvas. Below 640 px wide or 520 px high the secondary buttons keep
+only their icon (their names stay for screen readers). `PracticeRenderer` draws tiles, bar
+numbers, shaded black-key lanes, a glossy keyboard and a short bloom on a played key from cached
+gradients, with no `shadowBlur` and no allocation per note.
+
 ## Storage
 
 - **Private library:** IndexedDB via Dexie — original file bytes, the parsed `Song`, practice
