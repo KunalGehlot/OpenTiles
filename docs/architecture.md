@@ -204,8 +204,9 @@ CSS stays within what Safari 16.4 supports: no nesting, no `light-dark()`, no `p
 The practice screen is a slim session header (back, title, MIDI, microphone, Options), a controls
 row and a status row, then the canvas. Below 640 px wide or 520 px high the secondary buttons keep
 only their icon (their names stay for screen readers). `PracticeRenderer` draws tiles, bar
-numbers, shaded black-key lanes, a glossy keyboard and a short bloom on a played key from cached
-gradients, with no `shadowBlur` and no allocation per note.
+numbers, shaded black-key lanes, a glossy keyboard and a short bloom on a played key. Gradients
+are built once per resize, there is no `shadowBlur`, and the font is set only when it changes; frame
+time on an older iPad has not been measured yet.
 
 ## Storage
 

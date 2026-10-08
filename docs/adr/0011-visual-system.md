@@ -54,7 +54,8 @@ Constraints that shape the answer:
 - **Canvas:** notes are tiles with an outline and a lit leading edge, bars are numbered, the lanes of
   the black keys are shaded, the keyboard has a shadow under its top edge and glossy black keys, finger
   numbers are large, and a played key blooms for 0.35 s (off under Reduce motion). Gradients are
-  built once per size; there is no `shadowBlur` and no allocation per note.
+  built once per size, there is no `shadowBlur`, and the font is set only when it changes. It is
+  built to stay cheap, but frame time on an A12-class iPad has not been measured yet.
 
 ## Consequences
 

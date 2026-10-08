@@ -243,8 +243,9 @@ compatibility matrix (spec §5).
   Library, Settings and About; a slim practice header with an Options panel, quiet control rows and
   icon-only secondary buttons at ⅓ width; a new canvas (tiles, bar numbers, shaded black-key lanes,
   key bloom, larger finger numbers) and end-of-run ring. Left: the maintainer's review rounds (the
-  first looks "a little better", with more to do), an iPad check, Detector Lab polish, a manual
-  light/dark switch, German strings (P2-14).
+  first looks "a little better", with more to do), an iPad check including frame time on an older
+  iPad (not measured yet), Detector Lab polish, a manual light/dark switch, German strings
+  (P2-14).
 - [ ] **P4-06** If the rule-based detector stalls below target: small onset model via ONNX Runtime
       Web.
 

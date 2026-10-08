@@ -3,9 +3,10 @@
 // P4-10: notes are tiles (an outline and a lit leading edge), bars are numbered, the black keys'
 // lanes are shaded, the keyboard has a shadow under its top edge and glossy black keys, finger
 // numbers are large, and a played key blooms for a third of a second. Everything is flat fills and
-// a few gradients built once per resize: no shadowBlur, no allocation per note, so an older iPad
-// keeps 60 fps. A highlighted key stays one flat token colour down to its bottom row (the Playwright
-// probe in e2e/layout.spec.ts finds it there).
+// a few gradients built once per resize: no shadowBlur, no gradient per note, and the font is set
+// only when it changes (WebKit looks the font up on every assignment). Built to stay cheap on an
+// older iPad; frame time on a device has not been measured yet. A highlighted key stays one flat
+// token colour down to its bottom row (the Playwright probe in e2e/layout.spec.ts finds it there).
 import type { Song, SongNote } from '@opentiles/song-model';
 import { isDark, parseColour, rgba } from './colour';
 import type { Rgb } from './colour';
@@ -128,6 +129,8 @@ export class PracticeRenderer {
   /** Read once per frame: Large print scales labels, Reduce motion switches the bloom off. */
   private scale = 1;
   private calm = false;
+  /** The font last set on the context; resizing the canvas resets it. */
+  private font = '';
 
   constructor(
     private readonly canvas: HTMLCanvasElement,
@@ -167,6 +170,7 @@ export class PracticeRenderer {
     this.dpr = dpr;
     this.canvas.width = Math.round(width * dpr);
     this.canvas.height = Math.round(height * dpr);
+    this.font = '';
     this.canvas.style.width = `${width}px`;
     this.canvas.style.height = `${height}px`;
     this.layout = layoutKeyboard(this.range.low, this.range.high, width);
@@ -235,6 +239,14 @@ export class PracticeRenderer {
     this.drawProgress(ctx, session);
   }
 
+  /** Sets the font only when it differs from the last one; sizes snap to half pixels. */
+  private setFont(ctx: CanvasRenderingContext2D, weight: number, size: number): void {
+    const next = `${weight} ${Math.round(size * 2) / 2}px ${FONT}`;
+    if (next === this.font) return;
+    ctx.font = next;
+    this.font = next;
+  }
+
   /** How far through the piece the now-line is: a hairline along the top of the canvas. */
   private drawProgress(ctx: CanvasRenderingContext2D, session: PracticeSession): void {
     const length = session.song.lengthBeats;
@@ -282,7 +294,7 @@ export class PracticeRenderer {
   ): void {
     if (session.labels.length === 0) return;
     const p = this.palette;
-    ctx.font = `600 ${12 * this.scale}px ${FONT}`;
+    this.setFont(ctx, 600, 12 * this.scale);
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
     for (const l of session.labels) {
@@ -365,7 +377,7 @@ export class PracticeRenderer {
       ctx.fillRect(k.x, 0, 1, top);
     }
     // Bar lines, each with its number on the left edge.
-    ctx.font = `600 ${11 * this.scale}px ${FONT}`;
+    this.setFont(ctx, 600, 11 * this.scale);
     ctx.textAlign = 'left';
     ctx.textBaseline = 'top';
     for (const m of song.measures) {
@@ -438,7 +450,7 @@ export class PracticeRenderer {
       const size = Math.min(Math.max(w * 0.5, 11), 22) * this.scale;
       if (h >= size + 4) {
         ctx.fillStyle = p.onHand;
-        ctx.font = `700 ${Math.min(size, w * 0.85)}px ${FONT}`;
+        this.setFont(ctx, 700, Math.min(size, w * 0.85));
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
         ctx.fillText(String(n.fingering), x + w / 2, y + h - Math.min(h / 2, size * 0.5 + 6));
@@ -496,7 +508,11 @@ export class PracticeRenderer {
         ctx.fillStyle = p.keyLabel;
         // Large print (P2-15) makes the octave labels bigger, as far as the key allows.
         const scale = this.scale;
-        ctx.font = `${scale > 1 ? 600 : 500} ${Math.max(9, Math.min(12 * scale, k.width * 0.45 * scale))}px ${FONT}`;
+        this.setFont(
+          ctx,
+          scale > 1 ? 600 : 500,
+          Math.max(9, Math.min(12 * scale, k.width * 0.45 * scale)),
+        );
         ctx.textAlign = 'center';
         ctx.fillText(`C${Math.floor(k.pitch / 12) - 1}`, k.x + k.width / 2, top + height - 6);
       }
@@ -529,7 +545,7 @@ export class PracticeRenderer {
       const finger = fingerOf.get(k.pitch);
       if (finger === undefined || k.width < 8) continue;
       const size = Math.min(Math.max(k.width * 0.55, 12), 24) * this.scale;
-      ctx.font = `700 ${Math.min(size, k.width * 0.85)}px ${FONT}`;
+      this.setFont(ctx, 700, Math.min(size, k.width * 0.85));
       // White keys: in the part below the black keys; black keys: near their front edge.
       const y = k.black ? top + bh * 0.72 : top + bh + (height - bh) * 0.4;
       ctx.fillText(String(finger), k.x + k.width / 2, y);
