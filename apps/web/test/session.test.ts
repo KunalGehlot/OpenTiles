@@ -297,3 +297,41 @@ describe('hold teaching and recording (P4-09)', () => {
     expect(session.expectedNotes().map((n) => n.id)).toEqual(['n0']);
   });
 });
+
+describe('steady clock', () => {
+  it('moves evenly although the audio clock moves in steps', async () => {
+    const { steadyClock } = await import('../src/views/session');
+    let perf = 0;
+    let audio = 0;
+    const clock = steadyClock(
+      () => audio,
+      () => perf,
+    );
+    const seen: number[] = [];
+    for (let frame = 0; frame < 120; frame++) {
+      perf += 1 / 60;
+      // The audio clock only advances in 12 ms buffers.
+      audio = Math.floor(perf / 0.012) * 0.012;
+      seen.push(clock());
+    }
+    const steps = seen.slice(1).map((t, i) => t - (seen[i] ?? 0));
+    for (const step of steps) expect(step).toBeGreaterThanOrEqual(0);
+    expect(Math.max(...steps) - Math.min(...steps)).toBeLessThan(0.004);
+    // It stays within one buffer of the audio clock.
+    expect(Math.abs((seen.at(-1) ?? 0) - audio)).toBeLessThan(0.02);
+  });
+
+  it('jumps to the audio clock when it moves far (a pause, or the clock being swapped)', async () => {
+    const { steadyClock } = await import('../src/views/session');
+    let perf = 0;
+    let audio = 0;
+    const clock = steadyClock(
+      () => audio,
+      () => perf,
+    );
+    clock();
+    perf = 1;
+    audio = 5;
+    expect(clock()).toBe(5);
+  });
+});

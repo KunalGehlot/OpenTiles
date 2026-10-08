@@ -106,6 +106,42 @@ export interface LoopRunReport extends LoopRunOutcome {
   seconds: number;
 }
 
+/**
+ * A clock for drawing. `AudioContext.currentTime` advances in steps of a whole audio buffer (several
+ * milliseconds, more on Bluetooth and Safari), so a frame that reads it sees uneven jumps and the
+ * falling notes judder. This one runs on the display's own timer and is nudged toward the audio
+ * clock, so it never drifts from the sound but never steps either.
+ */
+export function steadyClock(
+  real: () => number,
+  perf: () => number = () => performance.now() / 1000,
+): () => number {
+  let anchorReal = 0;
+  let anchorPerf = 0;
+  let last = -Infinity;
+  let ready = false;
+  return () => {
+    const r = real();
+    const p = perf();
+    if (!ready) {
+      anchorReal = r;
+      anchorPerf = p;
+      ready = true;
+    }
+    const predicted = anchorReal + (p - anchorPerf);
+    const error = r - predicted;
+    if (Math.abs(error) > 0.08) {
+      anchorReal = r;
+      anchorPerf = p;
+      last = r;
+      return r;
+    }
+    anchorReal += error * 0.04;
+    last = Math.max(last, anchorReal + (p - anchorPerf));
+    return last;
+  };
+}
+
 /** Plays a metronome click at `when` on the audio clock. */
 export type ClickOutput = (when: number, accent: boolean) => void;
 
@@ -200,12 +236,16 @@ export class PracticeSession {
   /** Called when the session changes the tempo itself (automatic loop speed-up). */
   onTempo: (factor: number) => void = () => {};
 
+  private lastFramePerf = 0;
+  private readonly display: () => number;
+
   constructor(
     song: Song,
     private readonly clock: () => number,
     private synth: PianoSynth | null = null,
   ) {
     this.songValue = song;
+    this.display = steadyClock(clock);
     this.tempoMap = new TempoMap(song.tempos);
     this.wait = new WaitMode([]);
     this.rebuild();
@@ -246,6 +286,11 @@ export class PracticeSession {
   private click(when: number, accent: boolean): void {
     if (this.clickOut) this.clickOut(when, accent);
     else this.synth?.click(when, accent);
+  }
+
+  /** True from the moment a run finishes until the next one starts or the piece is rebuilt. */
+  get runEnded(): boolean {
+    return this.finishedAt > 0;
   }
 
   get playing(): boolean {
@@ -727,6 +772,9 @@ export class PracticeSession {
 
   frame(): void {
     const t = this.clock();
+    const perf = performance.now() / 1000;
+    const dt = this.lastFramePerf ? Math.min(0.1, perf - this.lastFramePerf) : 0;
+    this.lastFramePerf = perf;
     this.flashes = this.flashes.filter((f) => f.until > t);
     if (this.holds.size > 0) this.runHolds(t);
     if (this.labels.length > 0) this.labels = this.labels.filter((l) => l.until > t);
@@ -744,10 +792,12 @@ export class PracticeSession {
       }
       this.runWaitClick(t);
       const target = this.wait.current?.beat ?? this.loopSpan?.toBeat ?? this.song.lengthBeats;
-      this.beat += (target - this.beat) * 0.18;
+      // Time-based easing: the same glide at 60 and 120 Hz (a per-frame factor ran twice as fast).
+      this.beat += (target - this.beat) * (1 - Math.exp(-dt * 11));
       if (Math.abs(target - this.beat) < 1e-3) this.beat = target;
     } else if (this.timeline) {
-      this.beat = this.timeline.beatAt(t);
+      // The picture follows a steady clock; judging and scheduling use the audio clock itself.
+      this.beat = this.timeline.beatAt(this.display());
       this.runSchedule(t);
       if (this.scorer) {
         for (const r of this.scorer.update(t)) {

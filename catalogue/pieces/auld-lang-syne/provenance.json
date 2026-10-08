@@ -15,5 +15,7 @@
   "difficulty": 2,
   "reviewed_by": null,
   "verified": false,
-  "score_file": "score.musicxml"
+  "score_file": "score.musicxml",
+  "song": "auld-lang-syne",
+  "variant": "Two hands"
 }

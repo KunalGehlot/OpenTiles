@@ -1,7 +1,7 @@
 import { useLiveQuery } from 'dexie-react-hooks';
 import { useEffect, useState } from 'react';
 import { CalendarCheck, Check, Clock, FilePlus, Link2, Medal, Play } from 'lucide-react';
-import { DIFFICULTY_LABELS, loadCatalogue } from '../catalogue/catalogue';
+import { DIFFICULTY_LABELS, loadCatalogue, siblingsOf } from '../catalogue/catalogue';
 import type { CataloguePiece } from '../catalogue/catalogue';
 import { catalogueKey, difficultyPath, MASTERY, nextPiece } from '../catalogue/path';
 import { absoluteHref, href } from '../lib/router';
@@ -118,7 +118,12 @@ export function Home() {
               />
               <div className="grid">
                 {level.pieces.map((p) => (
-                  <PieceCard key={p.slug} piece={p} best={best.get(catalogueKey(p.slug))} />
+                  <PieceCard
+                    key={p.slug}
+                    piece={p}
+                    best={best.get(catalogueKey(p.slug))}
+                    others={siblingsOf(p, shown)}
+                  />
                 ))}
               </div>
             </li>
@@ -153,7 +158,15 @@ function Glance({ icon, value, label }: { icon: React.ReactNode; value: number; 
   );
 }
 
-function PieceCard({ piece, best }: { piece: CataloguePiece; best: number | undefined }) {
+function PieceCard({
+  piece,
+  best,
+  others,
+}: {
+  piece: CataloguePiece;
+  best: number | undefined;
+  others: CataloguePiece[];
+}) {
   const route = { name: 'practice', source: 'catalogue', id: piece.slug } as const;
   return (
     <div className="piece">
@@ -173,6 +186,19 @@ function PieceCard({ piece, best }: { piece: CataloguePiece; best: number | unde
         </span>
       </a>
       <CopyLink url={absoluteHref(route)} title={piece.title} />
+      {/* Always present, so cards in a row keep one height. */}
+      <p className="piece__levels">
+        {others.length > 0 && <span className="muted">Also:</span>}
+        {others.map((o) => (
+          <a
+            key={o.slug}
+            href={href({ name: 'practice', source: 'catalogue', id: o.slug })}
+            title={`${o.title}, level ${o.difficulty}`}
+          >
+            {o.variant ?? o.title}
+          </a>
+        ))}
+      </p>
     </div>
   );
 }

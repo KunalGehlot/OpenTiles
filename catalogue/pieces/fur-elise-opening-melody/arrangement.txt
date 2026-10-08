@@ -1,0 +1,13 @@
+# Melody-only level: the right hand of the two-hand arrangement, the left hand resting.
+# Für Elise, WoO 59, by Ludwig van Beethoven (1810): the opening phrase.
+# Original arrangement for OpenTiles, released under CC0 1.0.
+title: Für Elise (opening)
+composer: Ludwig van Beethoven
+key: 0
+time: 3/8
+tempo: 70
+pickup: yes
+RH: E5s@5 D#5s@4
+RH: | E5s D#5s E5s B4s D5s C5s | A4e rs C4s@1 E4s A4s | B4e rs E4s G#4s B4s | C5e rs E4s E5s D#5s
+RH: | E5s D#5s E5s B4s D5s C5s | A4e rs C4s E4s A4s | B4e rs E4s C5s B4s | A4q.
+LH: re | rq. | rq. | rq. | rq. | rq. | rq. | rq. | rq.

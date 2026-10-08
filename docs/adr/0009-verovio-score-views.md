@@ -43,7 +43,7 @@ hardest bars after a run. Constraints:
    barline give (beat, x) anchors; the cursor interpolates between anchors of the same system, so
    it glides through a bar and jumps back at a repeat (`cursor-map.ts`).
 5. **Two layouts, one controller.** The scrolling score renders one long system (`breaks: none`)
-   that scrolls under a cursor kept 30 % in from the left. The page view renders pages sized to the
+   that scrolls under a cursor kept 30 % in from the left (the play bar is now in the middle, ADR 0012). The page view renders pages sized to the
    view, turns pages automatically when the cursor reaches another page, and turns them with the
    page buttons or the keys a Bluetooth page-turn pedal sends (PageDown/PageUp, arrows, Space in
    wait mode) while no timed run is playing. `ScoreController` does all DOM work from

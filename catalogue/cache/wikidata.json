@@ -64,6 +64,12 @@
       ],
       "fetched": "2026-10-07"
     },
+    "mildred j. hill": {
+      "ids": [
+        "Q4358017"
+      ],
+      "fetched": "2026-10-08"
+    },
     "wolfgang amadeus mozart": {
       "ids": [
         "Q254",
@@ -342,6 +348,27 @@
       "death_precision": 11,
       "death_unknown": false,
       "fetched": "2026-10-07"
+    },
+    "Q4358017": {
+      "label": "Mildred J. Hill",
+      "description": "American composer (1859–1916)",
+      "aliases": [
+        "Johann Tonsor",
+        "Mildred  Hill",
+        "Mildred Jane Hill"
+      ],
+      "human": true,
+      "occupations": [
+        "Q14915627",
+        "Q36834",
+        "Q486748",
+        "Q753110"
+      ],
+      "birth_year": 1859,
+      "death_year": 1916,
+      "death_precision": 11,
+      "death_unknown": false,
+      "fetched": "2026-10-08"
     },
     "Q12368917": {
       "label": "Ludwig van Beethoven",

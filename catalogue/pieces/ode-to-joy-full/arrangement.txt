@@ -1,0 +1,15 @@
+# Ode to Joy, from the finale of Beethoven's Ninth Symphony (1824): the whole 16-bar tune, in C major.
+# Original simplified arrangement for OpenTiles, released under CC0 1.0.
+title: Ode to Joy (full tune)
+composer: Ludwig van Beethoven
+key: 0
+time: 4/4
+tempo: 96
+RH: E4q@3 E4q F4q G4q | G4q F4q E4q D4q | C4q@1 C4q D4q E4q | E4q. D4e D4h
+RH: E4q E4q F4q G4q | G4q F4q E4q D4q | C4q C4q D4q E4q | D4q. C4e C4h
+RH: D4q@2 D4q E4q C4q | D4q E4e F4e E4q C4q | D4q E4e F4e E4q D4q | C4q D4q G3h
+RH: E4q E4q F4q G4q | G4q F4q E4q D4q | C4q C4q D4q E4q | D4q. C4e C4h
+LH: C3w | G2w | C3w | G2w
+LH: C3w | G2w | C3w | G2h C3h
+LH: G2w | G2w | G2w | C3h G2h
+LH: C3w | G2w | C3w | G2h C3h

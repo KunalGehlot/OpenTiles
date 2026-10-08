@@ -142,3 +142,42 @@ test('MIDI imports offer the falling-notes view only, and say why', async ({ pag
   await expect(view.getByRole('button', { name: 'Score' })).toBeDisabled();
   await expect(page.getByText('MIDI files have no printed score')).toBeVisible();
 });
+
+test('the scrolling score keeps the play bar in the middle, shows no scroll bar and can be dragged', async ({
+  page,
+}) => {
+  await page.goto('./#/practice/catalogue/ode-to-joy');
+  await page.getByRole('button', { name: 'Right', exact: true }).click();
+  await page.getByRole('group', { name: 'View' }).getByRole('button', { name: 'Score' }).click();
+  await expect(page.locator('[data-testid="score-strip"] > svg')).toBeVisible({ timeout: 20_000 });
+  const host = page.locator('.ot-score-host');
+  // Nothing to scroll with a bar: the score is moved by transform.
+  expect(await host.evaluate((el) => getComputedStyle(el).overflowX)).toBe('hidden');
+  expect(
+    await host.evaluate((el) => (el as HTMLElement).offsetHeight - el.clientHeight),
+  ).toBeLessThanOrEqual(0);
+
+  const barOffset = () =>
+    page.evaluate(() => {
+      const h = document.querySelector('.ot-score-host')?.getBoundingClientRect();
+      const c = document.querySelector('[data-testid="score-cursor"]')?.getBoundingClientRect();
+      return h && c ? c.left - (h.left + h.width / 2) : NaN;
+    });
+  for (let i = 0; i < 4; i++) await page.keyboard.press('KeyD'); // E4 E4 F4 G4 need other keys; any press
+  await expect.poll(async () => Math.abs(await barOffset())).toBeLessThan(3);
+
+  // A drag moves the score, and the play bar stays with the notes (it is part of the score).
+  const box = await host.boundingBox();
+  if (!box) throw new Error('no score box');
+  const before = await page.evaluate(
+    () => document.querySelector('.ot-score-mover')?.getAttribute('style') ?? '',
+  );
+  await page.mouse.move(box.x + box.width * 0.7, box.y + box.height / 2);
+  await page.mouse.down();
+  await page.mouse.move(box.x + box.width * 0.4, box.y + box.height / 2, { steps: 6 });
+  await page.mouse.up();
+  const after = await page.evaluate(
+    () => document.querySelector('.ot-score-mover')?.getAttribute('style') ?? '',
+  );
+  expect(after).not.toEqual(before);
+});

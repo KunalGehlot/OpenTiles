@@ -1,0 +1,11 @@
+# Melody-only level: the right hand of the two-hand arrangement, the left hand resting.
+# Ode to Joy, the main theme from Beethoven's Ninth Symphony (1824), in C major for beginners.
+# Original simplified arrangement for OpenTiles, released under CC0 1.0.
+title: Ode to Joy (theme)
+composer: Ludwig van Beethoven
+key: 0
+time: 4/4
+tempo: 96
+RH: E4q@3 E4q F4q G4q | G4q F4q E4q D4q | C4q@1 C4q D4q E4q | E4q. D4e D4h
+RH: E4q@3 E4q F4q G4q | G4q F4q E4q D4q | C4q C4q D4q E4q | D4q. C4e C4h
+LH: rw | rw | rw | rw | rw | rw | rw | rw

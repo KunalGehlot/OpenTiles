@@ -73,3 +73,24 @@ describe('keyboard height', () => {
     expect(keyboardHeightFor(150, 50)).toBeCloseTo(60);
   });
 });
+
+describe('wide windows', () => {
+  it('caps the white key width and centres the keyboard', async () => {
+    const { MAX_WHITE_WIDTH } = await import('../src/views/keyboard');
+    const l = layoutKeyboard(60, 71, 2000, MAX_WHITE_WIDTH);
+    expect(l.whiteWidth).toBe(MAX_WHITE_WIDTH);
+    const first = l.keys[0];
+    const last = l.keys.filter((k) => !k.black).at(-1);
+    expect(first?.x).toBeCloseTo(2000 - ((last?.x ?? 0) + (last?.width ?? 0)));
+  });
+
+  it('widens the range by octaves until the keys fit, and keeps a narrow window as it is', async () => {
+    const { widenRange } = await import('../src/views/keyboard');
+    expect(widenRange({ low: 36, high: 72 }, 600)).toEqual({ low: 36, high: 72 });
+    const wide = widenRange({ low: 36, high: 72 }, 2560);
+    expect(wide.low).toBeLessThan(36);
+    expect(wide.high).toBeGreaterThan(72);
+    expect(wide.low).toBeGreaterThanOrEqual(21);
+    expect(wide.high).toBeLessThanOrEqual(108);
+  });
+});

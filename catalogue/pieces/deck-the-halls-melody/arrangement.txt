@@ -1,0 +1,13 @@
+# Melody-only level: the right hand of the two-hand arrangement, the left hand resting.
+# Deck the Halls: the traditional Welsh melody 'Nos Galan'.
+# Original simplified arrangement for OpenTiles, released under CC0 1.0.
+title: Deck the Halls
+composer: Traditional
+key: 0
+time: 4/4
+tempo: 108
+RH: G4q.@5 F4e@4 E4q@3 D4q@2 | C4q@1 D4q E4q C4q | D4e E4e F4e D4e E4q. D4e | C4q B3q C4h
+RH: G4q. F4e E4q D4q | C4q D4q E4q C4q | D4e E4e F4e D4e E4q. D4e | C4q B3q C4h
+RH: D4q. E4e F4q D4q | E4q. F4e G4q D4q | E4e F#4e G4q A4e B4e C5q | B4q A4q G4h
+RH: G4q. F4e E4q D4q | C4q D4q E4q C4q | A4e A4e A4e A4e G4q. F4e | E4q D4q C4h
+LH: rw | rw | rw | rw | rw | rw | rw | rw | rw | rw | rw | rw | rw | rw | rw | rw

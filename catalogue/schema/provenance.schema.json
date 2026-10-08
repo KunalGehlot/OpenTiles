@@ -110,6 +110,16 @@
     "score_file": {
       "type": "string"
     },
+    "song": {
+      "type": "string",
+      "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$",
+      "description": "Groups the levels of one song (ADR 0012). Every level is its own piece folder with its own record; they share the song slug. Requires 'variant'."
+    },
+    "variant": {
+      "type": "string",
+      "minLength": 1,
+      "description": "What this level is called within its song, e.g. 'Melody', 'Two hands', 'Full'. Requires 'song'."
+    },
     "single_hand": {
       "enum": ["right", "left"],
       "description": "Only for pieces written for one hand: the hand that plays. Without it the score must have notes for both hands."

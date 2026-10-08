@@ -12,7 +12,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 import arrange  # noqa: E402
-from catalogue_lib import Piece, validate_piece  # noqa: E402
+from catalogue_lib import Piece, index_entry, validate_piece, validate_songs  # noqa: E402
 from eu_term import is_free, latest_free_death_year  # noqa: E402
 
 GOOD = {
@@ -177,3 +177,30 @@ class ValidateTest(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class SongLevelsTest(unittest.TestCase):
+    def piece(self, slug, **extra):
+        record = {**copy.deepcopy(GOOD), **extra}
+        return Piece(slug, Path("."), record)
+
+    def test_levels_of_one_song_must_agree_on_the_rights(self):
+        a = self.piece("a", song="s", variant="Melody")
+        b = self.piece("b", song="s", variant="Full", composer_death_year=1900)
+        errors = validate_songs([a, b])
+        self.assertEqual(len(errors), 1)
+        self.assertIn("composer_death_year", errors[0])
+
+    def test_variant_labels_are_unique_within_a_song(self):
+        a = self.piece("a", song="s", variant="Melody")
+        b = self.piece("b", song="s", variant="melody")
+        self.assertIn("same variant label", " ".join(validate_songs([a, b])))
+
+    def test_song_and_variant_go_together(self):
+        errors = validate_piece(self.piece("a", song="s"), 2026)
+        self.assertTrue(any("go together" in e for e in errors))
+
+    def test_the_index_carries_song_and_variant(self):
+        entry = index_entry(self.piece("a", song="s", variant="Melody"))
+        self.assertEqual((entry["song"], entry["variant"]), ("s", "Melody"))
+        self.assertNotIn("song", index_entry(self.piece("b")))

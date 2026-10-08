@@ -10,7 +10,14 @@
 import type { Song, SongNote } from '@opentiles/song-model';
 import { isDark, parseColour, rgba } from './colour';
 import type { Rgb } from './colour';
-import { BLACK_HEIGHT, keyAt, keyboardHeightFor, layoutKeyboard } from './keyboard';
+import {
+  BLACK_HEIGHT,
+  MAX_WHITE_WIDTH,
+  keyAt,
+  keyboardHeightFor,
+  layoutKeyboard,
+  widenRange,
+} from './keyboard';
 import type { KeyboardLayout, KeyRect } from './keyboard';
 import type { PracticeSession } from './session';
 import { effectiveSettings, labelScale } from '../settings/store';
@@ -160,7 +167,8 @@ export class PracticeRenderer {
   setRange(range: { low: number; high: number }): void {
     if (range.low === this.range.low && range.high === this.range.high) return;
     this.range = range;
-    this.layout = layoutKeyboard(range.low, range.high, this.width);
+    const wide = widenRange(range, this.width);
+    this.layout = layoutKeyboard(wide.low, wide.high, this.width, MAX_WHITE_WIDTH);
     this.buildGradients();
   }
 
@@ -173,7 +181,8 @@ export class PracticeRenderer {
     this.font = '';
     this.canvas.style.width = `${width}px`;
     this.canvas.style.height = `${height}px`;
-    this.layout = layoutKeyboard(this.range.low, this.range.high, width);
+    const wide = widenRange(this.range, width);
+    this.layout = layoutKeyboard(wide.low, wide.high, width, MAX_WHITE_WIDTH);
     this.palette = readPalette(this.canvas);
     this.buildGradients();
   }

@@ -32,15 +32,39 @@
 
 .ot-score-host {
   position: relative;
-  overflow-x: auto;
+  overflow-x: hidden;
   overflow-y: hidden;
-  -webkit-overflow-scrolling: touch;
-  scrollbar-width: thin;
+  scrollbar-width: none;
+}
+
+.ot-score-host::-webkit-scrollbar {
+  display: none;
 }
 
 .ot-score-panel.scroll .ot-score-host {
   max-height: 45vh;
   overflow-y: auto;
+  /* Horizontal drags are the score's own (it pans and coasts); vertical ones scroll a tall score. */
+  touch-action: pan-y;
+  cursor: grab;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.ot-score-panel.scroll .ot-score-host.dragging {
+  cursor: grabbing;
+}
+
+.ot-score-panel.page .ot-score-mover {
+  display: block;
+  text-align: center;
+}
+
+.ot-score-mover {
+  position: relative;
+  display: inline-block;
+  vertical-align: top;
+  will-change: transform;
 }
 
 .ot-score-panel.page .ot-score-host {
@@ -55,9 +79,10 @@
   vertical-align: top;
 }
 
-/* The playing position stays 30 % in from the left; padding lets the first and last notes reach it. */
+/* The play bar stays in the middle of the view while the score moves past it; padding lets the
+   first and last notes reach it. */
 .ot-score-panel.scroll .ot-score-strip {
-  padding: 0 70% 0 30%;
+  padding-block: 0;
 }
 
 .ot-score-strip svg {

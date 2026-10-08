@@ -11,6 +11,20 @@ export interface CataloguePiece {
   verified: boolean;
   score: string;
   attribution?: string;
+  /** Pieces that are levels of one song share this (ADR 0012); `variant` names the level. */
+  song?: string;
+  variant?: string;
+}
+
+/** The other levels of a piece's song, easiest first. */
+export function siblingsOf(
+  piece: CataloguePiece,
+  all: readonly CataloguePiece[],
+): CataloguePiece[] {
+  if (!piece.song) return [];
+  return all
+    .filter((p) => p.song === piece.song && p.slug !== piece.slug)
+    .sort((a, b) => a.difficulty - b.difficulty || a.title.localeCompare(b.title));
 }
 
 const base = new URL('catalogue/', document.baseURI);

@@ -195,8 +195,8 @@ test('the Home page shows a difficulty path with progress and teacher links', as
   await page.reload();
   await expect(path.locator('.path-level').first()).toContainText(/1 of \d+ mastered · 1 played/);
 
-  await page.getByRole('button', { name: 'Copy link to Ode to Joy' }).click();
-  await expect(page.getByRole('button', { name: 'Copy link to Ode to Joy' })).toHaveText(
+  await page.getByRole('button', { name: 'Copy link to Ode to Joy (theme)' }).click();
+  await expect(page.getByRole('button', { name: 'Copy link to Ode to Joy (theme)' })).toHaveText(
     'Link copied',
   );
   const copied = await page.evaluate(() => navigator.clipboard.readText());

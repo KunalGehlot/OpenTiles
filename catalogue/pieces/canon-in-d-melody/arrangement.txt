@@ -1,0 +1,13 @@
+# Melody-only level: the right hand of the two-hand arrangement, the left hand resting.
+# Canon in D by Johann Pachelbel (1653–1706): the ground bass with the first three melody entries, closing chord added.
+# Original simplified arrangement for OpenTiles, released under CC0 1.0.
+title: Canon in D (simplified)
+composer: Johann Pachelbel
+key: 2
+time: 4/4
+tempo: 72
+RH: F#5h@5 E5h@4 | D5h@3 C#5h@2 | B4h@2 A4h@1 | B4h@2 C#5h@3
+RH: D5h C#5h | B4h A4h | G4h F#4h | G4h E4h
+RH: D4q F#4q A4q G4q | F#4q D4q F#4q E4q | D4q B3q D4q A4q | G4q B4q A4q G4q
+RH: [F#4 A4 D5]w
+LH: rw | rw | rw | rw | rw | rw | rw | rw | rw | rw | rw | rw | rw

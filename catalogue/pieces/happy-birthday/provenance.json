@@ -1,0 +1,19 @@
+{
+  "title": "Happy Birthday to You",
+  "composer": "Mildred J. Hill",
+  "composer_death_year": 1916,
+  "traditional": false,
+  "transcriber": "OpenTiles contributors",
+  "arranger": "OpenTiles contributors",
+  "source_url": "https://github.com/KunalGehlot/OpenTiles/tree/main/catalogue/pieces/happy-birthday",
+  "source_licence": "CC0-1.0",
+  "edition_note": "Original simplified arrangement written for OpenTiles from the 1893 melody 'Good Morning to All'; no words, no copy of any published edition. Reviewer: do the title search for this one (REVIEWING.md); the song's later words and some arrangements were claimed as protected, the melody is from 1893.",
+  "eu_term_check": {
+    "result": "pass",
+    "date": "2026-10-07"
+  },
+  "difficulty": 2,
+  "reviewed_by": null,
+  "verified": false,
+  "score_file": "score.musicxml"
+}

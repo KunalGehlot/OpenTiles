@@ -12,6 +12,9 @@ import { fingersToAdd, glyphStates, nearestByBeat, noteStates } from './note-sta
 import type { NoteState } from './note-states';
 import type { Toolkit } from './verovio';
 
+/** The widest the engraved page gets (CSS px); wider windows centre it. */
+const MAX_PAGE_WIDTH = 1100;
+
 export type ScoreLayout = 'scroll' | 'page';
 
 const STATE_CLASSES: Record<NoteState, string> = {
@@ -26,8 +29,8 @@ const SVG_NS = 'http://www.w3.org/2000/svg';
 
 /** Verovio scale (percent) for a view width: smaller on narrow screens (⅓ iPad, P1-27). */
 export function scaleFor(width: number, layout: ScoreLayout): number {
-  if (layout === 'scroll') return width < 500 ? 32 : 40;
-  return width < 500 ? 26 : width < 900 ? 32 : 38;
+  if (layout === 'scroll') return width < 500 ? 32 : width < 1000 ? 40 : width < 1600 ? 52 : 64;
+  return width < 500 ? 26 : width < 900 ? 32 : width < 1600 ? 42 : 52;
 }
 
 export interface PageInfo {
@@ -53,6 +56,21 @@ export class ScoreController {
   private lastForced = 0;
   private hardest: number[] = [];
   private size = { width: 0, height: 0 };
+  /** Scrolling view: the score is moved with a transform, so the cursor and the notes move as one. */
+  private readonly mover: HTMLElement;
+  private scrollPos = 0;
+  private shownPos = Number.NaN;
+  private velocity = 0;
+  private drag: { id: number; x: number; time: number; active: boolean } | null = null;
+  private coasting = false;
+  /** The learner moved the score; following resumes with an ease once playing goes on. */
+  private free = false;
+  private homing = false;
+  private endedAt = 0;
+  private lastTime = 0;
+  /** Beats at which a note starts or ends, sorted: the colours change only when one is passed. */
+  private readonly boundaries: number[];
+  private readonly detach: () => void;
   /** Called when the shown page or the page count changes. */
   onPage: (info: PageInfo) => void = () => {};
 
@@ -70,6 +88,12 @@ export class ScoreController {
     this.startOf = new Map(song.notes.map((n) => [n.id, n.startBeat]));
     this.noteById = new Map(song.notes.map((n) => [n.id, n]));
     this.size = { width: host.clientWidth, height: host.clientHeight };
+    this.mover = strip.parentElement ?? host;
+    this.boundaries = [
+      ...new Set(song.notes.flatMap((n) => [n.startBeat, n.startBeat + n.durationBeats])),
+    ].sort((a, b) => a - b);
+    this.detach = layout === 'scroll' ? this.listen() : () => {};
+    this.padStrip();
     this.layoutPages();
     const timemap = tk.renderToTimemap({ includeMeasures: true, includeRests: false });
     const glyphs = glyphsFromTimemap(
@@ -103,7 +127,8 @@ export class ScoreController {
         breaks: 'auto',
         adjustPageHeight: false,
         adjustPageWidth: false,
-        pageWidth: Math.max(units(width), 600),
+        // A page, not the whole window: on a wide screen it is centred instead of stretched.
+        pageWidth: Math.max(units(Math.min(width, MAX_PAGE_WIDTH)), 600),
         pageHeight: Math.max(units(height), 600),
         pageMarginLeft: 60,
         pageMarginRight: 60,
@@ -161,6 +186,7 @@ export class ScoreController {
   /** Re-lays out the pages after the view was resized (page view only). */
   resize(width: number, height: number): void {
     if (this.layout !== 'page') {
+      this.padStrip();
       this.measure();
       return;
     }
@@ -178,7 +204,7 @@ export class ScoreController {
       this.anchors = [];
       return;
     }
-    const origin = this.strip.getBoundingClientRect();
+    const origin = this.mover.getBoundingClientRect();
     const boxes = new Map<number, MeasureBox>();
     this.measureIds.forEach((id, index) => {
       const el = this.strip.querySelector(`[id="${id}"]`);
@@ -239,24 +265,7 @@ export class ScoreController {
       .filter((s): s is number => s !== undefined);
     const changed = sources.join(',') !== this.hardest.join(',');
     this.hardest = sources;
-    if (!changed) return;
-    const first = sources[0];
-    if (first !== undefined && this.layout === 'page') {
-      const page = this.measurePage.get(first);
-      if (page && page !== this.shown) {
-        this.showPage(page);
-        return;
-      }
-    }
-    this.decorateHardest();
-    if (first !== undefined && this.layout === 'scroll') {
-      const box = this.anchors.find((a) => a.beat >= (this.measureStartOfSource(first) ?? 0));
-      if (box) this.host.scrollLeft = Math.max(0, box.x - this.host.clientWidth * 0.3);
-    }
-  }
-
-  private measureStartOfSource(source: number): number | undefined {
-    return this.song.measures.find((m) => m.sourceIndex === source)?.startBeat;
+    if (changed) this.decorateHardest();
   }
 
   private decorateHardest(): void {
@@ -288,12 +297,12 @@ export class ScoreController {
   frame(now: number): void {
     const s = this.session;
     const beat = s.beat;
-    this.followCursor(beat);
+    this.followCursor(beat, now);
     const current =
       s.mode === 'wait' ? new Set((s.wait.current?.notes ?? []).map((n) => n.id)) : null;
     let wrong = 0;
     for (const v of s.marks.values()) if (v === 'wrong') wrong += 1;
-    const signature = `${beat.toFixed(2)}|${s.wait.index}|${s.marks.size}|${wrong}|${s.hands}|${this.shown}`;
+    const signature = `${this.boundaryIndex(beat)}|${s.wait.index}|${s.marks.size}|${wrong}|${s.hands}|${this.shown}`;
     if (signature === this.lastSignature && now - this.lastForced < 0.5) return;
     this.lastSignature = signature;
     this.lastForced = now;
@@ -317,14 +326,33 @@ export class ScoreController {
     }
   }
 
-  private followCursor(beat: number): void {
+  /** Half a view of room on each side, so the first and last notes can reach the middle bar. */
+  private padStrip(): void {
+    this.strip.style.paddingInline =
+      this.layout === 'scroll' ? `${Math.round(this.host.clientWidth / 2)}px` : '';
+  }
+
+  private boundaryIndex(beat: number): number {
+    let lo = 0;
+    let hi = this.boundaries.length;
+    while (lo < hi) {
+      const mid = (lo + hi) >> 1;
+      if ((this.boundaries[mid] ?? Infinity) <= beat + 1e-6) lo = mid + 1;
+      else hi = mid;
+    }
+    return lo;
+  }
+
+  private followCursor(beat: number, now: number): void {
+    const dt = this.lastTime ? Math.min(0.1, now - this.lastTime) : 0;
+    this.lastTime = now;
+    this.watchEnd(now);
     // Page view: turn to the page the cursor is on whenever it moves to another page. After a run
-    // the view stays where the hardest bars are.
-    const reviewing = this.hardest.length > 0;
-    if (this.layout === 'page' && !reviewing) {
+    // the score goes back to the first page (watchEnd).
+    if (this.layout === 'page' && !this.homing) {
       const m = this.song.measures.findLast((x) => x.startBeat <= beat + 1e-6);
       const page = m ? this.measurePage.get(m.sourceIndex) : undefined;
-      if (page !== undefined && page !== this.cursorPage) {
+      if (page !== undefined && page !== this.cursorPage && !this.session.runEnded) {
         this.cursorPage = page;
         if (page !== this.shown) this.showPage(page);
       }
@@ -332,20 +360,139 @@ export class ScoreController {
     const pos = positionAt(this.anchors, beat);
     const visible = pos !== null && pos.page === this.shown;
     this.cursor.hidden = !visible;
-    if (!pos || !visible) return;
-    this.cursor.style.transform = `translate(${pos.x.toFixed(1)}px, ${pos.top.toFixed(1)}px)`;
-    this.cursor.style.height = `${pos.height.toFixed(1)}px`;
-    if (this.layout === 'scroll' && !reviewing) {
-      const moving = this.session.playing || Math.abs(beat - this.lastBeat) > 1e-4;
-      if (moving) {
-        const target = pos.x - this.host.clientWidth * 0.3;
-        if (Math.abs(this.host.scrollLeft - target) > 0.5) this.host.scrollLeft = target;
-      }
+    if (pos && visible) {
+      this.cursor.style.transform = `translate(${pos.x.toFixed(1)}px, ${pos.top.toFixed(1)}px)`;
+      this.cursor.style.height = `${pos.height.toFixed(1)}px`;
     }
+    if (this.layout === 'scroll') this.scrollStep(pos && visible ? pos.x : null, beat, dt);
     this.lastBeat = beat;
   }
 
+  /**
+   * The scrolling view: the play bar stays in the middle (the strip is padded by half a view on
+   * each side) and the score moves past it. A drag takes over; letting go coasts, and once playing
+   * goes on the score eases back to the bar without a jump.
+   */
+  private scrollStep(cursorX: number | null, beat: number, dt: number): void {
+    const target =
+      cursorX === null ? null : this.clampScroll(cursorX - this.host.clientWidth * 0.5);
+    if (this.drag?.active) {
+      // The pointer owns the position.
+    } else if (this.coasting) {
+      this.scrollPos = this.clampScroll(this.scrollPos + this.velocity * dt);
+      this.velocity *= Math.exp(-dt * 4.5);
+      if (Math.abs(this.velocity) < 12) this.coasting = false;
+    } else if (this.homing) {
+      this.scrollPos += (0 - this.scrollPos) * (1 - Math.exp(-dt * 7));
+      if (this.scrollPos < 0.5) {
+        this.scrollPos = 0;
+        this.homing = false;
+      }
+    } else if (target !== null && !this.session.runEnded) {
+      const moving = this.session.playing || Math.abs(beat - this.lastBeat) > 1e-4;
+      if (moving && !this.free) this.scrollPos = target;
+      else if (moving) {
+        this.scrollPos += (target - this.scrollPos) * (1 - Math.exp(-dt * 6));
+        if (Math.abs(target - this.scrollPos) < 0.5) {
+          this.scrollPos = target;
+          this.free = false;
+        }
+      }
+    }
+    if (Math.abs(this.scrollPos - this.shownPos) > 0.01 || Number.isNaN(this.shownPos)) {
+      this.shownPos = this.scrollPos;
+      this.mover.style.transform = `translate3d(${(-this.scrollPos).toFixed(2)}px, 0, 0)`;
+    }
+  }
+
+  private clampScroll(x: number): number {
+    const max = Math.max(0, this.strip.offsetWidth - this.host.clientWidth);
+    return Math.min(max, Math.max(0, x));
+  }
+
+  /** A second after the last note the score goes back to the start (page view: page 1). */
+  private watchEnd(now: number): void {
+    if (!this.session.runEnded) {
+      this.endedAt = 0;
+      return;
+    }
+    if (this.endedAt === 0) this.endedAt = now;
+    if (now - this.endedAt < 1 || this.endedAt < 0) return;
+    this.endedAt = -1;
+    this.free = false;
+    if (this.layout === 'page') {
+      this.cursorPage = 1;
+      if (this.shown !== 1) this.showPage(1);
+    } else {
+      this.coasting = false;
+      this.homing = true;
+    }
+  }
+
+  /** Mouse, touch and trackpad panning of the scrolling view. */
+  private listen(): () => void {
+    const host = this.host;
+    const down = (e: PointerEvent) => {
+      if (e.pointerType === 'mouse' && e.button !== 0) return;
+      this.drag = { id: e.pointerId, x: e.clientX, time: e.timeStamp, active: false };
+    };
+    const move = (e: PointerEvent) => {
+      const d = this.drag;
+      if (!d || d.id !== e.pointerId) return;
+      const dx = e.clientX - d.x;
+      if (!d.active) {
+        if (Math.abs(dx) < 5) return;
+        d.active = true;
+        this.coasting = false;
+        this.homing = false;
+        this.velocity = 0;
+        host.setPointerCapture?.(e.pointerId);
+        host.classList.add('dragging');
+      }
+      const dtm = Math.max(1, e.timeStamp - d.time) / 1000;
+      this.scrollPos = this.clampScroll(this.scrollPos - dx);
+      this.velocity = this.velocity * 0.6 + (-dx / dtm) * 0.4;
+      d.x = e.clientX;
+      d.time = e.timeStamp;
+    };
+    const up = (e: PointerEvent) => {
+      const d = this.drag;
+      if (!d || d.id !== e.pointerId) return;
+      this.drag = null;
+      host.classList.remove('dragging');
+      if (!d.active) return;
+      this.free = true;
+      // A pause before letting go means no coasting.
+      const idle = e.timeStamp - d.time;
+      this.coasting = idle < 80 && Math.abs(this.velocity) > 80;
+      if (!this.coasting) this.velocity = 0;
+    };
+    const wheel = (e: WheelEvent) => {
+      if (Math.abs(e.deltaX) <= Math.abs(e.deltaY)) return;
+      e.preventDefault();
+      this.coasting = false;
+      this.homing = false;
+      this.free = true;
+      this.scrollPos = this.clampScroll(this.scrollPos + e.deltaX);
+    };
+    host.addEventListener('pointerdown', down);
+    host.addEventListener('pointermove', move);
+    host.addEventListener('pointerup', up);
+    host.addEventListener('pointercancel', up);
+    host.addEventListener('wheel', wheel, { passive: false });
+    return () => {
+      host.removeEventListener('pointerdown', down);
+      host.removeEventListener('pointermove', move);
+      host.removeEventListener('pointerup', up);
+      host.removeEventListener('pointercancel', up);
+      host.removeEventListener('wheel', wheel);
+    };
+  }
+
   destroy(): void {
+    this.detach();
+    this.mover.style.transform = '';
+    this.strip.style.paddingInline = '';
     this.strip.innerHTML = '';
     this.tk.destroy();
   }

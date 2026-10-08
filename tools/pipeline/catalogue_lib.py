@@ -46,6 +46,8 @@ OPTIONAL = {
     "lyricist_wikidata": str,
     "single_hand": str,
     "reviewed_on": str,
+    "song": str,
+    "variant": str,
 }
 QID = re.compile(r"^Q[1-9][0-9]*$")
 DATE = re.compile(r"^\d{4}-\d{2}-\d{2}$")
@@ -133,6 +135,12 @@ def validate_piece(piece: Piece, release_year: int) -> list[str]:
     for key in ("composer_wikidata", "lyricist_wikidata"):
         if key in r and not QID.match(r[key]):
             errors.append(f"{key} must be a Wikidata item ID like Q7294")
+    if ("song" in r) != ("variant" in r):
+        errors.append("'song' and 'variant' go together: a piece that is one level of a song needs both")
+    if "song" in r and not SLUG.match(r["song"]):
+        errors.append("song must be lowercase words separated by hyphens")
+    if "variant" in r and not r["variant"].strip():
+        errors.append("variant is empty")
     if "single_hand" in r and r["single_hand"] not in ("right", "left"):
         errors.append("single_hand must be 'right' or 'left'")
 
@@ -186,4 +194,30 @@ def index_entry(piece: Piece) -> dict:
     }
     if r.get("attribution"):
         entry["attribution"] = r["attribution"]
+    if r.get("song"):
+        entry["song"] = r["song"]
+        entry["variant"] = r["variant"]
     return entry
+
+
+def validate_songs(pieces: list[Piece]) -> list[str]:
+    """Problems across the levels of one song (ADR 0012): the rights and the labels must agree."""
+    errors: list[str] = []
+    by_song: dict[str, list[Piece]] = {}
+    for p in pieces:
+        if p.record.get("song"):
+            by_song.setdefault(p.record["song"], []).append(p)
+    same = ("composer", "composer_death_year", "traditional", "composer_wikidata", "lyricist", "lyricist_death_year")
+    for song, group in sorted(by_song.items()):
+        first = group[0]
+        for other in group[1:]:
+            for key in same:
+                if first.record.get(key) != other.record.get(key):
+                    errors.append(
+                        f"song '{song}': {first.slug} and {other.slug} disagree on {key} "
+                        f"({first.record.get(key)!r} against {other.record.get(key)!r})"
+                    )
+        labels = [g.record.get("variant", "").strip().lower() for g in group]
+        if len(set(labels)) != len(labels):
+            errors.append(f"song '{song}': two levels have the same variant label")
+    return errors

@@ -131,8 +131,10 @@ export function ScoreView({ session, song, suggested, notation, layout, hardest 
         </p>
       )}
       <div ref={hostRef} className="ot-score-host" hidden={typeof state === 'object'}>
-        <div ref={stripRef} className="ot-score-strip" data-testid="score-strip" />
-        <div ref={cursorRef} className="ot-score-cursor" data-testid="score-cursor" hidden />
+        <div className="ot-score-mover">
+          <div ref={stripRef} className="ot-score-strip" data-testid="score-strip" />
+          <div ref={cursorRef} className="ot-score-cursor" data-testid="score-cursor" hidden />
+        </div>
       </div>
       {layout === 'page' && state === 'ready' && (
         <div className="ot-score-pager">

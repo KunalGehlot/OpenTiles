@@ -21,7 +21,7 @@ import sys
 import arrange
 import wikidata
 from build_index import build_index, index_path
-from catalogue_lib import load_pieces, review_notes, validate_piece
+from catalogue_lib import load_pieces, review_notes, validate_piece, validate_songs
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -75,6 +75,9 @@ def main(argv: list[str] | None = None) -> int:
     finally:
         if wd is not None:
             wd.cache.save()
+    for e in validate_songs(pieces):
+        print(e)
+        failed += 1
     current = index_path().read_text(encoding="utf-8") if index_path().exists() else ""
     if current != build_index(pieces):
         print("catalogue/index.json is out of date; run tools/pipeline/build_index.py")

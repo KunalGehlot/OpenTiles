@@ -242,6 +242,18 @@
 .piece {
   position: relative;
   display: flex;
+  flex-direction: column;
+}
+
+/* The other levels of the same song, under its card. */
+.piece__levels {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-1) var(--space-3);
+  min-height: 1.6em;
+  margin: var(--space-2) var(--space-1) 0;
+  font-size: var(--text-sm);
 }
 
 .piece__card {

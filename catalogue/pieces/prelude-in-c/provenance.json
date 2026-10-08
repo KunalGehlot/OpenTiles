@@ -15,5 +15,7 @@
   "difficulty": 3,
   "reviewed_by": null,
   "verified": false,
-  "score_file": "score.musicxml"
+  "score_file": "score.musicxml",
+  "song": "prelude-in-c",
+  "variant": "Two hands"
 }

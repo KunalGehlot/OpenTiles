@@ -16,5 +16,7 @@
   "difficulty": 2,
   "reviewed_by": null,
   "verified": false,
-  "score_file": "score.musicxml"
+  "score_file": "score.musicxml",
+  "song": "silent-night",
+  "variant": "Two hands"
 }

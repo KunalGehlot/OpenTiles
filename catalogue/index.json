@@ -11,6 +11,17 @@
       "score": "pieces/alle-meine-entchen/score.musicxml"
     },
     {
+      "slug": "amazing-grace-melody",
+      "title": "Amazing Grace (melody)",
+      "composer": "Traditional (American hymn tune 'New Britain', 1829)",
+      "difficulty": 1,
+      "licence": "CC0-1.0",
+      "verified": false,
+      "score": "pieces/amazing-grace-melody/score.musicxml",
+      "song": "amazing-grace",
+      "variant": "Melody"
+    },
+    {
       "slug": "au-clair-de-la-lune",
       "title": "Au clair de la lune",
       "composer": "Traditional (French song, 18th century)",
@@ -20,6 +31,28 @@
       "score": "pieces/au-clair-de-la-lune/score.musicxml"
     },
     {
+      "slug": "auld-lang-syne-melody",
+      "title": "Auld Lang Syne (verse, melody)",
+      "composer": "Traditional (Scottish)",
+      "difficulty": 1,
+      "licence": "CC0-1.0",
+      "verified": false,
+      "score": "pieces/auld-lang-syne-melody/score.musicxml",
+      "song": "auld-lang-syne",
+      "variant": "Melody"
+    },
+    {
+      "slug": "deck-the-halls-melody",
+      "title": "Deck the Halls (melody)",
+      "composer": "Traditional (Welsh carol 'Nos Galan')",
+      "difficulty": 1,
+      "licence": "CC0-1.0",
+      "verified": false,
+      "score": "pieces/deck-the-halls-melody/score.musicxml",
+      "song": "deck-the-halls",
+      "variant": "Melody"
+    },
+    {
       "slug": "frere-jacques",
       "title": "Frère Jacques",
       "composer": "Traditional (French round, 18th century)",
@@ -27,6 +60,39 @@
       "licence": "CC0-1.0",
       "verified": false,
       "score": "pieces/frere-jacques/score.musicxml"
+    },
+    {
+      "slug": "fur-elise-opening-melody",
+      "title": "Für Elise (opening, melody)",
+      "composer": "Ludwig van Beethoven",
+      "difficulty": 1,
+      "licence": "CC0-1.0",
+      "verified": false,
+      "score": "pieces/fur-elise-opening-melody/score.musicxml",
+      "song": "fur-elise-opening",
+      "variant": "Melody"
+    },
+    {
+      "slug": "good-king-wenceslas-melody",
+      "title": "Good King Wenceslas (melody)",
+      "composer": "Traditional (spring carol 'Tempus adest floridum', 1582)",
+      "difficulty": 1,
+      "licence": "CC0-1.0",
+      "verified": false,
+      "score": "pieces/good-king-wenceslas-melody/score.musicxml",
+      "song": "good-king-wenceslas",
+      "variant": "Melody"
+    },
+    {
+      "slug": "hark-the-herald-angels-sing-melody",
+      "title": "Hark! The Herald Angels Sing (opening, melody)",
+      "composer": "Felix Mendelssohn",
+      "difficulty": 1,
+      "licence": "CC0-1.0",
+      "verified": false,
+      "score": "pieces/hark-the-herald-angels-sing-melody/score.musicxml",
+      "song": "hark-the-herald-angels-sing",
+      "variant": "Melody"
     },
     {
       "slug": "hot-cross-buns",
@@ -56,6 +122,28 @@
       "score": "pieces/jingle-bells/score.musicxml"
     },
     {
+      "slug": "joy-to-the-world-melody",
+      "title": "Joy to the World (opening, melody)",
+      "composer": "Lowell Mason",
+      "difficulty": 1,
+      "licence": "CC0-1.0",
+      "verified": false,
+      "score": "pieces/joy-to-the-world-melody/score.musicxml",
+      "song": "joy-to-the-world",
+      "variant": "Melody"
+    },
+    {
+      "slug": "largo-new-world-melody",
+      "title": "Largo from the New World Symphony (theme, melody)",
+      "composer": "Antonín Dvořák",
+      "difficulty": 1,
+      "licence": "CC0-1.0",
+      "verified": false,
+      "score": "pieces/largo-new-world-melody/score.musicxml",
+      "song": "largo-new-world",
+      "variant": "Melody"
+    },
+    {
       "slug": "london-bridge",
       "title": "London Bridge Is Falling Down",
       "composer": "Traditional (English nursery rhyme)",
@@ -63,6 +151,17 @@
       "licence": "CC0-1.0",
       "verified": false,
       "score": "pieces/london-bridge/score.musicxml"
+    },
+    {
+      "slug": "brahms-lullaby-melody",
+      "title": "Lullaby (Wiegenlied, melody)",
+      "composer": "Johannes Brahms",
+      "difficulty": 1,
+      "licence": "CC0-1.0",
+      "verified": false,
+      "score": "pieces/brahms-lullaby-melody/score.musicxml",
+      "song": "brahms-lullaby",
+      "variant": "Melody"
     },
     {
       "slug": "mary-had-a-little-lamb",
@@ -74,13 +173,37 @@
       "score": "pieces/mary-had-a-little-lamb/score.musicxml"
     },
     {
+      "slug": "minuet-in-g-melody",
+      "title": "Minuet in G (opening, melody)",
+      "composer": "Christian Petzold",
+      "difficulty": 1,
+      "licence": "CC0-1.0",
+      "verified": false,
+      "score": "pieces/minuet-in-g-melody/score.musicxml",
+      "song": "minuet-in-g",
+      "variant": "Melody"
+    },
+    {
       "slug": "ode-to-joy",
       "title": "Ode to Joy (theme)",
       "composer": "Ludwig van Beethoven",
       "difficulty": 1,
       "licence": "CC0-1.0",
       "verified": false,
-      "score": "pieces/ode-to-joy/score.musicxml"
+      "score": "pieces/ode-to-joy/score.musicxml",
+      "song": "ode-to-joy",
+      "variant": "Two hands"
+    },
+    {
+      "slug": "ode-to-joy-melody",
+      "title": "Ode to Joy (theme, melody)",
+      "composer": "Ludwig van Beethoven",
+      "difficulty": 1,
+      "licence": "CC0-1.0",
+      "verified": false,
+      "score": "pieces/ode-to-joy-melody/score.musicxml",
+      "song": "ode-to-joy",
+      "variant": "Melody"
     },
     {
       "slug": "old-macdonald",
@@ -101,6 +224,17 @@
       "score": "pieces/row-row-row-your-boat/score.musicxml"
     },
     {
+      "slug": "silent-night-melody",
+      "title": "Silent Night (melody)",
+      "composer": "Franz Xaver Gruber",
+      "difficulty": 1,
+      "licence": "CC0-1.0",
+      "verified": false,
+      "score": "pieces/silent-night-melody/score.musicxml",
+      "song": "silent-night",
+      "variant": "Melody"
+    },
+    {
       "slug": "twinkle-twinkle",
       "title": "Twinkle, Twinkle, Little Star",
       "composer": "Traditional (French melody, 18th century)",
@@ -108,6 +242,28 @@
       "licence": "CC0-1.0",
       "verified": false,
       "score": "pieces/twinkle-twinkle/score.musicxml"
+    },
+    {
+      "slug": "we-wish-you-a-merry-christmas-melody",
+      "title": "We Wish You a Merry Christmas (melody)",
+      "composer": "Traditional (English carol)",
+      "difficulty": 1,
+      "licence": "CC0-1.0",
+      "verified": false,
+      "score": "pieces/we-wish-you-a-merry-christmas-melody/score.musicxml",
+      "song": "we-wish-you-a-merry-christmas",
+      "variant": "Melody"
+    },
+    {
+      "slug": "when-the-saints-melody",
+      "title": "When the Saints Go Marching In (melody)",
+      "composer": "Traditional (African-American spiritual)",
+      "difficulty": 1,
+      "licence": "CC0-1.0",
+      "verified": false,
+      "score": "pieces/when-the-saints-melody/score.musicxml",
+      "song": "when-the-saints",
+      "variant": "Melody"
     },
     {
       "slug": "yankee-doodle",
@@ -125,7 +281,9 @@
       "difficulty": 2,
       "licence": "CC0-1.0",
       "verified": false,
-      "score": "pieces/amazing-grace/score.musicxml"
+      "score": "pieces/amazing-grace/score.musicxml",
+      "song": "amazing-grace",
+      "variant": "Two hands"
     },
     {
       "slug": "auld-lang-syne",
@@ -134,7 +292,20 @@
       "difficulty": 2,
       "licence": "CC0-1.0",
       "verified": false,
-      "score": "pieces/auld-lang-syne/score.musicxml"
+      "score": "pieces/auld-lang-syne/score.musicxml",
+      "song": "auld-lang-syne",
+      "variant": "Two hands"
+    },
+    {
+      "slug": "canon-in-d-melody",
+      "title": "Canon in D (simplified, melody)",
+      "composer": "Johann Pachelbel",
+      "difficulty": 2,
+      "licence": "CC0-1.0",
+      "verified": false,
+      "score": "pieces/canon-in-d-melody/score.musicxml",
+      "song": "canon-in-d",
+      "variant": "Melody"
     },
     {
       "slug": "deck-the-halls",
@@ -143,7 +314,20 @@
       "difficulty": 2,
       "licence": "CC0-1.0",
       "verified": false,
-      "score": "pieces/deck-the-halls/score.musicxml"
+      "score": "pieces/deck-the-halls/score.musicxml",
+      "song": "deck-the-halls",
+      "variant": "Two hands"
+    },
+    {
+      "slug": "eine-kleine-nachtmusik-melody",
+      "title": "Eine kleine Nachtmusik (opening, melody)",
+      "composer": "Wolfgang Amadeus Mozart",
+      "difficulty": 2,
+      "licence": "CC0-1.0",
+      "verified": false,
+      "score": "pieces/eine-kleine-nachtmusik-melody/score.musicxml",
+      "song": "eine-kleine-nachtmusik",
+      "variant": "Melody"
     },
     {
       "slug": "fur-elise-opening",
@@ -152,7 +336,9 @@
       "difficulty": 2,
       "licence": "CC0-1.0",
       "verified": false,
-      "score": "pieces/fur-elise-opening/score.musicxml"
+      "score": "pieces/fur-elise-opening/score.musicxml",
+      "song": "fur-elise-opening",
+      "variant": "Two hands"
     },
     {
       "slug": "good-king-wenceslas",
@@ -161,7 +347,29 @@
       "difficulty": 2,
       "licence": "CC0-1.0",
       "verified": false,
-      "score": "pieces/good-king-wenceslas/score.musicxml"
+      "score": "pieces/good-king-wenceslas/score.musicxml",
+      "song": "good-king-wenceslas",
+      "variant": "Two hands"
+    },
+    {
+      "slug": "greensleeves-melody",
+      "title": "Greensleeves (melody)",
+      "composer": "Traditional (English, 16th century)",
+      "difficulty": 2,
+      "licence": "CC0-1.0",
+      "verified": false,
+      "score": "pieces/greensleeves-melody/score.musicxml",
+      "song": "greensleeves",
+      "variant": "Melody"
+    },
+    {
+      "slug": "happy-birthday",
+      "title": "Happy Birthday to You",
+      "composer": "Mildred J. Hill",
+      "difficulty": 2,
+      "licence": "CC0-1.0",
+      "verified": false,
+      "score": "pieces/happy-birthday/score.musicxml"
     },
     {
       "slug": "hark-the-herald-angels-sing",
@@ -170,7 +378,20 @@
       "difficulty": 2,
       "licence": "CC0-1.0",
       "verified": false,
-      "score": "pieces/hark-the-herald-angels-sing/score.musicxml"
+      "score": "pieces/hark-the-herald-angels-sing/score.musicxml",
+      "song": "hark-the-herald-angels-sing",
+      "variant": "Two hands"
+    },
+    {
+      "slug": "hall-of-the-mountain-king-melody",
+      "title": "In the Hall of the Mountain King (opening, melody)",
+      "composer": "Edvard Grieg",
+      "difficulty": 2,
+      "licence": "CC0-1.0",
+      "verified": false,
+      "score": "pieces/hall-of-the-mountain-king-melody/score.musicxml",
+      "song": "hall-of-the-mountain-king",
+      "variant": "Melody"
     },
     {
       "slug": "joy-to-the-world",
@@ -179,7 +400,9 @@
       "difficulty": 2,
       "licence": "CC0-1.0",
       "verified": false,
-      "score": "pieces/joy-to-the-world/score.musicxml"
+      "score": "pieces/joy-to-the-world/score.musicxml",
+      "song": "joy-to-the-world",
+      "variant": "Two hands"
     },
     {
       "slug": "largo-new-world",
@@ -188,7 +411,9 @@
       "difficulty": 2,
       "licence": "CC0-1.0",
       "verified": false,
-      "score": "pieces/largo-new-world/score.musicxml"
+      "score": "pieces/largo-new-world/score.musicxml",
+      "song": "largo-new-world",
+      "variant": "Two hands"
     },
     {
       "slug": "brahms-lullaby",
@@ -197,7 +422,9 @@
       "difficulty": 2,
       "licence": "CC0-1.0",
       "verified": false,
-      "score": "pieces/brahms-lullaby/score.musicxml"
+      "score": "pieces/brahms-lullaby/score.musicxml",
+      "song": "brahms-lullaby",
+      "variant": "Two hands"
     },
     {
       "slug": "minuet-in-g",
@@ -206,7 +433,31 @@
       "difficulty": 2,
       "licence": "CC0-1.0",
       "verified": false,
-      "score": "pieces/minuet-in-g/score.musicxml"
+      "score": "pieces/minuet-in-g/score.musicxml",
+      "song": "minuet-in-g",
+      "variant": "Two hands"
+    },
+    {
+      "slug": "ode-to-joy-full",
+      "title": "Ode to Joy (full tune)",
+      "composer": "Ludwig van Beethoven",
+      "difficulty": 2,
+      "licence": "CC0-1.0",
+      "verified": false,
+      "score": "pieces/ode-to-joy-full/score.musicxml",
+      "song": "ode-to-joy",
+      "variant": "Full"
+    },
+    {
+      "slug": "prelude-in-c-melody",
+      "title": "Prelude in C (opening, right hand)",
+      "composer": "Johann Sebastian Bach",
+      "difficulty": 2,
+      "licence": "CC0-1.0",
+      "verified": false,
+      "score": "pieces/prelude-in-c-melody/score.musicxml",
+      "song": "prelude-in-c",
+      "variant": "Right hand"
     },
     {
       "slug": "silent-night",
@@ -215,7 +466,9 @@
       "difficulty": 2,
       "licence": "CC0-1.0",
       "verified": false,
-      "score": "pieces/silent-night/score.musicxml"
+      "score": "pieces/silent-night/score.musicxml",
+      "song": "silent-night",
+      "variant": "Two hands"
     },
     {
       "slug": "we-wish-you-a-merry-christmas",
@@ -224,7 +477,9 @@
       "difficulty": 2,
       "licence": "CC0-1.0",
       "verified": false,
-      "score": "pieces/we-wish-you-a-merry-christmas/score.musicxml"
+      "score": "pieces/we-wish-you-a-merry-christmas/score.musicxml",
+      "song": "we-wish-you-a-merry-christmas",
+      "variant": "Two hands"
     },
     {
       "slug": "when-the-saints",
@@ -233,7 +488,9 @@
       "difficulty": 2,
       "licence": "CC0-1.0",
       "verified": false,
-      "score": "pieces/when-the-saints/score.musicxml"
+      "score": "pieces/when-the-saints/score.musicxml",
+      "song": "when-the-saints",
+      "variant": "Two hands"
     },
     {
       "slug": "canon-in-d",
@@ -242,7 +499,9 @@
       "difficulty": 3,
       "licence": "CC0-1.0",
       "verified": false,
-      "score": "pieces/canon-in-d/score.musicxml"
+      "score": "pieces/canon-in-d/score.musicxml",
+      "song": "canon-in-d",
+      "variant": "Two hands"
     },
     {
       "slug": "eine-kleine-nachtmusik",
@@ -251,7 +510,9 @@
       "difficulty": 3,
       "licence": "CC0-1.0",
       "verified": false,
-      "score": "pieces/eine-kleine-nachtmusik/score.musicxml"
+      "score": "pieces/eine-kleine-nachtmusik/score.musicxml",
+      "song": "eine-kleine-nachtmusik",
+      "variant": "Two hands"
     },
     {
       "slug": "greensleeves",
@@ -260,7 +521,9 @@
       "difficulty": 3,
       "licence": "CC0-1.0",
       "verified": false,
-      "score": "pieces/greensleeves/score.musicxml"
+      "score": "pieces/greensleeves/score.musicxml",
+      "song": "greensleeves",
+      "variant": "Two hands"
     },
     {
       "slug": "hall-of-the-mountain-king",
@@ -269,7 +532,9 @@
       "difficulty": 3,
       "licence": "CC0-1.0",
       "verified": false,
-      "score": "pieces/hall-of-the-mountain-king/score.musicxml"
+      "score": "pieces/hall-of-the-mountain-king/score.musicxml",
+      "song": "hall-of-the-mountain-king",
+      "variant": "Two hands"
     },
     {
       "slug": "prelude-in-c",
@@ -278,7 +543,9 @@
       "difficulty": 3,
       "licence": "CC0-1.0",
       "verified": false,
-      "score": "pieces/prelude-in-c/score.musicxml"
+      "score": "pieces/prelude-in-c/score.musicxml",
+      "song": "prelude-in-c",
+      "variant": "Two hands"
     }
   ]
 }

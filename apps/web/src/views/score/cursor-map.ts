@@ -71,7 +71,7 @@ export function buildAnchors(
     }
     anchors.push({ beat: end, x: box.right, ...row });
   }
-  return anchors;
+  return withoutBarlineSteps(anchors);
 }
 
 /** Cursor position at `beat`; null when there are no anchors. */
@@ -97,4 +97,24 @@ export function positionAt(anchors: readonly Anchor[], beat: number): CursorPosi
 
 function strip(a: Anchor): CursorPosition {
   return { x: a.x, top: a.top, height: a.height, page: a.page };
+}
+
+/**
+ * A bar's closing anchor sits on its right barline and the next bar opens on its first note, a
+ * few pixels further on. With both, the cursor reaches the barline and then steps to the note, and
+ * the whole score steps with it. Where the next bar is on the same row, the cursor glides from the
+ * last note straight to the next bar's first note instead; a new row or page, or a repeat, keeps
+ * its jump.
+ */
+function withoutBarlineSteps(anchors: Anchor[]): Anchor[] {
+  return anchors.filter((a, i) => {
+    const next = anchors[i + 1];
+    return !(
+      next &&
+      Math.abs(next.beat - a.beat) < 1e-6 &&
+      next.page === a.page &&
+      next.top === a.top &&
+      next.x >= a.x - 1
+    );
+  });
 }

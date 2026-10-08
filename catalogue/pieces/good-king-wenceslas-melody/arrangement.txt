@@ -1,0 +1,13 @@
+# Melody-only level: the right hand of the two-hand arrangement, the left hand resting.
+# Good King Wenceslas: the melody 'Tempus adest floridum' from Piae Cantiones (1582).
+# Original simplified arrangement for OpenTiles, released under CC0 1.0.
+title: Good King Wenceslas
+composer: Traditional
+key: 1
+time: 4/4
+tempo: 100
+RH: G4q@1 G4q G4q A4q | G4q G4q D4h | E4q D4q E4q F#4q | G4h G4h
+RH: G4q G4q G4q A4q | G4q G4q D4h | E4q D4q E4q F#4q | G4h G4h
+RH: D5q C5q B4q A4q | B4q A4q G4h | E4q D4q E4q F#4q | G4h G4h
+RH: D4q D4q E4q F#4q | G4q G4q A4h | D5q C5q B4q A4q | G4h C5h | G4w
+LH: rw | rw | rw | rw | rw | rw | rw | rw | rw | rw | rw | rw | rw | rw | rw | rw | rw

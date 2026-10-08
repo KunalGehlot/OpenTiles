@@ -246,6 +246,22 @@ compatibility matrix (spec §5).
   first looks "a little better", with more to do), an iPad check including frame time on an older
   iPad (not measured yet), Detector Lab polish, a manual light/dark switch, German strings
   (P2-14).
+- [x] **P4-11** Smooth motion and a sensible falling-notes layout on wide windows. Done: a steady
+      drawing clock nudged toward the audio clock, time-based wait-mode easing, white keys capped at
+      64 px with more octaves shown on wide windows (ADR 0012, proposed). Left: frame time on an older
+      iPad (not measured).
+- [x] **P4-12** Score views (NEXT-PHASE.md P4-11 to P4-15). Done: the cursor glides over bar lines
+      (test), the score returns to its start a second after a run (page view: page 1), the scrolling
+      score has no scroll bar and can be dragged or swiped with coasting, the play bar stays in the
+      middle (ADR 0009 decision 5 superseded by ADR 0012), the page view is a centred page, not
+      stretched, and the score is larger on big windows. Left: a check on WebKit and an iPad.
+- [~] **P4-13** Several levels per song and more pieces (NEXT-PHASE.md P4-16, P4-17; ADR 0012).
+  Done: optional `song` and `variant` fields in schema, validator and index; Home links the other
+  levels under a card; 19 melody levels, "Ode to Joy (full tune)" and "Happy Birthday to You", all
+  `verified: false`. Left: reviews (a person who did not add them), longer pieces and more
+  songs (PDMX pipeline or exact hand transcriptions), a third level for more songs.
+- [ ] **P4-14** Bella Ciao (maintainer's request). Not started on purpose: the origin of the tune
+      is disputed, so it needs the maintainer's decision (or the legal consultation, P2-18) first.
 - [ ] **P4-06** If the rule-based detector stalls below target: small onset model via ONNX Runtime
       Web.
 
@@ -273,6 +289,10 @@ Record the outcome as an ADR in `docs/adr/` and tick it here.
 - [x] Engine exposes a plain C ABI instead of wasm-bindgen glue — ADR 0002.
 
 ## Changelog
+
+- **2026-10-08** — Second review round of the redesign: smoother falling notes, a keyboard that
+  fills wide windows sensibly, score view fixes (bar-line glide, scroll back, drag, centred play
+  bar, page view), several levels per song and a first batch of new levels (P4-11…P4-13, ADR 0012).
 
 - **2026-10-08** — P4-10 started: the visual system (tokens, contrast test, system fonts, icons),
   new Home, Library, Settings, practice header and canvas. ADR 0011 (proposed). Keyboard size and

@@ -1,0 +1,22 @@
+{
+  "title": "Lullaby (Wiegenlied, melody)",
+  "composer": "Johannes Brahms",
+  "composer_death_year": 1897,
+  "traditional": false,
+  "transcriber": "OpenTiles contributors",
+  "arranger": "OpenTiles contributors",
+  "source_url": "https://github.com/KunalGehlot/OpenTiles/tree/main/catalogue/pieces/brahms-lullaby-melody",
+  "source_licence": "CC0-1.0",
+  "edition_note": "Original simplified arrangement written for OpenTiles from the public-domain melody; not copied from any published edition. Source: arrangement.txt, rendered with tools/pipeline/arrange.py. Melody level: the same notes with the left hand left out.",
+  "eu_term_check": {
+    "result": "pass",
+    "date": "2026-10-07"
+  },
+  "difficulty": 1,
+  "reviewed_by": null,
+  "verified": false,
+  "score_file": "score.musicxml",
+  "single_hand": "right",
+  "song": "brahms-lullaby",
+  "variant": "Melody"
+}

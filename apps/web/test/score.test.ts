@@ -260,7 +260,20 @@ describe('cursor positions', () => {
     expect(positionAt(anchors, 0)?.x).toBe(20);
     expect(positionAt(anchors, 2)?.x).toBe(60);
     expect(positionAt(anchors, 1)?.x).toBe(40);
-    expect(positionAt(anchors, 3)?.x).toBeCloseTo(80);
+    expect(positionAt(anchors, 3)?.x).toBeGreaterThan(80);
+  });
+
+  it('crosses a bar line without a step (P4-11)', () => {
+    const before = positionAt(anchors, 4 - 1e-3)?.x ?? 0;
+    const after = positionAt(anchors, 4 + 1e-3)?.x ?? 0;
+    expect(Math.abs(after - before)).toBeLessThan(1);
+    // Moving on in small steps never jumps more than a frame's worth of the bar.
+    let last = positionAt(anchors, 0)?.x ?? 0;
+    for (let beat = 0.01; beat < 8; beat += 0.01) {
+      const x = positionAt(anchors, beat)?.x ?? 0;
+      expect(Math.abs(x - last)).toBeLessThan(2);
+      last = x;
+    }
   });
 
   it('jumps back at the repeat and on to the second ending', () => {

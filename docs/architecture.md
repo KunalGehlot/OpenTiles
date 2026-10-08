@@ -184,7 +184,10 @@ a repeat share a glyph. `ScoreController` colours glyphs from `PracticeSession.m
 correct, wrong, passed), moves the cursor from per-bar anchors (`cursor-map.ts`), turns pages and
 marks the hardest bars after a run, all from `requestAnimationFrame`. Fingers the score does not draw itself
 (ABC, and suggested ones) are added next to the note heads, suggested ones lighter. MIDI, audio and MuseScore
-pieces have no notation to draw and keep the falling-notes view.
+pieces have no notation to draw and keep the falling-notes view. In the scrolling layout the play bar
+stays in the middle and the score moves past it by a transform (no scroll bar); it can be dragged, and a
+second after a run it returns to its start (ADR 0012). The falling notes are drawn from a steady clock
+that follows the audio clock without its buffer-sized steps (`steadyClock`, ADR 0012).
 
 ## Design system
 
