@@ -43,11 +43,15 @@ function expectedKeyPoint(page: Page): Promise<{ x: number; y: number } | null> 
     const scale = canvas.width / rect.width;
     const row = Math.round(canvas.height - 3 * scale);
     const data = ctx.getImageData(0, row, canvas.width, 1).data;
-    // --hand-right, #2f80c0.
+    // The right-hand colour, read from the design token so a new palette needs no change here
+    // (tokens.css keeps it a plain #rrggbb, which is also what the canvas can use).
+    const token = getComputedStyle(document.documentElement).getPropertyValue('--hand-right');
+    const rgb = parseInt(token.trim().slice(1), 16);
+    const [red, green, blue] = [(rgb >> 16) & 255, (rgb >> 8) & 255, rgb & 255];
     const isRight = (i: number) =>
-      Math.abs((data[i] ?? 0) - 0x2f) < 12 &&
-      Math.abs((data[i + 1] ?? 0) - 0x80) < 12 &&
-      Math.abs((data[i + 2] ?? 0) - 0xc0) < 12;
+      Math.abs((data[i] ?? 0) - red) < 12 &&
+      Math.abs((data[i + 1] ?? 0) - green) < 12 &&
+      Math.abs((data[i + 2] ?? 0) - blue) < 12;
     let first = -1;
     let last = -1;
     for (let x = 0; x < canvas.width; x++) {

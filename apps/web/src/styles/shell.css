@@ -1,0 +1,151 @@
+/*
+ * The app shell (P4-10, ADR 0011): header, main column and footer, and the practice layout that
+ * takes the whole window. Safe-area insets keep everything clear of the notch and home indicator
+ * when OpenTiles runs as a Home Screen app or inside the iPad shell.
+ */
+
+.app {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  min-height: 100dvh;
+}
+
+.topbar {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--space-2) var(--space-5);
+  min-height: 3.5rem;
+  padding: var(--space-2) max(var(--space-4), env(safe-area-inset-right)) var(--space-2)
+    max(var(--space-4), env(safe-area-inset-left));
+  /* The iPad app's WebView runs under the status bar; browsers report an inset of 0 here. */
+  padding-top: max(var(--space-2), env(safe-area-inset-top));
+  border-bottom: 1px solid var(--line);
+  background: var(--surface);
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  color: var(--text);
+  font-size: var(--text-lg);
+  font-weight: 700;
+  letter-spacing: -0.015em;
+  text-decoration: none;
+}
+
+.brand:hover {
+  color: var(--text);
+}
+
+.brand img {
+  border-radius: 0.4rem;
+}
+
+.topbar nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1);
+}
+
+.topbar nav a {
+  padding: 0.4rem 0.75rem;
+  border-radius: var(--radius-sm);
+  color: var(--muted);
+  font-weight: 550;
+  text-decoration: none;
+  transition:
+    background-color var(--dur-1) var(--ease),
+    color var(--dur-1) var(--ease);
+}
+
+.topbar nav a:hover {
+  background: var(--sunken);
+  color: var(--text);
+}
+
+.topbar nav a[aria-current='page'] {
+  background: var(--accent-soft);
+  color: var(--accent-ink);
+}
+
+main {
+  flex: 1;
+  width: 100%;
+  max-width: var(--page-width);
+  margin: 0 auto;
+  padding: var(--space-5) max(var(--space-4), env(safe-area-inset-right)) var(--space-7)
+    max(var(--space-4), env(safe-area-inset-left));
+}
+
+/* A new page eases in; the practice screen does not, its canvas must be there at once. */
+main > * {
+  animation: page-in var(--dur-3) var(--ease) backwards;
+}
+
+@keyframes page-in {
+  from {
+    opacity: 0;
+    transform: translateY(0.4rem);
+  }
+}
+
+.footer {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-1) var(--space-4);
+  padding: var(--space-4) max(var(--space-4), env(safe-area-inset-right))
+    max(var(--space-4), env(safe-area-inset-bottom)) max(var(--space-4), env(safe-area-inset-left));
+  border-top: 1px solid var(--line);
+  font-size: var(--text-sm);
+}
+
+.footer nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1) var(--space-4);
+}
+
+.footer a {
+  color: var(--muted);
+}
+
+.footer a:hover {
+  color: var(--text);
+}
+
+/* The practice screen is one full-height column: bars on top, the canvas takes the rest. */
+.app--practice {
+  height: 100vh;
+  height: 100dvh;
+}
+
+.app--practice main {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  max-width: none;
+  padding: 0;
+}
+
+.app--practice main > * {
+  animation: none;
+}
+
+@media (max-width: 600px) {
+  .topbar nav a {
+    padding: 0.3rem 0.5rem;
+  }
+}
+
+@media print {
+  .topbar,
+  .footer,
+  .update-bar {
+    display: none;
+  }
+}

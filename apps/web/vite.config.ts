@@ -96,7 +96,7 @@ function pwa(): Plugin[] {
       display: 'standalone',
       orientation: 'any',
       theme_color: '#1f6f5c',
-      background_color: '#fbfaf7',
+      background_color: '#f6f5f1',
       categories: ['education', 'music'],
       icons: [
         { src: 'pwa-192x192.png', sizes: '192x192', type: 'image/png' },

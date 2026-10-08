@@ -1,0 +1,111 @@
+/*
+ * Page-specific rules (P4-10, ADR 0011): Home and its difficulty path, the library, Settings and
+ * the text pages.
+ */
+
+/* ---- Difficulty path on the Home page (P3-05) ---- */
+
+.path {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.path-level {
+  position: relative;
+  margin: 0;
+  padding-left: 3rem;
+}
+
+.path-level::before {
+  /* The line joining the steps. */
+  content: '';
+  position: absolute;
+  top: 2.4rem;
+  bottom: calc(var(--space-6) * -1 + 0.25rem);
+  left: 1.05rem;
+  width: 2px;
+  background: var(--line);
+}
+
+.path-level:last-child::before {
+  display: none;
+}
+
+.path-step {
+  position: absolute;
+  top: 0.1rem;
+  left: 0;
+  display: grid;
+  place-items: center;
+  width: 2.2rem;
+  height: 2.2rem;
+  border: 2px solid var(--line-strong);
+  border-radius: 50%;
+  background: var(--surface);
+  color: var(--muted);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.path-level--done .path-step {
+  border-color: var(--accent);
+  background: var(--accent);
+  color: var(--accent-text);
+}
+
+.path-level--current .path-step {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.path-level h3 {
+  margin: 0.25rem 0 var(--space-1);
+  font-size: var(--text-lg);
+}
+
+.level-progress {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-1) var(--space-3);
+  margin-bottom: var(--space-3);
+}
+
+.card-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.card-wrap > .card {
+  flex: 1;
+}
+
+.card-wrap > button {
+  align-self: flex-start;
+  min-height: var(--tap-sm);
+  padding: 0.2rem 0.7rem;
+  font-size: var(--text-sm);
+}
+
+/* ---- Settings ---- */
+
+.settings section {
+  padding-top: var(--space-1);
+  border-top: 1px solid var(--line);
+}
+
+.settings h3 {
+  margin: var(--space-4) 0 var(--space-1);
+  font-size: var(--text-md);
+}
+
+.legal .placeholder {
+  padding: 0 0.25rem;
+  background: var(--warn-soft);
+  color: var(--warn);
+}

@@ -1,0 +1,258 @@
+/*
+ * Design tokens (P4-10, docs/adr/0011-visual-system.md).
+ *
+ * Every colour, size, radius, shadow and duration the app uses is defined here once; the other
+ * stylesheets only refer to these names. The canvas views read the colour tokens with
+ * getComputedStyle (src/views/renderer.ts), and a canvas cannot resolve var() or color-mix() from a
+ * custom property, so every colour here is a plain #rrggbb or rgba() value.
+ *
+ * Browser floor: Safari 16.4, where WebAssembly SIMD validates (spec §5). No CSS nesting, no
+ * light-dark(), no popover attribute. Sizes are in rem so Large print (125 % root size) scales
+ * everything.
+ *
+ * Four colour sets: light, dark (prefers-color-scheme), and high contrast in each of the two
+ * (Settings → Accessibility, or prefers-contrast: more). test/tokens.test.ts checks the contrast
+ * of the pairs that carry text in all four.
+ */
+
+:root {
+  color-scheme: light dark;
+
+  /* ---- Type: the system font of each platform (SF on Apple devices), nothing downloaded ---- */
+  --font-sans:
+    -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Segoe UI Variable Text', 'Segoe UI',
+    system-ui, Roboto, 'Helvetica Neue', Arial, sans-serif;
+  --font-mono: ui-monospace, 'SF Mono', SFMono-Regular, Menlo, Consolas, monospace;
+  --text-xs: 0.75rem;
+  --text-sm: 0.875rem;
+  --text-md: 1rem;
+  --text-lg: 1.125rem;
+  --text-xl: 1.375rem;
+  --text-2xl: 1.75rem;
+  --text-3xl: clamp(1.75rem, 1.3rem + 1.9vw, 2.5rem);
+  --leading: 1.5;
+  --leading-tight: 1.2;
+
+  /* ---- Space: a 4 px grid ---- */
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.5rem;
+  --space-6: 2rem;
+  --space-7: 3rem;
+
+  /* ---- Shape and depth ---- */
+  --radius-sm: 0.5rem;
+  --radius: 0.75rem;
+  --radius-lg: 1rem;
+  --shadow-1: 0 1px 2px rgba(28, 29, 26, 0.07);
+  --shadow-2: 0 1px 2px rgba(28, 29, 26, 0.06), 0 8px 20px -6px rgba(28, 29, 26, 0.16);
+  --shadow-3: 0 2px 4px rgba(28, 29, 26, 0.08), 0 20px 44px -10px rgba(28, 29, 26, 0.3);
+
+  /* ---- Motion ---- */
+  --ease: cubic-bezier(0.2, 0.7, 0.2, 1);
+  --dur-1: 120ms;
+  --dur-2: 200ms;
+  --dur-3: 320ms;
+
+  /* ---- Layout ---- */
+  --page-width: 72rem;
+  --measure: 68ch;
+  /* Smallest comfortable touch target, and the dense variant for the practice bars. */
+  --tap: 2.5rem;
+  --tap-sm: 2.125rem;
+
+  /* ---- Colour: neutrals (a warm grey) ---- */
+  --bg: #f6f5f1;
+  --surface: #ffffff;
+  --surface-2: #faf9f6;
+  --sunken: #ebe9e2;
+  --text: #1c1d1a;
+  --muted: #5b5c55;
+  --line: #e3e0d8;
+  --line-strong: #c4c0b4;
+  /* Outline of a field, checkbox or slider track: the only cue to where an empty control is. */
+  --control: #8d897e;
+  /* The round handle of a switch. */
+  --switch-thumb: #ffffff;
+
+  /* ---- Colour: accent, the teal of the logo (icon.svg, theme-color, the manifest) ---- */
+  --accent: #1f6f5c;
+  --accent-hover: #185a4b;
+  --accent-text: #ffffff;
+  --accent-soft: #e0f0ea;
+  --accent-ink: #0e5043;
+  --accent-line: #a5d0c3;
+  --focus: #2459d6;
+
+  /* ---- Colour: status. "soft" is a tinted background, the plain name is text or a mark ---- */
+  --ok: #1d7a44;
+  --ok-soft: #e0f2e7;
+  --bad: #bd3426;
+  --bad-soft: #fbe5e1;
+  --warn: #8f5509;
+  --warn-soft: #f9edd5;
+
+  /* ---- Colour: the two hands. Cobalt and copper stay apart for the colour-blind. ---- */
+  --hand-right: #2b78b8;
+  --hand-right-soft: rgba(43, 120, 184, 0.3);
+  --hand-left: #b45a1c;
+  --hand-left-soft: rgba(180, 90, 28, 0.3);
+  /* Text and marks drawn on a hand colour (fingering digits, early/late labels). */
+  --on-hand: #ffffff;
+  --done: rgba(29, 122, 68, 0.45);
+
+  /* ---- Colour: the practice canvas ---- */
+  --canvas-bg: #f0eee8;
+  --canvas-grid: rgba(28, 29, 26, 0.07);
+  --key-white: #ffffff;
+  --key-edge: #cdc9be;
+  --key-black: #22231f;
+  --now-line: rgba(28, 29, 26, 0.55);
+  --loop-band: rgba(31, 111, 92, 0.1);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --shadow-1: 0 1px 2px rgba(0, 0, 0, 0.4);
+    --shadow-2: 0 1px 2px rgba(0, 0, 0, 0.4), 0 8px 20px -6px rgba(0, 0, 0, 0.55);
+    --shadow-3: 0 2px 4px rgba(0, 0, 0, 0.5), 0 20px 44px -10px rgba(0, 0, 0, 0.7);
+
+    --bg: #121311;
+    --surface: #1b1d1a;
+    --surface-2: #222420;
+    --sunken: #0e0f0d;
+    --text: #ecebe5;
+    --muted: #a4a49b;
+    --line: #2d2f2a;
+    --line-strong: #4a4d45;
+    --control: #7d7f76;
+
+    --accent: #4cc2a1;
+    --accent-hover: #66d0b2;
+    --accent-text: #06241c;
+    --accent-soft: #14302a;
+    --accent-ink: #8fe0c7;
+    --accent-line: #2b5a4d;
+    --focus: #86abff;
+
+    --ok: #5fcf8d;
+    --ok-soft: #14301f;
+    --bad: #ff7f6e;
+    --bad-soft: #3b1b17;
+    --warn: #e9b54f;
+    --warn-soft: #382a0e;
+
+    --hand-right: #5aa7e6;
+    --hand-right-soft: rgba(90, 167, 230, 0.35);
+    --hand-left: #e8914a;
+    --hand-left-soft: rgba(232, 145, 74, 0.35);
+    --on-hand: #0b1520;
+    --done: rgba(95, 207, 141, 0.4);
+
+    --canvas-bg: #161714;
+    --canvas-grid: rgba(236, 235, 229, 0.07);
+    --key-white: #e9e7e0;
+    --key-edge: #9c998f;
+    --key-black: #0b0b0a;
+    --now-line: rgba(236, 235, 229, 0.38);
+    --loop-band: rgba(76, 194, 161, 0.12);
+  }
+}
+
+/* ---- High contrast (Settings → Accessibility, or prefers-contrast: more) ---- */
+
+html[data-high-contrast] {
+  --bg: #ffffff;
+  --surface: #ffffff;
+  --surface-2: #ffffff;
+  --sunken: #ebebeb;
+  --text: #000000;
+  --muted: #2b2b2b;
+  --line: #000000;
+  --line-strong: #000000;
+  --control: #000000;
+  --switch-thumb: #ffffff;
+
+  --accent: #00513f;
+  --accent-hover: #003a2d;
+  --accent-text: #ffffff;
+  --accent-soft: #ffffff;
+  --accent-ink: #00513f;
+  --accent-line: #00513f;
+  --focus: #0000c8;
+
+  --ok: #005c28;
+  --ok-soft: #ffffff;
+  --bad: #a00000;
+  --bad-soft: #ffffff;
+  --warn: #6b4000;
+  --warn-soft: #ffffff;
+
+  --hand-right: #004a8c;
+  --hand-right-soft: rgba(0, 74, 140, 0.3);
+  --hand-left: #8a3a00;
+  --hand-left-soft: rgba(138, 58, 0, 0.3);
+  --on-hand: #ffffff;
+  --done: rgba(0, 92, 40, 0.45);
+
+  --canvas-bg: #ffffff;
+  --canvas-grid: rgba(0, 0, 0, 0.25);
+  --key-white: #ffffff;
+  --key-edge: #000000;
+  --key-black: #000000;
+  --now-line: #000000;
+  --loop-band: rgba(0, 81, 63, 0.14);
+}
+
+@media (prefers-color-scheme: dark) {
+  html[data-high-contrast] {
+    --bg: #000000;
+    --surface: #000000;
+    --surface-2: #000000;
+    --sunken: #1a1a1a;
+    --text: #ffffff;
+    --muted: #e0e0e0;
+    --line: #ffffff;
+    --line-strong: #ffffff;
+    --control: #ffffff;
+    --switch-thumb: #000000;
+
+    --accent: #6ff0c8;
+    --accent-hover: #9ff6da;
+    --accent-text: #000000;
+    --accent-soft: #000000;
+    --accent-ink: #6ff0c8;
+    --accent-line: #6ff0c8;
+    --focus: #9db8ff;
+
+    --ok: #7dff9c;
+    --ok-soft: #000000;
+    --bad: #ff8a80;
+    --bad-soft: #000000;
+    --warn: #ffd060;
+    --warn-soft: #000000;
+
+    --hand-right: #7cc0ff;
+    --hand-right-soft: rgba(124, 192, 255, 0.35);
+    --hand-left: #ffa65a;
+    --hand-left-soft: rgba(255, 166, 90, 0.35);
+    --on-hand: #000000;
+    --done: rgba(125, 255, 156, 0.4);
+
+    --canvas-bg: #000000;
+    --canvas-grid: rgba(255, 255, 255, 0.3);
+    --key-white: #ffffff;
+    --key-edge: #ffffff;
+    --key-black: #000000;
+    --now-line: #ffffff;
+    --loop-band: rgba(111, 240, 200, 0.16);
+  }
+}
+
+/* ---- Large print (Settings → Accessibility): every size above is in rem ---- */
+
+html[data-large-print] {
+  font-size: 125%;
+}

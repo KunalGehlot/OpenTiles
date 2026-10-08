@@ -11,8 +11,8 @@ const config: CapacitorConfig = {
   includePlugins: ['@opentiles/capacitor-core-midi'],
   loggingBehavior: 'debug',
   ios: {
-    // --bg in apps/web/src/styles.css, shown before the page has painted.
-    backgroundColor: '#fbfaf7',
+    // --bg (light) in apps/web/src/styles/tokens.css, shown before the page has painted.
+    backgroundColor: '#f6f5f1',
     // The WebView fills the screen, status bar included; the web app pads itself with
     // env(safe-area-inset-*) (viewport-fit=cover). 'automatic' would add the insets as scroll
     // padding, which can make the full-height practice screen scroll.

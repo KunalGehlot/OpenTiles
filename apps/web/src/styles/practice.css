@@ -1,0 +1,264 @@
+/*
+ * The practice screen (P4-10, ADR 0011): control bars, the canvas, the end-of-run overlay and the
+ * compact layouts for ⅓ iPad width, phones and short landscape windows (spec §5, PLAN.md P1-27).
+ */
+
+.practice-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2) var(--space-3);
+  padding: var(--space-2) max(var(--space-3), env(safe-area-inset-left));
+  border-bottom: 1px solid var(--line);
+  background: var(--surface);
+  /* Dense rows: the page's reading line height would add a few pixels to each of them. */
+  line-height: 1.3;
+}
+
+.practice-bar .title {
+  min-width: 10ch;
+  margin-right: auto;
+  font-weight: 650;
+}
+
+.practice-bar button,
+.practice-bar .button {
+  min-height: var(--tap-sm);
+  padding: 0.25rem 0.8rem;
+  font-size: var(--text-sm);
+}
+
+.practice-bar .segmented button {
+  min-height: calc(var(--tap-sm) - 6px);
+}
+
+.practice-bar select {
+  min-height: var(--tap-sm);
+  padding-top: 0.15rem;
+  padding-bottom: 0.15rem;
+  font-size: var(--text-sm);
+}
+
+.practice-bar input[type='range'] {
+  height: 1.25rem;
+}
+
+/* "Moved up an octave to fit your keyboard" (P4-07). */
+.practice-note {
+  margin: 0;
+  padding: var(--space-1) max(var(--space-3), env(safe-area-inset-left));
+  border-bottom: 1px solid var(--line);
+  background: var(--surface);
+  font-size: var(--text-sm);
+}
+
+.practice-canvas-wrap {
+  position: relative;
+  flex: 1;
+  /* Pixels, not rem: Large print must not take height away from the falling notes. */
+  min-height: 320px;
+  /* Keep the bottom keys clear of the home indicator and the sides clear of the notch when
+     running as a Home Screen app. */
+  margin: 0 env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
+}
+
+.practice-canvas-wrap canvas {
+  position: absolute;
+  inset: 0;
+  display: block;
+}
+
+.overlay {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: var(--space-4);
+  background: color-mix(in srgb, var(--bg) 72%, transparent);
+}
+
+.overlay .panel {
+  width: 100%;
+  max-width: 28.75rem;
+  max-height: 100%;
+  overflow-y: auto;
+  box-shadow: var(--shadow-3);
+}
+
+.overlay.calibration {
+  z-index: 2;
+}
+
+.listen-back {
+  padding-top: var(--space-3);
+  border-top: 1px solid var(--line);
+}
+
+.stats {
+  display: flex;
+  gap: var(--space-4);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Metronome, loop section, calibration (P1-13, P2-08, P3-04, P1-19, P1-20). */
+.metronome-control {
+  flex-wrap: nowrap;
+  gap: var(--space-2);
+}
+
+.metronome-control input[type='range'] {
+  width: 5rem;
+}
+
+.section-bar .loop-status {
+  margin-left: auto;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Left-handed layout: the practice bar is mirrored so its controls sit on the left. Practice
+   views can also read useLeftHanded() for anything CSS cannot move. */
+html[data-left-handed] .practice-bar {
+  flex-direction: row-reverse;
+}
+
+html[data-left-handed] .practice-bar .title {
+  margin-right: 0;
+  margin-left: auto;
+  text-align: right;
+}
+
+/*
+ * Practice at ⅓ iPad width (Split View, Slide Over), on phones and in short landscape windows: one
+ * compact top row, smaller controls that wrap, secondary hints hidden, and the canvas takes
+ * whatever height is left.
+ */
+@media (max-width: 640px), (max-height: 520px) {
+  .app--practice .topbar {
+    flex-wrap: nowrap;
+    gap: var(--space-2);
+    min-height: 0;
+    padding-top: max(0.3rem, env(safe-area-inset-top));
+    padding-bottom: 0.3rem;
+  }
+
+  /* Logo only; the name stays available to screen readers. */
+  .app--practice .brand span {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+
+  /* One row of links that scrolls sideways if it has to. */
+  .app--practice .topbar nav {
+    flex-wrap: nowrap;
+    min-width: 0;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+
+  .app--practice .topbar nav::-webkit-scrollbar {
+    display: none;
+  }
+
+  .app--practice .topbar nav a {
+    padding: 0.2rem 0.55rem;
+    font-size: var(--text-sm);
+    white-space: nowrap;
+  }
+
+  .practice-bar {
+    gap: 0.35rem 0.4rem;
+    padding: 0.3rem max(0.5rem, env(safe-area-inset-left));
+    font-size: var(--text-sm);
+  }
+
+  .practice-bar button,
+  .practice-bar .button {
+    min-height: 2.125rem;
+    padding: 0.2rem 0.65rem;
+  }
+
+  .practice-bar .segmented {
+    padding: 2px;
+  }
+
+  .practice-bar .segmented button {
+    min-height: 1.875rem;
+    padding: 0.2rem 0.55rem;
+  }
+
+  .practice-bar .title {
+    flex: 1 1 8rem;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  /* The tempo slider takes the spare width of its row. */
+  .practice-bar label:has(> input[type='range']) {
+    flex: 1 1 10rem;
+    flex-wrap: nowrap;
+    white-space: nowrap;
+  }
+
+  .practice-bar input[type='range'] {
+    flex: 1 1 auto;
+    width: 5rem;
+    min-width: 4rem;
+  }
+
+  /* No room for the fingering picker at this size; it is in Settings. */
+  .practice-bar .bar-fingers {
+    display: none;
+  }
+
+  /* Picker captions are for screen readers only. */
+  .practice-bar .bar-label {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+
+  /* The input bar's "Play with:" caption and keyboard-keys hint go first. */
+  .practice-bar + .practice-bar > .muted:first-child,
+  .practice-bar + .practice-bar > .muted:first-child + .badge {
+    display: none;
+  }
+
+  .practice-bar .stats {
+    gap: var(--space-3);
+    margin-left: auto;
+  }
+
+  .practice-canvas-wrap {
+    min-height: 200px;
+  }
+}
+
+@media (max-width: 640px) {
+  .practice-bar .title {
+    flex-basis: 100%;
+  }
+
+  /* At ⅓ width the links overflow: fade the edge to show there is more. */
+  .app--practice .topbar nav {
+    mask-image: linear-gradient(to right, #000 calc(100% - 1.5rem), transparent);
+  }
+}
+
+@media (max-height: 520px) {
+  .practice-canvas-wrap {
+    min-height: 150px;
+  }
+}

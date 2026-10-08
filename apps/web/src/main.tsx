@@ -6,8 +6,12 @@ import { initAppSettings } from './settings/store';
 import { syncServerUrl } from './sync/config';
 import { registerServiceWorker } from './pwa/register';
 import { UpdateBar } from './pwa/UpdateBar';
-import './styles.css';
-import './settings.css';
+import './styles/tokens.css';
+import './styles/base.css';
+import './styles/components.css';
+import './styles/shell.css';
+import './styles/pages.css';
+import './styles/practice.css';
 
 const root = document.getElementById('root');
 if (root) {
