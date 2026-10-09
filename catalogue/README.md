@@ -86,7 +86,8 @@ python3 tools/pipeline/arrange.py arrangement.txt > score.musicxml
 ```
 
 It writes one voice per hand, cuts a held note at the next onset and a note that crosses a barline
-at the barline, and refuses triplets and finer rhythms (grace notes are dropped). Read the result
+at the barline, and drops grace notes. With `--fine` it writes thirty-seconds and triplets (arrange.py's
+`t` and `s3`/`e3`/`q3` values); without it, it refuses a piece that has them instead of thinning it. Read the result
 before committing it, say in the first comment line where the notes came from, and name the
 typesetter in `transcriber`. Copy the source line from the piece's page into `print_source` (the print the
 typesetter worked from, with its year or century; `print_year` when a single year is known). The validator

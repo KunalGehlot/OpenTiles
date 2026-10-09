@@ -64,6 +64,15 @@ class ArrangeTest(unittest.TestCase):
         with self.assertRaises(arrange.ArrangementError):
             arrange.to_musicxml(arrange.parse("time: 4/4\nRH: C4q\nLH: C3w\n"))
 
+    def test_thirty_seconds_and_triplets(self):
+        text = ARRANGEMENT.replace("RH: C4q E4q | [C4 E4 G4]h", "RH: C4t D4t E4t F4t G4e3 A4e3 B4e3 C5e | [C4 E4 G4]h")
+        xml = arrange.to_musicxml(arrange.parse(text))
+        self.assertIn("<divisions>24</divisions>", xml)
+        self.assertIn("<type>32nd</type>", xml)
+        self.assertEqual(xml.count("<time-modification>"), 3)
+        # Pieces without thirty-seconds keep 12 divisions, so their scores do not change.
+        self.assertIn("<divisions>12</divisions>", arrange.to_musicxml(arrange.parse(ARRANGEMENT)))
+
     def test_sharps_are_not_comments(self):
         bars = arrange.parse("RH: F#4q G4q # a comment\nLH: rh\n").rh
         self.assertEqual(bars[0][0].pitches, [("F", 1, 4)])

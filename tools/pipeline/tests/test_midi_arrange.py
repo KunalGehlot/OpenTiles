@@ -116,5 +116,39 @@ class BuildTests(unittest.TestCase):
         self.assertIn("arrange", arrange.to_musicxml(arrange.parse(plain)) and "arrange")
 
 
+class FineGridTests(unittest.TestCase):
+    def test_thirty_seconds_and_triplets_need_the_fine_grid(self):
+        # Eight thirty-seconds, then a sixteenth-note sextuplet, then a quarter and a half.
+        rh = []
+        t = 0
+        for i in range(8):
+            rh += note(t, PPQ // 8, 60 + i)
+            t += PPQ // 8
+        for i in range(6):
+            rh += note(t, PPQ // 6, 72 - i)
+            t += PPQ // 6
+        rh += note(t, PPQ, 60) + note(t + PPQ, 2 * PPQ, 64)
+        data = ma.parse_midi(midi([rh, note(0, 4 * PPQ, 36)]))
+        with self.assertRaises(ma.MidiError):
+            ma.build(data, "Fine", "N", 80)
+        text = ma.build(data, "Fine", "N", 80, fine=True)
+        bar = text.split("RH: ")[1].split("\n")[0]
+        self.assertTrue(bar.startswith("C4t C#4t D4t D#4t E4t F4t F#4t G4t C5s3 B4s3"), bar)
+        xml = arrange.to_musicxml(arrange.parse(text))
+        self.assertIn("<divisions>24</divisions>", xml)
+        self.assertIn("<type>32nd</type>", xml)
+        self.assertIn("<actual-notes>3</actual-notes>", xml)
+
+    def test_a_chromatic_note_is_spelled_by_where_the_melody_goes(self):
+        # In C major: G G# A (up) and A Ab G (down).
+        up = note(0, PPQ, 67) + note(PPQ, PPQ, 68) + note(2 * PPQ, 2 * PPQ, 69)
+        down = note(0, PPQ, 69) + note(PPQ, PPQ, 68) + note(2 * PPQ, 2 * PPQ, 67)
+        lh = note(0, 4 * PPQ, 36)
+        self.assertIn("G4q G#4q A4h", ma.build(ma.parse_midi(midi([up, lh])), "U", "N", 80))
+        self.assertIn("A4q Ab4q G4h", ma.build(ma.parse_midi(midi([down, lh])), "D", "N", 80))
+        # A note that belongs to the key keeps its spelling (B flat in F major).
+        self.assertEqual(ma.spell(70, -1, 1), "Bb4")
+
+
 if __name__ == "__main__":
     unittest.main()
