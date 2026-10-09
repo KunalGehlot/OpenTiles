@@ -35,6 +35,36 @@ export function wantsWakeLock({ playing, lastActivity, now }: WakeContext): bool
 }
 
 /**
+ * The learner's last activity, on one clock of its own. A note counts when the session's
+ * `lastInputAt` changes, never by comparing its value: the session's clock is the page's until
+ * sound starts and the audio clock after, and the two are far apart.
+ */
+export class ActivityClock {
+  private last: number;
+  private seenInput: number;
+
+  constructor(now: number, lastInputAt: number) {
+    this.last = now;
+    this.seenInput = lastInputAt;
+  }
+
+  /** A tap or a key press. */
+  touch(now: number): void {
+    this.last = now;
+  }
+
+  /** Whether the screen should stay on now. */
+  wanted(now: number, playing: boolean, lastInputAt: number): boolean {
+    if (playing) this.last = now;
+    if (lastInputAt !== this.seenInput) {
+      this.seenInput = lastInputAt;
+      this.last = now;
+    }
+    return wantsWakeLock({ playing, lastActivity: this.last, now });
+  }
+}
+
+/**
  * Holds the lock while it is wanted. The browser drops it when the tab is hidden, and may refuse it
  * (battery saver, no recent gesture), so `set(true)` asks again whenever the lock is missing.
  */
@@ -109,13 +139,12 @@ function browserWakeLock(): WakeLockApi | undefined {
 }
 
 /**
- * Keeps the screen on while the practice screen is open and in use. `lastInputAt` is the session
- * clock time of the last note from any input (MIDI notes are not DOM events, so taps and key
- * presses alone would miss them). Leaving the screen lets the screen sleep again.
+ * Keeps the screen on while the practice screen is open and in use. A change in `lastInputAt`
+ * marks a note from any input (MIDI notes are not DOM events, so taps and key presses alone would
+ * miss them). Leaving the screen lets the screen sleep again.
  */
 export function useScreenWakeLock(
   session: { readonly playing: boolean; readonly lastInputAt: number },
-  clock: () => number,
   playing: boolean,
 ): void {
   const update = useRef<() => void>(() => {});
@@ -124,20 +153,11 @@ export function useScreenWakeLock(
     const api = browserWakeLock();
     if (!api) return;
     const lock = new ScreenWakeLock(api, () => document.visibilityState === 'visible');
-    let lastActivity = clock();
-    const check = () => {
-      const now = clock();
-      if (session.playing) lastActivity = now;
-      lock.set(
-        wantsWakeLock({
-          playing: session.playing,
-          lastActivity: Math.max(lastActivity, session.lastInputAt),
-          now,
-        }),
-      );
-    };
+    const clock = () => performance.now() / 1000;
+    const activity = new ActivityClock(clock(), session.lastInputAt);
+    const check = () => lock.set(activity.wanted(clock(), session.playing, session.lastInputAt));
     const onActivity = () => {
-      lastActivity = clock();
+      activity.touch(clock());
       check();
     };
     update.current = check;
@@ -154,7 +174,7 @@ export function useScreenWakeLock(
       window.clearInterval(timer);
       lock.dispose();
     };
-  }, [session, clock]);
+  }, [session]);
 
   // Starting or stopping a run takes effect at once, not at the next check.
   useEffect(() => update.current(), [playing]);

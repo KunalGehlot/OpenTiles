@@ -1,6 +1,11 @@
 // Keeping the screen on while practising (P5-02), with a fake Screen Wake Lock API.
 import { describe, expect, it } from 'vitest';
-import { ScreenWakeLock, WAKE_IDLE_SECONDS, wantsWakeLock } from '../src/practice/wake-lock';
+import {
+  ActivityClock,
+  ScreenWakeLock,
+  WAKE_IDLE_SECONDS,
+  wantsWakeLock,
+} from '../src/practice/wake-lock';
 import type { WakeLockApi, WakeLockHandle } from '../src/practice/wake-lock';
 
 class FakeHandle implements WakeLockHandle {
@@ -55,6 +60,30 @@ describe('when the screen stays on', () => {
     expect(wantsWakeLock({ playing: false, lastActivity: 100, now: 100 + WAKE_IDLE_SECONDS })).toBe(
       false,
     );
+  });
+});
+
+describe('activity', () => {
+  it('counts a note when the session clock changes origin', () => {
+    // The session's clock is the page's (half an hour in) until sound starts, then the audio
+    // clock, which starts near 0. The activity clock is its own.
+    const a = new ActivityClock(100, 0);
+    expect(a.wanted(100, false, 1800)).toBe(true); // a note on the page clock
+    expect(a.wanted(100 + WAKE_IDLE_SECONDS - 1, false, 0.5)).toBe(true); // a note on the audio clock
+    expect(a.wanted(100 + 2 * WAKE_IDLE_SECONDS - 2, false, 0.5)).toBe(true);
+    // No note since: the screen may sleep five minutes after the last one, not half an hour later.
+    expect(a.wanted(100 + 2 * WAKE_IDLE_SECONDS, false, 0.5)).toBe(false);
+    expect(a.wanted(100 + 2 * WAKE_IDLE_SECONDS + 1, false, 0.6)).toBe(true);
+  });
+
+  it('counts taps and playing runs', () => {
+    const a = new ActivityClock(0, 0);
+    expect(a.wanted(WAKE_IDLE_SECONDS, false, 0)).toBe(false);
+    a.touch(WAKE_IDLE_SECONDS + 10);
+    expect(a.wanted(WAKE_IDLE_SECONDS + 20, false, 0)).toBe(true);
+    expect(a.wanted(3 * WAKE_IDLE_SECONDS, true, 0)).toBe(true);
+    expect(a.wanted(4 * WAKE_IDLE_SECONDS - 1, false, 0)).toBe(true);
+    expect(a.wanted(4 * WAKE_IDLE_SECONDS, false, 0)).toBe(false);
   });
 });
 

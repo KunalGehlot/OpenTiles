@@ -242,7 +242,7 @@ function PracticeView({
   const [chosenView, setView] = usePracticeView(notation);
   // The page view shows the whole drill at once, so the learner can read ahead.
   const view = drill ? 'page' : chosenView;
-  useScreenWakeLock(session, now, status.playing);
+  useScreenWakeLock(session, status.playing);
 
   // Wire the session to React and inputs.
   useEffect(() => {
