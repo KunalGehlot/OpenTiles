@@ -15,11 +15,18 @@ file says **in which order**, **who picks up what**, and **what is done**.
 
 ## Current focus
 
-**Phase 0 — prove microphone recognition on an iPad.** The detector, its synthetic test harness,
-the evaluation CLI and the Detector Lab are built; what is left is human work on real pianos:
-record the test set (P0-04), measure latency on iPads (P0-11), tune on real recordings and write
-the gate report (P0-13). A first version of the core practice loop (Phase 1) exists alongside, so
-the microphone can be tried in real practice.
+**Release preparation (October 2026).** The code covers most of Phases 1 to 4: practice modes, falling
+notes and score views with scrubbing, MIDI in and out (Chrome, Edge, Firefox; the iPad app builds), the
+microphone detector, imports, an 81-piece verified catalogue, English and German, encrypted backup and
+sync, and release hardening. What is left is mostly human work and gates:
+
+- **G0, the microphone gate:** record the test set on real pianos (P0-04), measure latency on iPads
+  (P0-11), tune and write the gate report (P0-13).
+- **Legal and publishing:** the legal consultation (P2-18), the postal address in the Impressum, the
+  deployment (docs/deploying.md), domain and trademark.
+- **iPad app:** install on an iPad and test with a keyboard (P3-01); App Store (P3-02).
+- **Code still open:** MIDI out and Bluetooth MIDI pairing in the iPad app, the sustain pedal, frame time
+  on an older iPad, a native speaker's read-through of the German, more catalogue pieces (P3-05).
 
 ## Phases and gates
 
@@ -291,7 +298,8 @@ compatibility matrix (spec §5).
       (listen mode, the other hand, listening back) on this device, the keyboard's own sound or both,
       through MIDI out; a choice of output when there are several; a live keyboard test in Settings.
       Firefox messages now cover its two real limits (no hot-plugging; the site permission add-on
-      off localhost). Left: MIDI out from the iPad app (CoreMIDI send), the sustain pedal.
+      off localhost). Confirmed working in Firefox by the maintainer (2026-10-09). Left: MIDI out from
+      the iPad app (CoreMIDI send), the sustain pedal, a choice of audio output device.
 - [x] **P4-18** Scrubbing in the scrolling score (2026-10-09): the play bar stays in the middle and a
       drag (or a sideways trackpad scroll) moves the whole piece under it, back and forth; the
       score, cursor and falling notes follow, a playing run pauses and Play starts from there, wait
@@ -338,6 +346,9 @@ Record the outcome as an ADR in `docs/adr/` and tick it here.
 - [x] Engine exposes a plain C ABI instead of wasm-bindgen glue — ADR 0002.
 
 ## Changelog
+
+- **2026-10-09** — MIDI keyboard settings (keys on this device, the app's notes on the keyboard),
+  Firefox MIDI confirmed working, the iPad app builds with Xcode, status brought up to date.
 
 - **2026-10-09** — Maintainer approval: all 81 catalogue pieces verified, ADRs 0010–0014 accepted,
   Bella Ciao accepted as traditional. Score scrubbing (P4-18), MIDI help for Firefox and Safari,

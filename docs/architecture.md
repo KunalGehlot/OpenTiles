@@ -185,8 +185,11 @@ correct, wrong, passed), moves the cursor from per-bar anchors (`cursor-map.ts`)
 marks the hardest bars after a run, all from `requestAnimationFrame`. Fingers the score does not draw itself
 (ABC, and suggested ones) are added next to the note heads, suggested ones lighter. MIDI, audio and MuseScore
 pieces have no notation to draw and keep the falling-notes view. In the scrolling layout the play bar
-stays in the middle and the score moves past it by a transform (no scroll bar); it can be dragged, and a
-second after a run it returns to its start (ADR 0012). The falling notes are drawn from a steady clock
+stays in the middle and the score moves past it by a transform (no scroll bar). Dragging it (or a sideways
+trackpad scroll) scrubs: the beat drawn under the play bar (`beatAt`, the inverse of the cursor map)
+becomes the position through `PracticeSession.seek`, so the score, cursor and falling notes move together;
+a playing run pauses and Play starts from there (P4-18). A second after a run the whole display returns
+to its start (ADR 0012). The falling notes are drawn from a steady clock
 that follows the audio clock without its buffer-sized steps (`steadyClock`, ADR 0012).
 
 ## Design system
@@ -278,8 +281,30 @@ detects the shell through the `window.Capacitor` global the native bridge inject
 (`apps/web/src/lib/native-shell.ts`) and imports the plugin lazily, so browsers never load
 Capacitor. `createMidiInput()` then returns `NativeMidiInput`, which maps CoreMIDI host-clock
 timestamps onto `performance.now()` with NTP-style round trips and from there onto the audio
-clock, like Web MIDI events. Build steps, App Store and privacy-manifest notes:
+clock, like Web MIDI events. The app builds with Xcode 27 (October 2026) but has not yet run on a
+device. Build steps, App Store and privacy-manifest notes:
 [apps/ios-shell/README.md](../apps/ios-shell/README.md).
+
+## MIDI in and out
+
+- **In.** `createMidiInput()` returns `MidiInput` (Web MIDI) in browsers and `NativeMidiInput` (CoreMIDI)
+  in the iPad app; both produce the same `NoteEvent`s. WebKit has no Web MIDI, so Safari and every iPad
+  browser cannot read a keyboard; the practice screen says why (`midiUnavailableReason`). Firefox
+  gates Web MIDI: it only sees devices connected when it started (no hot-plugging) and, off
+  localhost, asks to install a site permission add-on; `describeMidiError` explains both. A MIDI
+  timestamp more than a second from now is treated as "now", so a browser stamping events on another
+  clock cannot push notes into the past.
+- **Out and echo** (Settings → MIDI keyboard, P4-19). `PracticeSession` plays through one `Instrument`;
+  `playbackInstrument()` makes it this device's piano, a `MidiOutInstrument` (the keyboard's own
+  sound, notes scheduled on the performance clock from audio-clock times) or both (`SplitInstrument`).
+  Stopping calls `silence()`, which clears scheduled MIDI and sends all notes off. With "Play my MIDI
+  keys on this device", `PracticeSession.midiEcho` sounds each MIDI note on this device until its key is
+  released. The metronome always stays on this device. The iPad app has no MIDI out yet.
+
+## Languages
+
+`apps/web/src/i18n/`: `t()` keyed by the English text, German in `de.ts`, a unit test that fails on any
+string without German (ADR 0014). A first visit follows the browser's language.
 
 ## Deviations from the spec's repository layout
 
