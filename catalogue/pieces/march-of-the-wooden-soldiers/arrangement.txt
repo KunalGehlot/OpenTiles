@@ -10,9 +10,9 @@ RH: [A4 D5]e re D5e re | B4e. A#4s B4e rs C#5s | [A4 D5]e re D5e re | B4e. A#4s 
 RH: [A4 D5]e re [C#5 E5]e re | F#5e re [D5 F#5]e re | [E5 G5]e rs [D5 F#5]s [C#5 E5]e rs [B4 D5]s | [C#5 E5]e rq.
 RH: [A4 D5]e re D5e re | B4e. A#4s B4e rs C#5s | [A4 D5]e re D5e re | B4e. A#4s B4e rs C#5s
 RH: [A4 D5]e re [C#5 E5]e re | F#5e re [D5 F#5]e re | [C#5 E5]e rs [B4 D5]s [A4 C#5]e rs [G#4 B4]s | A4e rq.
-RH: [E4 A4]e re A4e re | A#4e. A4s A#4e rs G#4s | A4e re A4e re | A#4e. A4s A#4e rs G#4s
+RH: [E4 A4]e re A4e re | Bb4e. A4s Bb4e rs G#4s | A4e re A4e re | Bb4e. A4s Bb4e rs G#4s
 RH: A4e re B4e re | [G#4 C#5]e re [A4 C#5]e re | [B4 D5]e rs C#5s B4e rs A4s | G#4e rq.
-RH: [E4 A4]e re A4e re | A#4e. A4s A#4e rs G#4s | A4e re A4e re | A#4e. A4s A#4e rs G#4s
+RH: [E4 A4]e re A4e re | Bb4e. A4s Bb4e rs G#4s | A4e re A4e re | Bb4e. A4s Bb4e rs G#4s
 RH: A4e re B4e re | [G#4 C#5]e re [A4 C#5]e re | [B4 D5]e rs C#5s B4e rs C#5s | A4e rq.
 RH: [A4 D5]e re D5e re | B4e. A#4s B4e rs C#5s | [A4 D5]e re D5e re | B4e. A#4s B4e rs C#5s
 RH: [A4 D5]e re [C#5 E5]e re | F#5e re [D5 F#5]e re | [E5 G5]e rs [D5 F#5]s [C#5 E5]e rs [B4 D5]s | [C#5 E5]e rq.

@@ -9,39 +9,39 @@ tempo: 132
 pickup: yes
 RH: F#5q | re G5e F#5e C#5e D5e B4e | A#4h F#5q | re G5e F#5e C#5e E5e D5e
 RH: B4h F#5q | re G5e F5e F#5e B5e D6e | D6q F5q D6q | rq E5q C#6q
-RH: re B5e A#5e G5e F#5e C#5e | D5e G5e F#5e C#5e D5e B4e | A#4h F#5q | re G5e F#5e C#5e E5e D5e
+RH: re B5e Bb5e G5e F#5e C#5e | D5e G5e F#5e C#5e D5e B4e | A#4h F#5q | re G5e F#5e C#5e E5e D5e
 RH: B4h F#5q | re F#6e C#6e D6e A#5e B5e | A5e G5e B4e C#5e D5e E5e | G5e F#5e B4e D5e C#5e F#4e
 RH: B4e F4e F#4e A#4e B4e C#5e | D5e G5e F#5e C#5e D5e B4e | A#4h F#5q | re G5e F#5e C#5e E5e D5e
 RH: B4h F#5q | re G5e F5e F#5e B5e D6e | D6q F5q D6q | rq E5q C#6q
-RH: re B5e A#5e G5e F#5e C#5e | D5e G5e F#5e C#5e D5e B4e | A#4h F#5q | re G5e F#5e C#5e E5e D5e
+RH: re B5e Bb5e G5e F#5e C#5e | D5e G5e F#5e C#5e D5e B4e | A#4h F#5q | re G5e F#5e C#5e E5e D5e
 RH: B4h F#5q | F#6e C#6e D6e A#5e B5e F#5e | A5e G5e B4e C#5e E5e G5e | G5e F#5e B4e D5e C#5e F#4e
-RH: B4q. F#4e B4e A#4e | A#4q. A4e C#5e E5e | G5q. F#5e C#5e D5e | F#5q. E5e B4e C#5e
+RH: B4q. F#4e B4e A#4e | Bb4q. A4e C#5e E5e | G5q. F#5e C#5e D5e | F#5q. E5e B4e C#5e
 RH: E5q. D5e C#5e B4e | B4q. A4e C#5e E5e | G5q. F#5e C#5e D5e | F#5q. E5e B4e C#5e
 RH: A#4q. C#5e G4e C#5e | F#4q. A#4e C#5e E5e | G5q. F#5e C#5e D5e | F#5q. E5e B4e C#5e
 RH: E5q. D5e C#5e B4e | B4q. A4e C#5e E5e | G5q. F#5e C#5e D5e | F#5q. E5e F#6e E6e
-RH: D6e C#6e C6e B5e A#5e A5e | G#5e G5e F#5e C#5e D5e B4e | A#4q rq A5q | G#5e G5e F#5e C#5e E5e D5e
-RH: B4q rq A5q | G#5e G5e F5e F#5e B5e D6e | D6q F5q D6q | rq E5q C#6q
-RH: C6e B5e A#5e A5e G#5e G5e | F#5e F5e E5e D5e C#5e B4e | A#4h G5q | F#5e G5e F#5e C#5e E5e D5e
+RH: D6e C#6e C6e B5e Bb5e A5e | Ab5e G5e F#5e C#5e D5e B4e | A#4q rq A5q | Ab5e G5e F#5e C#5e E5e D5e
+RH: B4q rq A5q | Ab5e G5e F5e F#5e B5e D6e | D6q F5q D6q | rq E5q C#6q
+RH: C6e B5e Bb5e A5e Ab5e G5e | F#5e F5e E5e D5e C#5e B4e | A#4h G5q | F#5e G5e F#5e C#5e E5e D5e
 RH: B4h F#5q | F#6e C#6e D6e A#5e B5e F#5e | A5e G5e B4e C#5e E5e G5e | G5e F#5e B4e D5e C#5e F#4e
-RH: B4q. F#4e B4e A#4e | B4q rq F#4q | D#5e E5e D#5e C#5e D#5e E5e | G#5h F#5q
-RH: D#5e E5e D#5e C#5e D#5e E5e | G#5h F#5q | F#5q D#6e. D#6s D#6q | C#6q E5e. E5s E5q
-RH: D#5q B5e. B5s B5q | A#5q C#5e. C#5s E5q | D#5e E5e D#5e C#5e D#5e E5e | G#5h F#5q
-RH: D#5e E5e D#5e C#5e D#5e E5e | G#5h F#5q | D#5q B5e. B5s B5q | A#5q C#5e. C#5s C#5q
-RH: B4q G#5e. G#5s G#5q | F#5q A#4e. A#4s E5q | [B4 D#5]e [C#5 E5]e [B4 D#5]e [F#4 C#5]e [B4 D#5]e [C#5 E5]e | [A#4 G#5]h [A#4 F#5]q
+RH: B4q. F#4e B4e A#4e | B4q rq F#4q | D#5e E5e Eb5e C#5e D#5e E5e | Ab5h F#5q
+RH: D#5e E5e Eb5e C#5e D#5e E5e | Ab5h F#5q | F#5q D#6e. D#6s Eb6q | C#6q E5e. E5s E5q
+RH: D#5q B5e. B5s B5q | Bb5q C#5e. C#5s E5q | D#5e E5e Eb5e C#5e D#5e E5e | Ab5h F#5q
+RH: D#5e E5e Eb5e C#5e D#5e E5e | Ab5h F#5q | D#5q B5e. B5s B5q | Bb5q C#5e. C#5s C#5q
+RH: B4q G#5e. G#5s Ab5q | F#5q A#4e. A#4s E5q | [B4 D#5]e [C#5 E5]e [B4 D#5]e [F#4 C#5]e [B4 D#5]e [C#5 E5]e | [A#4 G#5]h [A#4 F#5]q
 RH: [B4 D#5]e [C#5 E5]e [B4 D#5]e [F#4 C#5]e [B4 D#5]e [C#5 E5]e | [A#4 G#5]h [A#4 F#5]q | [D#5 F#5]q [F#5 D#6]e. [F#5 D#6]s [F#5 D#6]q | [E5 C#6]q [C#5 E5]e. [C#5 E5]s [C#5 E5]q
 RH: [B4 D#5]q [D#5 B5]e. [D#5 B5]s [D#5 B5]q | [C#5 A#5]q [A#4 C#5]e. [A#4 C#5]s [C#5 E5]q | [B4 D5]e [C#5 E5]e [B4 D5]e [F#4 C#5]e [B4 D5]e [C#5 E5]e | [A#4 G5]h [A#4 F#5]q
 RH: [B4 D5]e [C#5 E5]e [B4 D5]e [F#4 C#5]e [B4 D5]e [C#5 E5]e | [A#4 G5]h [A#4 F#5]q | [D5 F#5]q [F#4 E5]e rs [F#4 E5]s [B4 D5]q | [B4 D5]q [F4 C#5]e rs [F4 C#5]s B4q
 RH: [F#4 A#4]q C#5h | rq F#4q F#5q | re G5e F#5e C#5e D5e B4e | A#4h F#5q
 RH: re G5e F#5e C#5e E5e D5e | B4h F#5q | re G5e F5e F#5e B5e D6e | D6q F5q D6q
-RH: rq E5q C#6q | re B5e A#5e G5e F#5e C#5e | D5e G5e F#5e C#5e D5e B4e | A#4h F#5q
+RH: rq E5q C#6q | re B5e Bb5e G5e F#5e C#5e | D5e G5e F#5e C#5e D5e B4e | A#4h F#5q
 RH: re G5e F#5e C#5e E5e D5e | B4h F#5q | re F#6e C#6e D6e A#5e B5e | A5e G5e B4e C#5e D5e E5e
-RH: G5e F#5e B4e D5e C#5e F#4e | B4q. F#4e B4e A#4e | A#4q. A4e C#5e E5e | G5q. F#5e C#5e D5e
+RH: G5e F#5e B4e D5e C#5e F#4e | B4q. F#4e B4e A#4e | Bb4q. A4e C#5e E5e | G5q. F#5e C#5e D5e
 RH: F#5q. E5e B4e C#5e | E5q. D5e C#5e B4e | B4q. A4e C#5e E5e | G5q. F#5e C#5e D5e
 RH: F#5q. E5e B4e C#5e | A#4q. C#5e G4e C#5e | F#4q. A#4e C#5e E5e | G5q. F#5e C#5e D5e
 RH: F#5q. E5e B4e C#5e | E5q. D5e C#5e B4e | B4q. A4e C#5e E5e | G5q. F#5e C#5e D5e
-RH: F#5q. E5e F#6e E6e | D6e C#6e C6e B5e A#5e A5e | G#5e G5e F#5e C#5e D5e B4e | A#4q rq A5q
-RH: G#5e G5e F#5e C#5e E5e D5e | B4q rq A5q | G#5e G5e F5e F#5e B5e D6e | D6q F5q D6q
-RH: rq E5q C#6q | C6e B5e A#5e A5e G#5e G5e | F#5e F5e E5e D5e C#5e B4e | A#4h G5q
+RH: F#5q. E5e F#6e E6e | D6e C#6e C6e B5e Bb5e A5e | Ab5e G5e F#5e C#5e D5e B4e | A#4q rq A5q
+RH: Ab5e G5e F#5e C#5e E5e D5e | B4q rq A5q | Ab5e G5e F5e F#5e B5e D6e | D6q F5q D6q
+RH: rq E5q C#6q | C6e B5e Bb5e A5e Ab5e G5e | F#5e F5e E5e D5e C#5e B4e | A#4h G5q
 RH: F#5e G5e F#5e C#5e E5e D5e | B4h F#5q | F#6e C#6e D6e A#5e B5e F#5e | A5e G5e B4e C#5e E5e G5e
 RH: G5e F#5e B4e D5e C#5e F#4e | B4q rh
 LH: rq | B2q [F#3 B3 D4]q [F#3 B3 D4]q | C#3q [F#3 C#4 E4]q [F#3 C#4 E4]q | A#2q [F#3 C#4 E4]q [F#3 A#3 E4]q

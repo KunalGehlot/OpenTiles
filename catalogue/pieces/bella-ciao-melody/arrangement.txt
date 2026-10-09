@@ -1,0 +1,18 @@
+# Melody-only level: the right hand of the two-hand arrangement, the left hand resting.
+# Bella ciao: the traditional Italian melody (origin disputed), two verses in D minor, no lyrics.
+# Melody as set by Peter Gerloff (Rabanus Flavus), Wikimedia Commons "File:Bella ciao.mid", CC0.
+# Original simplified arrangement for OpenTiles, released under CC0 1.0.
+title: Bella ciao
+composer: Traditional (Italian)
+key: -1
+time: 4/4
+tempo: 104
+pickup: yes
+RH: A3e@1 D4e@2 E4e@3
+RH: | F4e@4 D4h@2 A3e@1 D4e@2 E4e@3 | F4e D4h A3e D4e E4e | F4q@4 E4e@3 D4e@2 F4q E4e D4e | A4q@5 A4q A4e A4e G4e@4 A4e@5
+RH: | Bb4e@4 Bb4h Bb4e A4e@3 G4e@2 | Bb4e@4 A4h@3 A4e G4e@2 F4e@1 | E4q@2 A4q@5 F4q@3 E4q@2 | D4h@1 re A3e@1 D4e@2 E4e@3
+RH: | F4e@4 D4h@2 A3e@1 D4e@2 E4e@3 | F4e D4h A3e D4e E4e | F4q@4 E4e@3 D4e@2 F4q E4e D4e | A4q@5 A4q A4e A4e G4e@4 A4e@5
+RH: | Bb4e@4 Bb4h Bb4e A4e@3 G4e@2 | Bb4e@4 A4h@3 A4e G4e@2 F4e@1 | E4q@2 A4q@5 F4q@3 E4q@2 | D4h@1 rh
+LH: rq.
+LH: | rw | rw | rw | rw | rw | rw | rw | rw
+LH: | rw | rw | rw | rw | rw | rw | rw | rw

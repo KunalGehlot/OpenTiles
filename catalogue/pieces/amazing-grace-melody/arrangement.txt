@@ -9,5 +9,5 @@ tempo: 80
 pickup: yes
 RH: C4q@1
 RH: | F4h A4e F4e | A4h G4q | F4h D4q | C4h C4q | F4h A4e F4e | A4h G4q | C5h A4q
-RH: | C5h A4e F4e | A4h G4q | F4h D4q | C4h C4q | F4h A4e F4e | A4h G4q | F4h.
+RH: | C5q. A4e C5e A4e | F4h C4q | D4q. F4e F4e D4e | C4h C4q | F4h A4e F4e | A4h G4q | F4h.
 LH: rq | rh. | rh. | rh. | rh. | rh. | rh. | rh. | rh. | rh. | rh. | rh. | rh. | rh. | rh.

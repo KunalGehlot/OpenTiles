@@ -1,7 +1,7 @@
-# Mary Had a Little Lamb: the melody Lowell Mason (1792–1872) set to Sarah Josepha Hale's rhyme in the 1830s.
+# Mary Had a Little Lamb: the traditional American tune it is sung to today (also 'Merrily We Roll Along'); Lowell Mason's 1830s setting of the rhyme is a different tune.
 # Original simplified arrangement for OpenTiles, released under CC0 1.0.
 title: Mary Had a Little Lamb
-composer: Lowell Mason
+composer: Traditional
 key: 0
 time: 4/4
 tempo: 100

@@ -1,7 +1,7 @@
-# Consolation (Op. 100 No. 21) by Johann Friedrich Burgmüller: simplified one-voice-per-hand arrangement for OpenTiles, released under CC0 1.0.
+# Consolation (Op. 100 No. 13) by Johann Friedrich Burgmüller: simplified one-voice-per-hand arrangement for OpenTiles, released under CC0 1.0.
 # Notes converted from the public-domain Mutopia Project typesetting by Bas Wassink (https://www.mutopiaproject.org/cgibin/piece-info.cgi?id=224).
 # Made with tools/pipeline/midi_arrange.py: held notes are cut at the next onset, long notes at barlines, and rhythms are on a sixteenth grid.
-title: Consolation (Op. 100 No. 21)
+title: Consolation (Op. 100 No. 13)
 composer: Johann Friedrich Burgmüller
 key: 0
 time: 4/4

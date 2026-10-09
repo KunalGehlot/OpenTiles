@@ -7,7 +7,7 @@ key: -1
 time: 3/4
 tempo: 112
 RH: A5s G5s F5s E5s F5s E5s D5s C5s D5s C5s Bb4s A4s | C5e Bb4e Bb4q rq | G5s F5s E5s D5s C5s D5s E5s F5s G5s A5s Bb5s C6s | Bb5e A5e A5q rq
-RH: A5s G5s F5s E5s F5s E5s D5s Db5s D5q | G5s F5s E5s D5s E5s D5s C5s B4s C5s B4s A4s G4s | Ab4e G4e A4e G4e E5e D5e | C5q rh
+RH: A5s G5s F5s E5s F5s E5s D5s C#5s D5q | G5s F5s E5s D5s E5s D5s C5s B4s C5s B4s A4s G4s | Ab4e G4e A4e G4e E5e D5e | C5q rh
 RH: C5e C5e B4e C5e D5e C5e | C5e C5s D5s E5e E5s F5s G5q | F5e F5s G5s A5e A5s Bb5s C6q | C6e C6s D6s E6e E6s F6s G6q
 RH: F6e F6s G6s A6e A6s Bb6s C7q | C7s Bb6s A6s G6s F6s E6s D6s C6s Bb5s A5s G5s F5s | D6e D6s C6s Bb5e Bb5s A5s G5e G5s F5s | E5s D5s C5s D5s E5s F5s G5s A5s Bb5s C6s D6s E6s
 RH: F6e re [A3 F4]q rq

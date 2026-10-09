@@ -42,6 +42,17 @@
       "variant": "Melody"
     },
     {
+      "slug": "bella-ciao-melody",
+      "title": "Bella ciao (melody)",
+      "composer": "Traditional (Italian)",
+      "difficulty": 1,
+      "licence": "CC0-1.0",
+      "verified": false,
+      "score": "pieces/bella-ciao-melody/score.musicxml",
+      "song": "bella-ciao",
+      "variant": "Melody"
+    },
+    {
       "slug": "deck-the-halls-melody",
       "title": "Deck the Halls (melody)",
       "composer": "Traditional (Welsh carol 'Nos Galan')",
@@ -166,7 +177,7 @@
     {
       "slug": "mary-had-a-little-lamb",
       "title": "Mary Had a Little Lamb",
-      "composer": "Lowell Mason",
+      "composer": "Traditional (American nursery song, 19th century)",
       "difficulty": 1,
       "licence": "CC0-1.0",
       "verified": false,
@@ -306,6 +317,17 @@
       "score": "pieces/ballade-burgmuller/score.musicxml"
     },
     {
+      "slug": "bella-ciao",
+      "title": "Bella ciao",
+      "composer": "Traditional (Italian)",
+      "difficulty": 2,
+      "licence": "CC0-1.0",
+      "verified": false,
+      "score": "pieces/bella-ciao/score.musicxml",
+      "song": "bella-ciao",
+      "variant": "Two hands"
+    },
+    {
       "slug": "canon-in-d-melody",
       "title": "Canon in D (simplified, melody)",
       "composer": "Johann Pachelbel",
@@ -318,7 +340,7 @@
     },
     {
       "slug": "consolation",
-      "title": "Consolation (Op. 100 No. 21)",
+      "title": "Consolation (Op. 100 No. 13)",
       "composer": "Johann Friedrich Burgmüller",
       "difficulty": 2,
       "licence": "public-domain",
@@ -691,7 +713,7 @@
     },
     {
       "slug": "beethoven-menuett-woo82",
-      "title": "Minuet in G (WoO 82)",
+      "title": "Minuet in E-flat major (WoO 82)",
       "composer": "Ludwig van Beethoven",
       "difficulty": 3,
       "licence": "public-domain",
@@ -737,15 +759,6 @@
       "score": "pieces/progres/score.musicxml"
     },
     {
-      "slug": "the-entertainer",
-      "title": "The Entertainer",
-      "composer": "Scott Joplin",
-      "difficulty": 3,
-      "licence": "public-domain",
-      "verified": false,
-      "score": "pieces/the-entertainer/score.musicxml"
-    },
-    {
       "slug": "chopin-waltz-op69-2",
       "title": "Waltz in B minor (Op. 69 No. 2)",
       "composer": "Frédéric Chopin",
@@ -753,6 +766,15 @@
       "licence": "public-domain",
       "verified": false,
       "score": "pieces/chopin-waltz-op69-2/score.musicxml"
+    },
+    {
+      "slug": "gluckes-genug",
+      "title": "Glückes genug (Kinderszenen, Op. 15 No. 5)",
+      "composer": "Robert Schumann",
+      "difficulty": 4,
+      "licence": "public-domain",
+      "verified": false,
+      "score": "pieces/gluckes-genug/score.musicxml"
     },
     {
       "slug": "la-pastorale",
@@ -782,13 +804,13 @@
       "score": "pieces/chopin-prelude-4/score.musicxml"
     },
     {
-      "slug": "gluckes-genug",
-      "title": "Glückes genug (Kinderszenen, Op. 15 No. 5)",
-      "composer": "Robert Schumann",
-      "difficulty": 5,
+      "slug": "the-entertainer",
+      "title": "The Entertainer",
+      "composer": "Scott Joplin",
+      "difficulty": 4,
       "licence": "public-domain",
       "verified": false,
-      "score": "pieces/gluckes-genug/score.musicxml"
+      "score": "pieces/the-entertainer/score.musicxml"
     }
   ]
 }

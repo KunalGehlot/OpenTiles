@@ -1,8 +1,8 @@
 {
   "title": "Mary Had a Little Lamb",
-  "composer": "Lowell Mason",
-  "composer_death_year": 1872,
-  "traditional": false,
+  "composer": "Traditional (American nursery song, 19th century)",
+  "composer_death_year": null,
+  "traditional": true,
   "transcriber": "OpenTiles contributors",
   "arranger": "OpenTiles contributors",
   "source_url": "https://github.com/KunalGehlot/OpenTiles/tree/main/catalogue/pieces/mary-had-a-little-lamb",

@@ -10,7 +10,7 @@ RH: re F4e A4e F4e C5e F4e | F5e E5s D5s C5s D5s C5s Bb4s A4s Bb4s A4s G4s | F4e
 RH: F5s A5s G5s A5s F5s A5s G5s A5s F5s A5s G5s A5s | D5s F5s E5s F5s D5s F5s E5s F5s D5s F5s E5s F5s | B4e G4e D5e B4e F5e D5e | G5s A5s G5s F5s E5s F5s E5s D5s C5s D5s C5s Bb4s
 RH: A4e D5s C5s B4s C5s B4s A4s G4s A4s G4s F4s | E4s F4s E4s D4s C4e C5s B4s C5e E4e | F4e C5e E4e C5e D4e B4e | C5q rh
 RH: re C5e E5e C5e G5e C5e | C6e B5s A5s G5s A5s G5s F5s E5s F5s E5s D5s | C5s Bb4s C5s A5s C5s A5s Bb4s A5s C5s A5s A4s A5s | Bb4e G4e Bb4e G4e D5e G4e
-RH: G5e F5s Eb5s D5s Eb5s D5s C5s Bb4s C5s Bb4s A4s | G4e Bb4e D5e Bb4e G5e D5e | Bb5e Db5e Bb5e Db5e Bb5e Db5e | D5e A4e F5e D5e A5e F5e
+RH: G5e F5s Eb5s D5s Eb5s D5s C5s Bb4s C5s Bb4s A4s | G4e Bb4e D5e Bb4e G5e D5e | Bb5e Db5e Bb5e Db5e Bb5e C#5e | D5e A4e F5e D5e A5e F5e
 RH: G5s F5s G5s Bb5s C5s Bb5s D5s Bb5s E5s Bb5s C5s Bb5s | F5s E5s F5s A5s B4s A5s Db5s A5s D5s A5s B4s A5s | E5s D5s E5s G5s A4s G5s B4s G5s Db5s G5s A4s G5s | F5e D5e Bb4e D5e G4e F5e
 RH: E5e C5e A4e C5e F4e Eb5e | D5s F5s Eb5s F5s D5s F5s Eb5s F5s D5s F5s Eb5s F5s | Bb4s D5s C5s D5s Bb4s D5s C5s D5s Bb4s D5s C5s D5s | G4s Bb4s A4s Bb4s G4s Bb4s A4s Bb4s G4s Bb4s A4s Bb4s
 RH: E4e C4e G4e E4e Bb4e G4e | C5s D5s C5s Bb4s A4s Bb4s A4s G4s F4s G4s F4s Eb4s | D4e G4s F4s E4s F4s E4s D4s C4s D4s C4s Bb3s | A3s Bb3s A3s G3s F3e F4s E4s F4e A3e
@@ -18,7 +18,7 @@ RH: Bb3e F4e A3e F4e G3e E4e | [A3 C4 F4]q rh
 LH: rh. | re F3e A3e F3e C4e F3e | F4e E4s D4s C4s D4s C4s Bb3s A3s Bb3s A3s G3s | F3e A3e C4e A3e F4e C4e
 LH: A4s C5s Bb4s C5s A4s C5s Bb4s C5s A4s C5s Bb4s C5s | F4s A4s G4s A4s F4s A4s G4s A4s F4s A4s G4s A4s | D4s F4s E4s F4s D4s F4s E4s F4s D4s F4s E4s F4s | B3e G3e C4e G3e E4e C4e
 LH: F4s G4s F4s E4s D4s E4s D4s C4s B3s C4s B3s A3s | G3e C4s B3s A3s B3s A3s G3s F3s G3s F3s E3s | D3s E3s D3s C3s G3s F3s E3s F3s G3e G2e | re C3e E3e C3e G3e C3e
-LH: C4e B3s A3s G3s A3s G3s F3s E3s F3s E3s D3s | C3e E3e G3e E3e C4e G3e | Eb4e Gb3e Eb4e Gb3e Eb4e Gb3e | G3e F3s Eb3s D3s Eb3s D3s C3s Bb2s C3s Bb2s A2s
+LH: C4e B3s A3s G3s A3s G3s F3s E3s F3s E3s D3s | C3e E3e G3e E3e C4e G3e | Eb4e Gb3e Eb4e Gb3e Eb4e F#3e | G3e F3s Eb3s D3s Eb3s D3s C3s Bb2s C3s Bb2s A2s
 LH: G2e G3e Bb3e G3e D4e G3e | G4e F4s Eb4s D4s Eb4s D4s C4s Bb3s C4s Bb3s A3s | G3s F3s G3s E4s G3s E4s F3s E4s G3s E4s E3s E4s | F3s E3s F3s D4s F3s D4s E3s D4s F3s D4s D3s D4s
 LH: Bb3e G3e E3e G3e C3e E3e | A3e F3e D3e F3e B2e D3e | G3e E3e Db3e E3e A2e Db3e | D2s D3s C3s D3s G2s D3s A2s D3s Bb2s D3s G2s D3s
 LH: C2s C3s Bb2s C3s F2s C3s G2s C3s A2s C3s F2s C3s | Bb2e D3e F3e D3e Bb3e F3e | D4s F4s Eb4s F4s D4s F4s Eb4s F4s D4s F4s Eb4s F4s | Bb3s D4s C4s D4s Bb3s D4s C4s D4s Bb3s D4s C4s D4s

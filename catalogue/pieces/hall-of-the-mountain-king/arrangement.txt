@@ -8,6 +8,6 @@ tempo: 96
 RH: B3e@1 C#4e D4e E4e F#4e D4e F#4q | E#4e C#4e E#4q E4e C4e E4q | B3e C#4e D4e E4e F#4e D4e F#4e B4e | A4e F#4e D4e F#4e A4h
 RH: B3e C#4e D4e E4e F#4e D4e F#4q | E#4e C#4e E#4q E4e C4e E4q | B3e C#4e D4e E4e F#4e D4e F#4e B4e | A4e F#4e D4e F#4e A4h
 RH: [B3 D4 F#4]w
-LH: B2q F#2q B2q F#2q | C#3q G#2q C3q G2q | B2q F#2q B2q F#2q | D3q A2q D3q A2q
-LH: B2q F#2q B2q F#2q | C#3q G#2q C3q G2q | B2q F#2q B2q F#2q | D3q A2q D3q A2q
+LH: B2q F#2q B2q F#2q | B2q F#2q B2q F#2q | B2q F#2q B2q F#2q | D3q A2q D3q A2q
+LH: B2q F#2q B2q F#2q | B2q F#2q B2q F#2q | B2q F#2q B2q F#2q | D3q A2q D3q A2q
 LH: B2w
