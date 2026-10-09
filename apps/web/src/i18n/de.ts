@@ -179,9 +179,6 @@ export const de: Readonly<Record<string, string>> = {
   'Measure keyboard delay': 'Verzögerung des Keyboards messen',
   'Calibrate timing': 'Timing kalibrieren',
   'Connect MIDI keyboard': 'MIDI-Keyboard verbinden',
-  'Safari and iPad browsers have no Web MIDI':
-    'Safari und die Browser auf dem iPad haben kein Web MIDI',
-  'MIDI not available in this browser': 'MIDI ist in diesem Browser nicht verfügbar',
   'Microphone listening': 'Mikrofon hört zu',
   'Set up microphone': 'Mikrofon einrichten',
   'Starting…': 'Wird gestartet …',
@@ -664,4 +661,20 @@ export const de: Readonly<Record<string, string>> = {
   'Benchmark detector speed': 'Geschwindigkeit des Detektors messen',
   // Document
   'OpenTiles — free piano practice': 'OpenTiles – kostenlos Klavier üben',
+  // MIDI help
+  'Browsers on iPad and iPhone cannot connect to MIDI keyboards (Apple does not allow it). Use the microphone instead: it listens to your piano.':
+    'Browser auf iPad und iPhone können sich nicht mit MIDI-Keyboards verbinden (Apple lässt das nicht zu). Nutze stattdessen das Mikrofon: Es hört deinem Klavier zu.',
+  'Safari cannot connect to MIDI keyboards (Apple does not support Web MIDI). Open OpenTiles in Chrome, Edge or Firefox on this computer, or use the microphone.':
+    'Safari kann sich nicht mit MIDI-Keyboards verbinden (Apple unterstützt Web MIDI nicht). Öffne OpenTiles auf diesem Computer in Chrome, Edge oder Firefox oder nutze das Mikrofon.',
+  'MIDI keyboards only work on a secure page. Open OpenTiles over https, or as localhost on this computer.':
+    'MIDI-Keyboards funktionieren nur auf einer sicheren Seite. Öffne OpenTiles über https oder als localhost auf diesem Computer.',
+  'This browser cannot connect to MIDI keyboards. Use Chrome, Edge or Firefox, or the microphone.':
+    'Dieser Browser kann sich nicht mit MIDI-Keyboards verbinden. Nutze Chrome, Edge oder Firefox oder das Mikrofon.',
+  'Firefox asks to install a small “site permission” add-on before a page may use MIDI. Click “Connect MIDI keyboard” again and accept it (Continue to installation, then Add). If you declined it before, allow MIDI for this site again in Firefox: Settings → Privacy & Security → Permissions.':
+    'Firefox fragt, ob ein kleines „Website-Berechtigungs“-Add-on installiert werden darf, bevor eine Seite MIDI nutzen kann. Klick noch einmal auf „MIDI-Keyboard verbinden“ und stimme zu (Mit Installation fortfahren, dann Hinzufügen). Wenn du es vorher abgelehnt hast, erlaube MIDI für diese Seite wieder in Firefox: Einstellungen → Datenschutz & Sicherheit → Berechtigungen.',
+  'The browser did not allow MIDI for this page. Allow MIDI devices for this site in the browser settings, then try again.':
+    'Der Browser hat MIDI für diese Seite nicht erlaubt. Erlaube MIDI-Geräte für diese Seite in den Browser-Einstellungen und versuch es noch einmal.',
+  'MIDI keyboard': 'MIDI-Keyboard',
+  'Plug in your keyboard and switch it on; it appears here by itself.':
+    'Steck dein Keyboard an und schalte es ein; es erscheint hier von selbst.',
 };

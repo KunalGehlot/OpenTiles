@@ -17,7 +17,13 @@ import type { Song } from '@opentiles/song-model';
 import { now, unlockAudio } from '../audio/context';
 import { synthFor } from '../audio/synth';
 import { loadCatalogueSong } from '../catalogue/catalogue';
-import { createMidiInput, midiSupported } from '../input/midi-input';
+import {
+  createMidiInput,
+  describeMidiError,
+  midiSupported,
+  midiUnavailableMessage,
+  midiUnavailableReason,
+} from '../input/midi-input';
 import type { MidiKeyboardInput } from '../input/midi-input';
 import type { MicInput } from '../input/mic-input';
 import { TouchInput } from '../input/touch-input';
@@ -344,7 +350,7 @@ function PracticeView({
       setMidi({ input, devices: input.deviceNames });
       await applyMidiCalibration(input.deviceNames);
     } catch (e) {
-      setInputError(e instanceof Error ? t(e.message) : String(e));
+      setInputError(describeMidiError(e, navigator.userAgent));
     }
   };
 
@@ -431,7 +437,14 @@ function PracticeView({
           {midiSupported() ? (
             midi ? (
               <>
-                <span className="chip chip--live" title={t('A MIDI keyboard is connected')}>
+                <span
+                  className="chip chip--live"
+                  title={
+                    midi.devices.length > 0
+                      ? t('A MIDI keyboard is connected')
+                      : t('Plug in your keyboard and switch it on; it appears here by itself.')
+                  }
+                >
                   <Piano />
                   <span className="chip__text">
                     MIDI: {midi.devices.join(', ') || t('no device connected')}
@@ -452,10 +465,17 @@ function PracticeView({
               </button>
             )
           ) : (
-            <span className="chip" title={t('Safari and iPad browsers have no Web MIDI')}>
-              <Piano />
-              <span className="chip__text">{t('MIDI not available in this browser')}</span>
-            </span>
+            <Popover label={t('MIDI keyboard')} icon={<Piano />}>
+              <p className="popover__hint" data-testid="midi-unavailable">
+                {midiUnavailableMessage(
+                  midiUnavailableReason({
+                    userAgent: navigator.userAgent,
+                    maxTouchPoints: navigator.maxTouchPoints,
+                    secure: window.isSecureContext,
+                  }),
+                )}
+              </p>
+            </Popover>
           )}
           {mic ? (
             <>

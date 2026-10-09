@@ -4,7 +4,7 @@
 // bypasses React).
 import type { Song, SongNote } from '@opentiles/song-model';
 import type { PracticeSession } from '../session';
-import { buildAnchors, positionAt } from './cursor-map';
+import { beatAt, buildAnchors, positionAt } from './cursor-map';
 import type { Anchor, MeasureBox } from './cursor-map';
 import { glyphsFromTimemap, linkNotes, measureOrderFromSvg } from './glyph-map';
 import type { ScoreLinks, TimemapEntry } from './glyph-map';
@@ -68,6 +68,9 @@ export class ScoreController {
   /** The learner moved the score; following resumes with an ease once playing goes on. */
   private free = false;
   private homing = false;
+  /** A drag (or its coasting) is scrubbing through the piece: the beat under the play bar wins. */
+  private scrubbed = false;
+  private wheelTimer = 0;
   private endedAt = 0;
   private lastTime = 0;
   /** Beats at which a note starts or ends, sorted: the colours change only when one is passed. */
@@ -383,7 +386,11 @@ export class ScoreController {
     } else if (this.coasting) {
       this.scrollPos = this.clampScroll(this.scrollPos + this.velocity * dt);
       this.velocity *= Math.exp(-dt * 4.5);
-      if (Math.abs(this.velocity) < 12) this.coasting = false;
+      if (this.scrubbed) this.scrubTo();
+      if (Math.abs(this.velocity) < 12) {
+        this.coasting = false;
+        this.endScrub();
+      }
     } else if (this.homing) {
       this.scrollPos += (0 - this.scrollPos) * (1 - Math.exp(-dt * 7));
       if (this.scrollPos < 0.5) {
@@ -405,6 +412,29 @@ export class ScoreController {
       this.shownPos = this.scrollPos;
       this.mover.style.transform = `translate3d(${(-this.scrollPos).toFixed(2)}px, 0, 0)`;
     }
+  }
+
+  /**
+   * Scrubbing (P4-18): the play bar stays in the middle and the piece moves under it, so the beat
+   * drawn at the middle becomes the position; the falling notes and the next start follow.
+   */
+  private scrubTo(): void {
+    const x = this.scrollPos + this.host.clientWidth * 0.5;
+    const beat = beatAt(this.anchors, x, this.session.beat);
+    if (beat !== null && Math.abs(beat - this.session.beat) > 1e-4) this.session.seek(beat);
+  }
+
+  private startScrub(): void {
+    this.scrubbed = true;
+    this.session.scrubbing = true;
+    this.homing = false;
+    this.free = false;
+  }
+
+  private endScrub(): void {
+    if (!this.scrubbed) return;
+    this.scrubbed = false;
+    this.session.scrubbing = false;
   }
 
   private clampScroll(x: number): number {
@@ -446,13 +476,14 @@ export class ScoreController {
         if (Math.abs(dx) < 5) return;
         d.active = true;
         this.coasting = false;
-        this.homing = false;
         this.velocity = 0;
+        this.startScrub();
         host.setPointerCapture?.(e.pointerId);
         host.classList.add('dragging');
       }
       const dtm = Math.max(1, e.timeStamp - d.time) / 1000;
       this.scrollPos = this.clampScroll(this.scrollPos - dx);
+      this.scrubTo();
       this.velocity = this.velocity * 0.6 + (-dx / dtm) * 0.4;
       d.x = e.clientX;
       d.time = e.timeStamp;
@@ -463,19 +494,24 @@ export class ScoreController {
       this.drag = null;
       host.classList.remove('dragging');
       if (!d.active) return;
-      this.free = true;
-      // A pause before letting go means no coasting.
+      // A pause before letting go means no coasting; a flick keeps scrubbing as it slows down.
       const idle = e.timeStamp - d.time;
       this.coasting = idle < 80 && Math.abs(this.velocity) > 80;
-      if (!this.coasting) this.velocity = 0;
+      if (!this.coasting) {
+        this.velocity = 0;
+        this.endScrub();
+      }
     };
     const wheel = (e: WheelEvent) => {
       if (Math.abs(e.deltaX) <= Math.abs(e.deltaY)) return;
       e.preventDefault();
       this.coasting = false;
-      this.homing = false;
-      this.free = true;
+      this.startScrub();
       this.scrollPos = this.clampScroll(this.scrollPos + e.deltaX);
+      this.scrubTo();
+      // A trackpad sends no "end": the scrub ends when the wheel has been quiet for a moment.
+      window.clearTimeout(this.wheelTimer);
+      this.wheelTimer = window.setTimeout(() => this.endScrub(), 160);
     };
     host.addEventListener('pointerdown', down);
     host.addEventListener('pointermove', move);
@@ -492,6 +528,8 @@ export class ScoreController {
   }
 
   destroy(): void {
+    window.clearTimeout(this.wheelTimer);
+    this.endScrub();
     this.detach();
     this.mover.style.transform = '';
     this.strip.style.paddingInline = '';

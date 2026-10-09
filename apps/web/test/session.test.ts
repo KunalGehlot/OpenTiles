@@ -335,3 +335,48 @@ describe('steady clock', () => {
     expect(clock()).toBe(5);
   });
 });
+
+describe('scrubbing (P4-18)', () => {
+  it('moves wait mode to the step at the new place and holds the drag position', () => {
+    const { session, run, press } = setup();
+    press(60);
+    run(0.2);
+    session.scrubbing = true;
+    session.seek(5.5);
+    run(0.5);
+    // While dragging, the position is exactly where the learner put it.
+    expect(session.beat).toBeCloseTo(5.5, 6);
+    expect(session.wait.current?.beat).toBe(6);
+    session.scrubbing = false;
+    // Let go: the step to play is the one at the new place (the display eases to it in real time).
+    expect(session.expected()).toEqual([64]);
+    // Notes from there on are not marked done; the first one played still is.
+    expect(session.done.has('n6')).toBe(false);
+    expect(session.done.has('n0')).toBe(true);
+  });
+
+  it('stops a playing run and starts again from the new place', () => {
+    const { session, run } = setup();
+    session.setMode('listen');
+    session.start();
+    run(3);
+    expect(session.playing).toBe(true);
+    session.seek(8);
+    expect(session.playing).toBe(false);
+    expect(session.beat).toBe(8);
+    session.start();
+    run(1.5); // the lead-in
+    expect(session.beat).toBeGreaterThanOrEqual(8);
+    expect(session.beat).toBeLessThan(9);
+  });
+
+  it('keeps the position inside the piece', () => {
+    const { session } = setup();
+    session.seek(-3);
+    expect(session.beat).toBe(0);
+    session.seek(1000);
+    expect(session.beat).toBe(16);
+    // Past the last step, wait mode waits on the last note instead of finishing the run.
+    expect(session.wait.finished).toBe(false);
+  });
+});

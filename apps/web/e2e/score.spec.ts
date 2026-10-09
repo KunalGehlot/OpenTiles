@@ -166,7 +166,7 @@ test('the scrolling score keeps the play bar in the middle, shows no scroll bar 
   for (let i = 0; i < 4; i++) await page.keyboard.press('KeyD'); // E4 E4 F4 G4 need other keys; any press
   await expect.poll(async () => Math.abs(await barOffset())).toBeLessThan(3);
 
-  // A drag moves the score, and the play bar stays with the notes (it is part of the score).
+  // A drag scrubs: the score moves under the play bar, which stays in the middle (P4-18).
   const box = await host.boundingBox();
   if (!box) throw new Error('no score box');
   const before = await page.evaluate(
@@ -175,11 +175,72 @@ test('the scrolling score keeps the play bar in the middle, shows no scroll bar 
   await page.mouse.move(box.x + box.width * 0.7, box.y + box.height / 2);
   await page.mouse.down();
   await page.mouse.move(box.x + box.width * 0.4, box.y + box.height / 2, { steps: 6 });
+  expect(Math.abs(await barOffset())).toBeLessThan(3);
   await page.mouse.up();
   const after = await page.evaluate(
     () => document.querySelector('.ot-score-mover')?.getAttribute('style') ?? '',
   );
   expect(after).not.toEqual(before);
+  await expect.poll(async () => Math.abs(await barOffset())).toBeLessThan(3);
+});
+
+test('dragging the score scrubs through the piece, back and forth, and Play starts there', async ({
+  page,
+}) => {
+  await page.goto('./#/practice/catalogue/silent-night');
+  await page.getByRole('group', { name: 'View' }).getByRole('button', { name: 'Score' }).click();
+  await expect(page.locator('[data-testid="score-strip"] > svg')).toBeVisible({ timeout: 20_000 });
+  const host = page.locator('.ot-score-host');
+  const box = await host.boundingBox();
+  if (!box) throw new Error('no score box');
+  const barOffset = () =>
+    page.evaluate(() => {
+      const h = document.querySelector('.ot-score-host')?.getBoundingClientRect();
+      const c = document.querySelector('[data-testid="score-cursor"]')?.getBoundingClientRect();
+      return h && c ? c.left - (h.left + h.width / 2) : NaN;
+    });
+  const step = async () =>
+    Number(/Step (\d+)\//.exec((await page.locator('.stats').textContent()) ?? '')?.[1]);
+  const y = box.y + box.height / 2;
+  const drag = async (from: number, to: number) => {
+    await page.mouse.move(box.x + box.width * from, y);
+    await page.mouse.down();
+    await page.mouse.move(box.x + box.width * to, y, { steps: 10 });
+    // Hold still before letting go, so it does not coast.
+    await page.waitForTimeout(150);
+    await page.mouse.up();
+  };
+
+  expect(await step()).toBe(1);
+  // Forward: drag the score to the left.
+  await drag(0.8, 0.2);
+  await expect.poll(step).toBeGreaterThan(3);
+  const forward = await step();
+  expect(Math.abs(await barOffset())).toBeLessThan(3);
+  // Back: drag it to the right again, a little less far.
+  await drag(0.3, 0.6);
+  await expect.poll(step).toBeLessThan(forward);
+  expect(await step()).toBeGreaterThan(1);
+  expect(Math.abs(await barOffset())).toBeLessThan(3);
+
+  // Listen starts from the scrubbed place, not from the beginning.
+  const offset = () =>
+    page.evaluate(() => {
+      const mover = document.querySelector('.ot-score-mover') as HTMLElement | null;
+      const m = /translate3d\((-?[\d.]+)px/.exec(mover?.style.transform ?? '');
+      return m ? -Number(m[1]) : 0;
+    });
+  const scrubbed = await offset();
+  expect(scrubbed).toBeGreaterThan(40);
+  await page.getByRole('button', { name: 'Listen', exact: true }).click();
+  // Changing mode rebuilds the run; scrub again, then play.
+  await drag(0.8, 0.5);
+  const from = await offset();
+  expect(from).toBeGreaterThan(40);
+  await page.getByRole('button', { name: 'Play', exact: true }).click();
+  await page.waitForTimeout(2500);
+  expect(await offset()).toBeGreaterThanOrEqual(from - 2);
+  expect(Math.abs(await barOffset())).toBeLessThan(3);
 });
 
 /** Horizontal offset of the scrolling score, in CSS pixels (0 = at the start). */

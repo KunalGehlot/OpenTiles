@@ -95,6 +95,39 @@ export function positionAt(anchors: readonly Anchor[], beat: number): CursorPosi
   return { ...strip(a), x: a.x + (b.x - a.x) * f };
 }
 
+/**
+ * The beat drawn at `x` on one row (the scrolling view's single system): the inverse of positionAt,
+ * for scrubbing (P4-18). Where a repeat draws the same bars twice, the pass nearest `near` wins, so
+ * dragging inside a repeat keeps going through the pass the learner is in.
+ */
+export function beatAt(anchors: readonly Anchor[], x: number, near: number): number | null {
+  if (anchors.length === 0) return null;
+  let best: number | null = null;
+  let bestDistance = Infinity;
+  for (let i = 0; i + 1 < anchors.length; i++) {
+    const a = anchors[i] as Anchor;
+    const b = anchors[i + 1] as Anchor;
+    if (b.page !== a.page || b.top !== a.top || b.beat <= a.beat) continue;
+    if (x < Math.min(a.x, b.x) - 0.5 || x > Math.max(a.x, b.x) + 0.5) continue;
+    const f = b.x === a.x ? 0 : Math.min(1, Math.max(0, (x - a.x) / (b.x - a.x)));
+    const beat = a.beat + (b.beat - a.beat) * f;
+    const distance = Math.abs(beat - near);
+    if (distance < bestDistance) {
+      best = beat;
+      bestDistance = distance;
+    }
+  }
+  if (best !== null) return best;
+  // Before the first note, after the last, or in a gap between rows: the nearest anchor.
+  let nearest = anchors[0] as Anchor;
+  for (const a of anchors) {
+    const d = Math.abs(a.x - x) - Math.abs(nearest.x - x);
+    if (d < -0.5 || (Math.abs(d) <= 0.5 && Math.abs(a.beat - near) < Math.abs(nearest.beat - near)))
+      nearest = a;
+  }
+  return nearest.beat;
+}
+
 function strip(a: Anchor): CursorPosition {
   return { x: a.x, top: a.top, height: a.height, page: a.page };
 }

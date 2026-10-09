@@ -221,6 +221,11 @@ export class PracticeSession {
   private finishedAt = 0;
   /** After a run the display went back to the start (the notes, cursor and score all follow `beat`). */
   private homed = false;
+  /**
+   * True while the learner drags the score (P4-18): the position follows the drag exactly, and wait
+   * mode does not pull it to its step until the drag ends.
+   */
+  scrubbing = false;
   private summary: RunSummary | null = null;
   private lastStatus = '';
   private endBeat = 0;
@@ -770,6 +775,30 @@ export class PracticeSession {
     this.emitStatus();
   }
 
+  /**
+   * Moves the position to `beat`, as dragging the score does (P4-18): the score, the cursor and the
+   * falling notes all follow. A playing run stops, and Play starts again from here; wait mode moves
+   * to the step at or after `beat`. Marks already made stay on the notes before it.
+   */
+  seek(beat: number): void {
+    const from = this.loopSpan?.fromBeat ?? 0;
+    const to = this.loopSpan?.toBeat ?? this.song.lengthBeats;
+    const target = Math.min(Math.max(beat, from), to);
+    if (this.timeline) this.stop();
+    this.finishedAt = 0;
+    this.homed = false;
+    this.summary = null;
+    this.beat = target;
+    if (this.mode === 'wait' && this.steps.length > 0) {
+      const at = this.steps.findIndex((s) => s.beat >= target - 1e-6);
+      // Past the last step, wait on the last one rather than finishing the run.
+      const index = at < 0 ? this.steps.length - 1 : at;
+      for (const s of this.steps.slice(index)) for (const n of s.notes) this.done.delete(n.id);
+      if (index !== this.wait.index) this.wait.seek(index);
+    }
+    this.emitStatus();
+  }
+
   private beatForStart(): number {
     const first = this.steps[0]?.beat ?? 0;
     return this.beat > first + 1e-6 && this.beat < this.song.lengthBeats ? this.beat : first;
@@ -804,9 +833,10 @@ export class PracticeSession {
         this.wait.reset();
       }
       this.runWaitClick(t);
-      const target = this.homed
-        ? this.beat
-        : (this.wait.current?.beat ?? this.loopSpan?.toBeat ?? this.song.lengthBeats);
+      const target =
+        this.homed || this.scrubbing
+          ? this.beat
+          : (this.wait.current?.beat ?? this.loopSpan?.toBeat ?? this.song.lengthBeats);
       // Time-based easing: the same glide at 60 and 120 Hz (a per-frame factor ran twice as fast).
       this.beat += (target - this.beat) * (1 - Math.exp(-dt * 11));
       if (Math.abs(target - this.beat) < 1e-3) this.beat = target;

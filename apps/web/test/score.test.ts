@@ -6,7 +6,7 @@ import { DOMParser } from '@xmldom/xmldom';
 import { describe, expect, it } from 'vitest';
 import { parseMusicXml } from '@opentiles/song-model';
 import type { DomParserLike, Song } from '@opentiles/song-model';
-import { buildAnchors, positionAt } from '../src/views/score/cursor-map';
+import { beatAt, buildAnchors, positionAt } from '../src/views/score/cursor-map';
 import type { MeasureBox } from '../src/views/score/cursor-map';
 import {
   baseId,
@@ -286,6 +286,22 @@ describe('cursor positions', () => {
     expect(positionAt(anchors, -5)?.x).toBe(20);
     expect(positionAt(anchors, 1000)?.x).toBe(500);
     expect(positionAt([], 1)).toBeNull();
+  });
+
+  it('turns a position back into a beat for scrubbing (P4-18)', () => {
+    // The inverse of positionAt on every beat of the first pass.
+    for (let beat = 0; beat < 12; beat += 0.25) {
+      const x = positionAt(anchors, beat)?.x ?? 0;
+      expect(beatAt(anchors, x, beat)).toBeCloseTo(beat, 1);
+    }
+    // Inside a repeat the same place is two beats; the pass nearest the current one wins.
+    const x = positionAt(anchors, 1)?.x ?? 0;
+    expect(beatAt(anchors, x, 0)).toBeCloseTo(1, 1);
+    expect(beatAt(anchors, x, 13)).toBeCloseTo(13, 1);
+    // Before the first note and after the last: the ends of the piece.
+    expect(beatAt(anchors, -50, 0)).toBe(0);
+    expect(beatAt(anchors, 10_000, 0)).toBe(anchors.at(-1)?.beat);
+    expect(beatAt([], 10, 0)).toBeNull();
   });
 
   it('does not interpolate across systems or pages', () => {
