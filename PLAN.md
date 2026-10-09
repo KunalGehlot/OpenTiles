@@ -201,7 +201,8 @@ engines.
 - [x] **P2-16** Licence scanner for third-party dependencies in CI.
 - [~] **P2-17** Privacy policy, Impressum with notice-and-takedown address, records of processing. Done: privacy policy and Impressum (EN/DE), records of processing. Left: real postal address; lawyer review (P2-18).
 - [ ] **P2-18** (human) Legal consultation with a German copyright lawyer (timing is an open
-      decision).
+      decision). Also ask: Bella Ciao (P4-14), the LLM disclosure and the Sightread credit wording
+      (P5-01), and whether MIDI export of a user's own free-play recording breaks guardrail 1 (P5-06).
 
 **G2 criteria:** 150 verified pieces across 5 levels; every item in
 [docs/legal-guardrails.md](docs/legal-guardrails.md) checked; device lab passes on every row of the
@@ -322,6 +323,52 @@ compatibility matrix (spec §5).
 - [ ] **P4-06** If the rule-based detector stalls below target: small onset model via ONNX Runtime
       Web.
 
+## Phase 5 — Release polish (from 2026-10-09)
+
+Goal: the final round before release. Smoother and richer practice, credit where it is due, and the
+human items that block going public. Planned with the maintainer on 2026-10-09 after comparing
+OpenTiles with [Sightread](https://github.com/sightread/sightread) (GPL-3.0). Rule for every task
+here: build from a description of what a feature does, never from another project's code, songs,
+images, sounds or fonts, and credit the inspiration in [CREDITS.md](CREDITS.md).
+
+- [x] **P5-01** (GOV) Credit and disclosure. Done: README section, About page (English and German),
+      `CREDITS.md`, a short "Using AI tools" section in `docs/development.md`. The comparison found no
+      shared code (0 matching four-line windows in `apps/web` and the TypeScript packages; only
+      `#000000` as a shared colour). Sightread is GPL-3.0 (GitHub and its LICENSE file; no "or later"
+      notice), OpenTiles is AGPL-3.0-or-later; GPLv3 §13 / AGPLv3 §13 allow combining, and nothing has
+      been taken. Wording uses "an LLM" and names no vendor. Left: ask in P2-18.
+- [ ] **P5-00** (GOV) Housekeeping that blocks release: push `P4-10-ui-redesign` and open the PR; fix
+      the Firefox and iPad-profile Playwright failures in CI; delete and recreate the GitHub
+      repository before it is made public (see STATE.md).
+- [ ] **P5-02** (APP) Keep the screen awake while practising (Screen Wake Lock API, requested from a
+      user gesture, released on pause, hidden tab or leaving the page; no error where it is missing).
+- [ ] **P5-03** (APP) Note labels: letters, German names (H instead of B), Fixed-Do; one setting that
+      the falling notes, the keyboard and the score fingerings share.
+- [ ] **P5-04** (APP, SONG) Shift the piece by semitones during practice and choose sharps or flats for
+      the labels. Today transposing exists only at import. The score views re-engrave, fingering is
+      recomputed.
+- [ ] **P5-05** (APP, PRAC) Sight-reading drills (the "Speed" and "Infinite" ideas): random notes or
+      generated phrases on a staff, with clef, key signature, letters on/off and a speed readout. Works
+      with MIDI, microphone and the on-screen keyboard through the usual `NoteEvent` stream. Material is
+      generated in code, so it is CC0 by construction. Needs an ADR for the generator and the scoring.
+- [ ] **P5-06** (APP) Free play with recording and listen-back, using the existing sampler and the
+      performance recorder. Saving the recording as a MIDI file for the user's own device needs an
+      ADR first (guardrail 1: the only export is the encrypted backup; ADR 0010 limits WAV files to
+      catalogue pieces) and a question to the lawyer in P2-18.
+- [ ] **P5-07** (APP) A slim live stats strip (perfect, good, missed, streak; off by default) and an
+      overview strip of the whole piece with loop handles and the hardest bars. Check first what
+      `SectionBar` and `loop-drag` already cover.
+- [ ] **P5-08** (APP) Library preview before opening and collections. Not selected for this round.
+- [ ] **P5-09** (APP) Smoothness pass, reviewed together in the maintainer's dark-mode Chrome: home to
+      playing in two clicks, one transport bar, route and panel transitions, 44 px touch targets on
+      coarse pointers, a manual light/dark switch, a refreshed logo, Detector Lab polish.
+- [ ] **P5-10** (human) Release gate: frame time on an older iPad, MIDI keyboard check in Firefox and
+      Safari, postal address in the Impressum, legal consultation (P2-18), domain and trademark, a
+      native German read-through, README screenshots from CC0 pieces only.
+
+Left out on purpose: 128 General MIDI instruments (a piano trainer, and extra sample licences and
+size), Sightread's song library and assets, and any analytics.
+
 ## Cross-cutting checklists
 
 These are tracked in their own documents and must be green before the gate named.
@@ -350,6 +397,9 @@ Record the outcome as an ADR in `docs/adr/` and tick it here.
 - **2026-10-09** — MIDI keyboard settings (keys on this device, the app's notes on the keyboard),
   Firefox MIDI confirmed working, the iPad app builds with Xcode, status brought up to date.
 
+- **2026-10-09** — Phase 5 (release polish) planned. P5-01 done: the README, About page and
+  CREDITS.md say that an LLM was used and credit Sightread; the comparison found no shared code.
+  Features picked: P5-02…P5-07 (not P5-08).
 - **2026-10-09** — Maintainer approval: all 81 catalogue pieces verified, ADRs 0010–0014 accepted,
   Bella Ciao accepted as traditional. Score scrubbing (P4-18), MIDI help for Firefox and Safari,
   engine build that finds rustup's toolchain.

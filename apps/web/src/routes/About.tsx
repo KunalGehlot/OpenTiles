@@ -69,6 +69,26 @@ function AboutEn() {
         </a>
         , used under the GNU LGPL-3.0 (or later).
       </p>
+      <h2>How it was made, and what came first</h2>
+      <p>
+        OpenTiles was written with a large language model (LLM) working under the maintainer's
+        direction. The maintainer reviews the work and is responsible for what ships.
+      </p>
+      <p>
+        Such models learn from public code, so this one may have seen similar projects. OpenTiles
+        looks and works a lot like{' '}
+        <a href="https://github.com/sightread/sightread" rel="noreferrer">
+          Sightread
+        </a>{' '}
+        (GPL-3.0, by samouri and contributors, first published in 2021), which came first. When we
+        compared the source of both projects we found no shared code, assets or songs; what they
+        share is the idea: falling notes over a keyboard, coloured hands, and a mode that waits for
+        the right note. Sightread is a good project: please have a look at it.{' '}
+        <a href="https://github.com/KunalGehlot/OpenTiles/blob/main/CREDITS.md" rel="noreferrer">
+          More in CREDITS.md
+        </a>
+        .
+      </p>
       <h2>Open source</h2>
       <p>
         The app is licensed under the GNU AGPL-3.0; catalogue metadata under CC0. Source code, plans
@@ -153,6 +173,29 @@ function AboutDe() {
           Verovio
         </a>{' '}
         gesetzt, verwendet unter der GNU LGPL-3.0 (oder später).
+      </p>
+      <h2>Wie es entstanden ist, und was zuerst da war</h2>
+      <p>
+        OpenTiles wurde mit einem großen Sprachmodell (LLM) unter der Leitung des Maintainers
+        geschrieben. Der Maintainer prüft die Arbeit und trägt die Verantwortung für das, was
+        veröffentlicht wird.
+      </p>
+      <p>
+        Solche Modelle lernen aus öffentlichem Code und kennen daher womöglich ähnliche Projekte.
+        OpenTiles sieht{' '}
+        <a href="https://github.com/sightread/sightread" rel="noreferrer">
+          Sightread
+        </a>{' '}
+        (GPL-3.0, von samouri und Mitwirkenden, erstmals 2021 veröffentlicht) sehr ähnlich und
+        funktioniert ähnlich; Sightread war zuerst da. Beim Vergleich des Quellcodes beider Projekte
+        haben wir keinen gemeinsamen Code, keine gemeinsamen Dateien und keine gemeinsamen Stücke
+        gefunden; gemeinsam ist die Idee: fallende Noten über einer Klaviatur, Farben für die Hände
+        und ein Modus, der auf die richtige Note wartet. Sightread ist ein gutes Projekt – schau es
+        dir an.{' '}
+        <a href="https://github.com/KunalGehlot/OpenTiles/blob/main/CREDITS.md" rel="noreferrer">
+          Mehr in CREDITS.md
+        </a>{' '}
+        (auf Englisch).
       </p>
       <h2>Open Source</h2>
       <p>
