@@ -1,0 +1,19 @@
+# Innocence (Op. 100 No. 5) by Johann Friedrich Burgmüller: simplified one-voice-per-hand arrangement for OpenTiles, released under CC0 1.0.
+# Notes converted from the public-domain Mutopia Project typesetting by Bas Wassink (https://www.mutopiaproject.org/cgibin/piece-info.cgi?id=214).
+# Made with tools/pipeline/midi_arrange.py: held notes are cut at the next onset, long notes at barlines, and rhythms are on a sixteenth grid.
+title: Innocence (Op. 100 No. 5)
+composer: Johann Friedrich Burgmüller
+key: -1
+time: 3/4
+tempo: 112
+pickup: yes
+RH: A5s G5s F5s E5s F5s E5s D5s C5s | D5s C5s Bb4s A4s C5e Bb4e Bb4q | rq G5s F5s E5s D5s C5s D5s E5s F5s | G5s A5s Bb5s C6s Bb5e A5e A5q
+RH: rq A5s G5s F5s E5s F5s E5s D5s Db5s | D5q G5s F5s E5s D5s E5s D5s C5s B4s | C5s B4s A4s G4s Ab4e G4e A4e G4e | E5e D5e C5q rq
+RH: rq C5e C5e B4e C5e | D5e C5e C5e C5s D5s E5e E5s F5s | G5q F5e F5s G5s A5e A5s Bb5s | C6q C6e C6s D6s E6e E6s F6s
+RH: G6q F6e F6s G6s A6e A6s Bb6s | C7q C7s Bb6s A6s G6s F6s E6s D6s C6s | Bb5s A5s G5s F5s D6e D6s C6s Bb5e Bb5s A5s | G5e G5s F5s E5s D5s C5s D5s E5s F5s G5s A5s
+RH: Bb5s C6s D6s E6s F6e re [A3 F4]q
+LH: [F3 A3 C4]h | rq [F3 G3 D4]q [F3 G3 D4]q | [F3 G3 D4]q [E3 Bb3 C4]h | rq [F3 A3 C4]q [F3 A3 C4]q
+LH: [F3 A3 Db4]q [F3 A3 D4]h | [F3 A3 D4]q [G3 C4 E4]h | [G3 C4 E4]q [G3 B3 F4]q [G3 B3 F4]q | [G3 B3 F4]q [C4 E4]e C4e B3e C4e
+LH: Bb3e G3e [C4 E4]e rq. | rq Bb3e C4e Bb3e C4e | Bb3e C4e A3e C4e A3e C4e | A3e C4e Bb3e C4e Bb3e C4e
+LH: Bb3e C4e A3e C4e A3e C4e | A3e C4e [F3 A3]h | rq [Bb3 D4]e rq. | rq [C3 Bb3]h
+LH: rq [F3 A3]e re F2q

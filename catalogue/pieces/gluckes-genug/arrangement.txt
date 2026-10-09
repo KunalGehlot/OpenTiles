@@ -1,0 +1,23 @@
+# Glückes genug (Kinderszenen, Op. 15 No. 5) by Robert Schumann: simplified one-voice-per-hand arrangement for OpenTiles, released under CC0 1.0.
+# Notes converted from the public-domain Mutopia Project typesetting by Ying-Chun Liu http://www.cis.nctu.edu.tw/~is86007/ (https://www.mutopiaproject.org/cgibin/piece-info.cgi?id=372).
+# Made with tools/pipeline/midi_arrange.py: held notes are cut at the next onset, long notes at barlines, and rhythms are on a sixteenth grid.
+title: Glückes genug (Kinderszenen, Op. 15 No. 5)
+composer: Robert Schumann
+key: 2
+time: 2/4
+tempo: 84
+pickup: yes
+RH: G#4s [E4 G4]s | A4s [E4 G4]s C#5s [G4 A4]s F#5s [G4 A4]s E5s [G4 A4]s | D5s [D4 F#4]s A4s [D4 F#4]s rs [D4 F#4]s A4s [D4 F#4]s | A4s [C#4 E4]s [C#4 E4]s F#4s G4s [C#4 E4]s B4s [B3 G4]s
+RH: A4s [A3 F#4]s F#4s [A3 D4]s E4s [A3 C#4]s G#4s [E4 G4]s | A4s [E4 G4]s rs [G3 A3]s rs [G3 A3]s C#4s [G3 A3]s | D4s [F#3 A3]s F#4s [A3 D4]s B4s [D4 F#4]s A4s [D4 F#4]s | G4s [G3 D4]s B4s [D4 G4]s E5s [E4 G4]s D5s [D4 G4]s
+RH: C#5s [C#4 G4]s B4s [D4 G4]s A4s [D#4 G4]s G#4s [E4 G4]s | A4s [E4 G4]s C#5s [G4 A4]s F#5s [G4 A4]s E5s [G4 A4]s | D5s [D4 F#4]s A4s [D4 F#4]s rs [D4 F#4]s A4s [D4 F#4]s | A4s [C#4 E4]s [C#4 E4]s F#4s G4s [C#4 E4]s B4s [B3 G4]s
+RH: A4s [A3 F#4]s F#4s [A3 D4]s E4s [A3 C#4]s G#4s [E4 G4]s | A4s [E4 G4]s rs [G3 A3]s rs [G3 A3]s C#4s [G3 A3]s | D4s [F#3 A3]s F#4s [A3 D4]s B4s [D4 F#4]s A4s [D4 F#4]s | G4s [G3 D4]s B4s [D4 G4]s E5s [E4 G4]s D5s [D4 G4]s
+RH: C#5s [C#4 G4]s B4s [D4 G4]s A4s [D#4 G4]s A4s [E4 G4]s | A#4s [E4 G4]s E5s [G4 A#4]s A5s [G4 A#4]s G5s [G4 A#4]s | F5s [F4 A4]s C5s [F4 A4]s rs [F4 A4]s C5s [F4 A4]s | C5s [E4 G4]s [E4 G4]s A4s A#4s [E4 G4]s D5s [C4 A#4]s
+RH: C5s [C4 A4]s A4s [C4 F4]s G4s C4s A4s [E4 G4]s | A#4s [E4 G4]s E5s [G4 A#4]s A5s [G4 A#4]s G5s [G4 A#4]s | F#5s [F#4 A4]s C#5s [G4 A4]s E5s [E4 A4]s D5s [D4 A4]s | B4s [D4 G4]s F#4s [C4 D4]s A4s [A3 D4]s G4s [G3 D4]s
+RH: F#4s [A3 D4]s E4s [G3 C#4]s D4s [F#3 A3]e.
+LH: re | [A1 A2]e rq C#3e | [A2 D3]e F#3e B3e A3e | A2s [G3 A3]s [G3 A3]s F#3s E3e [A1 A2]e
+LH: D2e F#2e re. A1s | A2e C#3e F#3e E3e | [D2 D3]q. [C2 C3]e | [B1 B2]q. [A#1 A#2]e
+LH: [A1 A2]e [B1 B2]e [C2 C3]e [C#2 C#3]e | re A1e re C#3e | [A2 D3]e F#3e B3e A3e | A2s [G3 A3]s [G3 A3]s F#3s E3e [A1 A2]e
+LH: D2e F#2e re. A1s | A2e C#3e F#3e E3e | [D2 D3]q. [C2 C3]e | [B1 B2]q. [A#1 A#2]e
+LH: [A1 A2]e [B1 B2]e [C#2 C#3]e [C2 C3]e | rq. E3e | [C3 F3]e A3e D4e C4e | C3s [A#3 D4]s [A#3 D4]s A3s G3e [C2 E3]e
+LH: [F2 F3]e A2e [C3 E3]q | [C2 C3]q. [C#2 C#3]e | [D2 D3]e [E2 E3]e [F2 F3]e [F#2 F#3]e | [G2 G3]e [A2 A3]e [A#2 A#3]e [B2 B3]e
+LH: A2e A1e D2q

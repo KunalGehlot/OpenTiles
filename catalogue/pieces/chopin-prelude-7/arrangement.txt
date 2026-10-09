@@ -1,0 +1,16 @@
+# Prelude in A major (Op. 28 No. 7) by Frédéric Chopin: simplified one-voice-per-hand arrangement for OpenTiles, released under CC0 1.0.
+# Notes converted from the public-domain Mutopia Project typesetting by Magnus Lewis-Smith http://magware.sourceforge.net/ (https://www.mutopiaproject.org/cgibin/piece-info.cgi?id=470).
+# Made with tools/pipeline/midi_arrange.py: held notes are cut at the next onset, long notes at barlines, and rhythms are on a sixteenth grid.
+title: Prelude in A major (Op. 28 No. 7)
+composer: Frédéric Chopin
+key: 3
+time: 3/4
+tempo: 76
+RH: E4q C#5e. D5s [D4 G#4 B4]q | [D4 G#4 B4]q [D4 G#4 B4]h | [D5 F#5]q [C5 D#5]e. [C#5 E5]s [C#5 A5]q | [C#5 A5]q [C#5 A5]h
+RH: [E4 C#5]q [C#4 A#4]e. [D4 B4]s [F#4 D5]q | [F#4 D5]q [F#4 D5]h | [D4 G#4]q [D4 G#4]e. [C#4 A4]s [C#4 C#5]q | [C#4 C#5]q [C#4 C#5]h
+RH: E4q [G#4 C#5]e. D5s [D4 G#4 B4]q | [D4 G#4 B4]q [D4 G#4 B4]h | [D5 F#5]q [C5 D#5]e. [C#5 E5]s [A5 C#6]q | [A5 C#6]q [A#4 C#5 E5 A#5 C#6]h
+RH: [A#4 C#5]q [A#4 C#5]e. [B4 D5]s [B4 F#5]q | [A4 F#5]q [G#4 F#5]h | [D4 G#4]q [D4 B4]e. [C#4 A4]s [A4 C#5 A5]q | [C#5 A5]q [C#5 A5]h
+LH: rq E2q [E3 E4]q | [E3 E4]q [E3 E4]h | rq A2q [A3 E4]q | [A3 E4]q [A3 E4]h
+LH: rq E2q [E3 B3]q | [E3 B3]q [E3 B3]h | rq A1q [E3 A3 E4]q | [E3 A3 E4]q [E3 A3 E4]h
+LH: rq E2q [E3 E4]q | [E3 E4]q [E3 E4]h | rq A2q [A3 E4 A4]q | [A3 E4 A4]q [F#3 C#4 E4 F#4]h
+LH: rq B1q [F#3 D4]q | [F#3 B3 D4]q [E3 B3 D4]h | rq A1q [E3 A3 E4]q | [A3 E4]q [A3 E4]h

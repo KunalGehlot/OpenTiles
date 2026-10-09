@@ -1,0 +1,16 @@
+# Progrès (Op. 100 No. 6) by Johann Friedrich Burgmüller: simplified one-voice-per-hand arrangement for OpenTiles, released under CC0 1.0.
+# Notes converted from the public-domain Mutopia Project typesetting by Bas Wassink (https://www.mutopiaproject.org/cgibin/piece-info.cgi?id=215).
+# Made with tools/pipeline/midi_arrange.py: held notes are cut at the next onset, long notes at barlines, and rhythms are on a sixteenth grid.
+title: Progrès (Op. 100 No. 6)
+composer: Johann Friedrich Burgmüller
+key: 0
+time: 4/4
+tempo: 126
+RH: E4e F4s G4s A4s B4s C5s D5s E5e B4e C5e A4e | G4e A4s B4s C5s D5s E5s F5s G5e F#5e G5e E5e | F5e D6e D5e B5e B4e G5e F5e D5e | [C5 E5]w
+RH: E4e F4s G4s A4s B4s C5s D5s E5e B4e C5e A4e | G4e A4s B4s C5s D5s E5s F5s G5e F#5e G5e E5e | F5e D6e D5e B5e B4e G5e F5e D5e | C5e D5s E5s F5s G5s A5s B5s C6q rq
+RH: re C6e E6e A5e C6e E5e A5e C5e | [D5 F5]w | re B5e D6e G5e B5e D5e G5e B4e | [C5 E5]w
+RH: re E4e F4e E4e F#4e E4e G#4e E4e | A4e E4e B4e E4e C5e E4e A4e E4e | G#4e E5e B4e E5e C5e E5e A4e E5e | re E5q E5q E5q E5e
+LH: C3e D3s E3s F3s G3s A3s B3s C4e G#3e A3e F3e | E3e F3s G3s A3s B3s C4s D4s E4e D#4e E4e C4e | [G3 D4]w | C4e E4e A3e C4e G3e C4e E3e C4e
+LH: C3e D3s E3s F3s G3s A3s B3s C4e G#3e A3e F3e | E3e F3s G3s A3s B3s C4s D4s E4e D#4e E4e C4e | [G3 D4]h. [G3 B3]q | C4e B3s A3s G3s F3s E3s D3s C3q rq
+LH: [A3 C4]w | re D4e F4e A3e D4e F3e A3e D3e | [G3 B3]w | re C4e E4e G3e C4e E3e G3e C3e
+LH: E3h rq D4q | C4q G#3q A3q C4q | B3q G#3q A3q C4q | E4q E4q E4q E4q

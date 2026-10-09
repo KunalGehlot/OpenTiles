@@ -1,0 +1,85 @@
+# The Entertainer by Scott Joplin: simplified one-voice-per-hand arrangement for OpenTiles, released under CC0 1.0.
+# Notes converted from the public-domain Mutopia Project typesetting by Chris Sawer (https://www.mutopiaproject.org/cgibin/piece-info.cgi?id=263).
+# Made with tools/pipeline/midi_arrange.py: held notes are cut at the next onset, long notes at barlines, and rhythms are on a sixteenth grid.
+title: The Entertainer
+composer: Scott Joplin
+key: 0
+time: 2/4
+tempo: 76
+pickup: yes
+RH: [D5 D6]s [E5 E6]s [C5 C6]s [A4 A5]e [B4 B5]s | [G4 G5]e D5s E5s C5s A4e B4s | G4e D4s E4s C4s re. | rq. [G4 B4 D5 G5]e
+RH: D4s D#4s E4s C5e E4s C5e | E4s C5q. [C5 E5 C6]s | [D5 F5 D6]s [D#5 F#5 D#6]s [E5 G5 E6]s [C5 E5 C6]s [D5 F5 D6]s [E5 G5 E6]e [B4 D5 B5]s | [D5 F5 D6]e [C5 E5 C6]q.
+RH: D4s D#4s E4s C5e E4s C5e | E4s C5q. rs | [A4 C5 A5]s [G4 C5 G5]s [F#4 C5 F#5]s [A4 A5]s [C5 C6]s [E5 E6]e [D5 D6]s | [C5 C6]s [A4 A5]s [D5 F5 D6]q.
+RH: D4s D#4s E4s C5e E4s C5e | E4s C5q. [C5 E5 C6]s | [D5 F5 D6]s [D#5 F#5 D#6]s [E5 G5 E6]s [C5 E5 C6]s [D5 F5 D6]s [E5 G5 E6]e [B4 D5 B5]s | [D5 F5 D6]e [C5 E5 C6]q.
+RH: [C5 C6]s [D5 D6]s [E5 E6]s [C5 C6]s [D5 D6]s [E5 E6]e [C5 C6]s | [D5 D6]s [C5 C6]s [E5 E6]s [C5 C6]s [D5 D6]s [E5 E6]e [C5 C6]s | [D5 D6]s [C5 C6]s [E5 G5 E6]s [C5 E5 C6]s [D5 F5 D6]s [E5 G5 E6]e [B4 D5 B5]s | [D5 F5 D6]e [C5 E5 C6]q.
+RH: D4s D#4s E4s C5e E4s C5e | E4s C5q. [C5 E5 C6]s | [D5 F5 D6]s [D#5 F#5 D#6]s [E5 G5 E6]s [C5 E5 C6]s [D5 F5 D6]s [E5 G5 E6]e [B4 D5 B5]s | [D5 F5 D6]e [C5 E5 C6]q.
+RH: D4s D#4s E4s C5e E4s C5e | E4s C5q. rs | [A4 C5 A5]s [G4 C5 G5]s [F#4 C5 F#5]s [A4 A5]s [C5 C6]s [E5 E6]e [D5 D6]s | [C5 C6]s [A4 A5]s [D5 F5 D6]q.
+RH: D4s D#4s E4s C5e E4s C5e | E4s C5q. [C5 E5 C6]s | [D5 F5 D6]s [D#5 F#5 D#6]s [E5 G5 E6]s [C5 E5 C6]s [D5 F5 D6]s [E5 G5 E6]e [B4 D5 B5]s | [D5 F5 D6]e [C5 E5 C6]q.
+RH: [C5 C6]s [D5 D6]s [E5 E6]s [C5 C6]s [D5 D6]s [E5 E6]e [C5 C6]s | [D5 D6]s [C5 C6]s [E5 E6]s [C5 C6]s [D5 D6]s [E5 E6]e [C5 C6]s | [D5 D6]s [C5 C6]s [E5 G5 E6]s [C5 E5 C6]s [D5 F5 D6]s [E5 G5 E6]e [B4 D5 B5]s | [D5 F5 D6]e [C5 E5 C6]q rs [E4 C5 E5]s
+RH: [F4 D5 F5]s [F#4 D#5 F#5]s [G4 E5 G5]e [A4 E5 A5]s [G4 E5 G5]e [E4 C5 E5]s | [F4 D5 F5]s [F#4 D#5 F#5]s [G4 E5 G5]e [A4 E5 A5]s [G4 E5 G5]e E5s | C5s G4s A4s B4s C5s D5s E5s D5s | C5s D5s G4s E5s F5s G5s A5s G5s
+RH: E5s F5s [G4 E5 G5]e [A4 E5 A5]s [G4 E5 G5]e [E4 C5 E5]s | [F4 D5 F5]s [F#4 D#5 F#5]s [G4 E5 G5]e [A4 E5 A5]s [G4 E5 G5]e G5s | A5s A#5s [D5 G5 B5]s [D5 G5 B5]e [C5 F#5 B5]e A5s | [C5 F#5]s D5s [B4 G5]q rs [E4 C5 E5]s
+RH: [F4 D5 F5]s [F#4 D#5 F#5]s [G4 E5 G5]e [A4 E5 A5]s [G4 E5 G5]e [E4 C5 E5]s | [F4 D5 F5]s [F#4 D#5 F#5]s [G4 E5 G5]e [A4 E5 A5]s [G4 E5 G5]e E5s | C5s G4s A4s B4s C5s D5s E5s D5s | C5s D5s C5q rs G4s
+RH: F#4s G4s C5e A4s C5e A4s | C5s A4s G4s C5s E5s G5e E5s | C5s G4s [F#4 A4]e [F#4 C5]e [F4 E5]s [F4 D5]s | rs [E4 C5]q. [E5 C6 E6]s
+RH: [F5 D6 F6]s [F#5 D#6 F#6]s [G4 E5 G5]e [A4 E5 A5]s [G4 E5 G5]e [E4 C5 E5]s | [F4 D5 F5]s [F#4 D#5 F#5]s [G4 E5 G5]e [A4 E5 A5]s [G4 E5 G5]e E5s | C5s G4s A4s B4s C5s D5s E5s D5s | C5s D5s G4s E5s F5s G5s A5s G5s
+RH: E5s F5s [G4 E5 G5]e [A4 E5 A5]s [G4 E5 G5]e [E4 C5 E5]s | [F4 D5 F5]s [F#4 D#5 F#5]s [G4 E5 G5]e [A4 E5 A5]s [G4 E5 G5]e G5s | A5s A#5s [D5 G5 B5]s [D5 G5 B5]e [C5 F#5 B5]e A5s | [C5 F#5]s D5s [B4 G5]q rs [E4 C5 E5]s
+RH: [F4 D5 F5]s [F#4 D#5 F#5]s [G4 E5 G5]e [A4 E5 A5]s [G4 E5 G5]e [E4 C5 E5]s | [F4 D5 F5]s [F#4 D#5 F#5]s [G4 E5 G5]e [A4 E5 A5]s [G4 E5 G5]e E5s | C5s G4s A4s B4s C5s D5s E5s D5s | C5s D5s C5q rs G4s
+RH: F#4s G4s C5e A4s C5e A4s | C5s A4s G4s C5s E5s G5e E5s | C5s G4s [F#4 A4]e [F#4 C5]e [F4 E5]s [F4 D5]s | rs [E4 C5]q. rs
+RH: D4s D#4s E4s C5e E4s C5e | E4s C5q. [C5 E5 C6]s | [D5 F5 D6]s [D#5 F#5 D#6]s [E5 G5 E6]s [C5 E5 C6]s [D5 F5 D6]s [E5 G5 E6]e [B4 D5 B5]s | [D5 F5 D6]e [C5 E5 C6]q.
+RH: D4s D#4s E4s C5e E4s C5e | E4s C5q. rs | [A4 C5 A5]s [G4 C5 G5]s [F#4 C5 F#5]s [A4 A5]s [C5 C6]s [E5 E6]e [D5 D6]s | [C5 C6]s [A4 A5]s [D5 F5 D6]q.
+RH: D4s D#4s E4s C5e E4s C5e | E4s C5q. [C5 E5 C6]s | [D5 F5 D6]s [D#5 F#5 D#6]s [E5 G5 E6]s [C5 E5 C6]s [D5 F5 D6]s [E5 G5 E6]e [B4 D5 B5]s | [D5 F5 D6]e [C5 E5 C6]q.
+RH: [C5 C6]s [D5 D6]s [E5 E6]s [C5 C6]s [D5 D6]s [E5 E6]e [C5 C6]s | [D5 D6]s [C5 C6]s [E5 E6]s [C5 C6]s [D5 D6]s [E5 E6]e [C5 C6]s | [D5 D6]s [C5 C6]s [E5 G5 E6]s [C5 E5 C6]s [D5 F5 D6]s [E5 G5 E6]e [B4 D5 B5]s | [D5 F5 D6]e [C5 E5 C6]q [C5 E5 C6]e
+RH: re [F5 A5]s G#5s [F5 A5]q | [F5 A5 C6]e [F5 A#5 D6]e A#4s A4s A#4s C5s | D5e [D5 F5]s E5s [D5 F5]q | [D5 F5 A5]e [D5 G5 A#5]e G4s F#4s G4s A4s
+RH: A#4s G5s D5e G5s D5e G5s | D5e C5q F5e | re E5s G#5s B5s E6e D6s | B5s C6s A5q A#5e
+RH: re [F5 A5]s G#5s [F5 A5]q | [F5 A5 C6]e [F5 A#5 D6]e A#4s A4s A#4s C5s | D5e [D5 F5]s E5s [D5 F5]q | [D5 F5 A5]e [D5 G5 A#5]e G4s F#4s G4s A4s
+RH: A#4s G5s D5e G5s D5e G5s | D5e C5q [G#4 B4 F5]e | rs F5s [A4 C5 A5]s [C5 C6]e [A#4 G5]e C5s | [A#4 D5]s E5s [A4 F5]e B4s C5s D5s E5s
+RH: F5s G5s [F5 A5]s G#5s [F5 A5]q | [F5 A5 C6]e [F5 A#5 D6]e A#4s A4s A#4s C5s | D5e [D5 F5]s E5s [D5 F5]q | [D5 F5 A5]e [D5 G5 A#5]e G4s F#4s G4s A4s
+RH: A#4s G5s D5e G5s D5e G5s | D5e C5q F5e | re E5s G#5s B5s E6e D6s | B5s C6s A5q A#5e
+RH: re [F5 A5]s G#5s [F5 A5]q | [F5 A5 C6]e [F5 A#5 D6]e A#4s A4s A#4s C5s | D5e [D5 F5]s E5s [D5 F5]q | [D5 F5 A5]e [D5 G5 A#5]e G4s F#4s G4s A4s
+RH: A#4s G5s D5e G5s D5e G5s | D5e C5q [G#4 B4 F5]e | rs F5s [A4 C5 A5]s [C5 C6]e [A#4 G5]e C5s | [A#4 D5]s E5s [A4 F5]e re [F5 A5 C6 F6]e
+RH: re C5e A4s C5e A4s | C5s A4s G4s C5s E5s G5e E5s | C5s G4s [F#4 A4]e [F#4 C5]e [F4 E5]s [F4 D5]s | rs [E4 C5]q rs [C5 E5 G5 C6]e
+RH: re [D4 F4]e [C#4 E4]s [D4 F4]e [C#4 E4]s | [D4 F4]e rs A4s [F4 D5]s A4s C5s D5s | C5s A4s [E4 G4]e [D#4 F#4]s [E4 G4]e [D#4 F#4]s | [E4 G4]e rs C5s [G4 E5]s C5s D5s E5s
+RH: D5s C5s [B4 D5]e [A#4 C#5]s [B4 D5]e [A#4 C#5]s | [B4 D5]e rs F5s [B4 A5]s F5s G5s A5s | G5s F5s [C5 C6]s [C5 C6]s [C5 C6]q | [C5 A5]e [C5 G5]e [E4 G4]s [E4 G4]s [E4 G4]e
+RH: [E4 G4]e [D4 F4]e [C#4 E4]s [D4 F4]e [C#4 E4]s | [D4 F4]e rs A4s [F4 D5]s A4s C5s D5s | C5s A4s [E4 G4]e [D#4 F#4]s [E4 G4]e [D#4 F#4]s | [E4 G4]e rs C5s [G4 E5]s C5s D5s E5s
+RH: D5s C5s A4s G#4s A4s [A4 G5]e [A4 F5]s | rs [A4 C5]s [G4 E5]s D#5s E5s A5e C6s | G5s E5s [F#4 C5]e [F#4 C5]e [F4 B4 E5]s [F4 B4 D5]s | rs [E4 G4 C5]e. [E4 G4]s [E4 G4]s [E4 G4]e
+RH: [E4 G4]e [D4 F4]e [C#4 E4]s [D4 F4]e [C#4 E4]s | [D4 F4]e rs A4s [F4 D5]s A4s C5s D5s | C5s A4s [E4 G4]e [D#4 F#4]s [E4 G4]e [D#4 F#4]s | [E4 G4]e rs C5s [G4 E5]s C5s D5s E5s
+RH: D5s C5s [B4 D5]e [A#4 C#5]s [B4 D5]e [A#4 C#5]s | [B4 D5]e rs F5s [B4 A5]s F5s G5s A5s | G5s F5s [C5 C6]s [C5 C6]s [C5 C6]q | [C5 A5]e [C5 G5]e [E4 G4]s [E4 G4]s [E4 G4]e
+RH: [E4 G4]e [D4 F4]e [C#4 E4]s [D4 F4]e [C#4 E4]s | [D4 F4]e rs A4s [F4 D5]s A4s C5s D5s | C5s A4s [E4 G4]e [D#4 F#4]s [E4 G4]e [D#4 F#4]s | [E4 G4]e rs C5s [G4 E5]s C5s D5s E5s
+RH: D5s C5s A4s G#4s A4s [A4 G5]e [A4 F5]s | rs [A4 C5]s [G4 E5]s D#5s E5s A5e C6s | G5s E5s [F#4 C5]e [F#4 C5]e [F4 B4 E5]s [F4 B4 D5]s | rs [E4 G4 C5]q rs [C5 E5 G5 C6]e
+LH: rq. | re D4s E4s C4s A3e B3s | G3e D3s E3s C3s [A2 A3]e [B2 B3]s | [A2 A3]s [G#2 G#3]s [G2 G3]e re [G1 G2]e
+LH: [G3 B3]e C3e [E3 G3 C4]e [G2 G3]e | [G3 A#3 C4]e [F2 F3]e [A3 C4]e [E2 E3]e | [G3 C4]e G2e [E3 G3 C4]e G2e | [F3 G3 B3]e C3e [E3 G3 C4]e [E3 G3 C4]e
+LH: [G3 B3]e C3e [E3 G3 C4]e [G2 G3]e | [G3 A#3 C4]e [F2 F3]e [A3 C4]e [E2 E3]e | [D#2 D#3]e [D2 D3]e [D3 F#3 A3 C4]e D3e | [F#3 A3 C4]e [G3 B3]e [G2 G3]e [A2 A3]e
+LH: [B2 B3]e C3e [E3 G3 C4]e [G2 G3]e | [G3 A#3 C4]e [F2 F3]e [A3 C4]e [E2 E3]e | [G3 C4]e G2e [E3 G3 C4]e G2e | [F3 G3 B3]e C3e [E3 G3 C4]e [G3 C4 E4]e
+LH: re [C3 C4]e [G3 C4 E4]e [A#2 A#3]e | [G3 C4 E4]e [A2 A3]e [A3 C4 F4]e [G#2 G#3]e | [G#3 C4 F4]e [G2 G3]e [G3 C4 E4]e G2e | [G3 B3]e [C3 G3 C4]e [G2 G3]e [A2 A3]e
+LH: [B2 B3]e C3e [E3 G3 C4]e [G2 G3]e | [G3 A#3 C4]e [F2 F3]e [A3 C4]e [E2 E3]e | [G3 C4]e G2e [E3 G3 C4]e G2e | [F3 G3 B3]e C3e [E3 G3 C4]e [E3 G3 C4]e
+LH: [G3 B3]e C3e [E3 G3 C4]e [G2 G3]e | [G3 A#3 C4]e [F2 F3]e [A3 C4]e [E2 E3]e | [D#2 D#3]e [D2 D3]e [D3 F#3 A3 C4]e D3e | [F#3 A3 C4]e [G3 B3]e [G2 G3]e [A2 A3]e
+LH: [B2 B3]e C3e [E3 G3 C4]e [G2 G3]e | [G3 A#3 C4]e [F2 F3]e [A3 C4]e [E2 E3]e | [G3 C4]e G2e [E3 G3 C4]e G2e | [F3 G3 B3]e C3e [E3 G3 C4]e [G3 C4 E4]e
+LH: re [C3 C4]e [G3 C4 E4]e [A#2 A#3]e | [G3 C4 E4]e [A2 A3]e [A3 C4 F4]e [G#2 G#3]e | [G#3 C4 F4]e [G2 G3]e [G3 C4 E4]e G2e | [G3 B3]e [C3 G3 C4]e [G2 G3]e [C2 C3]e
+LH: re [C2 C3]e [G3 C4 E4]e G2e | [G3 C4 E4]e C3e [G3 C4 E4]e G2e | [G3 C4 E4]e F2e [A3 C4 F4]e F3e | [G#3 C4 F4]e E3e [G3 C4 E4]e G2e
+LH: [G3 C4 E4]e C3e [G3 C4 E4]e G2e | [G3 C4 E4]e C3e [G3 C4 E4]e E3e | D#3e D3e [G3 B3 D4]e D3e | [A3 C4 D4]e [G3 B3 D4]e [F2 F3]e [E2 E3]e
+LH: [D2 D3]e [C2 C3]e [G3 C4 E4]e G2e | [G3 C4 E4]e C3e [G3 C4 E4]e G2e | [G3 C4 E4]e F2e [A3 C4 F4]e F3e | [G#3 C4 F4]e E3e [G3 C4 E4]e C3e
+LH: [A#3 C4 E4]e [F3 A3 C4 F4]e [F3 A3 C4 F4]e [F#3 A3 C4 D#4]e | [F#3 A3 C4 D#4]e [G3 C4 E4]e [G3 C4 E4]e [G3 C4 E4]e | [G3 C4 E4]e [D3 C4]e [D3 A3]e [G3 B3]e | [G3 B3]e [C3 C4]e [G2 G3]e [E2 E3]e
+LH: [D2 D3]e [C2 C3]e [G3 C4 E4]e G2e | [G3 C4 E4]e C3e [G3 C4 E4]e G2e | [G3 C4 E4]e F2e [A3 C4 F4]e F3e | [G#3 C4 F4]e E3e [G3 C4 E4]e G2e
+LH: [G3 C4 E4]e C3e [G3 C4 E4]e G2e | [G3 C4 E4]e C3e [G3 C4 E4]e E3e | D#3e D3e [G3 B3 D4]e D3e | [A3 C4 D4]e [G3 B3 D4]e [F2 F3]e [E2 E3]e
+LH: [D2 D3]e [C2 C3]e [G3 C4 E4]e G2e | [G3 C4 E4]e C3e [G3 C4 E4]e G2e | [G3 C4 E4]e F2e [A3 C4 F4]e F3e | [G#3 C4 F4]e E3e [G3 C4 E4]e C3e
+LH: [A#3 C4 E4]e [F3 A3 C4 F4]e [F3 A3 C4 F4]e [F#3 A3 C4 D#4]e | [F#3 A3 C4 D#4]e [G3 C4 E4]e [G3 C4 E4]e [G3 C4 E4]e | [G3 C4 E4]e [D3 C4]e [D3 A3]e [G3 B3]e | [G3 B3]e [C3 C4]e [G2 G3]e [C2 C3]e
+LH: re C3e [E3 G3 C4]e [G2 G3]e | [G3 A#3 C4]e [F2 F3]e [A3 C4]e [E2 E3]e | [G3 C4]e G2e [E3 G3 C4]e G2e | [F3 G3 B3]e C3e [E3 G3 C4]e [E3 G3 C4]e
+LH: [G3 B3]e C3e [E3 G3 C4]e [G2 G3]e | [G3 A#3 C4]e [F2 F3]e [A3 C4]e [E2 E3]e | [D#2 D#3]e [D2 D3]e [D3 F#3 A3 C4]e D3e | [F#3 A3 C4]e [G3 B3]e [G2 G3]e [A2 A3]e
+LH: [B2 B3]e C3e [E3 G3 C4]e [G2 G3]e | [G3 A#3 C4]e [F2 F3]e [A3 C4]e [E2 E3]e | [G3 C4]e G2e [E3 G3 C4]e G2e | [F3 G3 B3]e C3e [E3 G3 C4]e [G3 C4 E4]e
+LH: re [C3 C4]e [G3 C4 E4]e [A#2 A#3]e | [G3 C4 E4]e [A2 A3]e [A3 C4 F4]e [G#2 G#3]e | [G#3 C4 F4]e [G2 G3]e [G3 C4 E4]e G2e | [G3 B3]e [C3 G3 C4]e [G2 G3]e [C2 C3]e
+LH: re F2e [A3 C4 F4]e C3e | [A3 C4 F4]e A#2e [A#3 D4 F4]e F3e | [A#3 D4 F4]e D2e [A3 D4 F4]e A2e | [A3 D4 F4]e G2e [A#3 D4]e D3e
+LH: [A#3 D4]e [A#2 A#3]e [A#3 D4]e [G2 G3]e | [G#2 G#3]e [A2 A3]e [A3 C4 F4]e D3e | [A3 D4 F4]e E3e [B3 D4 E4]e G#3e | [B3 D4 E4]e [A3 C4 E4]q [G3 C4 E4]e
+LH: C3e F2e [A3 C4 F4]e C3e | [A3 C4 F4]e A#2e [A#3 D4 F4]e F3e | [A#3 D4 F4]e D2e [A3 D4 F4]e A2e | [A3 D4 F4]e G2e [A#3 D4]e D3e
+LH: [A#3 D4]e [A#2 A#3]e [A#3 D4]e [G2 G3]e | [G#2 G#3]e [A2 A3]s [F2 F3]s [E2 E3]s [D2 D3]s [C#2 C#3]e | re [C2 C3]e [A3 C4 F4]e [C3 C4]e | [C2 C3]e [F2 F3]e rq
+LH: re F2e [A3 C4 F4]e C3e | [A3 C4 F4]e A#2e [A#3 D4 F4]e F3e | [A#3 D4 F4]e D2e [A3 D4 F4]e A2e | [A3 D4 F4]e G2e [A#3 D4]e D3e
+LH: [A#3 D4]e [A#2 A#3]e [A#3 D4]e [G2 G3]e | [G#2 G#3]e [A2 A3]e [A3 C4 F4]e D3e | [A3 D4 F4]e E3e [B3 D4 E4]e G#3e | [B3 D4 E4]e [A3 C4 E4]q [G3 C4 E4]e
+LH: C3e F2e [A3 C4 F4]e C3e | [A3 C4 F4]e A#2e [A#3 D4 F4]e F3e | [A#3 D4 F4]e D2e [A3 D4 F4]e A2e | [A3 D4 F4]e G2e [A#3 D4]e D3e
+LH: [A#3 D4]e [A#2 A#3]e [A#3 D4]e [G2 G3]e | [G#2 G#3]e [A2 A3]s [F2 F3]s [E2 E3]s [D2 D3]s [C#2 C#3]e | re [C2 C3]e [A3 C4 F4]e [C3 C4]e | [C2 C3]e [F2 F3]e re [F1 F2]e
+LH: re [F3 A3 C4 F4]e [F3 A3 C4 F4]e [F#3 A3 C4 D#4]e | [F#3 A3 C4 D#4]e [G3 C4 E4]e [G3 C4 E4]e [G3 C4 E4]e | [G3 C4 E4]e [D3 C4]e [D3 A3]e [G3 B3]e | [G3 B3]e [C3 C4]q [C2 C3]e
+LH: re F2e [F3 A3]e A2e | [F3 A3]e F2e [F3 A3]e A2e | [F3 A3]e C3e [E3 G3 C4]e G2e | [E3 G3 C4]e C3e [E3 G3 C4]e G2e
+LH: [E3 G3 C4]e G2e [F3 G3 B3]e B2e | [F3 G3 B3]e G2e [F3 G3 B3]e D3e | [F3 G3 B3]e [D#3 F#3 C4]e [D#3 F#3 C4]q | [D#3 F#3 C4]e [E3 G3 C4]e rq
+LH: re F2e [F3 A3]e A2e | [F3 A3]e F2e [F3 A3]e A2e | [F3 A3]e C3e [E3 G3 C4]e G2e | [E3 G3 C4]e C3e [E3 G3 C4]e G2e
+LH: [E3 G3 C4]e [F2 F3]e [D2 D3]e [E2 E3]e | [F2 F3]e [G2 G3]e [G3 C4 E4]e [F#3 C4 D#4]e | [G3 C4 E4]e [A2 A3]e [D2 D3]e [G2 G3]e | [B2 B3]e [C3 C4]e rq
+LH: re F2e [F3 A3]e A2e | [F3 A3]e F2e [F3 A3]e A2e | [F3 A3]e C3e [E3 G3 C4]e G2e | [E3 G3 C4]e C3e [E3 G3 C4]e G2e
+LH: [E3 G3 C4]e G2e [F3 G3 B3]e B2e | [F3 G3 B3]e G2e [F3 G3 B3]e D3e | [F3 G3 B3]e [D#3 F#3 C4]e [D#3 F#3 C4]q | [D#3 F#3 C4]e [E3 G3 C4]e rq
+LH: re F2e [F3 A3]e A2e | [F3 A3]e F2e [F3 A3]e A2e | [F3 A3]e C3e [E3 G3 C4]e G2e | [E3 G3 C4]e C3e [E3 G3 C4]e G2e
+LH: [E3 G3 C4]e [F2 F3]e [D2 D3]e [E2 E3]e | [F2 F3]e [G2 G3]e [G3 C4 E4]e [F#3 C4 D#4]e | [G3 C4 E4]e [A2 A3]e [D2 D3]e [G2 G3]e | [B2 B3]e [C3 C4]e [G2 G3]e [C2 C3]e

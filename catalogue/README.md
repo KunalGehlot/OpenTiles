@@ -73,6 +73,24 @@ python3 tools/pipeline/arrange.py catalogue/pieces/<slug>/arrangement.txt > cata
 Only arrange a melody you know exactly, and say in the first comment line where it comes from.
 Your arrangement is released under CC0 1.0.
 
+### Converting a typeset MIDI file
+
+For public-domain piano pieces that someone else typeset and dedicated to the public domain (the
+Mutopia Project lists the licence on each piece's page), `tools/pipeline/midi_arrange.py` turns the
+MIDI file into an `arrangement.txt`:
+
+```sh
+python3 tools/pipeline/midi_arrange.py piece.mid --title "Invention No. 13" \
+  --composer "Johann Sebastian Bach" --tempo 96 --comment "Source: ..." > arrangement.txt
+python3 tools/pipeline/arrange.py arrangement.txt > score.musicxml
+```
+
+It writes one voice per hand, cuts a held note at the next onset and a note that crosses a barline
+at the barline, and refuses triplets and finer rhythms (grace notes are dropped). Read the result
+before committing it, say in the first comment line where the notes came from, and name the
+typesetter in `transcriber`. Only use files whose licence is _Public Domain_ or CC0, never
+CC BY-SA, which would not fit a CC0 catalogue. Leave `verified: false`.
+
 ### Finding pieces in PDMX
 
 [PDMX](https://zenodo.org/records/15571083) is a set of about 254,000 public-domain and CC0

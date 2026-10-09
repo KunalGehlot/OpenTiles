@@ -1,0 +1,26 @@
+# L'Arabesque (Op. 100 No. 2) by Johann Friedrich Burgmüller: simplified one-voice-per-hand arrangement for OpenTiles, released under CC0 1.0.
+# Notes converted from the public-domain Mutopia Project typesetting by Bas Wassink (https://www.mutopiaproject.org/cgibin/piece-info.cgi?id=203).
+# Made with tools/pipeline/midi_arrange.py: held notes are cut at the next onset, long notes at barlines, and rhythms are on a sixteenth grid.
+title: L'Arabesque (Op. 100 No. 2)
+composer: Johann Friedrich Burgmüller
+key: 0
+time: 2/4
+tempo: 126
+RH: rh | rh | A4s B4s C5s B4s A4e re | A4s B4s C5s D5s E5e re
+RH: D5s E5s F5s G5s A5e re | A5s B5s C6s D6s E6e re | re E5e E5e F5e | D5e re D5q
+RH: re G5e D5e E5e | C5e re E5q | C5q C6e re | E5q. B4e
+RH: C5q. A4e | E5q. B4e | C5q. A4e | A5q. E5e
+RH: F5q. E5e | D5e C5e B4e A4e | G#4q E5q | A4s B4s C5s B4s A4e re
+RH: A4s B4s C5s D5s E5e re | D5s E5s F5s G5s A5e re | A5s B5s C6s D6s E6e re | re B4e B4e C5e
+RH: A4q E5q | re B4e B4e C5e | A4h | A4s B4s C5s B4s A4e re
+RH: D5s E5s F5s G5s A5e re | A5s B5s C6s B5s A5e re | D6s E6s F6s G6s A6e re | E4s D4s C4s B3s A3e re
+RH: [C5 A5]h
+LH: [A3 C4 E4]q [A3 C4 E4]q | [A3 C4 E4]q [A3 C4 E4]q | [A3 C4 E4]q [A3 C4 E4]q | [A3 C4 E4]q [A3 C4 E4]q
+LH: [A3 D4 F4]q [A3 D4 F4]q | [A3 C4 E4]q [A3 C4 E4]q | [G3 C4 E4]q [G3 C4 E4]q | [G3 B3 F4]q [G3 B3 F4]q
+LH: [G3 B3 F4]q [G3 B3 F4]q | [C4 E4]e re E4q | [C4 E4]q. re | G#3s A3s B3s A3s G#3e re
+LH: A3s B3s C4s D4s E4e re | G#3s A3s B3s A3s G#3e re | A3s B3s C4s D4s E4e re | C#4s D4s E4s D4s C#4e re
+LH: D4s E4s F4s G4s A4e G4e | F4e E4e D4e D#4e | E4e D4e C4e B3e | [A3 C4 E4]q [A3 C4 E4]q
+LH: [A3 C4 E4]q [A3 C4 E4]q | [A3 D4 F4]q [A3 D4 F4]q | [A3 C4 E4]q [A3 C4 E4]q | [A3 D4 E4]q [A3 D4 E4]q
+LH: [A3 C4 E4]q [A3 C4 E4]q | [A3 D4 E4]q [A3 D4 E4]q | [A3 C4 E4]q [A3 C4 E4]q | [A3 C4 E4]q [A3 C4 E4]q
+LH: [A3 D4 F4]q [A3 D4 F4]q | [A3 C4 E4]q [A3 C4 E4]q | [A3 D4 F4]q [A3 D4 F4]q | E3s D3s C3s B2s A2e re
+LH: [A3 E4]h

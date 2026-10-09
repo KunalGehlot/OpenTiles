@@ -1,0 +1,34 @@
+# Invention No. 4 in D minor by Johann Sebastian Bach: simplified one-voice-per-hand arrangement for OpenTiles, released under CC0 1.0.
+# Notes converted from the public-domain Mutopia Project typesetting by Allen Garvin (https://www.mutopiaproject.org/cgibin/piece-info.cgi?id=67).
+# Made with tools/pipeline/midi_arrange.py: held notes are cut at the next onset, long notes at barlines, and rhythms are on a sixteenth grid.
+title: Invention No. 4 in D minor
+composer: Johann Sebastian Bach
+key: -1
+time: 3/8
+tempo: 92
+RH: D4s E4s F4s G4s A4s Bb4s | Db4s Bb4s A4s G4s F4s E4s | F4e A4e D5e | G4e Db5e E5e
+RH: D5s E5s F5s G5s A5s Bb5s | Db5s Bb5s A5s G5s F5s E5s | F5s D5s E5s F5s G5s A5s | Bb4s A5s G5s F5s E5s D5s
+RH: E5s C5s D5s E5s F5s G5s | A4s G5s F5s E5s D5s C5s | D5s E5s F5s D5s E5s F5s | G4e rq
+RH: C5s D5s E5s C5s D5s E5s | F4e re Bb4e | re A4e G4e | C5s Bb4s A4s G4s F4s E4s
+RH: F4s G4s G4e. F4s | F4e C5e C5e | C5q. | rq.
+RH: rq. | rs Bb4s A4s G4s F4s E4s | C5s D4s E4s Gb4s G4s A4s | Bb4s A4s G4s F4s E4s D4s
+RH: Bb4s C4s D4s E4s F4s G4s | A4s B4s C5s D5s E5s F5s | Ab4s F5s E5s D5s C5s B4s | C5s B4s D5s C5s B4s A4s
+RH: Ab4s A4s Ab4s Gb4s E4s D4s | C4s D4s E4s Gb4s Ab4s A4s | D4s C5s B4s A4s Ab4s Gb4s | E4s Gb4s Ab4s A4s B4s C5s
+RH: Gb4s E5s D5s C5s B4s A4s | Ab4s A4s B4s C5s D5s E5s | A4s F5s E5s D5s C5s B4s | A5s Ab5s Gb5s E5s A5e
+RH: rs D5s B4e. A4s | A4e. A4s Bb4s C5s | D4e Gb4e A4e | Bb4s G4s A4s Bb4s C5s D5s
+RH: E4s D5s C5s Bb4s A4s G4s | A4e F5s E5s F5e | G4e E5e re | D5s E5s F5s G5s A5s Bb5s
+RH: Db5s Bb5s A5s G5s F5s E5s | F5e D5e G4e | rs D5s Db5s E5s A4s Db5s | D5s B4s Db5e. D5s
+RH: D5s C5s Bb4s A4s G4s F4s | Bb4s Db4s D4s E4s F4s G4s | A4s D5s F4e E4s D4s | D4q.
+LH: rq. | rq. | D3s E3s F3s G3s A3s Bb3s | Db3s Bb3s A3s G3s F3s E3s
+LH: F3e A3e D4e | E3e G3e Db4e | D3e D4e F3e | G3e A3e Bb3e
+LH: C3e C4e E3e | F3e G3e A3e | Bb3s G3s A3s Bb3s C4s D4s | E3s D4s C4s Bb3s A3s G3s
+LH: A3s F3s G3s A3s Bb3s C4s | D3s C4s Bb3s A3s G3s F3s | E3s C3s D3s E3s F3s G3s | A2s G3s F3s E3s D3s C3s
+LH: D3s Bb2s C3e C2e | F2s G2s A2s Bb2s C3s D3s | E2s D3s C3s Bb2s A2s G2s | A2s Bb2s C3s D3s E3s F3s
+LH: G2s F3s E3s D3s C3s Bb2s | A2s Bb2s C3s A2s Bb2s C3s | Gb2e rq | G2s A2s Bb2s G2s A2s Bb2s
+LH: E2e rq | F2e F3e D3e | B2e Ab2e E2e | A2s Ab2s A2s B2s C3s D3s
+LH: E3q. | rq. | rq. | rq.
+LH: rq. | re E4e D4e | C4e B3e A3e | D4e E4e F4e
+LH: D4e E4e E3e | A3s A2s Bb2s C3s D3s Eb3s | Gb2s Eb3s D3s C3s Bb2s A2s | G2e. G2s A2s Bb2s
+LH: C2e G2e C3e | F3s G3s A3s B3s Db4s D4s | E3s D4s Db4s B3s A3s G3s | F3e A3e D4e
+LH: E3e G3e Db4e | D3s E3s F3s G3s A3s Bb3s | Db3s Bb3s A3s G3s F3s E3s | F3s G3s A3e A2e
+LH: Bb2e. C3s Bb2s A2s | G2s Bb3s A3s G3s F3s E3s | F3s G3s A3e A2e | D2q.

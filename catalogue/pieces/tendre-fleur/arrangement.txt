@@ -1,0 +1,21 @@
+# Tendre Fleur (Op. 100 No. 10) by Johann Friedrich Burgmüller: simplified one-voice-per-hand arrangement for OpenTiles, released under CC0 1.0.
+# Notes converted from the public-domain Mutopia Project typesetting by Bas Wassink (https://www.mutopiaproject.org/cgibin/piece-info.cgi?id=221).
+# Made with tools/pipeline/midi_arrange.py: held notes are cut at the next onset, long notes at barlines, and rhythms are on a sixteenth grid.
+title: Tendre Fleur (Op. 100 No. 10)
+composer: Johann Friedrich Burgmüller
+key: 2
+time: 4/4
+tempo: 88
+pickup: yes
+RH: D4e E4e F#4e A4e A4e D5e | D5e F#5e F#5e E5e C#5e A4e A5q | rq A5e F#6e F#6e D6e D6e A5e | A5e F#5e F#5e E5e C#5e A4e A5q
+RH: rq A5e G5e F#5e E5e D5q | E5e F#5e G5e F#5e E5e D5e C#5e E5e | A5e C#6e D6e B5e A5e G5e F#5e G5e | F#5e E5e D5e B4e A4e G4e [F#4 D5]q
+RH: rq C#5h re C#5e | E5e A5e G#5h re F#5e | E5e D5e C#5h re C#5e | E5e A5e G#5h re F#5e
+RH: E5e D5e C#5e E5e D5e C#5e B4e D5e | C#5e B4e A4e E5e C#5e A4e G#4e E4e | F#4e G#4e A4e G#4e B4e A4e G4e F#4e | A4e G4e F#4e E4e G4e F#4e A4e G4e
+RH: F#4e E4e D4e F#4e F#4e A4e A4e D5e | D5e F#5e F#5e E5e C#5e A4e A5q | rq A5e F#6e F#6e D6e D6e A5e | A5e F#5e F#5e E5e C#5e A4e A5q
+RH: rq A5e G5e F#5e E5e D5q | E5e F#5e G5e F#5e E5e D5e C#5e E5e | A5e C#6e D6e B5e A5e G5e F#5e G5e | F#5e E5e D5e B4e A4e G4e [F#4 D5]q
+LH: rh. | rq [A3 G4]h G4e E4e | C#4e A3e [D4 F#4]q rh | rq [A3 G4]h G4e E4e
+LH: C#4e A3e [D4 F#4]q rq B4e A4e | G4e F#4e E4e F#4e G4e G#4e A4q | re G4e F#4e G4e F#4e B4e A4e B4e | A4e G4e F#4e G4e F#4e E4e D4q
+LH: rq A3e C#4e C#4e E4e E4q | rq B3e D4e D4e E4e E4q | rq A3e C#4e C#4e E4e E4q | rq B3e D4e D4e E4e E4q
+LH: rq A3q rq [D4 F#4]q | rq [E3 C#4]q rq [E3 D4]q | rq [A3 C#4]q rh | rw
+LH: rw | rq [A3 G4]h G4e E4e | C#4e A3e [D4 F#4]q rh | rq [A3 G4]h G4e E4e
+LH: C#4e A3e [D4 F#4]q rq B4e A4e | G4e F#4e E4e F#4e G4e G#4e A4q | re G4e F#4e G4e F#4e B4e A4e B4e | A4e G4e F#4e G4e F#4e E4e D4q

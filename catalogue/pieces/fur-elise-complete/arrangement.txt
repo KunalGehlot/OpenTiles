@@ -1,0 +1,63 @@
+# Für Elise (complete) by Ludwig van Beethoven: simplified one-voice-per-hand arrangement for OpenTiles, released under CC0 1.0.
+# Notes converted from the public-domain Mutopia Project typesetting by Stelios Samelis (https://www.mutopiaproject.org/cgibin/piece-info.cgi?id=931).
+# Made with tools/pipeline/midi_arrange.py: held notes are cut at the next onset, long notes at barlines, and rhythms are on a sixteenth grid.
+title: Für Elise (complete)
+composer: Ludwig van Beethoven
+key: 0
+time: 3/8
+tempo: 72
+pickup: yes
+RH: E5s D#5s | E5s D#5s E5s B4s D5s C5s | A4e rs C4s E4s A4s | B4e rs E4s G#4s B4s
+RH: C5e rs E4s E5s D#5s | E5s D#5s E5s B4s D5s C5s | A4e rs C4s E4s A4s | B4e rs E4s C5s B4s
+RH: A4q A4e | rs B4s C5s D5s E5e | rs G4s F5s E5s D5e | rs F4s E5s D5s C5e
+RH: rs E4s D5s C5s B4e | rs E4s E5s re E5s | E6s re D#5s E5e | rs D#5s E5s D#5s E5s D#5s
+RH: E5s B4s D5s C5s A4e | rs C4s E4s A4s B4e | rs E4s G#4s B4s C5e | rs E4s E5s D#5s E5s D#5s
+RH: E5s B4s D5s C5s A4e | rs C4s E4s A4s B4e | rs E4s C5s B4s A4e | rs B4s C5s D5s A4e
+RH: rs [E4 C5]s [F4 C5]s [E4 G4 C5]s C5e | re F5e E5e | D5e A#5e A5s G5s | F5s E5s D5s C5s A#4e
+RH: A4e [A4 A#4]s A4s C5e | re D5s D#5s E5e | rs E5s F5s A4s C5e | re D5e C5s G4s
+RH: A4s B4s C5s D5s E5s C6s | A5s F5s D5s F5s C5s G4s | A4s B4s C5s D5s E5s C6s | A5s F5s D5s F5s E5s E5s
+RH: E5s E5s E5s E5s E5e | rs B4s E5s D#5s E5e | rs B4s E5s D#5s E5s D#5s | E5s D#5s E5s D#5s E5s D#5s
+RH: E5s B4s D5s C5s A4e | rs C4s E4s A4s B4e | rs E4s G#4s B4s C5e | rs E4s E5s D#5s E5s D#5s
+RH: E5s B4s D5s C5s A4e | rs C4s E4s A4s B4e | rs E4s C5s B4s A4e | rs B4s C5s D5s E5e
+RH: rs G4s F5s E5s D5e | rs F4s E5s D5s C5e | rs E4s D5s C5s B4e | rs E4s E5s re E5s
+RH: E6s re D#5s E5s rs | rs D#5s E5s D#5s E5s D#5s | E5s B4s D5s C5s A4e | rs C4s E4s A4s B4e
+RH: rs E4s G#4s B4s C5e | rs E4s E5s D#5s E5s D#5s | E5s B4s D5s C5s A4e | rs C4s E4s A4s B4e
+RH: rs E4s C5s B4s A4e | rq [E4 G4 A#4 C#5]e | rq [F4 A4 D5]e | re [C#5 E5]s [D5 F5]s [G#4 D5 F5]e
+RH: re [G#4 D5 F5]e [A4 C5 E5]e | rq [F4 D5]e | re [E4 C5]s [D4 B4]s [C4 F#4 A4]e | re [C4 A4]e [C4 A4]e
+RH: [E4 C5]e [D4 B4]e [C4 A4]e | rq [E4 G4 A#4 C#5]e | rq [F4 A4 D5]e | re [C#5 E5]s [D5 F5]s [D5 F5]e
+RH: re [D5 F5]e [D5 F5]e | rq [G4 D#5]e | re [F4 D5]s [D#4 C5]s [D4 F4 A#4]e | re [D4 F4 A4]e [D4 F4 G#4]e
+RH: re [D4 F4 G#4]e [C4 E4 A4]e | rq [E4 B4]e | rq A3s rs | A4s rs D5s rs A4s rs
+RH: A5s rs D6s rs A5s rs | A6s rs D7s rs A#6s rs | G6s rs E6s rs C#6s rs | A#5s rs G5s rs E5s D#5s
+RH: E5s B4s D5s C5s A4e | rs C4s E4s A4s B4e | rs E4s G#4s B4s C5e | rs E4s E5s D#5s E5s D#5s
+RH: E5s B4s D5s C5s A4e | rs C4s E4s A4s B4e | rs E4s C5s B4s A4e | rs B4s C5s D5s E5e
+RH: rs G4s F5s E5s D5e | rs F4s E5s D5s C5e | rs E4s D5s C5s B4e | rs E4s E5s re E5s
+RH: E6s re D#5s E5s rs | rs D#5s E5s D#5s E5s D#5s | E5s B4s D5s C5s A4e | rs C4s E4s A4s B4e
+RH: rs E4s G#4s B4s C5e | rs E4s E5s D#5s E5s D#5s | E5s B4s D5s C5s A4e | rs C4s E4s A4s B4e
+RH: rs E4s C5s B4s A4e
+LH: re | rq. | A2s E3s A3s re. | E2s E3s G#3s re.
+LH: A2s E3s A3s re. | rq. | A2s E3s A3s re. | E2s E3s G#3s re.
+LH: A2s E3s A3s rs A2s E3s | A3s re. C3s G3s | C4s re. G2s G3s | B3s re. A2s E3s
+LH: A3s re. E2s E3s | E4s re E4s E5s rs | rs D#5s E5s re D#5s | E5s rq rs
+LH: rq A2s E3s | A3s re. E2s E3s | G#3s re. A2s E3s | A3s rq rs
+LH: rq A2s E3s | A3s re. E2s E3s | G#3s re. A2s E3s | A3s re. A2s E3s
+LH: A3s [A#3 C4]s [A3 C4]s [G3 A#3 C4]s F3s A3s | C4s A3s C4s A3s F3s A#3s | D4s A#3s D4s A#3s F3s E4s | [F3 G3 A#3]s E4s [F3 G3 A#3]s E4s F3s A3s
+LH: C4s A3s C4s A3s F3s A3s | C4s A3s C4s A3s E3s A3s | C4s A3s [D3 D4]s F3s G3s E4s | G3s E4s G3s F4s [C4 E4]e
+LH: rs [F4 G4]s [E4 G4]s [D4 F4 G4]s [C4 E4 G4]e | [F3 A3]e [G3 B3]e C4e | rs [F4 G4]s [E4 G4]s [D4 F4 G4]s [C4 E4 G4]e | [F3 A3]e [G3 B3]e [G#3 B3]e
+LH: rq. | rq. | rq. | rq.
+LH: rq A2s E3s | A3s re. E2s E3s | G#3s re. A2s E3s | A3s rq rs
+LH: rq A2s E3s | A3s re. E2s E3s | G#3s re. A2s E3s | A3s re. C3s G3s
+LH: C4s re. G2s G3s | B3s re. A2s E3s | A3s re. E2s E3s | E4s re E4s E5s rs
+LH: rs D#5s E5s re D#5s | E5s rq rs | rq A2s E3s | A3s re. E2s E3s
+LH: G#3s re. A2s E3s | A3s rq rs | rq A2s E3s | A3s re. E2s E3s
+LH: G#3s re. A2s A2s | A2s A2s A2s A2s A2s A2s | A2s A2s A2s A2s A2s A2s | A2s A2s A2s A2s A2s A2s
+LH: A2s A2s A2s A2s A2s A2s | A2s A2s A2s A2s [D2 A2]s [D2 A2]s | [D2 A2]s [D2 A2]s [D2 A2]s [D2 A2]s [D#2 A2]s [D#2 A2]s | [D#2 A2]s [D#2 A2]s [D#2 A2]s [D#2 A2]s [E2 A2]s [E2 A2]s
+LH: [E2 A2]s [E2 A2]s [E2 G#2]s [E2 G#2]s [A1 A2]s A2s | A2s A2s A2s A2s A2s A2s | A2s A2s A2s A2s A2s A2s | A2s A2s A2s A2s A2s A2s
+LH: A2s A2s A2s A2s A#2s A#2s | A#2s A#2s A#2s A#2s A#2s A#2s | A#2s A#2s A#2s A#2s A#2s A#2s | A#2s A#2s A#2s A#2s B2s B2s
+LH: B2s B2s B2s B2s C3e | rq [E3 G#3]e | rq A1e | re [A3 C4 E4]e [A3 C4 E4]e
+LH: re [A3 C4 E4]e [A3 C4 E4]e | re [A3 C4 E4]e [A3 C4 E4]e | rq. | rq.
+LH: rq A2s E3s | A3s re. E2s E3s | G#3s re. A2s E3s | A3s rq rs
+LH: rq A2s E3s | A3s re. E2s E3s | G#3s re. A2s E3s | A3s re. C3s G3s
+LH: C4s re. G2s G3s | B3s re. A2s E3s | A3s re. E2s E3s | E4s re E4s E5s rs
+LH: rs D#5s E5s re D#5s | E5s rq rs | rq A2s E3s | A3s re. E2s E3s
+LH: G#3s re. A2s E3s | A3s rq rs | rq A2s E3s | A3s re. E2s E3s
+LH: G#3s re. [A1 A2]e

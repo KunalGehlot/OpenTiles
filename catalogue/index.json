@@ -297,6 +297,15 @@
       "variant": "Two hands"
     },
     {
+      "slug": "ballade-burgmuller",
+      "title": "Ballade (Op. 100 No. 15)",
+      "composer": "Johann Friedrich Burgmüller",
+      "difficulty": 2,
+      "licence": "public-domain",
+      "verified": false,
+      "score": "pieces/ballade-burgmuller/score.musicxml"
+    },
+    {
       "slug": "canon-in-d-melody",
       "title": "Canon in D (simplified, melody)",
       "composer": "Johann Pachelbel",
@@ -306,6 +315,15 @@
       "score": "pieces/canon-in-d-melody/score.musicxml",
       "song": "canon-in-d",
       "variant": "Melody"
+    },
+    {
+      "slug": "consolation",
+      "title": "Consolation (Op. 100 No. 21)",
+      "composer": "Johann Friedrich Burgmüller",
+      "difficulty": 2,
+      "licence": "public-domain",
+      "verified": false,
+      "score": "pieces/consolation/score.musicxml"
     },
     {
       "slug": "deck-the-halls",
@@ -405,6 +423,15 @@
       "variant": "Two hands"
     },
     {
+      "slug": "la-candeur",
+      "title": "La Candeur (Op. 100 No. 1)",
+      "composer": "Johann Friedrich Burgmüller",
+      "difficulty": 2,
+      "licence": "public-domain",
+      "verified": false,
+      "score": "pieces/la-candeur/score.musicxml"
+    },
+    {
       "slug": "largo-new-world",
       "title": "Largo from the New World Symphony (theme)",
       "composer": "Antonín Dvořák",
@@ -427,6 +454,15 @@
       "variant": "Two hands"
     },
     {
+      "slug": "march-of-the-wooden-soldiers",
+      "title": "March of the Wooden Soldiers (Op. 39 No. 5)",
+      "composer": "Pyotr Ilyich Tchaikovsky",
+      "difficulty": 2,
+      "licence": "public-domain",
+      "verified": false,
+      "score": "pieces/march-of-the-wooden-soldiers/score.musicxml"
+    },
+    {
       "slug": "minuet-in-g",
       "title": "Minuet in G (opening)",
       "composer": "Christian Petzold",
@@ -438,6 +474,33 @@
       "variant": "Two hands"
     },
     {
+      "slug": "bach-minuet-in-g-complete",
+      "title": "Minuet in G major (BWV Anh. 114, complete)",
+      "composer": "Christian Petzold",
+      "difficulty": 2,
+      "licence": "public-domain",
+      "verified": false,
+      "score": "pieces/bach-minuet-in-g-complete/score.musicxml"
+    },
+    {
+      "slug": "bach-minuet-in-g-minor",
+      "title": "Minuet in G minor (BWV Anh. 115)",
+      "composer": "Christian Petzold",
+      "difficulty": 2,
+      "licence": "public-domain",
+      "verified": false,
+      "score": "pieces/bach-minuet-in-g-minor/score.musicxml"
+    },
+    {
+      "slug": "bach-musette-in-d",
+      "title": "Musette in D major (BWV Anh. 126)",
+      "composer": "Johann Sebastian Bach",
+      "difficulty": 2,
+      "licence": "public-domain",
+      "verified": false,
+      "score": "pieces/bach-musette-in-d/score.musicxml"
+    },
+    {
       "slug": "ode-to-joy-full",
       "title": "Ode to Joy (full tune)",
       "composer": "Ludwig van Beethoven",
@@ -447,6 +510,15 @@
       "score": "pieces/ode-to-joy-full/score.musicxml",
       "song": "ode-to-joy",
       "variant": "Full"
+    },
+    {
+      "slug": "old-french-song",
+      "title": "Old French Song (Album for the Young, Op. 39 No. 16)",
+      "composer": "Pyotr Ilyich Tchaikovsky",
+      "difficulty": 2,
+      "licence": "public-domain",
+      "verified": false,
+      "score": "pieces/old-french-song/score.musicxml"
     },
     {
       "slug": "prelude-in-c-melody",
@@ -469,6 +541,15 @@
       "score": "pieces/silent-night/score.musicxml",
       "song": "silent-night",
       "variant": "Two hands"
+    },
+    {
+      "slug": "tendre-fleur",
+      "title": "Tendre Fleur (Op. 100 No. 10)",
+      "composer": "Johann Friedrich Burgmüller",
+      "difficulty": 2,
+      "licence": "public-domain",
+      "verified": false,
+      "score": "pieces/tendre-fleur/score.musicxml"
     },
     {
       "slug": "we-wish-you-a-merry-christmas",
@@ -515,6 +596,15 @@
       "variant": "Two hands"
     },
     {
+      "slug": "fur-elise-complete",
+      "title": "Für Elise (complete)",
+      "composer": "Ludwig van Beethoven",
+      "difficulty": 3,
+      "licence": "public-domain",
+      "verified": false,
+      "score": "pieces/fur-elise-complete/score.musicxml"
+    },
+    {
       "slug": "greensleeves",
       "title": "Greensleeves",
       "composer": "Traditional (English, 16th century)",
@@ -537,6 +627,114 @@
       "variant": "Two hands"
     },
     {
+      "slug": "innocence",
+      "title": "Innocence (Op. 100 No. 5)",
+      "composer": "Johann Friedrich Burgmüller",
+      "difficulty": 3,
+      "licence": "public-domain",
+      "verified": false,
+      "score": "pieces/innocence/score.musicxml"
+    },
+    {
+      "slug": "bach-invention-13",
+      "title": "Invention No. 13 in A minor",
+      "composer": "Johann Sebastian Bach",
+      "difficulty": 3,
+      "licence": "public-domain",
+      "verified": false,
+      "score": "pieces/bach-invention-13/score.musicxml"
+    },
+    {
+      "slug": "bach-invention-14",
+      "title": "Invention No. 14 in B-flat major",
+      "composer": "Johann Sebastian Bach",
+      "difficulty": 3,
+      "licence": "public-domain",
+      "verified": false,
+      "score": "pieces/bach-invention-14/score.musicxml"
+    },
+    {
+      "slug": "bach-invention-2",
+      "title": "Invention No. 2 in C minor",
+      "composer": "Johann Sebastian Bach",
+      "difficulty": 3,
+      "licence": "public-domain",
+      "verified": false,
+      "score": "pieces/bach-invention-2/score.musicxml"
+    },
+    {
+      "slug": "bach-invention-4",
+      "title": "Invention No. 4 in D minor",
+      "composer": "Johann Sebastian Bach",
+      "difficulty": 3,
+      "licence": "public-domain",
+      "verified": false,
+      "score": "pieces/bach-invention-4/score.musicxml"
+    },
+    {
+      "slug": "bach-invention-8",
+      "title": "Invention No. 8 in F major",
+      "composer": "Johann Sebastian Bach",
+      "difficulty": 3,
+      "licence": "public-domain",
+      "verified": false,
+      "score": "pieces/bach-invention-8/score.musicxml"
+    },
+    {
+      "slug": "arabesque-burgmuller",
+      "title": "L'Arabesque (Op. 100 No. 2)",
+      "composer": "Johann Friedrich Burgmüller",
+      "difficulty": 3,
+      "licence": "public-domain",
+      "verified": false,
+      "score": "pieces/arabesque-burgmuller/score.musicxml"
+    },
+    {
+      "slug": "beethoven-menuett-woo82",
+      "title": "Minuet in G (WoO 82)",
+      "composer": "Ludwig van Beethoven",
+      "difficulty": 3,
+      "licence": "public-domain",
+      "verified": false,
+      "score": "pieces/beethoven-menuett-woo82/score.musicxml"
+    },
+    {
+      "slug": "morning-prayer",
+      "title": "Morning Prayer (Op. 39 No. 1)",
+      "composer": "Pyotr Ilyich Tchaikovsky",
+      "difficulty": 3,
+      "licence": "public-domain",
+      "verified": false,
+      "score": "pieces/morning-prayer/score.musicxml"
+    },
+    {
+      "slug": "mozart-k331-theme",
+      "title": "Piano Sonata K. 331: theme",
+      "composer": "Wolfgang Amadeus Mozart",
+      "difficulty": 3,
+      "licence": "public-domain",
+      "verified": false,
+      "score": "pieces/mozart-k331-theme/score.musicxml"
+    },
+    {
+      "slug": "beethoven-sonata-20-menuetto",
+      "title": "Piano Sonata No. 20: Tempo di Menuetto (Op. 49 No. 2)",
+      "composer": "Ludwig van Beethoven",
+      "difficulty": 3,
+      "licence": "public-domain",
+      "verified": false,
+      "score": "pieces/beethoven-sonata-20-menuetto/score.musicxml"
+    },
+    {
+      "slug": "chopin-prelude-6",
+      "title": "Prelude in B minor (Op. 28 No. 6)",
+      "composer": "Frédéric Chopin",
+      "difficulty": 3,
+      "licence": "public-domain",
+      "verified": false,
+      "score": "pieces/chopin-prelude-6/score.musicxml"
+    },
+    {
       "slug": "prelude-in-c",
       "title": "Prelude in C (opening)",
       "composer": "Johann Sebastian Bach",
@@ -546,6 +744,141 @@
       "score": "pieces/prelude-in-c/score.musicxml",
       "song": "prelude-in-c",
       "variant": "Two hands"
+    },
+    {
+      "slug": "bach-prelude-in-c-complete",
+      "title": "Prelude in C major (BWV 846, complete)",
+      "composer": "Johann Sebastian Bach",
+      "difficulty": 3,
+      "licence": "public-domain",
+      "verified": false,
+      "score": "pieces/bach-prelude-in-c-complete/score.musicxml"
+    },
+    {
+      "slug": "progres",
+      "title": "Progrès (Op. 100 No. 6)",
+      "composer": "Johann Friedrich Burgmüller",
+      "difficulty": 3,
+      "licence": "public-domain",
+      "verified": false,
+      "score": "pieces/progres/score.musicxml"
+    },
+    {
+      "slug": "rondo-alla-turca",
+      "title": "Rondo alla Turca (Piano Sonata K. 331, finale)",
+      "composer": "Wolfgang Amadeus Mozart",
+      "difficulty": 3,
+      "licence": "public-domain",
+      "verified": false,
+      "score": "pieces/rondo-alla-turca/score.musicxml"
+    },
+    {
+      "slug": "the-entertainer",
+      "title": "The Entertainer",
+      "composer": "Scott Joplin",
+      "difficulty": 3,
+      "licence": "public-domain",
+      "verified": false,
+      "score": "pieces/the-entertainer/score.musicxml"
+    },
+    {
+      "slug": "chopin-waltz-op69-2",
+      "title": "Waltz in B minor (Op. 69 No. 2)",
+      "composer": "Frédéric Chopin",
+      "difficulty": 3,
+      "licence": "public-domain",
+      "verified": false,
+      "score": "pieces/chopin-waltz-op69-2/score.musicxml"
+    },
+    {
+      "slug": "gymnopedie-1",
+      "title": "Gymnopédie No. 1",
+      "composer": "Erik Satie",
+      "difficulty": 4,
+      "licence": "public-domain",
+      "verified": false,
+      "score": "pieces/gymnopedie-1/score.musicxml"
+    },
+    {
+      "slug": "gymnopedie-2",
+      "title": "Gymnopédie No. 2",
+      "composer": "Erik Satie",
+      "difficulty": 4,
+      "licence": "public-domain",
+      "verified": false,
+      "score": "pieces/gymnopedie-2/score.musicxml"
+    },
+    {
+      "slug": "gymnopedie-3",
+      "title": "Gymnopédie No. 3",
+      "composer": "Erik Satie",
+      "difficulty": 4,
+      "licence": "public-domain",
+      "verified": false,
+      "score": "pieces/gymnopedie-3/score.musicxml"
+    },
+    {
+      "slug": "la-pastorale",
+      "title": "La Pastorale (Op. 100 No. 3)",
+      "composer": "Johann Friedrich Burgmüller",
+      "difficulty": 4,
+      "licence": "public-domain",
+      "verified": false,
+      "score": "pieces/la-pastorale/score.musicxml"
+    },
+    {
+      "slug": "maple-leaf-rag",
+      "title": "Maple Leaf Rag",
+      "composer": "Scott Joplin",
+      "difficulty": 4,
+      "licence": "public-domain",
+      "verified": false,
+      "score": "pieces/maple-leaf-rag/score.musicxml"
+    },
+    {
+      "slug": "chopin-prelude-7",
+      "title": "Prelude in A major (Op. 28 No. 7)",
+      "composer": "Frédéric Chopin",
+      "difficulty": 4,
+      "licence": "public-domain",
+      "verified": false,
+      "score": "pieces/chopin-prelude-7/score.musicxml"
+    },
+    {
+      "slug": "chopin-prelude-20",
+      "title": "Prelude in C minor (Op. 28 No. 20)",
+      "composer": "Frédéric Chopin",
+      "difficulty": 4,
+      "licence": "public-domain",
+      "verified": false,
+      "score": "pieces/chopin-prelude-20/score.musicxml"
+    },
+    {
+      "slug": "chopin-prelude-4",
+      "title": "Prelude in E minor (Op. 28 No. 4)",
+      "composer": "Frédéric Chopin",
+      "difficulty": 4,
+      "licence": "public-domain",
+      "verified": false,
+      "score": "pieces/chopin-prelude-4/score.musicxml"
+    },
+    {
+      "slug": "gluckes-genug",
+      "title": "Glückes genug (Kinderszenen, Op. 15 No. 5)",
+      "composer": "Robert Schumann",
+      "difficulty": 5,
+      "licence": "public-domain",
+      "verified": false,
+      "score": "pieces/gluckes-genug/score.musicxml"
+    },
+    {
+      "slug": "schubert-marche-militaire",
+      "title": "Marche militaire No. 1 (D. 733)",
+      "composer": "Franz Schubert",
+      "difficulty": 5,
+      "licence": "public-domain",
+      "verified": false,
+      "score": "pieces/schubert-marche-militaire/score.musicxml"
     }
   ]
 }

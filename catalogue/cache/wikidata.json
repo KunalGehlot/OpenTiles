@@ -20,17 +20,43 @@
       ],
       "fetched": "2026-10-07"
     },
+    "erik satie": {
+      "ids": [
+        "Q187192"
+      ],
+      "fetched": "2026-10-09"
+    },
     "felix mendelssohn": {
       "ids": [
         "Q46096"
       ],
       "fetched": "2026-10-07"
     },
+    "franz schubert": {
+      "ids": [
+        "Q7312",
+        "Q322989",
+        "Q63210142"
+      ],
+      "fetched": "2026-10-09"
+    },
+    "frédéric chopin": {
+      "ids": [
+        "Q1268"
+      ],
+      "fetched": "2026-10-09"
+    },
     "james lord pierpont": {
       "ids": [
         "Q1344188"
       ],
       "fetched": "2026-10-07"
+    },
+    "johann friedrich burgmüller": {
+      "ids": [
+        "Q62075"
+      ],
+      "fetched": "2026-10-09"
     },
     "johann pachelbel": {
       "ids": [
@@ -69,6 +95,25 @@
         "Q4358017"
       ],
       "fetched": "2026-10-08"
+    },
+    "pyotr ilyich tchaikovsky": {
+      "ids": [
+        "Q7315"
+      ],
+      "fetched": "2026-10-09"
+    },
+    "robert schumann": {
+      "ids": [
+        "Q7351"
+      ],
+      "fetched": "2026-10-09"
+    },
+    "scott joplin": {
+      "ids": [
+        "Q191499",
+        "Q139504981"
+      ],
+      "fetched": "2026-10-09"
     },
     "wolfgang amadeus mozart": {
       "ids": [
@@ -130,6 +175,22 @@
       "death_precision": 11,
       "death_unknown": false,
       "fetched": "2026-10-07"
+    },
+    "Q1268": {
+      "label": "Frédéric Chopin",
+      "description": "Polish composer and pianist (1810–1849)",
+      "aliases": [],
+      "human": true,
+      "occupations": [
+        "Q36834",
+        "Q486748",
+        "Q639669"
+      ],
+      "birth_year": 1810,
+      "death_year": 1849,
+      "death_precision": 11,
+      "death_unknown": false,
+      "fetched": "2026-10-09"
     },
     "Q1339": {
       "label": "Johann Sebastian Bach",
@@ -194,6 +255,73 @@
       "death_unknown": false,
       "fetched": "2026-10-07"
     },
+    "Q7312": {
+      "label": "Franz Schubert",
+      "description": "Austrian composer (1797–1828)",
+      "aliases": [
+        "Schubert"
+      ],
+      "human": true,
+      "occupations": [
+        "Q36834",
+        "Q486748"
+      ],
+      "birth_year": 1797,
+      "death_year": 1828,
+      "death_precision": 11,
+      "death_unknown": false,
+      "fetched": "2026-10-09"
+    },
+    "Q7315": {
+      "label": "Pyotr Ilyich Tchaikovsky",
+      "description": "Russian composer (1840–1893)",
+      "aliases": [
+        "Chaikovsky",
+        "Chajkovskij",
+        "Peter Ilich Tchaikovsky",
+        "Peter Tchaikovsky",
+        "Piotr Ilyitch Tchaikovsky",
+        "Pyotr Il'ich Chaikovskiy",
+        "Pyotr Il'yich Tchaikovsky",
+        "Pyotr Tchaikovsky",
+        "Tchaikovsky",
+        "Tschaikowski",
+        "Tschaikowsky"
+      ],
+      "human": true,
+      "occupations": [
+        "Q158852",
+        "Q36834",
+        "Q486748",
+        "Q8178443"
+      ],
+      "birth_year": 1840,
+      "death_year": 1893,
+      "death_precision": 11,
+      "death_unknown": false,
+      "fetched": "2026-10-09"
+    },
+    "Q7351": {
+      "label": "Robert Schumann",
+      "description": "German composer, pianist and critic (1810–1856)",
+      "aliases": [
+        "Robert Alexander Schumann",
+        "Robert Kurt Schumann"
+      ],
+      "human": true,
+      "occupations": [
+        "Q14915627",
+        "Q158852",
+        "Q36180",
+        "Q36834",
+        "Q486748"
+      ],
+      "birth_year": 1810,
+      "death_year": 1856,
+      "death_precision": 11,
+      "death_unknown": false,
+      "fetched": "2026-10-09"
+    },
     "Q46096": {
       "label": "Felix Mendelssohn",
       "description": "German composer, pianist, organist and conductor of Jewish descent (1809-1847)",
@@ -219,6 +347,23 @@
       "death_precision": 11,
       "death_unknown": false,
       "fetched": "2026-10-07"
+    },
+    "Q62075": {
+      "label": "Friedrich Burgmüller",
+      "description": "German composer (1806–1874)",
+      "aliases": [
+        "Johann Friedrich Franz Burgmüller"
+      ],
+      "human": true,
+      "occupations": [
+        "Q36834",
+        "Q486748"
+      ],
+      "birth_year": 1806,
+      "death_year": 1874,
+      "death_precision": 11,
+      "death_unknown": false,
+      "fetched": "2026-10-09"
     },
     "Q76485": {
       "label": "Johann Pachelbel",
@@ -277,6 +422,67 @@
       "death_precision": 11,
       "death_unknown": false,
       "fetched": "2026-10-07"
+    },
+    "Q187192": {
+      "label": "Erik Satie",
+      "description": "French composer and pianist (1866-1925)",
+      "aliases": [
+        "Alfred Erik Leslie Satie",
+        "Eric Alfred Leslie Satie",
+        "Eric Satie",
+        "Erik Alfred Leslie Satie",
+        "Éric Alfred Leslie Satie",
+        "Éric Satie",
+        "Ė. Sati",
+        "Ėrik Sati"
+      ],
+      "human": true,
+      "occupations": [
+        "Q36834",
+        "Q486748"
+      ],
+      "birth_year": 1866,
+      "death_year": 1925,
+      "death_precision": 11,
+      "death_unknown": false,
+      "fetched": "2026-10-09"
+    },
+    "Q191499": {
+      "label": "Scott Joplin",
+      "description": "American composer, musician, pianist (1867/68-1917)",
+      "aliases": [
+        "The king of Ragtime"
+      ],
+      "human": true,
+      "occupations": [
+        "Q36834",
+        "Q486748",
+        "Q639669"
+      ],
+      "birth_year": 1868,
+      "death_year": 1917,
+      "death_precision": 11,
+      "death_unknown": false,
+      "fetched": "2026-10-09"
+    },
+    "Q322989": {
+      "label": "Franz Schubert",
+      "description": "German violinist and composer (1808–1878)",
+      "aliases": [
+        "François Schubert"
+      ],
+      "human": true,
+      "occupations": [
+        "Q1259917",
+        "Q158852",
+        "Q36834",
+        "Q639669"
+      ],
+      "birth_year": 1808,
+      "death_year": 1878,
+      "death_precision": 11,
+      "death_unknown": false,
+      "fetched": "2026-10-09"
     },
     "Q513185": {
       "label": "Franz Xaver Gruber",
@@ -388,6 +594,22 @@
       "death_unknown": false,
       "fetched": "2026-10-07"
     },
+    "Q63210142": {
+      "label": "Franz Theodor Schubert",
+      "description": "teacher, head teacher and composer from Vienna (1763-1830)",
+      "aliases": [
+        "Franz Schubert"
+      ],
+      "human": true,
+      "occupations": [
+        "Q36834"
+      ],
+      "birth_year": 1763,
+      "death_year": 1830,
+      "death_precision": 11,
+      "death_unknown": false,
+      "fetched": "2026-10-09"
+    },
     "Q108665361": {
       "label": "Lowell M. Greenlaw",
       "description": "American author and businessperson",
@@ -403,6 +625,20 @@
       "death_precision": null,
       "death_unknown": false,
       "fetched": "2026-10-07"
+    },
+    "Q139504981": {
+      "label": "Scott Joplin",
+      "description": "American writer",
+      "aliases": [],
+      "human": true,
+      "occupations": [
+        "Q36180"
+      ],
+      "birth_year": null,
+      "death_year": null,
+      "death_precision": null,
+      "death_unknown": false,
+      "fetched": "2026-10-09"
     }
   }
 }

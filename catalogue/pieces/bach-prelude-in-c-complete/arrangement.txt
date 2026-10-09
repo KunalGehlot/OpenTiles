@@ -1,0 +1,26 @@
+# Prelude in C major (BWV 846, complete) by Johann Sebastian Bach: simplified one-voice-per-hand arrangement for OpenTiles, released under CC0 1.0.
+# Notes converted from the public-domain Mutopia Project typesetting by Tobias Erbsland (https://www.mutopiaproject.org/cgibin/piece-info.cgi?id=5).
+# Made with tools/pipeline/midi_arrange.py: held notes are cut at the next onset, long notes at barlines, and rhythms are on a sixteenth grid.
+title: Prelude in C major (BWV 846, complete)
+composer: Johann Sebastian Bach
+key: 0
+time: 4/4
+tempo: 66
+RH: re G4s C5s E5s G4s C5s E5s re G4s C5s E5s G4s C5s E5s | re A4s D5s F5s A4s D5s F5s re A4s D5s F5s A4s D5s F5s | re G4s D5s F5s G4s D5s F5s re G4s D5s F5s G4s D5s F5s | re G4s C5s E5s G4s C5s E5s re G4s C5s E5s G4s C5s E5s
+RH: re A4s E5s A5s A4s E5s A5s re A4s E5s A5s A4s E5s A5s | re F#4s A4s D5s F#4s A4s D5s re F#4s A4s D5s F#4s A4s D5s | re G4s D5s G5s G4s D5s G5s re G4s D5s G5s G4s D5s G5s | re E4s G4s C5s E4s G4s C5s re E4s G4s C5s E4s G4s C5s
+RH: re E4s G4s C5s E4s G4s C5s re E4s G4s C5s E4s G4s C5s | re D4s F#4s C5s D4s F#4s C5s re D4s F#4s C5s D4s F#4s C5s | re D4s G4s B4s D4s G4s B4s re D4s G4s B4s D4s G4s B4s | re E4s G4s C#5s E4s G4s C#5s re E4s G4s C#5s E4s G4s C#5s
+RH: re D4s A4s D5s D4s A4s D5s re D4s A4s D5s D4s A4s D5s | re D4s F4s B4s D4s F4s B4s re D4s F4s B4s D4s F4s B4s | re C4s G4s C5s C4s G4s C5s re C4s G4s C5s C4s G4s C5s | re A3s C4s F4s A3s C4s F4s re A3s C4s F4s A3s C4s F4s
+RH: re A3s C4s F4s A3s C4s F4s re A3s C4s F4s A3s C4s F4s | re G3s B3s F4s G3s B3s F4s re G3s B3s F4s G3s B3s F4s | re G3s C4s E4s G3s C4s E4s re G3s C4s E4s G3s C4s E4s | re A#3s C4s E4s A#3s C4s E4s re A#3s C4s E4s A#3s C4s E4s
+RH: re A3s C4s E4s A3s C4s E4s re A3s C4s E4s A3s C4s E4s | re A3s C4s D#4s A3s C4s D#4s re A3s C4s D#4s A3s C4s D#4s | re B3s C4s D4s B3s C4s D4s re B3s C4s D4s B3s C4s D4s | re G3s B3s D4s G3s B3s D4s re G3s B3s D4s G3s B3s D4s
+RH: re G3s C4s E4s G3s C4s E4s re G3s C4s E4s G3s C4s E4s | re G3s C4s F4s G3s C4s F4s re G3s C4s F4s G3s C4s F4s | re G3s B3s F4s G3s B3s F4s re G3s B3s F4s G3s B3s F4s | re A3s C4s F#4s A3s C4s F#4s re A3s C4s F#4s A3s C4s F#4s
+RH: re G3s C4s G4s G3s C4s G4s re G3s C4s G4s G3s C4s G4s | re G3s C4s F4s G3s C4s F4s re G3s C4s F4s G3s C4s F4s | re G3s B3s F4s G3s B3s F4s re G3s B3s F4s G3s B3s F4s | re G3s A#3s E4s G3s A#3s E4s re G3s A#3s E4s G3s A#3s E4s
+RH: re F3s A3s C4s F4s C4s A3s C4s A3s F3s A3s F3s D3s F3s D3s | re G4s B4s D5s F5s D5s B4s D5s B4s G4s B4s D4s F4s E4s D4s | [E4 G4 C5]w
+LH: C4s E4q. rs C4s E4q. rs | C4s D4q. rs C4s D4q. rs | B3s D4q. rs B3s D4q. rs | C4s E4q. rs C4s E4q. rs
+LH: C4s E4q. rs C4s E4q. rs | C4s D4q. rs C4s D4q. rs | B3s D4q. rs B3s D4q. rs | B3s C4q. rs B3s C4q. rs
+LH: A3s C4q. rs A3s C4q. rs | D3s A3q. rs D3s A3q. rs | G3s B3q. rs G3s B3q. rs | G3s A#3q. rs G3s A#3q. rs
+LH: F3s A3q. rs F3s A3q. rs | F3s G#3q. rs F3s G#3q. rs | E3s G3q. rs E3s G3q. rs | E3s F3q. rs E3s F3q. rs
+LH: D3s F3q. rs D3s F3q. rs | G2s D3q. rs G2s D3q. rs | C3s E3q. rs C3s E3q. rs | C3s G3q. rs C3s G3q. rs
+LH: F2s F3q. rs F2s F3q. rs | F#2s C3q. rs F#2s C3q. rs | G#2s F3q. rs G#2s F3q. rs | G2s F3q. rs G2s F3q. rs
+LH: G2s E3q. rs G2s E3q. rs | G2s D3q. rs G2s D3q. rs | G2s D3q. rs G2s D3q. rs | G2s D#3q. rs G2s D#3q. rs
+LH: G2s E3q. rs G2s E3q. rs | G2s D3q. rs G2s D3q. rs | G2s D3q. rs G2s D3q. rs | C2s C3q. rs C2s C3q. rs
+LH: C2s C3h. re. | C2s B2h. re. | [C2 C3]w

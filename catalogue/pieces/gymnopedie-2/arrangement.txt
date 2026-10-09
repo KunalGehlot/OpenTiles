@@ -1,0 +1,42 @@
+# Gymnopédie No. 2 by Erik Satie: simplified one-voice-per-hand arrangement for OpenTiles, released under CC0 1.0.
+# Notes converted from the public-domain Mutopia Project typesetting by Evin Robertson (https://www.mutopiaproject.org/cgibin/piece-info.cgi?id=38).
+# Made with tools/pipeline/midi_arrange.py: held notes are cut at the next onset, long notes at barlines, and rhythms are on a sixteenth grid.
+title: Gymnopédie No. 2
+composer: Erik Satie
+key: 0
+time: 3/4
+tempo: 66
+RH: rq [B3 E4 G4]h | rq [A3 C4 F4 A4]h | rq [B3 E4 G4]h | rq [A3 C4 F4 A4]h
+RH: G5q [B3 E4 G4]h | A5q [A3 C4 F4 A4 G5]q F5q | E5q [B3 E4 G4 F5]q G5q | D5q [A3 C4 F4 A4]h
+RH: G5q [B3 E4 G4]h | A5q [A3 C4 F4 A4 G5]q F5q | E5q [B3 E4 G4 F5]q G5q | D5q [A3 C4 F4 A4 C5]h
+RH: rq [B3 E4 G4]h | rq [A3 C4 F4 A4]h | C6q [C4 E4 A4 C5]h | F5q [A3 C4 F4 A4 G5]q A5q
+RH: G5q [A#3 D#4 G4]h | C5q [G3 A#3 D#4 G4]h | F5q [A3 D4 F4]h | rq [G3 A#3 D#4 F4 D#5]q D5q
+RH: F5q [A3 D4 F4]h | rq [A#3 D4 F4 G4 G5]q A#5q | A5q [C4 D#4 A4 G5]q F5q | G5q [A#3 D4 G4]h
+RH: F5q [A3 C4 F4 A4]h | rq [A#3 D4 G4]h | rq [A3 C4 F4 A4]h | C6q [D#4 G4 C5]h
+RH: G#5q [C4 F4 G#4 C5 G5]q F5q | G5q [A#3 D4 G4 A#4]h | F5q [A3 D4 F4]h | rq [G3 A#3 D#4 F4 D#5]q D5q
+RH: F5q [A3 D4 F4]h | D5q [A#3 D4 F4 G4]h | rq [C4 D#4 G#4 D#5]q G#5q | A#5q [A#3 D4 G4]h
+RH: F5q [A3 C4 F4 A4]h | rq [B3 E4 G4]h | rq [A3 C4 F4 A4]h | G5q [B3 E4 G4]h
+RH: F5q [A3 C4 F4 A4 G5]q A5q | E5q [B3 E4 G4 F5]q G5q | D5q [A3 C4 F4 A4]h | G5q [B3 E4 G4]h
+RH: F5q [A3 C4 F4 A4 G5]q A5q | E5q [B3 E4 G4 F5]q G5q | F5q [A3 C4 F4 A4 C5]h | rq [B3 E4 G4]h
+RH: rq [A3 C4 F4 A4]h | C6q [C4 E4 A4 C5]h | F5q [A3 C4 F4 A4 G5]q A5q | G5q [A#3 D#4 G4]h
+RH: C5q [G3 A#3 D#4 G4]h | F5q [A3 D4 F4]h | G5q [G3 A#3 D#4 G4]h | D5q [A3 D4 F4]h
+RH: rq [G3 A#3 D4 F4]h | rq [G3 A#3 D#4 F4]h | rq [A3 D4 F4]q F5q | A#5q [A#3 D4 G4]h
+RH: A5q [A3 C4 F4 A4 F5]h | rq [A#3 D4 G4]h | rq [A3 C4 F4 A4]h | rq [A#3 D4 G4]h
+RH: rq [C4 E4 G4]h
+LH: G2h. | D2h. | G2h. | D2h.
+LH: G2h. | D2h. | G2h. | D2h.
+LH: G2h. | D2h. | G2h. | D2h.
+LH: G2h. | D2h. | C2h. | C2h.
+LH: C2h. | F2h. | F2h. | F2h.
+LH: F2h. | F2h. | F2h. | A#1h.
+LH: D2h. | G2h. | D2h. | C2h.
+LH: C2h. | C2h. | F2h. | F2h.
+LH: F2h. | F2h. | F2h. | A#1h.
+LH: D2h. | G2h. | D2h. | G2h.
+LH: D2h. | G2h. | D2h. | G2h.
+LH: D2h. | G2h. | D2h. | G2h.
+LH: D2h. | C2h. | C2h. | C2h.
+LH: F2h. | F2h. | F2h. | F2h.
+LH: F2h. | F2h. | F2h. | A#1h.
+LH: D2h. | G2h. | D2h. | G2h.
+LH: C2h.

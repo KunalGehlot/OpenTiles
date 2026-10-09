@@ -1,0 +1,19 @@
+{
+  "title": "Consolation (Op. 100 No. 21)",
+  "composer": "Johann Friedrich Burgmüller",
+  "composer_death_year": 1874,
+  "traditional": false,
+  "transcriber": "Bas Wassink (Mutopia Project)",
+  "arranger": "OpenTiles contributors",
+  "source_url": "https://www.mutopiaproject.org/cgibin/piece-info.cgi?id=224",
+  "source_licence": "public-domain",
+  "edition_note": "Original simplified arrangement written for OpenTiles from a public-domain typesetting by Bas Wassink (Mutopia Project, public domain dedication; the page named in source_url states the print it was typeset from, which is old enough to be out of copyright). The notes were converted automatically to one voice per hand with tools/pipeline/midi_arrange.py; it is not copied from any scan. Source: arrangement.txt, rendered with tools/pipeline/arrange.py.",
+  "eu_term_check": {
+    "result": "pass",
+    "date": "2026-10-09"
+  },
+  "difficulty": 2,
+  "reviewed_by": null,
+  "verified": false,
+  "score_file": "score.musicxml"
+}

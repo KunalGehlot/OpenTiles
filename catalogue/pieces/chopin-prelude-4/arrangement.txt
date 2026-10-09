@@ -1,0 +1,23 @@
+# Prelude in E minor (Op. 28 No. 4) by Frédéric Chopin: simplified one-voice-per-hand arrangement for OpenTiles, released under CC0 1.0.
+# Notes converted from the public-domain Mutopia Project typesetting by Magnus Lewis-Smith http://magware.sourceforge.net/ (https://www.mutopiaproject.org/cgibin/piece-info.cgi?id=468).
+# Made with tools/pipeline/midi_arrange.py: held notes are cut at the next onset, long notes at barlines, and rhythms are on a sixteenth grid.
+title: Prelude in E minor (Op. 28 No. 4)
+composer: Frédéric Chopin
+key: 1
+time: 2/2
+tempo: 50
+pickup: yes
+RH: B3e. B4s | B4h. C5q | B4h. C5q | B4h. C5q
+RH: B4h. A#4q | A4h. B4q | A4h. B4q | A4h. B4e. A4s
+RH: A4h. G#4q | rq A4e B4e D5e C5e E4e A4e | F#4h. A4q | F#4h. A4q
+RH: G4e F#4e C4e B3e D#4e F#4e D5s C5e B4s | B4h. C5q | B4h. C5q | B4h. C5q
+RH: B4e. A#4s A#4q A5q F#5e. E5s | E5e D#5e C6e D#5e D#5e E5e G5e B4e | D5e C5e E5s E4e A4s F#4q. A4e | F#4h. A4q
+RH: F#4h. re. E4s | E4h. F#4q | E4h. F#4q | E4h rh
+RH: E4h D#4h | E4w
+LH: rq | [G3 B3 E4]e [G3 B3 E4]e [G3 B3 E4]e [G3 B3 E4]e [G3 B3 E4]e [G3 B3 E4]e [G3 B3 E4]e [G3 B3 E4]e | [F#3 A3 E4]e [F#3 A3 E4]e [F#3 A3 E4]e [F#3 A3 E4]e [F#3 A3 D#4]e [F#3 A3 D#4]e [F#3 A3 D#4]e [F#3 A3 D#4]e | [F3 A3 D#4]e [F3 A3 D#4]e [F3 A3 D#4]e [F3 A3 D#4]e [F3 A3 D4]e [F3 A3 D4]e [F3 G#3 D4]e [F3 G#3 D4]e
+LH: [E3 G#3 D4]e [E3 G#3 D4]e [E3 G#3 D4]e [E3 G#3 D4]e [E3 G3 D4]e [E3 G3 D4]e [E3 G3 C#4]e [E3 G3 C#4]e | [E3 G3 C4]e [E3 G3 C4]e [E3 G3 C4]e [E3 G3 C4]e [E3 F#3 C4]e [E3 F#3 C4]e [E3 F#3 C4]e [E3 F#3 C4]e | [E3 F#3 C4]e [E3 F#3 C4]e [E3 F#3 C4]e [E3 F#3 C4]e [D#3 F#3 C4]e [D#3 F#3 C4]e [D#3 F#3 C4]e [D#3 F#3 C4]e | [D3 F#3 C4]e [D3 F#3 C4]e [D3 F#3 C4]e [D3 F#3 C4]e [D3 F#3 C4]e [D3 F#3 C4]e [D3 F#3 C4]e [D3 F#3 C4]e
+LH: [D3 F3 C4]e [D3 F3 C4]e [D3 F3 C4]e [D3 F3 C4]e [D3 F3 B3]e [D3 F3 B3]e [D3 F3 B3]e [D3 F3 B3]e | [C3 E3 B3]e [C3 E3 B3]e [C3 E3 A3]e [C3 E3 A3]e [C3 E3 A3]e [C3 E3 A3]e [C3 E3 A3]e [C3 E3 A3]e | [B2 E3 A3]e [B2 E3 A3]e [B2 D#3 A3]e [B2 D#3 A3]e [C3 E3 A3]e [C3 E3 A3]e [C3 E3 A3]e [C3 E3 A3]e | [B2 D#3 A3]e [B2 D#3 A3]e [B2 D#3 A3]e [B2 D#3 A3]e [C3 E3 A3]e [C3 E3 A3]e [C3 E3 A3]e [C3 E3 A3]e
+LH: [B2 D#3 A3]q rh. | [G3 B3 E4]e [G3 B3 E4]e [G3 B3 E4]e [G3 B3 E4]e [G3 B3 E4]e [G3 B3 E4]e [G3 B3 E4]e [G3 B3 E4]e | [F#3 A3 E4]e [F#3 A3 E4]e [F#3 A3 E4]e [F#3 A3 E4]e [F3 A3 D#4]e [F3 A3 D#4]e [F3 A3 D#4]e [F3 A3 D#4]e | [F3 G#3 D#4]e [F3 G#3 D#4]e [F3 G#3 D4]e [F3 G#3 D4]e [E3 G#3 D4]e [E3 G#3 D4]e [E3 G#3 D4]e [E3 G#3 D4]e
+LH: [E3 G3 D4]e [E3 G3 D4]e [E3 G3 C#4]e [E3 G3 C#4]e [C#3 E3 A#3]e [C#3 E3 A#3]e [C3 E3 A3]e [C3 E3 A3]e | [B1 B2]e [A3 C4 F#4 A4]e [A3 C4 F#4 A4]e [A3 C4 F#4 A4]e [G3 B3 D#4 F#4]e [G3 B3 E4]e [G3 B3 E4]e [G3 B3 E4]e | [A3 C4 E4]e [A3 C4 E4]e A2e [E3 F#3 C4]e [B2 E3 B3]e [B2 E3 B3]e [C3 E3 A3]e [C3 E3 A3]e | [B2 E3 B3]e [B2 E3 B3]e [B2 E3 B3]e [B2 E3 B3]e [C3 E3 A3]e [C3 E3 A3]e [C3 E3 A3]e [C3 E3 A3]e
+LH: [B2 E3 B3]e [B2 E3 B3]e [B2 E3 B3]e [B2 E3 B3]e [B2 D#3 B3]e [B2 D#3 B3]e [B2 D#3 A3]e [B2 D#3 A3]e | [C3 G3]e [C3 G3]e [C3 G3]e [C3 G3]e [C3 A#3]e [C3 A#3]e [C3 E3 A3]e [C3 E3 A3]e | [B2 E3 A3]e [B2 E3 A3]e [B2 E3 G#3]e [B2 E3 G#3]e [B2 E3 G3]e [B2 E3 G3]e [B2 E3 G3]e [B2 E3 G3]e | [A#2 C3 G3]h rh
+LH: [B1 B2 E3 F#3 B3]h [B1 F#2 B2 D#3 F#3 B3]h | [E1 E2 E3 G3 B3]w

@@ -1,0 +1,23 @@
+# Prelude in B minor (Op. 28 No. 6) by Frédéric Chopin: simplified one-voice-per-hand arrangement for OpenTiles, released under CC0 1.0.
+# Notes converted from the public-domain Mutopia Project typesetting by Magnus Lewis-Smith http://magware.sourceforge.net/ (https://www.mutopiaproject.org/cgibin/piece-info.cgi?id=469).
+# Made with tools/pipeline/midi_arrange.py: held notes are cut at the next onset, long notes at barlines, and rhythms are on a sixteenth grid.
+title: Prelude in B minor (Op. 28 No. 6)
+composer: Frédéric Chopin
+key: 2
+time: 3/4
+tempo: 56
+pickup: yes
+RH: [D4 F#4 B4]e B4e | [F#4 B4]e B4e [F#4 B4]e B4e [D4 F#4 B4]e B4e | [D4 F#4 B4]e B4e [D4 F#4 B4]e B4e [D4 F#4 B4]e B4e | [B4 D5]e D5e [B4 D5]e D5e [F#4 B4 D5]e D5e
+RH: [F#4 B4 D5]e D5e [F#4 B4 D5]e D5e [G4 B4 D5]e D5e | [B4 D5]e D5e [B4 D5]e D5e [G#4 B4 D5]e D5e | [G#4 B4 C#5]e C#5e [G4 A#4 C#5]e [B4 D5]e [G4 A#4 E5]e [G4 B4]e | [G4 A#4]e [F#4 C#5 F#5]e [F#4 B4 E5]s D5s [F#4 C#5]s B4s [C#4 G4 A#4]e [D4 G#4 B4]e
+RH: [D4 B4 D5]e [C#4 A#4 C#5]e rq [D4 F#4 B4]e B4e | [F#4 B4]e B4e [F#4 B4]e B4e [D4 F#4 B4]e B4e | [D4 F#4 B4]e B4e [D4 F#4 B4]e B4e [D4 G4 B4]e B4e | [G4 B4]e B4e [G4 B4]e B4e [G4 C5]e C5e
+RH: [E4 G4 C5]e C5e [E4 G4 C5]e C5e [E4 G4 C5]e C5e | [G4 C5]e C5e [E4 G4 C5]e C5e [G4 C5]e C5e | [G4 C5]e C5e [G4 B4]e B4e [C#4 G4 A#4]e A#4e | [C#4 F#4 A#4]e A#4e [D4 F#4 B4]e B4e [C#4 G4 B4]e B4e
+RH: [C#4 G4 A#4]e A#4e [D4 G4 B4]e B4e [D4 G4 B4]e B4e | [C#4 F#4 B4]e B4e [C#4 E4 A#4]e A#4e [C#4 E4 A#4]e A#4e | [B3 D4 B4]e B4e [D4 G4 B4]e B4e [C#4 G4 B4]e B4e | [C#4 G4 A#4]e A#4e [D4 F#4 B4]e B4e [C#4 G4 B4]e B4e
+RH: [C#4 G4 A#4]e A#4e [D4 G4 B4]e B4e [D4 G4 B4]e B4e | [C#4 F#4 B4]e B4e [C#4 F#4 A#4]e A#4e [D4 F#4 B4]e B4e | [D4 F#4 B4]e B4e [D4 F#4 A4]e A4e [D4 F#4]e F#4e | F#4e F#4e F#4e F#4e [D4 F#4]e F#4e
+RH: [D4 F#4]e F#4e [D4 F#4]e F#4e [D4 F#4]e F#4e | rq [D4 F#4]e F#4e [D4 F#4]e F#4e
+LH: B2s D3s F#3s B3s | D4q C#4e. D4s B3q | re F#3e D3e C#3e B2s F#3s B3s D4s | F#4q E4e. F#4s D4q
+LH: re B3e F#3e D3e G2s D3s B3s D4s | G4q F#4q F#4q | F4q E4e D4e C#4e D4e | C#4e A#3e B3e D3e E3e F3e
+LH: F#3q D3e C#3e B2s D3s F#3s B3s | D4q C#4e. D4s B3q | re F#3e D3e B2e G2s D3s G3s B3s | D4q E4e F4e E4q
+LH: re C4e G3e C3e C2s G2s E3s G3s | E4q C2s G2s E3s G3s E4q | rh E3q | re F#3e E3s D3s C#3s B2s E3q
+LH: re F#3e E3s D3s C#3s B2s A2s G2s D2s E2s | F#2h G2q | rq G3q E3q | re F#3e E3s D3s C#3s B2s E3q
+LH: re F#3e E3s D3s C#3s B2s A2s G2s D2s E2s | F#2h B1q | rh rs B2s F#3s B3s | D4q C#4e. D4s B3q
+LH: re F#3e D3e C#3e B2q | rh.

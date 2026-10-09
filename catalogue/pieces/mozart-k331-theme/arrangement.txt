@@ -1,0 +1,27 @@
+# Piano Sonata K. 331: theme by Wolfgang Amadeus Mozart: simplified one-voice-per-hand arrangement for OpenTiles, released under CC0 1.0.
+# Notes converted from the public-domain Mutopia Project typesetting by Stelios Samelis (https://www.mutopiaproject.org/cgibin/piece-info.cgi?id=614).
+# Made with tools/pipeline/midi_arrange.py: held notes are cut at the next onset, long notes at barlines, and rhythms are on a sixteenth grid.
+title: Piano Sonata K. 331: theme
+composer: Wolfgang Amadeus Mozart
+key: 3
+time: 6/8
+tempo: 80
+pickup: yes
+RH: C#5e. D5s C#5e E5q | E5e B4e. C#5s B4e D5q | D5e A4q A4e B4q | B4e C#5q [B4 E5]s D5s [A4 C#5]q
+RH: [G#4 B4]e C#5e. D5s C#5e E5q | E5e B4e. C#5s B4e D5q | D5e A4q B4e C#5q | [F#4 B4 D5]e [E4 A4 C#5]q [D4 E4 G#4 B4]e [C#4 E4 A4]q
+RH: re C#5e. D5s C#5e E5q | E5e B4e. C#5s B4e D5q | D5e A4q A4e B4q | B4e C#5q [B4 E5]s D5s [A4 C#5]q
+RH: [G#4 B4]e C#5e. D5s C#5e E5q | E5e B4e. C#5s B4e D5q | D5e A4q B4e C#5q | [F#4 B4 D5]e [E4 A4 C#5]q [D4 E4 G#4 B4]e [C#4 E4 A4]q
+RH: re E5e. F#5s E5e F#5q | F#5e [G#5 A5]e. G#5s F#5e F#5e E5e | E5e E5e C#5e A4e E5e D5e | B4e E5e C#5e A4e [A4 C#5]q
+RH: [G#4 B4]e C#5e. D5s C#5e E5q | E5e B4e. C#5s B4e D5q | D5e A4q B4e C#5q | [F#4 B4 D5]e [E4 A4 C#5]q [E4 G#4 B4]e [E4 G#4 B4]q
+RH: [A4 C#5]e [E4 A4 C#5]q [E4 G#4 D5]e [E4 A4 E5]q | F#5s G#5s A4q [G#4 C#5]s B4s A4q | re E5e. F#5s E5e F#5q | F#5e [G#5 A5]e. G#5s F#5e F#5e E5e
+RH: E5e E5e C#5e A4e E5e D5e | B4e E5e C#5e A4e [A4 C#5]q | [G#4 B4]e C#5e. D5s C#5e E5q | E5e B4e. C#5s B4e D5q
+RH: D5e A4q B4e C#5q | [F#4 B4 D5]e [E4 A4 C#5]q [E4 G#4 B4]e [E4 G#4 B4]q | [A4 C#5]e [E4 A4 C#5]q [E4 G#4 D5]e [E4 A4 E5]q | F#5s G#5s A4q [G#4 C#5]s B4s A4q
+LH: [A3 E4]e. B3s [A3 E4]e [C#4 E4]q | [C#4 E4]e [G#3 E4]e. A3s [G#3 E4]e [B3 E4]q | [B3 E4]e [F#3 E4]q [F#3 E4]e [G#3 E4]q | [G#3 E4]e [A3 E4]q D3e E3q
+LH: re [A3 E4]e. B3s [A3 E4]e [C#4 E4]q | [C#4 E4]e [G#3 E4]e. A3s [G#3 E4]e [B3 E4]q | [B3 E4]e [F#3 E4]q [G#3 E4]e [A3 E4]q | D3e E3q E2e A2q
+LH: re [A3 E4]e. B3s [A3 E4]e [C#4 E4]q | [C#4 E4]e [G#3 E4]e. A3s [G#3 E4]e [B3 E4]q | [B3 E4]e [F#3 E4]q [F#3 E4]e [G#3 E4]q | [G#3 E4]e [A3 E4]q D3e E3q
+LH: re [A3 E4]e. B3s [A3 E4]e [C#4 E4]q | [C#4 E4]e [G#3 E4]e. A3s [G#3 E4]e [B3 E4]q | [B3 E4]e [F#3 E4]q [G#3 E4]e [A3 E4]q | D3e E3q E2e A2q
+LH: re A3e C#4e E4e A3e D4e | F#4e A3e D4e F#4e A3e C#4e | E4e [A3 C#4]q re [G#3 D4]q | re [A3 C#4]q [F#3 D#4]e [E3 E4]q
+LH: re [A3 E4]e. B3s [A3 E4]e [C#4 E4]q | [C#4 E4]e [G#3 E4]e. A3s [G#3 E4]e [B3 E4]q | [B3 E4]e [F#3 E4]q [G#3 E4]e [A3 E4]q | D3e E3q E2e A2q
+LH: re [A2 A3]q [B2 B3]e [C#3 C#4]q | [D3 D4]e [E3 C#4]q [E3 D4]e [A3 C#4]q | re A3e C#4e E4e A3e D4e | F#4e A3e D4e F#4e A3e C#4e
+LH: E4e [A3 C#4]q re [G#3 D4]q | re [A3 C#4]q [F#3 D#4]e [E3 E4]q | re [A3 E4]e. B3s [A3 E4]e [C#4 E4]q | [C#4 E4]e [G#3 E4]e. A3s [G#3 E4]e [B3 E4]q
+LH: [B3 E4]e [F#3 E4]q [G#3 E4]e [A3 E4]q | D3e E3q E2e A2q | re [A2 A3]q [B2 B3]e [C#3 C#4]q | [D3 D4]e [E3 C#4]q [E3 D4]e [A3 C#4]q

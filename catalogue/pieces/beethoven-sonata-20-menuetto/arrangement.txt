@@ -1,0 +1,69 @@
+# Piano Sonata No. 20: Tempo di Menuetto (Op. 49 No. 2) by Ludwig van Beethoven: simplified one-voice-per-hand arrangement for OpenTiles, released under CC0 1.0.
+# Notes converted from the public-domain Mutopia Project typesetting by Stelios Samelis (https://www.mutopiaproject.org/cgibin/piece-info.cgi?id=777).
+# Made with tools/pipeline/midi_arrange.py: held notes are cut at the next onset, long notes at barlines, and rhythms are on a sixteenth grid.
+title: Piano Sonata No. 20: Tempo di Menuetto (Op. 49 No. 2)
+composer: Ludwig van Beethoven
+key: 1
+time: 3/4
+tempo: 96
+pickup: yes
+RH: G4e. F#4s F#4q | rq F#4e. G4s G4q | rq G4e. B4s D5q | re E5e D5e C5e B4q
+RH: G4e re G4e. F#4s F#4q | rq F#4e. G4s G4q | rq G4e. B4s D5q | re C#5e C5e A4e G4q
+RH: rq B4e. B4s B4q | C5e re C5e. C5s C5q | B4e re B4e. B4s B4e A4e | G#4e A4e D#5e E5e G4q
+RH: F#4e re G5e. F#5s F#5q | rq F#5e. G5s G5q | rq G5e. B5s D6q | re E6e D6e C6e B5q
+RH: G5e re G5e. F#5s F#5q | rq F#5e. G5s G5q | rq G5e. B5s D6q | D6s C#6s D6s C#6s D6s C6s B5s A5s G5q
+RH: rq [B4 D5]q [E5 G5]q | rq [D5 F#5]q [C5 E5]q | rq [B4 D5]q [C5 D5]q | [C5 D5]q [C5 D5]q [B4 D5]q
+RH: rh rs D5s E5s F#5s | G5s A5s B5s C#6s D6e D6e rs D5s E5s F#5s | G5s A5s B5s C#6s D6e D6e B5e A5e | G5e F#5e E5e D5e [C#5 A5]q
+RH: re B5s A5s G5e A5s G5s F#5e G5s F#5s | E5e F#5s E5s D5e E5s D5s C#5q | re C#5e D5s C#5s B4s C#5s D5q | re D5e E5s D5s C#5s D5s A5q
+RH: re B5s A5s G5e A5s G5s F#5e G5s F#5s | E5e F#5s E5s D5e E5s D5s C#5q | re C#5e E5s D5s C#5s D5s E5e. G5s | D5q C#5q D5e E5s F#5s
+RH: G5s A5s B5s C#6s D6e D6e D6e A5e | A5e F#5e F#5e D5e D5q | rq E5e. C#5s D5e E5s F#5s | G5s A5s B5s C#6s D6e D6e D6s A5e A5s
+RH: A5s F#5e F#5s F#5s D5e D5s D5q | rq E5e. C#5s D5e. D5s | C#5e. D5s C5e. D5s B4e. D5s | B4e. D5s C#5e. E5s D5e. D5s
+RH: C#5e. D5s C5e. D5s B4e. D5s | B4e. D5s C#5e. E5s D5e. D5s | C#5e. D5s C5e. D5s B4e. D5s | A4e. D5s G4e. F#4s F#4q
+RH: rq F#4e. G4s G4q | rq G4e. B4s D5q | re E5e D5e C5e B4q | G4e re G4e. F#4s F#4q
+RH: rq F#4e. G4s G4q | rq G4e. B4s D5q | re C#5e C5e A4e G4q | rq B4e. B4s B4q
+RH: C5e re C5e. C5s C5q | B4e re B4e. B4s B4e A4e | G#4e A4e D#5e E5e G4q | F#4e re G5e. F#5s F#5q
+RH: rq F#5e. G5s G5q | rq G5e. B5s D6q | re E6e D6e C6e B5q | G5e re G5e. F#5s F#5q
+RH: rq F#5e. G5s G5q | rq G5e. B5s D6q | D6s C#6s D6s C#6s D6s C6s B5s A5s G5q | rq C5e. E5s [E5 G5]q
+RH: re [G4 E5]e [A4 F5]e [F4 D5]e [E4 C5]q | [E4 C5]e G4e C5e E5e [E5 G5]q | re [G4 E5]e [A4 F5]e [F4 D5]e [E4 C5]q | re C5e B4e C5e D5e B4e
+RH: G4e D5e C5e D5e E5e C5e | G4e E5e D5e E5e F5e G5e | A5e E5e F5e D5e C5q | B4e G4e C5e E5e [E5 G5]q
+RH: re [G4 E5]e [A4 F5]e [F4 D5]e [E4 C5]q | [E4 C5]e G4e C5e E5e [E5 G5]q | re [G4 E5]e [A4 F5]e [F4 D5]e [E4 C5]q | re C5e B4e C5e D5e B4e
+RH: G4e D5e C5e D5e E5e C5e | G4e E5e D5e E5e F#5e C5e | A4e F#5e E5e F#5e G5e D5e | B4e G5e A5e B5e C6e B5e
+RH: A5e G5e F#5e E5e D5e C5e | B4e A4e G4e F#4e E4e D4e | rh. | rq G4e. F#4s F#4q
+RH: rq F#4e. G4s G4q | rq G4e. B4s D5q | re E5e D5e C5e B4q | G4e re G4e. F#4s F#4q
+RH: rq F#4e. G4s G4q | rq G4e. B4s D5q | re C#5e C5e A4e G4q | rq B4e. B4s B4q
+RH: C5e re C5e. C5s C5q | B4e re B4e. B4s B4e A4e | G#4e A4e D#5e E5e G4q | F#4e re G5e. F#5s F#5q
+RH: rq F#5e. G5s G5q | rq G5e. B5s D6q | re E6e D6e C6e B5q | G5e re G5e. F#5s F#5q
+RH: rq F#5e. G5s G5q | rq G5e. B5s D6q | D6s C#6s D6s C#6s D6s C6s B5s A5s G5q | rq G5e. F5s F5q
+RH: rq F5e. E5s E5q | rq E5e. D5s D5q | rq D5e. C5s C5q | rq C5e. A4s G4e F#4e
+RH: D5q. G4e G4e F#4e | D5q. B4e re A4s C5s | re G4s B4s re F#4s A4s rs G4s A4s B4s | C5s D5s E5s F#5s G5s A5s B5s G5s F#5e D6e
+RH: re D6e C6s B5s A5s G5s F#5s D6s C#6s D6s | C#6s D6s C#6s D6s C6s B5s A5s G5s D#6s E6s D#6s E6s | G5q B5s A5s G5s A5s G5q | rq [C4 F#4]q [B3 G4]q
+LH: [G3 B3]e D4e [A3 C4]e D4e | D3e D4e [A3 C4]e D4e [G3 B3]e D4e | D3e D4e [G3 B3]e D4e [F#3 A3]e D4e | D3e D4e [F#3 A3]e D4e [G3 B3]e D4e
+LH: D3e D4e [G3 B3]e D4e [A3 C4]e D4e | D3e D4e [A3 C4]e D4e [G3 B3]e D4e | D3e D4e [G3 B3]e D4e rq | [D3 C4]q [D3 C4]q [G3 B3]q
+LH: G2q rq [D#4 F#4]q | [E4 G4]e rq. [E4 G4]q | [D4 F#4]e rh re | C4q C4q [D3 B3]q
+LH: A3e rq. [A3 C4]e D4e | D3e D4e [A3 C4]e D4e [G3 B3]e D4e | D3e D4e [G3 B3]e D4e [F#3 A3]e D4e | D3e D4e [F#3 A3]e D4e [G3 B3]e D4e
+LH: D3e D4e [G3 B3]e D4e [A3 C4]e D4e | D3e D4e [A3 C4]e D4e [G3 B3]e D4e | D3e D4e [G3 B3]e D4e rq | [D3 C4]q [D3 C4]q [G3 B3]q
+LH: G2q rq rs G3s A3s B3s | C4s D4s E4s F#4s G4e G4e rs G3s A3s B3s | C4s D4s E4s F#4s G4e G4e F#4e E4e | F#4e D4e E4e F#4e G4e D4e
+LH: E4e F#4e G4e A4e [G4 B4]q | rq [F#4 A4]q [E4 G4]q | rq [D4 F#4]q rq | G3q G#3q A3s C#4s E4s C#4s
+LH: A3s C#4s E4s C#4s A3s C#4s E4s C#4s A3s D4s F#4s D4s | A3s D4s F#4s D4s A3s D4s F#4s D4s A3s E4s G4s E4s | A3s E4s G4s E4s A3s E4s G4s E4s A3s D4s F#4s D4s | A3s D4s F#4s D4s A3s D4s F#4s D4s A3s C#4s E4s C#4s
+LH: A3s C#4s E4s C#4s A3s C#4s E4s C#4s A3s D4s F#4s D4s | A3s D4s F#4s D4s A3s D4s F#4s D4s A3s E4s G4s E4s | A#3s E4s G4s E4s B3s D4s F#4s D4s G3e G4e | [A3 F#4]q [A3 E4]q [D4 F#4]q
+LH: rh. | rh. | [A3 F#4]q [A3 G4]q [D4 F#4]q | rh.
+LH: rh. | [A3 F#4]q [A3 G4]q [D4 F#4]q | rq [D4 F#4]q [D4 G4]q | rq [D4 E4]q [D4 F#4]q
+LH: rq [D4 F#4]q [D4 G4]q | rq [D4 E4]q [D4 F#4]q | rh. | rq [G3 B3]e D4e [A3 C4]e D4e
+LH: D3e D4e [A3 C4]e D4e [G3 B3]e D4e | D3e D4e [G3 B3]e D4e [F#3 A3]e D4e | D3e D4e [F#3 A3]e D4e [G3 B3]e D4e | D3e D4e [G3 B3]e D4e [A3 C4]e D4e
+LH: D3e D4e [A3 C4]e D4e [G3 B3]e D4e | D3e D4e [G3 B3]e D4e rq | [D3 C4]q [D3 C4]q [G3 B3]q | G2q rq [D#4 F#4]q
+LH: [E4 G4]e rq. [E4 G4]q | [D4 F#4]e rh re | C4q C4q [D3 B3]q | A3e rq. [A3 C4]e D4e
+LH: D3e D4e [A3 C4]e D4e [G3 B3]e D4e | D3e D4e [G3 B3]e D4e [F#3 A3]e D4e | D3e D4e [F#3 A3]e D4e [G3 B3]e D4e | D3e D4e [G3 B3]e D4e [A3 C4]e D4e
+LH: D3e D4e [A3 C4]e D4e [G3 B3]e D4e | D3e D4e [G3 B3]e D4e rq | [D3 C4]q [D3 C4]q [G3 B3]q | G2q rq C3e C4e
+LH: C3e C4e C3e C4e C3e C4e | C3e C4e C3e C4e C3e C4e | C3e C4e C3e C4e C3e C4e | C3e rh re
+LH: [G3 B3 D4]q rh | [C4 E4]q rh | re C#4e D4e F4e [G3 E4]q | D4e rq. C3e C4e
+LH: C3e C4e C3e C4e C3e C4e | C3e C4e C3e C4e C3e C4e | C3e C4e C3e C4e C3e C4e | C3e rh re
+LH: [G3 B3 D4]q rh | [C4 E4]q rh | [C4 D4]q rh | [B3 D4]q rh
+LH: [F#3 D4]q rh | rh. | C#4e D4e C#4e D4e C4e D4e | C4e D4e [G3 B3]e D4e [A3 C4]e D4e
+LH: D3e D4e [A3 C4]e D4e [G3 B3]e D4e | D3e D4e [G3 B3]e D4e [F#3 A3]e D4e | D3e D4e [F#3 A3]e D4e [G3 B3]e D4e | D3e D4e [G3 B3]e D4e [A3 C4]e D4e
+LH: D3e D4e [A3 C4]e D4e [G3 B3]e D4e | D3e D4e [G3 B3]e D4e rq | [D3 C4]q [D3 C4]q [G3 B3]q | G2q rq [D#4 F#4]q
+LH: [E4 G4]e rq. [E4 G4]q | [D4 F#4]e rh re | C4q C4q [D3 B3]q | A3e re [G3 B3]e D4e [A3 C4]e D4e
+LH: D3e D4e [A3 C4]e D4e [G3 B3]e D4e | D3e D4e [G3 B3]e D4e [F#3 A3]e D4e | D3e D4e [F#3 A3]e D4e [G3 B3]e D4e | D3e D4e [G3 B3]e D4e [A3 C4]e D4e
+LH: D3e D4e [A3 C4]e D4e [G3 B3]e D4e | D3e D4e [G3 B3]e D4e rq | [D3 C4]q [D3 C4]q [G3 B3]q | G2q rq B3e G4e
+LH: D4e G4e B3e G4e C4e E4e | C4e E4e C4e E4e G#3e E4e | B3e E4e G#3e E4e A3e E4e | C4e E4e C4e E4e [A3 C4]e D4e
+LH: [F#3 A3]e D4e [G3 B3]e D4e [A3 C4]e D4e | [F#3 A3]e D4e [G3 B3]e D4e C3q | D3q D3q G3q | rq. [G4 B4]e [A4 C5]e D5e
+LH: [F#4 A4]e D5e [G4 B4]e D5e [A4 C5]e D5e | [F#4 A4]e D5e [G4 B4]e D5e C4q | [D4 B4]q [D4 C5]q [G4 B4]q | rq [D3 A3]q [G2 G3]q
