@@ -444,3 +444,16 @@ describe('live stats (P5-07)', () => {
     expect(session.status().live.bestStreak).toBe(0);
   });
 });
+
+describe('last input', () => {
+  it('records when the learner last played a note, from any input (P5-02)', () => {
+    const { session, clock, run, press } = setup();
+    expect(session.lastInputAt).toBe(0);
+    run(2);
+    press(60, 'midi');
+    expect(session.lastInputAt).toBe(clock.t);
+    run(1);
+    press(62, 'microphone');
+    expect(session.lastInputAt).toBe(clock.t);
+  });
+});
