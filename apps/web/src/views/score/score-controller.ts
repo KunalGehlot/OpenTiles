@@ -15,6 +15,8 @@ import type { Toolkit } from './verovio';
 /** The widest the engraved page gets (CSS px); wider windows centre it. */
 const MAX_PAGE_WIDTH = 1100;
 
+import { sanitiseSvg } from './sanitise';
+
 export type ScoreLayout = 'scroll' | 'page';
 
 const STATE_CLASSES: Record<NoteState, string> = {
@@ -138,7 +140,7 @@ export class ScoreController {
     }
     this.tk.redoLayout();
     const count = Math.max(1, this.tk.getPageCount());
-    this.pages = Array.from({ length: count }, (_, i) => this.tk.renderToSVG(i + 1));
+    this.pages = Array.from({ length: count }, (_, i) => sanitiseSvg(this.tk.renderToSVG(i + 1)));
     this.measurePage.clear();
     this.measureIds = measureOrderFromSvg(this.pages);
     const order = new Map(this.measureIds.map((id, i) => [id, i]));

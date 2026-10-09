@@ -7,7 +7,6 @@
 // `Tuplet`…`endTuplet` and 2.x id references), time and key signatures, tempo marks, ties
 // (`Spanner type="Tie"` and 2.x `Tie`/`endSpanner`), repeats (`startRepeat`/`endRepeat`) and
 // voltas. A two-staff part (piano) gives the hands by staff. Everything runs on the device.
-import { unzipSync } from 'fflate';
 import {
   ImportError,
   assembleSong,
@@ -22,6 +21,7 @@ import {
   xmlNumber,
   xmlPath,
   xmlText,
+  unzipLimited,
 } from '@opentiles/song-model';
 import type { DomParserLike, RawMeasure, RawNote, RawPart, Song } from '@opentiles/song-model';
 
@@ -78,8 +78,9 @@ export function unzipMscz(bytes: Uint8Array): string {
   let files: Record<string, Uint8Array>;
   try {
     // Thumbnails and audio are never needed; skip decompressing them.
-    files = unzipSync(bytes, { filter: (f) => !/\.(png|jpe?g|ogg|mp3|wav|flac)$/i.test(f.name) });
-  } catch {
+    files = unzipLimited(bytes, (name) => /\.(png|jpe?g|ogg|mp3|wav|flac)$/i.test(name));
+  } catch (e) {
+    if (e instanceof ImportError && /too large/.test(e.message)) throw e;
     throw new ImportError('This .mscz file could not be unzipped.');
   }
   let rootPath: string | undefined;

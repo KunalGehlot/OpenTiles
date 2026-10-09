@@ -7,6 +7,7 @@ import { Impressum, Privacy } from './legal/LegalPages';
 import { lazy, Suspense } from 'react';
 import { href, useRoute } from './lib/router';
 import type { Route } from './lib/router';
+import { ErrorBoundary } from './ui/ErrorBoundary';
 
 // Settings pulls in the encryption code (Argon2id, zip, sync client); load it only when opened.
 const Settings = lazy(() => import('./routes/Settings'));
@@ -48,18 +49,20 @@ export function App() {
         </header>
       )}
       <main>
-        {route.name === 'home' && <Home />}
-        {route.name === 'library' && <Library />}
-        {route.name === 'practice' && <Practice source={route.source} id={route.id} />}
-        {route.name === 'lab' && <DetectorLab />}
-        {route.name === 'about' && <About />}
-        {(route.name === 'settings' || route.name === 'sign-in') && (
-          <Suspense fallback={<p className="muted">Loading…</p>}>
-            {route.name === 'settings' ? <Settings /> : <SignInLink token={route.token} />}
-          </Suspense>
-        )}
-        {route.name === 'privacy' && <Privacy lang={route.lang} />}
-        {route.name === 'impressum' && <Impressum lang={route.lang} />}
+        <ErrorBoundary resetKey={JSON.stringify(route)}>
+          {route.name === 'home' && <Home />}
+          {route.name === 'library' && <Library />}
+          {route.name === 'practice' && <Practice source={route.source} id={route.id} />}
+          {route.name === 'lab' && <DetectorLab />}
+          {route.name === 'about' && <About />}
+          {(route.name === 'settings' || route.name === 'sign-in') && (
+            <Suspense fallback={<p className="muted">Loading…</p>}>
+              {route.name === 'settings' ? <Settings /> : <SignInLink token={route.token} />}
+            </Suspense>
+          )}
+          {route.name === 'privacy' && <Privacy lang={route.lang} />}
+          {route.name === 'impressum' && <Impressum lang={route.lang} />}
+        </ErrorBoundary>
       </main>
       {!practising && (
         <footer className="footer">

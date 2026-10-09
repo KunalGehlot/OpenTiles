@@ -15,6 +15,12 @@
       "source": "Basic Pitch model from @spotify/basic-pitch 1.0.1, unchanged; see README.md in the folder"
     },
     {
+      "path": "apps/web/public/_headers",
+      "licence": "AGPL-3.0-or-later",
+      "licenceFile": "LICENSE",
+      "source": "Written for OpenTiles"
+    },
+    {
       "path": "apps/web/public/icon.svg",
       "licence": "AGPL-3.0-or-later",
       "licenceFile": "LICENSE",

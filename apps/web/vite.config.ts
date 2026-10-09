@@ -70,6 +70,46 @@ function catalogue(showUnverified: boolean): Plugin {
 }
 
 /**
+ * The Content-Security-Policy of the production build, as a <meta> tag so any static host serves
+ * it (public/_headers carries the same policy plus the headers a tag cannot set). The app loads
+ * only its own files: no third-party scripts, fonts or images (hard rule 5). `https:` and `wss:`
+ * in connect-src are for the sync server a learner may choose to connect (docs/sync.md); nothing
+ * connects anywhere by default. 'wasm-unsafe-eval' lets the engine and the score engraver
+ * compile WebAssembly, the engraver's notation font is embedded as a data: URL, and inline styles are
+ * style="" attributes set by React and the canvas views.
+ * Not applied in development, where Vite injects inline scripts.
+ */
+export const CONTENT_SECURITY_POLICY = [
+  "default-src 'self'",
+  "script-src 'self' 'wasm-unsafe-eval'",
+  "style-src 'self' 'unsafe-inline'",
+  "img-src 'self' data: blob:",
+  "media-src 'self' blob:",
+  "font-src 'self' data:",
+  "connect-src 'self' https: wss:",
+  "worker-src 'self' blob:",
+  "manifest-src 'self'",
+  "object-src 'none'",
+  "base-uri 'self'",
+  "form-action 'self'",
+].join('; ');
+
+function securityMeta(): Plugin {
+  return {
+    name: 'opentiles-csp',
+    apply: 'build',
+    transformIndexHtml: () => [
+      {
+        tag: 'meta',
+        attrs: { 'http-equiv': 'Content-Security-Policy', content: CONTENT_SECURITY_POLICY },
+        injectTo: 'head-prepend',
+      },
+      { tag: 'meta', attrs: { name: 'referrer', content: 'no-referrer' }, injectTo: 'head' },
+    ],
+  };
+}
+
+/**
  * Installable, fully offline app (spec §5, §6; PLAN.md P1-23). Everything a practice session needs
  * is precached on the first visit: the app shell, the engine wasm and its AudioWorklet, the
  * catalogue index and scores (emitted into dist/catalogue by the plugin above) and the piano
@@ -127,6 +167,7 @@ export default defineConfig(({ mode }) => ({
   base: './',
   plugins: [
     react(),
+    securityMeta(),
     catalogue(mode === 'development' || process.env.VITE_SHOW_UNVERIFIED === '1'),
     pwa(),
   ],
@@ -134,6 +175,9 @@ export default defineConfig(({ mode }) => ({
     __SHOW_UNVERIFIED__: JSON.stringify(
       mode === 'development' || process.env.VITE_SHOW_UNVERIFIED === '1',
     ),
+  },
+  resolve: {
+    alias: { 'node:module': resolve(import.meta.dirname, 'src/lib/node-module-stub.ts') },
   },
   worker: { format: 'es' },
   // The Verovio chunk is large by design and only loaded when a score view opens.
