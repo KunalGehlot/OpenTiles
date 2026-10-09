@@ -159,9 +159,9 @@ export function OverviewStrip({
             key={i}
             className={m.hand === 'left' ? 'overview__note--left' : 'overview__note--right'}
             x={m.x * 1000}
-            y={6 + m.y * 82}
+            y={4 + m.y * 82}
             width={Math.max(1.5, m.width * 1000 - 0.5)}
-            height={6}
+            height={12}
           />
         ))}
       </svg>
