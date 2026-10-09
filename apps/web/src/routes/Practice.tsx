@@ -290,7 +290,7 @@ function PracticeView({
   const applySound = (ctx: AudioContext) => {
     const device = synthFor(ctx);
     const sink = midi?.input.output(midiOutput) ?? null;
-    const keyboard = sink ? new MidiOutInstrument(sink, () => ctx.currentTime) : null;
+    const keyboard = sink ? new MidiOutInstrument(sink, now) : null;
     session.setSynth(playbackInstrument(device, keyboard, midiPlayback));
     session.midiEcho = midiEcho ? device : null;
   };

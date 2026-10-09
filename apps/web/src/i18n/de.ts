@@ -283,6 +283,8 @@ export const de: Readonly<Record<string, string>> = {
   'Only those written in the score': 'Nur die in den Noten',
   None: 'Keine',
   'Note names': 'Notennamen',
+  'Sound could not be started in this browser, so the microphone cannot listen. Check that a sound output is connected and try again.':
+    'Der Ton konnte in diesem Browser nicht gestartet werden, deshalb kann das Mikrofon nicht zuhören. Prüfe, ob ein Audioausgang angeschlossen ist, und versuche es noch einmal.',
   'Show the name of each note (C, F♯, B♭) at the top of the falling notes. The fingers stay at the bottom.':
     'Den Namen jeder Note (C, Fis, B) oben auf den fallenden Noten zeigen. Die Finger bleiben unten.',
   'Number of keys': 'Anzahl der Tasten',

@@ -8,6 +8,7 @@ import type { DetectorEvent, DetectorMode, DetectorStats, EngineBuild } from '@o
 import { rmsDb } from '@opentiles/practice';
 import type { InputAdapter, NoteEvent } from '@opentiles/practice';
 import { unlockAudio } from '../audio/context';
+import { t } from '../i18n';
 
 let modulePromise: Promise<WebAssembly.Module> | null = null;
 let loadedBuild: EngineBuild | null = null;
@@ -41,6 +42,14 @@ export async function createMicDetector(
   deviceId?: string,
 ): Promise<{ detector: MicDetector; stream: MediaStream; context: AudioContext }> {
   const context = await unlockAudio();
+  // The detector runs in an AudioWorklet, which only runs while the context does.
+  if (context.state !== 'running') {
+    throw new Error(
+      t(
+        'Sound could not be started in this browser, so the microphone cannot listen. Check that a sound output is connected and try again.',
+      ),
+    );
+  }
   const [stream, engine] = await Promise.all([openMicrophone(deviceId), loadEngine()]);
   try {
     const detector = await MicDetector.create(context, stream, { workletUrl, engine, mode });

@@ -22,7 +22,7 @@ import { updateAppSettings, useAppSettings } from '../settings/store';
 import { syncServerUrl } from '../sync/config';
 import { SyncSection } from '../sync/SyncSection';
 import { language, t } from '../i18n';
-import { unlockAudio } from '../audio/context';
+import { now, unlockAudio } from '../audio/context';
 import { MidiOutInstrument } from '../audio/midi-out';
 import {
   createMidiInput,
@@ -291,9 +291,9 @@ function MidiSection({
   const sendTestNote = async () => {
     const sink = input?.output(m.output);
     if (!sink) return;
-    const ctx = await unlockAudio();
-    const out = new MidiOutInstrument(sink, () => ctx.currentTime);
-    out.play(60, ctx.currentTime, 0.6, 90);
+    await unlockAudio();
+    const out = new MidiOutInstrument(sink, now);
+    out.play(60, now(), 0.6, 90);
   };
 
   const supported = midiSupported();
