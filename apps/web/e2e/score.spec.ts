@@ -195,18 +195,22 @@ test('the scrolling score returns to its start after a listen run', async ({ pag
   await page.goto('./#/practice/catalogue/joy-to-the-world');
   await page.getByRole('group', { name: 'View' }).getByRole('button', { name: 'Score' }).click();
   await expect(page.locator('[data-testid="score-strip"] > svg')).toBeVisible({ timeout: 20_000 });
+  const startX = await cursorX(page);
   await page.getByRole('button', { name: 'Listen', exact: true }).click();
   await page.getByRole('button', { name: 'Play', exact: true }).click();
   // The score moves past the play bar while the piece plays ...
   await expect.poll(() => scoreOffset(page), { timeout: 15_000 }).toBeGreaterThan(40);
   // ... and is back at the start a moment after the last note.
   await expect.poll(() => scoreOffset(page), { timeout: 20_000 }).toBeLessThan(1);
+  // The play bar is back on the first note too, not left on the last one.
+  await expect.poll(() => cursorX(page), { timeout: 10_000 }).toBeCloseTo(startX, -1);
 });
 
 test('the scrolling score returns to its start after a wait-mode run', async ({ page }) => {
   await page.goto('./#/practice/catalogue/joy-to-the-world-melody');
   await page.getByRole('group', { name: 'View' }).getByRole('button', { name: 'Score' }).click();
   await expect(page.locator('[data-testid="score-strip"] > svg')).toBeVisible({ timeout: 20_000 });
+  const startX = await cursorX(page);
   // C5 B4 A4 G4 F4 E4 D4 C4 G4 A4 A4 B4 B4 C5 on the computer keys.
   const keys = ['K', 'J', 'H', 'G', 'F', 'D', 'S', 'A', 'G', 'H', 'H', 'J', 'J', 'K'];
   for (const [i, key] of keys.entries()) {
@@ -216,4 +220,20 @@ test('the scrolling score returns to its start after a wait-mode run', async ({ 
   }
   await expect(page.locator('.stats')).toContainText('✓ 14', { timeout: 10_000 });
   await expect.poll(() => scoreOffset(page), { timeout: 20_000 }).toBeLessThan(1);
+  await expect.poll(() => cursorX(page), { timeout: 10_000 }).toBeCloseTo(startX, -1);
+});
+
+test('the page view goes back to the first page after a run', async ({ page }) => {
+  await page.setViewportSize({ width: 700, height: 600 });
+  await page.goto('./#/practice/catalogue/minuet-in-g-melody');
+  await page.getByRole('group', { name: 'View' }).getByRole('button', { name: 'Page' }).click();
+  await expect(page.locator('[data-testid="score-strip"] > svg')).toBeVisible({ timeout: 20_000 });
+  const pager = page.locator('.ot-score-pager');
+  await expect(pager).toContainText(/Page 1 of \d+/);
+  await page.getByRole('button', { name: 'Listen', exact: true }).click();
+  await page.getByRole('button', { name: 'Play', exact: true }).click();
+  await page.waitForTimeout(3000);
+  await expect
+    .poll(async () => (await pager.textContent()) ?? '', { timeout: 60_000 })
+    .toMatch(/Page 1 of/);
 });

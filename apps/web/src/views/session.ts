@@ -166,6 +166,9 @@ const LEAD_IN = 1.5;
 const SCHEDULE_AHEAD = 0.3;
 /** Pause between the end of a looped section and its next run in wait mode (seconds). */
 const LOOP_PAUSE = 0.6;
+/** Seconds after a run ends before the display goes back to the start. */
+const HOME_AFTER_SECONDS = 2.2;
+
 /** How long a judged hold bar stays on screen after it ends (seconds). */
 const HOLD_FADE = 0.4;
 
@@ -216,6 +219,8 @@ export class PracticeSession {
   private scheduled = 0;
   private startedAt = 0;
   private finishedAt = 0;
+  /** After a run the display went back to the start (the notes, cursor and score all follow `beat`). */
+  private homed = false;
   private summary: RunSummary | null = null;
   private lastStatus = '';
   private endBeat = 0;
@@ -346,6 +351,7 @@ export class PracticeSession {
     this.summary = null;
     this.startedAt = 0;
     this.finishedAt = 0;
+    this.homed = false;
     this.runStartedAt = 0;
     this.loopRestartAt = 0;
     this.waitClick = null;
@@ -728,6 +734,7 @@ export class PracticeSession {
     this.marks.clear();
     this.resetRun();
     this.finishedAt = 0;
+    this.homed = false;
     const tl = this.timeline;
     const audible = this.song.notes.filter(
       (n) =>
@@ -776,6 +783,12 @@ export class PracticeSession {
     const dt = this.lastFramePerf ? Math.min(0.1, perf - this.lastFramePerf) : 0;
     this.lastFramePerf = perf;
     this.flashes = this.flashes.filter((f) => f.until > t);
+    // A little after a run ends, the display returns to the start of the piece, keeping the marks.
+    // The score view has by then scrolled back (score-controller.ts, watchEnd).
+    if (this.finishedAt > 0 && !this.homed && t - this.finishedAt > HOME_AFTER_SECONDS) {
+      this.homed = true;
+      this.beat = this.loopSpan?.fromBeat ?? this.steps[0]?.beat ?? 0;
+    }
     if (this.holds.size > 0) this.runHolds(t);
     if (this.labels.length > 0) this.labels = this.labels.filter((l) => l.until > t);
     for (const [pitch, state] of this.keys) {
@@ -791,7 +804,9 @@ export class PracticeSession {
         this.wait.reset();
       }
       this.runWaitClick(t);
-      const target = this.wait.current?.beat ?? this.loopSpan?.toBeat ?? this.song.lengthBeats;
+      const target = this.homed
+        ? this.beat
+        : (this.wait.current?.beat ?? this.loopSpan?.toBeat ?? this.song.lengthBeats);
       // Time-based easing: the same glide at 60 and 120 Hz (a per-frame factor ran twice as fast).
       this.beat += (target - this.beat) * (1 - Math.exp(-dt * 11));
       if (Math.abs(target - this.beat) < 1e-3) this.beat = target;

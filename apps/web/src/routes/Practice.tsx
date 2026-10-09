@@ -146,7 +146,11 @@ function PracticeView({
   const [session] = useState(() => new PracticeSession(prepared.played, now));
   const [status, setStatus] = useState<SessionStatus>(() => session.status());
   const [mode, setMode] = useState<PracticeMode>(prefs.mode);
-  const [hands, setHands] = useState<HandFilter>(prefs.hands);
+  // A remembered hand the piece has no notes for (the left hand of a melody level) is not used here
+  // and not forgotten either.
+  const startHands: HandFilter =
+    prefs.hands === 'both' || song.notes.some((n) => n.hand === prefs.hands) ? prefs.hands : 'both';
+  const [hands, setHands] = useState<HandFilter>(startHands);
   const [tempo, setTempo] = useState(prefs.tempo);
   const [accompany, setAccompany] = useState(prefs.accompany);
   const [midi, setMidi] = useState<{ input: MidiKeyboardInput; devices: string[] } | null>(null);
@@ -178,7 +182,7 @@ function PracticeView({
     );
     // Start from the learner's last choices.
     session.setMode(prefs.mode);
-    session.setHands(prefs.hands);
+    session.setHands(startHands);
     session.setTempo(prefs.tempo);
     session.accompany = prefs.accompany;
     session.setMetronome(prefs.metronome);
@@ -191,7 +195,7 @@ function PracticeView({
       t.stop();
       session.stop();
     };
-  }, [session, progressKey, prefs]);
+  }, [session, progressKey, prefs, startHands]);
 
   useEffect(() => {
     // While the microphone is being set up, the set-up decides what it listens for.

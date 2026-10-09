@@ -245,15 +245,52 @@
   flex-direction: column;
 }
 
-/* The other levels of the same song, under its card. */
+/* The other levels of the same song: small chips under its card, each with its level number. */
 .piece__levels {
   display: flex;
   flex-wrap: wrap;
+  gap: var(--space-2);
+  min-height: 2rem;
+  margin: var(--space-2) 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.level-chip {
+  display: inline-flex;
   align-items: center;
-  gap: var(--space-1) var(--space-3);
-  min-height: 1.6em;
-  margin: var(--space-2) var(--space-1) 0;
+  gap: 0.4rem;
+  padding: 0.2rem 0.65rem 0.2rem 0.25rem;
+  border: 1px solid var(--line-strong);
+  border-radius: 999px;
+  background: var(--surface);
+  color: var(--text);
   font-size: var(--text-sm);
+  line-height: 1.3;
+  text-decoration: none;
+  transition:
+    background-color var(--dur-1) var(--ease),
+    border-color var(--dur-1) var(--ease);
+}
+
+.level-chip:hover,
+.level-chip:focus-visible {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+  text-decoration: none;
+}
+
+.level-chip__level {
+  display: grid;
+  place-items: center;
+  width: 1.4rem;
+  height: 1.4rem;
+  border-radius: 50%;
+  background: var(--accent-soft);
+  color: var(--accent-ink);
+  font-size: 0.75rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
 }
 
 .piece__card {

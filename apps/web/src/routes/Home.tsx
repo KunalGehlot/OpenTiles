@@ -225,18 +225,26 @@ function PieceCard({
       </a>
       <CopyLink url={absoluteHref(route)} title={piece.title} />
       {/* Always present, so cards in a row keep one height. */}
-      <p className="piece__levels">
-        {others.length > 0 && <span className="muted">Also:</span>}
+      <ul
+        className="piece__levels"
+        aria-label={others.length > 0 ? 'Other levels of this song' : undefined}
+      >
         {others.map((o) => (
-          <a
-            key={o.slug}
-            href={href({ name: 'practice', source: 'catalogue', id: o.slug })}
-            title={`${o.title}, level ${o.difficulty}`}
-          >
-            {o.variant ?? o.title}
-          </a>
+          <li key={o.slug}>
+            <a
+              className="level-chip"
+              href={href({ name: 'practice', source: 'catalogue', id: o.slug })}
+              title={`${o.title}, level ${o.difficulty}`}
+            >
+              <span className="level-chip__level" aria-hidden="true">
+                {o.difficulty}
+              </span>
+              <span className="level-chip__name">{o.variant ?? o.title}</span>
+              <span className="visually-hidden"> (level {o.difficulty})</span>
+            </a>
+          </li>
         ))}
-      </p>
+      </ul>
     </div>
   );
 }
