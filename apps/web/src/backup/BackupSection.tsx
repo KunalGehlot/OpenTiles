@@ -183,7 +183,8 @@ function ImportBackup() {
         { onProgress: setStage },
       );
       await reloadAppSettings();
-      await requestPersistence();
+      // Not awaited: Firefox asks the user first, and the promise waits for their answer.
+      void requestPersistence();
       setStage('done');
       setSummary(result);
       setFile(null);

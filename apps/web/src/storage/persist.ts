@@ -2,6 +2,10 @@
 // a Home Screen app (spec §5). Ask for persistent storage and nudge iPad users to install.
 import { isNativeShell } from '../lib/native-shell';
 
+/**
+ * Never await this before the UI moves on: Firefox shows a permission prompt, and the promise
+ * stays pending until the user answers it.
+ */
 export async function requestPersistence(): Promise<boolean> {
   try {
     if (!navigator.storage?.persist) return false;

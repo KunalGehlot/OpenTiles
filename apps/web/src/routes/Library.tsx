@@ -167,7 +167,8 @@ export function Library() {
     const first = (await db.library.count()) === 1;
     setPending(null);
     if (first) {
-      await requestPersistence();
+      // Not awaited: Firefox asks the user first, and the promise waits for their answer.
+      void requestPersistence();
       if (shouldSuggestHomeScreen()) setHomeScreenHint(true);
     }
     window.location.hash = href({ name: 'practice', source: 'library', id: String(id) });
