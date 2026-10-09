@@ -181,3 +181,39 @@ test('the scrolling score keeps the play bar in the middle, shows no scroll bar 
   );
   expect(after).not.toEqual(before);
 });
+
+/** Horizontal offset of the scrolling score, in CSS pixels (0 = at the start). */
+function scoreOffset(page: Page): Promise<number> {
+  return page.evaluate(() => {
+    const mover = document.querySelector('.ot-score-mover') as HTMLElement | null;
+    const m = /translate3d\((-?[\d.]+)px/.exec(mover?.style.transform ?? '');
+    return m ? -Number(m[1]) : 0;
+  });
+}
+
+test('the scrolling score returns to its start after a listen run', async ({ page }) => {
+  await page.goto('./#/practice/catalogue/joy-to-the-world');
+  await page.getByRole('group', { name: 'View' }).getByRole('button', { name: 'Score' }).click();
+  await expect(page.locator('[data-testid="score-strip"] > svg')).toBeVisible({ timeout: 20_000 });
+  await page.getByRole('button', { name: 'Listen', exact: true }).click();
+  await page.getByRole('button', { name: 'Play', exact: true }).click();
+  // The score moves past the play bar while the piece plays ...
+  await expect.poll(() => scoreOffset(page), { timeout: 15_000 }).toBeGreaterThan(40);
+  // ... and is back at the start a moment after the last note.
+  await expect.poll(() => scoreOffset(page), { timeout: 20_000 }).toBeLessThan(1);
+});
+
+test('the scrolling score returns to its start after a wait-mode run', async ({ page }) => {
+  await page.goto('./#/practice/catalogue/joy-to-the-world-melody');
+  await page.getByRole('group', { name: 'View' }).getByRole('button', { name: 'Score' }).click();
+  await expect(page.locator('[data-testid="score-strip"] > svg')).toBeVisible({ timeout: 20_000 });
+  // C5 B4 A4 G4 F4 E4 D4 C4 G4 A4 A4 B4 B4 C5 on the computer keys.
+  const keys = ['K', 'J', 'H', 'G', 'F', 'D', 'S', 'A', 'G', 'H', 'H', 'J', 'J', 'K'];
+  for (const [i, key] of keys.entries()) {
+    await page.keyboard.press(`Key${key}`);
+    if (i === 8) expect(await scoreOffset(page)).toBeGreaterThan(20);
+    await page.waitForTimeout(250);
+  }
+  await expect(page.locator('.stats')).toContainText('✓ 14', { timeout: 10_000 });
+  await expect.poll(() => scoreOffset(page), { timeout: 20_000 }).toBeLessThan(1);
+});

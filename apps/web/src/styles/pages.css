@@ -544,3 +544,25 @@ button.copy-link--done {
   background: var(--warn-soft);
   color: var(--warn);
 }
+
+.searchbox {
+  position: relative;
+  display: flex;
+  align-items: center;
+  max-width: 28rem;
+  margin-block: var(--space-3);
+}
+
+.searchbox > svg {
+  position: absolute;
+  inset-inline-start: 0.75rem;
+  width: 1.1em;
+  height: 1.1em;
+  color: var(--muted);
+  pointer-events: none;
+}
+
+.searchbox input[type='search'] {
+  width: 100%;
+  padding-inline-start: 2.4rem;
+}

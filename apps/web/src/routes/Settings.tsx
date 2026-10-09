@@ -220,6 +220,12 @@ function Practice({
           <option value="off">None</option>
         </select>
       </Setting>
+      <Toggle
+        label="Note names"
+        description="Show the name of each note (C, F♯, B♭) at the top of the falling notes. The fingers stay at the bottom."
+        checked={settings.noteNames}
+        onChange={(noteNames) => set({ noteNames })}
+      />
     </section>
   );
 }

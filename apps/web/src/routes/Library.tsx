@@ -12,7 +12,9 @@ import {
 import type { AudioImportStage } from '../lib/audio-import';
 import { applySettings, DEFAULT_SETTINGS, handCounts } from '../lib/import-settings';
 import { href } from '../lib/router';
+import { matchesQuery } from '../catalogue/search';
 import { db, getSetting, setSetting } from '../storage/db';
+import { SearchBox } from '../ui/SearchBox';
 import type { ImportSettings } from '../storage/db';
 import { requestPersistence, shouldSuggestHomeScreen } from '../storage/persist';
 
@@ -38,8 +40,16 @@ const AUDIO_STAGE_LABELS: Record<AudioImportStage, string> = {
   transcribing: 'Listening for notes…',
 };
 
+/** Largest score file and recording the library accepts, so a huge file cannot hang the tab. */
+const MAX_SCORE_BYTES = 30_000_000;
+const MAX_AUDIO_BYTES = 200_000_000;
+
 export function Library() {
   const items = useLiveQuery(() => db.library.orderBy('addedAt').reverse().toArray(), []);
+  const [query, setQuery] = useState('');
+  const visible = (items ?? []).filter((i) =>
+    matchesQuery({ title: `${i.title} ${i.fileName}`, tags: i.tags }, query),
+  );
   const [rightsConfirmed, setRightsConfirmed] = useState<boolean | null>(null);
   const [askRights, setAskRights] = useState(false);
   const [pending, setPending] = useState<Pending | null>(null);
@@ -64,6 +74,12 @@ export function Library() {
     if (!file) return;
     setError(null);
     try {
+      const limit = isAudioFile(file.name, file.type) ? MAX_AUDIO_BYTES : MAX_SCORE_BYTES;
+      if (file.size > limit) {
+        throw new Error(
+          `This file is too large (${Math.round(file.size / 1e6)} MB). The limit is ${Math.round(limit / 1e6)} MB.`,
+        );
+      }
       const bytes = new Uint8Array(await file.arrayBuffer());
       if (isAudioFile(file.name, file.type)) {
         // Recordings are transcribed on this device; the model loads only now (P4-02).
@@ -112,16 +128,28 @@ export function Library() {
       ...applySettings(pending.base, pending.settings),
       title: pending.title.trim() || 'Untitled',
     };
-    const id = await db.library.add({
-      title: song.title,
-      fileName: pending.fileName,
-      format: song.format,
-      bytes: pending.bytes,
-      song,
-      settings: pending.settings,
-      tags: [],
-      addedAt: Date.now(),
-    });
+    let id: number;
+    try {
+      id = await db.library.add({
+        title: song.title.slice(0, 200),
+        fileName: pending.fileName,
+        format: song.format,
+        bytes: pending.bytes,
+        song,
+        settings: pending.settings,
+        tags: [],
+        addedAt: Date.now(),
+      });
+    } catch (e) {
+      // Most often the browser's storage is full, or blocked in a private window.
+      const full = e instanceof DOMException && e.name === 'QuotaExceededError';
+      setError(
+        full
+          ? 'There is not enough storage left on this device to save this piece. Delete a piece you no longer need and try again.'
+          : 'This piece could not be saved. Your browser may be blocking storage (a private window, for example).',
+      );
+      return;
+    }
     const first = (await db.library.count()) === 1;
     setPending(null);
     if (first) {
@@ -222,6 +250,19 @@ export function Library() {
       )}
 
       <h2>Pieces</h2>
+      {items && items.length > 1 && (
+        <SearchBox
+          value={query}
+          onChange={setQuery}
+          label="Search your library"
+          placeholder="Search by title, file name or tag"
+        />
+      )}
+      {items && items.length > 1 && query.trim() !== '' && visible.length === 0 && (
+        <p className="muted" role="status">
+          No piece in your library matches “{query.trim()}”.
+        </p>
+      )}
       {items && items.length === 0 && (
         <div className="empty">
           <FileMusic />
@@ -233,7 +274,7 @@ export function Library() {
         </div>
       )}
       <div className="grid grid--wide">
-        {(items ?? []).map((item) => (
+        {visible.map((item) => (
           <div key={item.id} className="card library-item">
             <div className="library-item__head">
               <span className="file-tile" aria-hidden="true">

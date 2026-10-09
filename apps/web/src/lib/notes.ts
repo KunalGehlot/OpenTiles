@@ -17,3 +17,11 @@ export function parseNoteNames(text: string): number[] | null {
   }
   return out;
 }
+
+const SHARP_NAMES = ['C', 'C♯', 'D', 'D♯', 'E', 'F', 'F♯', 'G', 'G♯', 'A', 'A♯', 'B'];
+const FLAT_NAMES = ['C', 'D♭', 'D', 'E♭', 'E', 'F', 'G♭', 'G', 'A♭', 'A', 'B♭', 'B'];
+
+/** The note's letter name without an octave: "C", "F♯" (or "G♭" when `flats`). */
+export function pitchClassName(pitch: number, flats = false): string {
+  return (flats ? FLAT_NAMES : SHARP_NAMES)[((Math.round(pitch) % 12) + 12) % 12] ?? 'C';
+}

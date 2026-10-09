@@ -4,6 +4,7 @@ import { Metronome } from 'lucide-react';
 import { unlockAudio } from '../audio/context';
 import { clickTrackFor } from '../audio/click-track';
 import type { PracticeSession } from '../views/session';
+import { savePracticePrefs } from './prefs';
 
 /** Routes the session's clicks through the metronome's own volume. Call from a user gesture. */
 export async function connectClickTrack(session: PracticeSession, volume?: number) {
@@ -13,13 +14,22 @@ export async function connectClickTrack(session: PracticeSession, volume?: numbe
   return track;
 }
 
-export function MetronomeControl({ session, on }: { session: PracticeSession; on: boolean }) {
-  const [volume, setVolume] = useState(0.5);
+export function MetronomeControl({
+  session,
+  on,
+  volume: initialVolume = 0.5,
+}: {
+  session: PracticeSession;
+  on: boolean;
+  volume?: number;
+}) {
+  const [volume, setVolume] = useState(initialVolume);
 
   const toggle = async () => {
     // Audio may only start from a gesture (Safari); this click is one.
     await connectClickTrack(session, volume);
     session.setMetronome(!on);
+    savePracticePrefs({ metronome: !on });
   };
 
   return (
@@ -49,6 +59,7 @@ export function MetronomeControl({ session, on }: { session: PracticeSession; on
           onChange={(e) => {
             const v = Number(e.target.value) / 100;
             setVolume(v);
+            savePracticePrefs({ clickVolume: v });
             void connectClickTrack(session, v);
           }}
         />

@@ -3,14 +3,17 @@ import { useEffect, useState } from 'react';
 import { CalendarCheck, Check, Clock, FilePlus, Link2, Medal, Play } from 'lucide-react';
 import { DIFFICULTY_LABELS, loadCatalogue, siblingsOf } from '../catalogue/catalogue';
 import type { CataloguePiece } from '../catalogue/catalogue';
+import { matchesQuery } from '../catalogue/search';
 import { catalogueKey, difficultyPath, MASTERY, nextPiece } from '../catalogue/path';
 import { absoluteHref, href } from '../lib/router';
 import { HomeScreenHint } from '../pwa/HomeScreenHint';
+import { SearchBox } from '../ui/SearchBox';
 import { db, localDay, streak } from '../storage/db';
 
 export function Home() {
   const [pieces, setPieces] = useState<CataloguePiece[] | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [query, setQuery] = useState('');
   const progress = useLiveQuery(() => db.progress.toArray(), []);
   const days = useLiveQuery(() => db.days.toArray(), []);
 
@@ -23,6 +26,12 @@ export function Home() {
   const best = new Map((progress ?? []).map((p) => [p.key, p.bestAccuracy]));
   const shown = (pieces ?? []).filter((p) => p.verified || __SHOW_UNVERIFIED__);
   const path = difficultyPath(shown, best);
+  const searching = query.trim().length > 0;
+  const found = searching
+    ? shown
+        .filter((p) => matchesQuery(p, query))
+        .sort((a, b) => a.title.localeCompare(b.title) || a.difficulty - b.difficulty)
+    : [];
   const next = nextPiece(path, best);
   const nextLevel = next ? path.find((l) => l.pieces.includes(next)) : undefined;
   const started = path.some((l) => l.played > 0);
@@ -84,51 +93,80 @@ export function Home() {
           Start at first steps and work upwards. A level is complete when every piece in it reaches{' '}
           {Math.round(MASTERY * 100)} %.
         </p>
+        <SearchBox
+          value={query}
+          onChange={setQuery}
+          label="Search pieces"
+          placeholder="Search by title, composer or level"
+        />
         {error && <p className="error">{error}</p>}
+        {searching && (
+          <>
+            <p className="muted" role="status">
+              {found.length === 0
+                ? `No piece matches “${query.trim()}”.`
+                : `${found.length} ${found.length === 1 ? 'piece' : 'pieces'} found`}
+            </p>
+            <div className="grid">
+              {found.map((p) => (
+                <PieceCard
+                  key={p.slug}
+                  piece={p}
+                  best={best.get(catalogueKey(p.slug))}
+                  others={siblingsOf(p, shown)}
+                />
+              ))}
+            </div>
+          </>
+        )}
         {pieces && shown.length === 0 && (
           <p className="notice">
             No reviewed pieces yet. Every catalogue piece is checked by a person before it appears
             here — you can help review pieces on GitHub.
           </p>
         )}
-        <ol className="path" aria-label="Difficulty path">
-          {path.map((level) => (
-            <li
-              key={level.level}
-              className={`path-level path-level--${level.status}`}
-              aria-labelledby={`level-${level.level}`}
-            >
-              <span className="path-step" aria-hidden="true">
-                {level.status === 'done' ? <Check /> : level.level}
-              </span>
-              <div className="path-head">
-                <h3 id={`level-${level.level}`}>
-                  Level {level.level} · {DIFFICULTY_LABELS[level.level]}
-                  {level.status === 'done' && <span className="visually-hidden"> (complete)</span>}
-                </h3>
-                <span className="path-count">
-                  {level.mastered} of {level.pieces.length} mastered · {level.played} played
+        {!searching && (
+          <ol className="path" aria-label="Difficulty path">
+            {path.map((level) => (
+              <li
+                key={level.level}
+                className={`path-level path-level--${level.status}`}
+                aria-labelledby={`level-${level.level}`}
+              >
+                <span className="path-step" aria-hidden="true">
+                  {level.status === 'done' ? <Check /> : level.level}
                 </span>
-              </div>
-              <progress
-                className="path-progress"
-                max={1}
-                value={level.progress}
-                aria-label={`Level ${level.level} progress`}
-              />
-              <div className="grid">
-                {level.pieces.map((p) => (
-                  <PieceCard
-                    key={p.slug}
-                    piece={p}
-                    best={best.get(catalogueKey(p.slug))}
-                    others={siblingsOf(p, shown)}
-                  />
-                ))}
-              </div>
-            </li>
-          ))}
-        </ol>
+                <div className="path-head">
+                  <h3 id={`level-${level.level}`}>
+                    Level {level.level} · {DIFFICULTY_LABELS[level.level]}
+                    {level.status === 'done' && (
+                      <span className="visually-hidden"> (complete)</span>
+                    )}
+                  </h3>
+                  <span className="path-count">
+                    {level.mastered} of {level.pieces.length} mastered · {level.played} played
+                  </span>
+                </div>
+                <progress
+                  className="path-progress"
+                  max={1}
+                  value={level.progress}
+                  aria-label={`Level ${level.level} progress`}
+                />
+                <div className="grid">
+                  {level.pieces.map((p) => (
+                    <PieceCard
+                      key={p.slug}
+                      piece={p}
+                      best={best.get(catalogueKey(p.slug))}
+                      others={siblingsOf(p, shown)}
+                    />
+                  ))}
+                </div>
+              </li>
+            ))}
+          </ol>
+        )}
       </section>
 
       <section className="panel panel--row" aria-labelledby="own-title">

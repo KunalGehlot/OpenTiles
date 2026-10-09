@@ -46,6 +46,8 @@ export interface AppSettings {
   crashReports: boolean;
   keyboard: KeyboardSetting;
   fingering: FingeringDisplay;
+  /** Note names (C, F♯, B♭) at the top of each falling note. */
+  noteNames: boolean;
 }
 
 export const DEFAULT_APP_SETTINGS: Readonly<AppSettings> = Object.freeze({
@@ -58,6 +60,7 @@ export const DEFAULT_APP_SETTINGS: Readonly<AppSettings> = Object.freeze({
   crashReports: false,
   keyboard: Object.freeze({ size: 'auto', low: PIANO_LOW, keys: 88 }),
   fingering: 'suggested',
+  noteNames: true,
 }) as Readonly<AppSettings>;
 
 /** Keys most Bluetooth page-turn pedals send, in the order the settings list offers them. */
@@ -110,6 +113,7 @@ export function normaliseSettings(value: unknown): AppSettings {
     crashReports: bool(v.crashReports, d.crashReports),
     keyboard: normaliseKeyboard(v.keyboard),
     fingering: v.fingering === 'written' || v.fingering === 'off' ? v.fingering : 'suggested',
+    noteNames: bool(v.noteNames, d.noteNames),
   };
 }
 

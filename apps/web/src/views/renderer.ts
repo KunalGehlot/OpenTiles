@@ -20,7 +20,8 @@ import {
 } from './keyboard';
 import type { KeyboardLayout, KeyRect } from './keyboard';
 import type { PracticeSession } from './session';
-import { effectiveSettings, labelScale } from '../settings/store';
+import { appSettings, effectiveSettings, labelScale } from '../settings/store';
+import { pitchClassName } from '../lib/notes';
 
 const FONT = "system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif";
 /** How long a played key blooms (seconds); the session keeps its flashes this long. */
@@ -135,6 +136,9 @@ export class PracticeRenderer {
   private keybed: CanvasGradient | null = null;
   /** Read once per frame: Large print scales labels, Reduce motion switches the bloom off. */
   private scale = 1;
+  /** Per frame: show note names, and spell black keys as flats in a flat key. */
+  private noteNames = true;
+  private flats = false;
   private calm = false;
   /** The font last set on the context; resizing the canvas resets it. */
   private font = '';
@@ -211,6 +215,8 @@ export class PracticeRenderer {
     const p = this.palette;
     this.scale = labelScale();
     this.calm = effectiveSettings().reducedMotion;
+    this.noteNames = appSettings().noteNames;
+    this.flats = (session.song.keySignatures[0]?.fifths ?? 0) < 0;
     ctx.setTransform(this.dpr, 0, 0, this.dpr, 0, 0);
     ctx.fillStyle = p.background;
     ctx.fillRect(0, 0, this.width, this.height);
@@ -426,8 +432,11 @@ export class PracticeRenderer {
     let fill = n.hand === 'right' ? p.right : p.left;
     if (!practised) fill = n.hand === 'right' ? p.rightSoft : p.leftSoft;
     const judgement = session.judged.get(n.id);
-    if (judgement === 'early' || judgement === 'late') fill = p.timing;
-    else if (judgement === 'missed') fill = p.missed;
+    // An early or late note keeps its hand colour (a played right-hand note stays blue); only a
+    // thin edge in the timing colour says it was off the beat. Filling it amber turned nearly
+    // every played note orange.
+    const offBeat = judgement === 'early' || judgement === 'late';
+    if (judgement === 'missed') fill = p.missed;
     else if (isDone) fill = p.done;
     // The notes to play now glow, so the eye finds them among the ones still falling.
     if (isCurrent && !isDone) {
@@ -449,11 +458,31 @@ export class PracticeRenderer {
         ctx.fill();
       }
     }
+    if (offBeat && !isDone) {
+      ctx.strokeStyle = p.timing;
+      ctx.lineWidth = 2;
+      roundRect(ctx, x, y, w, h, radius);
+      ctx.stroke();
+    }
     if (isCurrent && !isDone) {
       ctx.strokeStyle = p.text;
       ctx.lineWidth = 2;
       roundRect(ctx, x, y, w, h, radius);
       ctx.stroke();
+    }
+    if (practised && !isDone && w >= 13 && this.noteNames) {
+      // The name sits at the top (the far edge), the finger at the bottom; both only when the tile
+      // is tall enough that they do not touch.
+      const size = Math.min(Math.max(w * 0.42, 10), 17) * this.scale;
+      const fingerRoom = n.fingering ? Math.min(Math.max(w * 0.5, 11), 22) * this.scale + 6 : 0;
+      if (h >= size + 8 + fingerRoom) {
+        ctx.fillStyle = p.onHand;
+        this.setFont(ctx, 600, Math.min(size, w * 0.62));
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(pitchClassName(n.pitch, this.flats), x + w / 2, y + size * 0.5 + 5);
+        ctx.textBaseline = 'alphabetic';
+      }
     }
     if (n.fingering && practised && !isDone && w >= 13) {
       const size = Math.min(Math.max(w * 0.5, 11), 22) * this.scale;

@@ -66,13 +66,60 @@ class OpenTilesDb extends Dexie {
 
 export const db = new OpenTilesDb();
 
-export async function getSetting<T>(key: string, fallback: T): Promise<T> {
-  const s = await db.settings.get(key);
-  return s === undefined ? fallback : (s.value as T);
+const MIRROR_PREFIX = 'opentiles:setting:';
+
+/** localStorage, or null where reading it throws (blocked storage, some private modes). */
+function mirror(): Storage | null {
+  // Not touched outside a browser: Node warns about its own experimental localStorage.
+  if (typeof window === 'undefined') return null;
+  try {
+    return window.localStorage ?? null;
+  } catch {
+    return null;
+  }
 }
 
+function readMirror<T>(key: string): { value: T } | null {
+  try {
+    const raw = mirror()?.getItem(MIRROR_PREFIX + key);
+    return raw == null ? null : { value: JSON.parse(raw) as T };
+  } catch {
+    return null;
+  }
+}
+
+function writeMirror(key: string, value: unknown): void {
+  try {
+    const json = JSON.stringify(value);
+    // Settings are small. A large value (a calibration trace, say) stays in IndexedDB only.
+    if (json !== undefined && json.length <= 20_000) mirror()?.setItem(MIRROR_PREFIX + key, json);
+  } catch {
+    // Quota or blocked storage: IndexedDB still has the value.
+  }
+}
+
+/**
+ * Reads a setting. IndexedDB is the store; a small copy in localStorage covers browsers where
+ * IndexedDB is unavailable or was cleared on its own, so settings survive in either.
+ */
+export async function getSetting<T>(key: string, fallback: T): Promise<T> {
+  try {
+    const s = await db.settings.get(key);
+    if (s !== undefined) return s.value as T;
+  } catch {
+    // Fall through to the copy.
+  }
+  return readMirror<T>(key)?.value ?? fallback;
+}
+
+/** Saves a setting to IndexedDB and the localStorage copy; rejects only if both fail. */
 export async function setSetting(key: string, value: unknown): Promise<void> {
-  await db.settings.put({ key, value });
+  writeMirror(key, value);
+  try {
+    await db.settings.put({ key, value });
+  } catch (e) {
+    if (readMirror(key) === null) throw e;
+  }
 }
 
 export function localDay(date = new Date()): string {

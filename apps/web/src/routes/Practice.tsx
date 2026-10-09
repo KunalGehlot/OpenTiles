@@ -30,6 +30,8 @@ import { prepareSong } from '../practice/prepare';
 import { SectionBar } from '../practice/SectionBar';
 import { fitMessage, keyboardRange } from '../settings/model';
 import type { FingeringDisplay } from '../settings/model';
+import { loadPracticePrefs, savePracticePrefs } from '../practice/prefs';
+import type { PracticePrefs } from '../practice/prefs';
 import { updateAppSettings, useAppSettings } from '../settings/store';
 import {
   getMicCalibration,
@@ -62,6 +64,16 @@ const NO_BARS: readonly number[] = [];
 export function Practice({ source, id }: { source: 'catalogue' | 'library'; id: string }) {
   const [loaded, setLoaded] = useState<Loaded | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [prefs, setPrefs] = useState<PracticePrefs | null>(null);
+
+  // What the learner chose last time (mode, hands, tempo, metronome); read once per visit.
+  useEffect(() => {
+    let cancelled = false;
+    void loadPracticePrefs().then((p) => !cancelled && setPrefs(p));
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   useEffect(() => {
     let cancelled = false;
@@ -107,11 +119,19 @@ export function Practice({ source, id }: { source: 'catalogue' | 'library'; id: 
       </div>
     );
   }
-  if (!loaded) return <p className="session-message muted">Loading…</p>;
-  return <PracticeView key={loaded.progressKey} {...loaded} />;
+  if (!loaded || !prefs) return <p className="session-message muted">Loading…</p>;
+  return <PracticeView key={loaded.progressKey} {...loaded} prefs={prefs} />;
 }
 
-function PracticeView({ source, song, title, subtitle, progressKey, notation }: Loaded) {
+function PracticeView({
+  source,
+  song,
+  title,
+  subtitle,
+  progressKey,
+  notation,
+  prefs,
+}: Loaded & { prefs: PracticePrefs }) {
   const settings = useAppSettings();
   // The piece fitted to the learner's keyboard (P4-07), with the fingers they chose (P4-08).
   // Keyed on plain values: other settings changing must not restart the run.
@@ -125,10 +145,10 @@ function PracticeView({ source, song, title, subtitle, progressKey, notation }: 
   );
   const [session] = useState(() => new PracticeSession(prepared.played, now));
   const [status, setStatus] = useState<SessionStatus>(() => session.status());
-  const [mode, setMode] = useState<PracticeMode>('wait');
-  const [hands, setHands] = useState<HandFilter>('both');
-  const [tempo, setTempo] = useState(1);
-  const [accompany, setAccompany] = useState(true);
+  const [mode, setMode] = useState<PracticeMode>(prefs.mode);
+  const [hands, setHands] = useState<HandFilter>(prefs.hands);
+  const [tempo, setTempo] = useState(prefs.tempo);
+  const [accompany, setAccompany] = useState(prefs.accompany);
   const [midi, setMidi] = useState<{ input: MidiKeyboardInput; devices: string[] } | null>(null);
   const [mic, setMic] = useState<MicInput | null>(null);
   const [inputError, setInputError] = useState<string | null>(null);
@@ -148,11 +168,20 @@ function PracticeView({ source, song, title, subtitle, progressKey, notation }: 
   useEffect(() => {
     session.onStatus = setStatus;
     session.onFinish = (summary, seconds) => void recordRun(progressKey, summary.accuracy, seconds);
-    session.onTempo = setTempo;
+    session.onTempo = (t) => {
+      setTempo(t);
+      savePracticePrefs({ tempo: t });
+    };
     // Loop runs count as practice time but not as a best score for the whole piece.
     const unsubscribe = session.addLoopListener(
       (run) => void recordRun(progressKey, 0, run.seconds),
     );
+    // Start from the learner's last choices.
+    session.setMode(prefs.mode);
+    session.setHands(prefs.hands);
+    session.setTempo(prefs.tempo);
+    session.accompany = prefs.accompany;
+    session.setMetronome(prefs.metronome);
     const t = touch.current;
     t.onNote = (e) => session.input(e);
     t.onRelease = (p, time) => session.release(p, time);
@@ -162,7 +191,7 @@ function PracticeView({ source, song, title, subtitle, progressKey, notation }: 
       t.stop();
       session.stop();
     };
-  }, [session, progressKey]);
+  }, [session, progressKey, prefs]);
 
   useEffect(() => {
     // While the microphone is being set up, the set-up decides what it listens for.
@@ -364,6 +393,7 @@ function PracticeView({ source, song, title, subtitle, progressKey, notation }: 
 
   const changeMode = (m: PracticeMode) => {
     setMode(m);
+    savePracticePrefs({ mode: m });
     session.setMode(m);
     mic?.setMode(m === 'play-along' ? 'play-along' : 'wait');
   };
@@ -521,6 +551,7 @@ function PracticeView({ source, song, title, subtitle, progressKey, notation }: 
                 aria-pressed={hands === h}
                 onClick={() => {
                   setHands(h);
+                  savePracticePrefs({ hands: h });
                   session.setHands(h);
                 }}
               >
@@ -535,6 +566,7 @@ function PracticeView({ source, song, title, subtitle, progressKey, notation }: 
                 checked={accompany}
                 onChange={(e) => {
                   setAccompany(e.target.checked);
+                  savePracticePrefs({ accompany: e.target.checked });
                   session.accompany = e.target.checked;
                 }}
               />
@@ -543,7 +575,7 @@ function PracticeView({ source, song, title, subtitle, progressKey, notation }: 
           )}
         </div>
         <div className="group">
-          <MetronomeControl session={session} on={status.metronome} />
+          <MetronomeControl session={session} on={status.metronome} volume={prefs.clickVolume} />
           <button
             aria-expanded={showLoop || status.loop !== null}
             aria-pressed={status.loop !== null}
@@ -568,6 +600,7 @@ function PracticeView({ source, song, title, subtitle, progressKey, notation }: 
             onChange={(e) => {
               const t = Number(e.target.value) / 100;
               setTempo(t);
+              savePracticePrefs({ tempo: t });
               session.setTempo(t);
             }}
           />
