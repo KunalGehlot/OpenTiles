@@ -26,6 +26,27 @@ async function importTune(page: Page): Promise<void> {
   await expect(page.locator('.stats')).toContainText('Step 1/4');
 }
 
+test('note names follow the chosen style wherever the app names a note (P5-03)', async ({
+  page,
+}) => {
+  await page.goto('./#/settings');
+  await page.getByLabel('Keyboard size').selectOption('custom');
+  await page.getByLabel('Lowest key').selectOption({ label: 'A0' });
+  await page.getByLabel('Number of keys').fill('86');
+  const range = page.getByTestId('custom-keyboard');
+  await expect(range).toHaveText('86 keys (A0–B♭7)');
+  const style = page.getByLabel('How note names are written');
+  await expect(style).toHaveValue('auto');
+  await style.selectOption('german');
+  await expect(range).toHaveText('86 keys (A0–B7)');
+  await style.selectOption('fixed-do');
+  await expect(range).toHaveText('86 keys (La0–Si♭7)');
+  await expect(page.getByLabel('Lowest key').locator('option:checked')).toHaveText('La0');
+  await page.reload();
+  await expect(page.getByLabel('How note names are written')).toHaveValue('fixed-do');
+  await expect(page.getByTestId('custom-keyboard')).toHaveText('86 keys (La0–Si♭7)');
+});
+
 test('a custom keyboard is set up in Settings and drawn in practice', async ({ page }) => {
   await page.goto('./#/settings');
   await page.getByLabel('Keyboard size').selectOption('custom');

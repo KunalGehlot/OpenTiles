@@ -285,8 +285,15 @@ export const de: Readonly<Record<string, string>> = {
   'Note names': 'Notennamen',
   'Sound could not be started in this browser, so the microphone cannot listen. Check that a sound output is connected and try again.':
     'Der Ton konnte in diesem Browser nicht gestartet werden, deshalb kann das Mikrofon nicht zuhören. Prüfe, ob ein Audioausgang angeschlossen ist, und versuche es noch einmal.',
-  'Show the name of each note (C, F♯, B♭) at the top of the falling notes. The fingers stay at the bottom.':
-    'Den Namen jeder Note (C, Fis, B) oben auf den fallenden Noten zeigen. Die Finger bleiben unten.',
+  'Show the name of each note at the top of the falling notes and on the keys to play. The fingers stay where they are.':
+    'Den Namen jeder Note oben auf den fallenden Noten und auf den Tasten zeigen, die zu spielen sind. Die Finger bleiben, wo sie sind.',
+  'How note names are written': 'Schreibweise der Notennamen',
+  'On the falling notes, the keys and everywhere else the app names a note. Middle C is C4 (Do4) in every style.':
+    'Auf den fallenden Noten, den Tasten und überall sonst, wo die App eine Note nennt. Das mittlere C heißt in jeder Schreibweise C4 (Do4).',
+  'As the language: {names}': 'Wie die Sprache: {names}',
+  'Letters: C D E F G A B': 'Englisch: C D E F G A B',
+  'German: C D E F G A H, with B for B♭': 'Deutsch: C D E F G A H, B für B♭',
+  'Fixed do: Do Re Mi Fa Sol La Si': 'Solmisation (festes Do): Do Re Mi Fa Sol La Si',
   'Number of keys': 'Anzahl der Tasten',
   Accessibility: 'Barrierefreiheit',
   'Large print': 'Große Schrift',

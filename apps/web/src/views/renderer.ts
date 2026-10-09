@@ -21,8 +21,8 @@ import {
 import type { KeyboardLayout, KeyRect } from './keyboard';
 import type { PracticeSession } from './session';
 import { appSettings, effectiveSettings, labelScale } from '../settings/store';
-import { language, t } from '../i18n';
-import { pitchClassName } from '../lib/notes';
+import { t } from '../i18n';
+import { noteLabel, pitchClassName } from '../lib/notes';
 
 const FONT = "system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif";
 /** How long a played key blooms (seconds); the session keeps its flashes this long. */
@@ -263,6 +263,31 @@ export class PracticeRenderer {
     this.font = next;
   }
 
+  /** Size of a finger number on a key (P4-08). */
+  private fingerSize(k: KeyRect): number {
+    return Math.min(Math.max(k.width * 0.55, 12), 24) * this.scale;
+  }
+
+  /**
+   * Sets a font for `text` no larger than `size` that fits `width`, or returns false when even 8 px
+   * would not fit ("Sol♯" on a narrow black key).
+   */
+  private fitFont(
+    ctx: CanvasRenderingContext2D,
+    text: string,
+    weight: number,
+    size: number,
+    width: number,
+  ): boolean {
+    this.setFont(ctx, weight, size);
+    const measured = ctx.measureText(text).width;
+    if (measured <= width) return true;
+    const smaller = (size * width) / measured;
+    if (smaller < 8) return false;
+    this.setFont(ctx, weight, smaller);
+    return true;
+  }
+
   /** How far through the piece the now-line is: a hairline along the top of the canvas. */
   private drawProgress(ctx: CanvasRenderingContext2D, session: PracticeSession): void {
     const length = session.song.lengthBeats;
@@ -482,7 +507,7 @@ export class PracticeRenderer {
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
         ctx.fillText(
-          pitchClassName(n.pitch, this.flats, language() === 'de'),
+          pitchClassName(n.pitch, this.flats ? 'flats' : 'sharps'),
           x + w / 2,
           y + size * 0.5 + 5,
         );
@@ -540,6 +565,7 @@ export class PracticeRenderer {
       if (expected.has(pitch)) return handOf.get(pitch) === 'left' ? p.left : p.right;
       return base;
     };
+    const bh = height * BLACK_HEIGHT;
     for (const k of this.layout.keys) {
       if (k.black) continue;
       ctx.fillStyle = colourFor(k.pitch, p.white);
@@ -547,17 +573,27 @@ export class PracticeRenderer {
       ctx.fillStyle = p.whiteEdge;
       ctx.fillRect(k.x + k.width - 1, top, 1, height);
       this.drawHold(ctx, k, session, now, top, height);
-      if (k.pitch % 12 === 0) {
-        ctx.fillStyle = p.keyLabel;
+      const baseline = top + height - 6;
+      ctx.textAlign = 'center';
+      if (this.noteNames && expected.has(k.pitch)) {
+        // The key to play is named at its front edge, below its finger when there is room (P5-03).
+        const name = pitchClassName(k.pitch, this.flats ? 'flats' : 'sharps');
+        const size = Math.min(Math.max(k.width * 0.42, 10), 15) * this.scale;
+        const finger = fingerOf.has(k.pitch)
+          ? top + bh + (height - bh) * 0.4 + this.fingerSize(k) / 2 + 2
+          : top + bh;
+        if (baseline - size * 0.75 >= finger && this.fitFont(ctx, name, 600, size, k.width - 3)) {
+          ctx.fillStyle = p.onHand;
+          ctx.fillText(name, k.x + k.width / 2, baseline);
+        }
+      } else if (k.pitch % 12 === 0) {
         // Large print (P2-15) makes the octave labels bigger, as far as the key allows.
+        const label = noteLabel(k.pitch);
         const scale = this.scale;
-        this.setFont(
-          ctx,
-          scale > 1 ? 600 : 500,
-          Math.max(9, Math.min(12 * scale, k.width * 0.45 * scale)),
-        );
-        ctx.textAlign = 'center';
-        ctx.fillText(`C${Math.floor(k.pitch / 12) - 1}`, k.x + k.width / 2, top + height - 6);
+        if (this.fitFont(ctx, label, scale > 1 ? 600 : 500, 12 * scale, k.width - 2)) {
+          ctx.fillStyle = p.keyLabel;
+          ctx.fillText(label, k.x + k.width / 2, baseline);
+        }
       }
     }
     // The shadow the keybed's top edge casts on the keys.
@@ -565,7 +601,6 @@ export class PracticeRenderer {
       ctx.fillStyle = this.keybed;
       ctx.fillRect(0, top, this.width, 9);
     }
-    const bh = height * BLACK_HEIGHT;
     for (const k of this.layout.keys) {
       if (!k.black) continue;
       const colour = colourFor(k.pitch, p.black);
@@ -579,6 +614,16 @@ export class PracticeRenderer {
         ctx.fill();
       }
       this.drawHold(ctx, k, session, now, top, bh);
+      if (this.noteNames && expected.has(k.pitch)) {
+        // Above the finger, which sits near the front edge; only where the name fits the key.
+        const name = pitchClassName(k.pitch, this.flats ? 'flats' : 'sharps');
+        const size = Math.min(Math.max(k.width * 0.5, 9), 13) * this.scale;
+        if (bh >= 60 && this.fitFont(ctx, name, 600, size, k.width - 2)) {
+          ctx.fillStyle = p.onHand;
+          ctx.textAlign = 'center';
+          ctx.fillText(name, k.x + k.width / 2, top + bh * 0.42);
+        }
+      }
     }
     if (fingerOf.size === 0) return;
     ctx.fillStyle = p.onHand;
@@ -587,7 +632,7 @@ export class PracticeRenderer {
     for (const k of this.layout.keys) {
       const finger = fingerOf.get(k.pitch);
       if (finger === undefined || k.width < 8) continue;
-      const size = Math.min(Math.max(k.width * 0.55, 12), 24) * this.scale;
+      const size = this.fingerSize(k);
       this.setFont(ctx, 700, Math.min(size, k.width * 0.85));
       // White keys: in the part below the black keys; black keys: near their front edge.
       const y = k.black ? top + bh * 0.72 : top + bh + (height - bh) * 0.4;

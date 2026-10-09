@@ -10,7 +10,7 @@ import {
   micLevelVerdict,
 } from '@opentiles/practice';
 import type { MicLevelVerdict } from '@opentiles/practice';
-import { noteName } from '@opentiles/song-model';
+import { noteLabel } from '../lib/notes';
 import { clickTrackFor } from '../audio/click-track';
 import { now, unlockAudio } from '../audio/context';
 import type { MicInput } from '../input/mic-input';
@@ -43,8 +43,8 @@ function verdictText(verdict: MicLevelVerdict): string {
 const describeKey = (pitch: number) => {
   if (pitch === 60) return t('middle C');
   return pitch < 60
-    ? t('the low {note}', { note: noteName(pitch) })
-    : t('the high {note}', { note: noteName(pitch) });
+    ? t('the low {note}', { note: noteLabel(pitch) })
+    : t('the high {note}', { note: noteLabel(pitch) });
 };
 
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
@@ -217,13 +217,16 @@ export function MicCalibration({
             <p aria-live="polite">
               {t('Play {key} ({note}) and let it ring.', {
                 key: describeKey(keyPitch),
-                note: noteName(keyPitch),
+                note: noteLabel(keyPitch),
               })}
             </p>
             <p className="muted">
               {t('Key {n} of {count}', { n: keyIndex + 1, count: CALIBRATION_PITCHES.length })}
               {heardKeys.length > 0 && (
-                <> · {t('heard {notes}', { notes: heardKeys.map(noteName).join(', ') })}</>
+                <>
+                  {' '}
+                  · {t('heard {notes}', { notes: heardKeys.map((p) => noteLabel(p)).join(', ') })}
+                </>
               )}
             </p>
             <div className="row">

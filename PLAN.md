@@ -351,8 +351,12 @@ images, sounds or fonts, and credit the inspiration in [CREDITS.md](CREDITS.md).
   Left: recreate the repository before it goes public.
 - [ ] **P5-02** (APP) Keep the screen awake while practising (Screen Wake Lock API, requested from a
       user gesture, released on pause, hidden tab or leaving the page; no error where it is missing).
-- [ ] **P5-03** (APP) Note labels: letters, German names (H instead of B), Fixed-Do; one setting that
-      the falling notes, the keyboard and the score fingerings share.
+- [x] **P5-03** (APP) Note labels: letters, German names (H instead of B), Fixed-Do; one setting that
+      the falling notes, the keyboard and the score fingerings share. Done: Settings → Fingering →
+      "How note names are written" (as the language, letters, German, Fixed-Do). It names the
+      falling notes, the keys to play next (below their finger, where there is room), the octave
+      labels on the keyboard, and notes in the Settings, library and microphone texts. The score
+      views have no note names to change; the Detector Lab keeps scientific names.
 - [ ] **P5-04** (APP, SONG) Shift the piece by semitones during practice and choose sharps or flats for
       the labels. Today transposing exists only at import. The score views re-engrave, fingering is
       recomputed.

@@ -34,7 +34,8 @@ import {
   pickOutput,
 } from '../input/midi-input';
 import type { MidiKeyboardInput } from '../input/midi-input';
-import { noteName } from '@opentiles/song-model';
+import { labelStyleFor, noteLabel } from '../lib/notes';
+import type { NoteLabelSetting } from '../lib/notes';
 
 /** Default export so the route can be lazy-loaded. */
 export default function Settings() {
@@ -240,11 +241,34 @@ function Practice({
       <Toggle
         label={t('Note names')}
         description={t(
-          'Show the name of each note (C, F♯, B♭) at the top of the falling notes. The fingers stay at the bottom.',
+          'Show the name of each note at the top of the falling notes and on the keys to play. The fingers stay where they are.',
         )}
         checked={settings.noteNames}
         onChange={(noteNames) => set({ noteNames })}
       />
+      <Setting
+        label={t('How note names are written')}
+        hint={t(
+          'On the falling notes, the keys and everywhere else the app names a note. Middle C is C4 (Do4) in every style.',
+        )}
+      >
+        <select
+          value={settings.noteLabels}
+          onChange={(e) => set({ noteLabels: e.target.value as NoteLabelSetting })}
+        >
+          <option value="auto">
+            {t('As the language: {names}', {
+              names:
+                labelStyleFor('auto', settings.language) === 'german'
+                  ? 'C D E F G A H'
+                  : 'C D E F G A B',
+            })}
+          </option>
+          <option value="letters">{t('Letters: C D E F G A B')}</option>
+          <option value="german">{t('German: C D E F G A H, with B for B♭')}</option>
+          <option value="fixed-do">{t('Fixed do: Do Re Mi Fa Sol La Si')}</option>
+        </select>
+      </Setting>
     </section>
   );
 }
@@ -273,7 +297,7 @@ function MidiSection({
     setError(null);
     try {
       const next = createMidiInput();
-      next.onNote = (e) => setLastNote(`${noteName(e.pitch)} (${e.velocity ?? 0})`);
+      next.onNote = (e) => setLastNote(`${noteLabel(e.pitch)} (${e.velocity ?? 0})`);
       next.onDevicesChanged = (names) => {
         setDevices(names);
         setOutputs(next.outputNames);

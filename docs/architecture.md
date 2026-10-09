@@ -306,6 +306,12 @@ device. Build steps, App Store and privacy-manifest notes:
 `apps/web/src/i18n/`: `t()` keyed by the English text, German in `de.ts`, a unit test that fails on any
 string without German (ADR 0014). A first visit follows the browser's language.
 
+Note names follow one setting (P5-03): letters, German (H for B, B for B♭) or Fixed-Do, or "as the
+language" (German names in German). The settings store hands the style to `apps/web/src/lib/notes.ts`
+the way it hands the language to `t()`, so the canvas, the Settings page, the library and the
+microphone set-up all write a note the same way. Octaves are numbered from middle C = 4 in every
+style. The Detector Lab keeps scientific names, and the score views show engraved notes only.
+
 ## Deviations from the spec's repository layout
 
 - `packages/practice` was added for the practice engine (ADR 0004).
