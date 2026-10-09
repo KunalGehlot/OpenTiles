@@ -52,11 +52,11 @@ export function midiUnavailableMessage(reason: MidiUnavailable): string {
   switch (reason) {
     case 'apple-mobile':
       return t(
-        'Browsers on iPad and iPhone cannot connect to MIDI keyboards (Apple does not allow it). Use the microphone instead: it listens to your piano.',
+        'Web pages on iPad and iPhone cannot read MIDI keyboards: Safari and every other browser there use Apple’s WebKit engine, which has no Web MIDI. App Store apps such as Flowkey use Apple’s CoreMIDI instead, and so does the OpenTiles iPad app. In the browser, use the microphone: it listens to your piano.',
       );
     case 'safari':
       return t(
-        'Safari cannot connect to MIDI keyboards (Apple does not support Web MIDI). Open OpenTiles in Chrome, Edge or Firefox on this computer, or use the microphone.',
+        'Safari cannot read MIDI keyboards: its WebKit engine has no Web MIDI (native apps use Apple’s CoreMIDI instead). Open OpenTiles in Chrome, Edge or Firefox on this Mac, or use the microphone.',
       );
     case 'insecure':
       return t(

@@ -662,10 +662,6 @@ export const de: Readonly<Record<string, string>> = {
   // Document
   'OpenTiles — free piano practice': 'OpenTiles – kostenlos Klavier üben',
   // MIDI help
-  'Browsers on iPad and iPhone cannot connect to MIDI keyboards (Apple does not allow it). Use the microphone instead: it listens to your piano.':
-    'Browser auf iPad und iPhone können sich nicht mit MIDI-Keyboards verbinden (Apple lässt das nicht zu). Nutze stattdessen das Mikrofon: Es hört deinem Klavier zu.',
-  'Safari cannot connect to MIDI keyboards (Apple does not support Web MIDI). Open OpenTiles in Chrome, Edge or Firefox on this computer, or use the microphone.':
-    'Safari kann sich nicht mit MIDI-Keyboards verbinden (Apple unterstützt Web MIDI nicht). Öffne OpenTiles auf diesem Computer in Chrome, Edge oder Firefox oder nutze das Mikrofon.',
   'MIDI keyboards only work on a secure page. Open OpenTiles over https, or as localhost on this computer.':
     'MIDI-Keyboards funktionieren nur auf einer sicheren Seite. Öffne OpenTiles über https oder als localhost auf diesem Computer.',
   'This browser cannot connect to MIDI keyboards. Use Chrome, Edge or Firefox, or the microphone.':
@@ -677,4 +673,9 @@ export const de: Readonly<Record<string, string>> = {
   'MIDI keyboard': 'MIDI-Keyboard',
   'Plug in your keyboard and switch it on; it appears here by itself.':
     'Steck dein Keyboard an und schalte es ein; es erscheint hier von selbst.',
+  // MIDI help (iPad and Safari)
+  'Web pages on iPad and iPhone cannot read MIDI keyboards: Safari and every other browser there use Apple’s WebKit engine, which has no Web MIDI. App Store apps such as Flowkey use Apple’s CoreMIDI instead, and so does the OpenTiles iPad app. In the browser, use the microphone: it listens to your piano.':
+    'Webseiten auf iPad und iPhone können keine MIDI-Keyboards lesen: Safari und alle anderen Browser dort nutzen Apples WebKit-Engine, die kein Web MIDI hat. Apps aus dem App Store wie Flowkey nutzen stattdessen Apples CoreMIDI, genau wie die OpenTiles-App für das iPad. Im Browser nimm das Mikrofon: Es hört deinem Klavier zu.',
+  'Safari cannot read MIDI keyboards: its WebKit engine has no Web MIDI (native apps use Apple’s CoreMIDI instead). Open OpenTiles in Chrome, Edge or Firefox on this Mac, or use the microphone.':
+    'Safari kann keine MIDI-Keyboards lesen: Seine WebKit-Engine hat kein Web MIDI (Apps nutzen stattdessen Apples CoreMIDI). Öffne OpenTiles auf diesem Mac in Chrome, Edge oder Firefox oder nutze das Mikrofon.',
 };

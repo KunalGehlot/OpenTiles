@@ -203,7 +203,9 @@ compatibility matrix (spec §5).
 ## Phase 3 — v1.0 (Jul – Aug 2027)
 
 - [~] **P3-01** Capacitor iPad shell with a Swift CoreMIDI plugin (`NativeMidiInput`), in
-  `apps/ios-shell`. Done: Capacitor 8 shell, Swift CoreMIDI plugin, NativeMidiInput. Left: build and test on macOS/Xcode and a real iPad.
+  `apps/ios-shell`. Done: Capacitor 8 shell, Swift CoreMIDI plugin, NativeMidiInput; the app
+  builds with Xcode 27 (2026-10-09). Left: install on an iPad and test with a keyboard (the
+  first-build checklist in the app's README), the plugin tests on a simulator.
 - [ ] **P3-02** (human) Apple Developer Program, free App Store release.
 - [~] **P3-03** Encrypted sync: passkeys / email link, Argon2id-wrapped library key, AES-GCM blobs,
   EU object storage, 250 MB quota, one-step account deletion. (Open decision: v1.0 or right

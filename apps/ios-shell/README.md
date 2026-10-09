@@ -6,12 +6,10 @@ browser has Web MIDI (spec §5), so this app is the only way to practise with a 
 iPad. Everything else (microphone, on-screen keys, library, catalogue) is the web app as it is.
 PLAN.md task **P3-01**.
 
-> **Status: written, never built.** This was written on Linux, without macOS or Xcode. The Xcode
-> project was generated with the Capacitor CLI (`cap add ios`, which works on Linux). The web side
-> is unit-tested and runs end to end against a simulated native bridge
-> (`apps/web/e2e/native-shell.spec.ts`), but the Swift code has not been compiled or run on a
-> device. Expect small fixes on the first build; work through the
-> [first-build checklist](#first-build-checklist).
+> **Status: builds; not yet run on a device.** Written on Linux; first built on macOS with Xcode 27
+> on 2026-10-09 (`xcodebuild -scheme App -destination 'generic/platform=iOS'`, no errors). Not yet
+> installed on an iPad or tried with a keyboard, and the plugin tests (⌘U) need an iPad simulator
+> runtime. Work through the [first-build checklist](#first-build-checklist).
 
 ## Layout
 
@@ -80,9 +78,7 @@ the app ID) when it runs in an interactive terminal.
 
 ### First-build checklist
 
-None of this has been checked yet.
-
-1. The app and the plugin compile; the plugin tests pass (⌘U).
+1. ✓ The app and the plugin compile (2026-10-09). The plugin tests (⌘U) are still to run.
 2. The app starts with no network (aeroplane mode) and the catalogue opens. The top bar sits
    below the status bar (`env(safe-area-inset-top)`), in both orientations.
 3. A USB MIDI keyboard (USB-C, or the Lightning to USB Camera Adapter) appears after
