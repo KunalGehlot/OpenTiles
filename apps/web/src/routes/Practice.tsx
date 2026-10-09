@@ -3,8 +3,10 @@ import {
   ChevronLeft,
   Gauge,
   Mic,
+  Minus,
   Piano,
   Play,
+  Plus,
   Repeat,
   RotateCcw,
   Settings as SettingsIcon,
@@ -36,8 +38,16 @@ import { MicCalibration } from '../practice/MicCalibration';
 import { MidiLatencyCalibration } from '../practice/MidiLatencyCalibration';
 import { prepareSong } from '../practice/prepare';
 import { SectionBar } from '../practice/SectionBar';
+import {
+  shiftLabel,
+  shiftLimits,
+  shiftMessage,
+  shiftNotation,
+  shiftSong,
+} from '../practice/transpose';
 import { fitMessage, keyboardRange } from '../settings/model';
 import type { FingeringDisplay, MidiPlayback } from '../settings/model';
+import type { SpellingSetting } from '../lib/notes';
 import { loadPracticePrefs, savePracticePrefs } from '../practice/prefs';
 import type { PracticePrefs } from '../practice/prefs';
 import { updateAppSettings, useAppSettings } from '../settings/store';
@@ -147,7 +157,17 @@ function PracticeView({
   const { size, low, keys } = settings.keyboard;
   const fingering = settings.fingering;
   const range = useMemo(() => keyboardRange({ size, low, keys }), [size, low, keys]);
-  const prepared = useMemo(() => prepareSong(song, range, fingering), [song, range, fingering]);
+  // Semitones the learner moved the piece by on this visit (P5-04). The score is drawn moved too,
+  // and suggested fingers are worked out again for the new key.
+  const [shift, setShift] = useState(0);
+  const limits = useMemo(() => shiftLimits(song), [song]);
+  const moved = Math.min(limits.up, Math.max(limits.down, shift));
+  const shifted = useMemo(() => shiftSong(song, moved), [song, moved]);
+  const shownNotation = useMemo(() => shiftNotation(notation, moved), [notation, moved]);
+  const prepared = useMemo(
+    () => prepareSong(shifted, range, fingering),
+    [shifted, range, fingering],
+  );
   const keysRange = useMemo(
     () => range ?? rangeFor(prepared.played.notes.map((n) => n.pitch)),
     [range, prepared],
@@ -561,6 +581,46 @@ function PracticeView({
                 <option value="off">{t('Off')}</option>
               </select>
             </label>
+            <div className="field">
+              <span className="field__label" id="transpose-label">
+                {t('Transpose')}
+              </span>
+              <div className="stepper" role="group" aria-labelledby="transpose-label">
+                <button
+                  type="button"
+                  aria-label={t('Down a semitone')}
+                  disabled={moved <= limits.down}
+                  onClick={() => setShift(Math.max(limits.down, moved - 1))}
+                >
+                  <Minus />
+                </button>
+                <output aria-live="polite" data-testid="transpose">
+                  {shiftLabel(moved)}
+                </output>
+                <button
+                  type="button"
+                  aria-label={t('Up a semitone')}
+                  disabled={moved >= limits.up}
+                  onClick={() => setShift(Math.min(limits.up, moved + 1))}
+                >
+                  <Plus />
+                </button>
+              </div>
+            </div>
+            <label className="field">
+              <span className="field__label">{t('Black keys')}</span>
+              <select
+                aria-label={t('Black keys')}
+                value={settings.noteSpelling}
+                onChange={(e) =>
+                  void updateAppSettings({ noteSpelling: e.target.value as SpellingSetting })
+                }
+              >
+                <option value="key">{t('As the key')}</option>
+                <option value="sharps">{t('Sharps (♯)')}</option>
+                <option value="flats">{t('Flats (♭)')}</option>
+              </select>
+            </label>
             {midiSupported() && (
               <>
                 <label className="field">
@@ -711,23 +771,23 @@ function PracticeView({
         </span>
         {inputError && <span className="error">{inputError}</span>}
         <div className="session-status__view">
-          <ViewToggle view={view} onChange={setView} notation={notation} />
+          <ViewToggle view={view} onChange={setView} notation={shownNotation} />
         </div>
       </div>
-      {fit && (
+      {(fit || moved !== 0) && (
         <p className="practice-note muted" role="status">
-          {fit}
+          {[shiftMessage(moved), fit].filter(Boolean).join(' ')}
         </p>
       )}
       {(showLoop || status.loop !== null) && (
         <SectionBar session={session} song={song} status={status} />
       )}
-      {view !== 'falling' && notation.kind !== 'none' && (
+      {view !== 'falling' && shownNotation.kind !== 'none' && (
         <ScoreView
           session={session}
           song={prepared.score}
           suggested={prepared.suggested}
-          notation={notation}
+          notation={shownNotation}
           layout={view}
           hardest={
             status.finished && summary

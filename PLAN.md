@@ -357,9 +357,13 @@ images, sounds or fonts, and credit the inspiration in [CREDITS.md](CREDITS.md).
       falling notes, the keys to play next (below their finger, where there is room), the octave
       labels on the keyboard, and notes in the Settings, library and microphone texts. The score
       views have no note names to change; the Detector Lab keeps scientific names.
-- [ ] **P5-04** (APP, SONG) Shift the piece by semitones during practice and choose sharps or flats for
+- [x] **P5-04** (APP, SONG) Shift the piece by semitones during practice and choose sharps or flats for
       the labels. Today transposing exists only at import. The score views re-engrave, fingering is
-      recomputed.
+      recomputed. Done: Options → Transpose (− / +, an octave either way, never past the piano's
+      keys, so no note is dropped) and Black keys (as the key, sharps, flats; also in Settings). The
+      screen says "Transposed up 2 semitones."; Verovio engraves the score in the new key. Left: the
+      shift is not remembered between visits; at ±6 semitones the song's key becomes F♯ where
+      Verovio engraves G♭, so with "as the key" the falling notes and the score spell it differently.
 - [ ] **P5-05** (APP, PRAC) Sight-reading drills (the "Speed" and "Infinite" ideas): random notes or
       generated phrases on a staff, with clef, key signature, letters on/off and a speed readout. Works
       with MIDI, microphone and the on-screen keyboard through the usual `NoteEvent` stream. Material is

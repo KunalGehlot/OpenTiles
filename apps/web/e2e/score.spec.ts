@@ -298,3 +298,41 @@ test('the page view goes back to the first page after a run', async ({ page }) =
     .poll(async () => (await pager.textContent()) ?? '', { timeout: 60_000 })
     .toMatch(/Page 1 of/);
 });
+
+test('the piece can be shifted by semitones during practice (P5-04)', async ({ page }) => {
+  await page.goto('./#/practice/catalogue/ode-to-joy');
+  await page.getByRole('button', { name: 'Right', exact: true }).click();
+  await page.getByRole('group', { name: 'View' }).getByRole('button', { name: 'Score' }).click();
+  await expect(page.locator('[data-testid="score-strip"] > svg')).toBeVisible({ timeout: 20_000 });
+  // C major: no sharps or flats in the key signature.
+  const keyAccidentals = page.locator('[data-testid="score-strip"] g.keyAccid');
+  await expect(keyAccidentals).toHaveCount(0);
+
+  await page.getByRole('button', { name: 'Options' }).click();
+  const up = page.getByRole('button', { name: 'Up a semitone' });
+  await up.click();
+  await up.click();
+  await expect(page.getByTestId('transpose')).toHaveText('+2');
+  await expect(page.getByRole('status').filter({ hasText: 'Transposed' })).toHaveText(
+    'Transposed up 2 semitones.',
+  );
+  // The score is engraved again in D major.
+  await expect(keyAccidentals).not.toHaveCount(0, { timeout: 20_000 });
+  await page.keyboard.press('Escape');
+
+  // The tune starts on E4, now F♯4: E4 is wrong, F♯4 moves on.
+  const stats = page.locator('.stats');
+  await page.keyboard.press('KeyD'); // E4
+  await expect(page.locator('g.note.ot-wrong')).not.toHaveCount(0);
+  await expect(stats).toContainText('Step 1/');
+  await page.keyboard.press('KeyT'); // F♯4
+  await expect(stats).toContainText('Step 2/');
+
+  await page.getByRole('button', { name: 'Options' }).click();
+  const down = page.getByRole('button', { name: 'Down a semitone' });
+  await down.click();
+  await down.click();
+  await expect(page.getByTestId('transpose')).toHaveText('0');
+  await expect(page.getByRole('status').filter({ hasText: 'Transposed' })).toHaveCount(0);
+  await expect(keyAccidentals).toHaveCount(0, { timeout: 20_000 });
+});

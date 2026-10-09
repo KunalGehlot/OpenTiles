@@ -311,6 +311,12 @@ language" (German names in German). The settings store hands the style to `apps/
 the way it hands the language to `t()`, so the canvas, the Settings page, the library and the
 microphone set-up all write a note the same way. Octaves are numbered from middle C = 4 in every
 style. The Detector Lab keeps scientific names, and the score views show engraved notes only.
+Black keys follow the key signature unless the learner chose sharps or flats (P5-04).
+
+Transposing during practice (P5-04, `apps/web/src/practice/transpose.ts`) moves the `Song` with
+`transpose()` before it is fitted and fingered, and asks Verovio to transpose the original file by
+the same number of semitones, so the score's glyphs still match the song's notes by measure, onset
+and pitch. The shift is limited to what keeps every note on an 88-key piano, so no note is dropped.
 
 ## Deviations from the spec's repository layout
 
