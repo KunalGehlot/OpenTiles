@@ -1,6 +1,6 @@
 # 0010 — Hearing a run back, and saving it as a WAV file only for catalogue pieces
 
-- **Status:** proposed
+- **Status:** accepted (approved by the maintainer, 2026-10-09)
 - **Date:** 2026-10-08
 - **Plan task:** P4-09
 

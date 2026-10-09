@@ -15,7 +15,8 @@
   "print_source": "Leichte Stucke, 1900",
   "print_year": 1900,
   "difficulty": 4,
-  "reviewed_by": null,
-  "verified": false,
+  "reviewed_by": "KunalGehlot",
+  "verified": true,
+  "reviewed_on": "2026-10-09",
   "score_file": "score.musicxml"
 }

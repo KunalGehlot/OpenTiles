@@ -1,6 +1,6 @@
 # 0013. Release hardening: policy, limits and storage
 
-- Status: proposed
+- Status: accepted (approved by the maintainer, 2026-10-09)
 - Date: 2026-10-09
 
 ## Context

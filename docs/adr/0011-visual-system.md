@@ -1,6 +1,6 @@
 # 0011 — A visual system: tokens, system fonts, one icon set, a calmer practice screen
 
-- **Status:** proposed
+- **Status:** accepted (approved by the maintainer, 2026-10-09)
 - **Date:** 2026-10-08
 - **Plan task:** P4-10
 

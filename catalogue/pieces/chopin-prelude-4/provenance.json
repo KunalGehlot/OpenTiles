@@ -15,7 +15,8 @@
   "print_source": "Peters, 1879",
   "print_year": 1879,
   "difficulty": 4,
-  "reviewed_by": null,
-  "verified": false,
+  "reviewed_by": "KunalGehlot",
+  "verified": true,
+  "reviewed_on": "2026-10-09",
   "score_file": "score.musicxml"
 }

@@ -1,6 +1,6 @@
 # 0012 — Several levels per song, a steady drawing clock and a centred play bar
 
-- **Status:** proposed
+- **Status:** accepted (approved by the maintainer, 2026-10-09)
 - **Date:** 2026-10-08
 - **Plan task:** P4-10 (review rounds), P4-16 to P4-18 of NEXT-PHASE.md
 

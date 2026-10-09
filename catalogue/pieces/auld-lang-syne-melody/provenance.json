@@ -13,8 +13,9 @@
     "date": "2026-10-07"
   },
   "difficulty": 1,
-  "reviewed_by": null,
-  "verified": false,
+  "reviewed_by": "KunalGehlot",
+  "verified": true,
+  "reviewed_on": "2026-10-09",
   "score_file": "score.musicxml",
   "single_hand": "right",
   "song": "auld-lang-syne",

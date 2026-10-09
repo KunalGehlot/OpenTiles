@@ -7,14 +7,15 @@
   "arranger": "OpenTiles contributors",
   "source_url": "https://commons.wikimedia.org/wiki/File:Bella_ciao.mid",
   "source_licence": "CC0-1.0",
-  "edition_note": "Original simplified arrangement written for OpenTiles from the traditional melody as set by Peter Gerloff (Rabanus Flavus) on Wikimedia Commons, who dedicated his setting to the public domain (CC0); not copied from any published edition or recording. Source: arrangement.txt, rendered with tools/pipeline/arrange.py. No lyrics. The origin of the tune is disputed: it is usually called a traditional Italian partisan song, but it has also been linked to a klezmer tune recorded in 1919 by Mishka Ziganoff, who died in 1967. Added on 2026-10-09 at the maintainer's request as a traditional melody for now; the legal consultation (P2-18) should settle this before the piece is verified.",
+  "edition_note": "Original simplified arrangement written for OpenTiles from the traditional melody as set by Peter Gerloff (Rabanus Flavus) on Wikimedia Commons, who dedicated his setting to the public domain (CC0); not copied from any published edition or recording. Source: arrangement.txt, rendered with tools/pipeline/arrange.py. No lyrics. The origin of the tune is disputed: it is usually called a traditional Italian partisan song, but it has also been linked to a klezmer tune recorded in 1919 by Mishka Ziganoff, who died in 1967. Added on 2026-10-09 at the maintainer's request; the maintainer accepted it as a traditional melody and verified it the same day, knowing of the dispute. Revisit after the legal consultation (P2-18).",
   "eu_term_check": {
     "result": "pass",
     "date": "2026-10-09"
   },
   "difficulty": 1,
-  "reviewed_by": null,
-  "verified": false,
+  "reviewed_by": "KunalGehlot",
+  "verified": true,
+  "reviewed_on": "2026-10-09",
   "score_file": "score.musicxml",
   "single_hand": "right",
   "song": "bella-ciao",

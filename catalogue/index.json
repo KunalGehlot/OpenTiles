@@ -7,7 +7,7 @@
       "composer": "Traditional (German children's song, 19th century)",
       "difficulty": 1,
       "licence": "CC0-1.0",
-      "verified": false,
+      "verified": true,
       "score": "pieces/alle-meine-entchen/score.musicxml"
     },
     {
@@ -16,7 +16,7 @@
       "composer": "Traditional (American hymn tune 'New Britain', 1829)",
       "difficulty": 1,
       "licence": "CC0-1.0",
-      "verified": false,
+      "verified": true,
       "score": "pieces/amazing-grace-melody/score.musicxml",
       "song": "amazing-grace",
       "variant": "Melody"
@@ -27,7 +27,7 @@
       "composer": "Traditional (French song, 18th century)",
       "difficulty": 1,
       "licence": "CC0-1.0",
-      "verified": false,
+      "verified": true,
       "score": "pieces/au-clair-de-la-lune/score.musicxml"
     },
     {
@@ -36,7 +36,7 @@
       "composer": "Traditional (Scottish)",
       "difficulty": 1,
       "licence": "CC0-1.0",
-      "verified": false,
+      "verified": true,
       "score": "pieces/auld-lang-syne-melody/score.musicxml",
       "song": "auld-lang-syne",
       "variant": "Melody"
@@ -47,7 +47,7 @@
       "composer": "Traditional (Italian)",
       "difficulty": 1,
       "licence": "CC0-1.0",
-      "verified": false,
+      "verified": true,
       "score": "pieces/bella-ciao-melody/score.musicxml",
       "song": "bella-ciao",
       "variant": "Melody"
@@ -58,7 +58,7 @@
       "composer": "Traditional (Welsh carol 'Nos Galan')",
       "difficulty": 1,
       "licence": "CC0-1.0",
-      "verified": false,
+      "verified": true,
       "score": "pieces/deck-the-halls-melody/score.musicxml",
       "song": "deck-the-halls",
       "variant": "Melody"
@@ -69,7 +69,7 @@
       "composer": "Traditional (French round, 18th century)",
       "difficulty": 1,
       "licence": "CC0-1.0",
-      "verified": false,
+      "verified": true,
       "score": "pieces/frere-jacques/score.musicxml"
     },
     {
@@ -78,7 +78,7 @@
       "composer": "Ludwig van Beethoven",
       "difficulty": 1,
       "licence": "CC0-1.0",
-      "verified": false,
+      "verified": true,
       "score": "pieces/fur-elise-opening-melody/score.musicxml",
       "song": "fur-elise-opening",
       "variant": "Melody"
@@ -89,7 +89,7 @@
       "composer": "Traditional (spring carol 'Tempus adest floridum', 1582)",
       "difficulty": 1,
       "licence": "CC0-1.0",
-      "verified": false,
+      "verified": true,
       "score": "pieces/good-king-wenceslas-melody/score.musicxml",
       "song": "good-king-wenceslas",
       "variant": "Melody"
@@ -100,7 +100,7 @@
       "composer": "Felix Mendelssohn",
       "difficulty": 1,
       "licence": "CC0-1.0",
-      "verified": false,
+      "verified": true,
       "score": "pieces/hark-the-herald-angels-sing-melody/score.musicxml",
       "song": "hark-the-herald-angels-sing",
       "variant": "Melody"
@@ -111,7 +111,7 @@
       "composer": "Traditional (English street cry, 18th century)",
       "difficulty": 1,
       "licence": "CC0-1.0",
-      "verified": false,
+      "verified": true,
       "score": "pieces/hot-cross-buns/score.musicxml"
     },
     {
@@ -120,7 +120,7 @@
       "composer": "Traditional (German folk song, 19th century)",
       "difficulty": 1,
       "licence": "CC0-1.0",
-      "verified": false,
+      "verified": true,
       "score": "pieces/haenschen-klein/score.musicxml"
     },
     {
@@ -129,7 +129,7 @@
       "composer": "James Lord Pierpont",
       "difficulty": 1,
       "licence": "CC0-1.0",
-      "verified": false,
+      "verified": true,
       "score": "pieces/jingle-bells/score.musicxml"
     },
     {
@@ -138,7 +138,7 @@
       "composer": "Lowell Mason",
       "difficulty": 1,
       "licence": "CC0-1.0",
-      "verified": false,
+      "verified": true,
       "score": "pieces/joy-to-the-world-melody/score.musicxml",
       "song": "joy-to-the-world",
       "variant": "Melody"
@@ -149,7 +149,7 @@
       "composer": "Antonín Dvořák",
       "difficulty": 1,
       "licence": "CC0-1.0",
-      "verified": false,
+      "verified": true,
       "score": "pieces/largo-new-world-melody/score.musicxml",
       "song": "largo-new-world",
       "variant": "Melody"
@@ -160,7 +160,7 @@
       "composer": "Traditional (English nursery rhyme)",
       "difficulty": 1,
       "licence": "CC0-1.0",
-      "verified": false,
+      "verified": true,
       "score": "pieces/london-bridge/score.musicxml"
     },
     {
@@ -169,7 +169,7 @@
       "composer": "Johannes Brahms",
       "difficulty": 1,
       "licence": "CC0-1.0",
-      "verified": false,
+      "verified": true,
       "score": "pieces/brahms-lullaby-melody/score.musicxml",
       "song": "brahms-lullaby",
       "variant": "Melody"
@@ -180,7 +180,7 @@
       "composer": "Traditional (American nursery song, 19th century)",
       "difficulty": 1,
       "licence": "CC0-1.0",
-      "verified": false,
+      "verified": true,
       "score": "pieces/mary-had-a-little-lamb/score.musicxml"
     },
     {
@@ -189,7 +189,7 @@
       "composer": "Christian Petzold",
       "difficulty": 1,
       "licence": "CC0-1.0",
-      "verified": false,
+      "verified": true,
       "score": "pieces/minuet-in-g-melody/score.musicxml",
       "song": "minuet-in-g",
       "variant": "Melody"
@@ -200,7 +200,7 @@
       "composer": "Ludwig van Beethoven",
       "difficulty": 1,
       "licence": "CC0-1.0",
-      "verified": false,
+      "verified": true,
       "score": "pieces/ode-to-joy/score.musicxml",
       "song": "ode-to-joy",
       "variant": "Two hands"
@@ -211,7 +211,7 @@
       "composer": "Ludwig van Beethoven",
       "difficulty": 1,
       "licence": "CC0-1.0",
-      "verified": false,
+      "verified": true,
       "score": "pieces/ode-to-joy-melody/score.musicxml",
       "song": "ode-to-joy",
       "variant": "Melody"
@@ -222,7 +222,7 @@
       "composer": "Traditional (folk song)",
       "difficulty": 1,
       "licence": "CC0-1.0",
-      "verified": false,
+      "verified": true,
       "score": "pieces/old-macdonald/score.musicxml"
     },
     {
@@ -231,7 +231,7 @@
       "composer": "Traditional (nursery rhyme, 19th century)",
       "difficulty": 1,
       "licence": "CC0-1.0",
-      "verified": false,
+      "verified": true,
       "score": "pieces/row-row-row-your-boat/score.musicxml"
     },
     {
@@ -240,7 +240,7 @@
       "composer": "Franz Xaver Gruber",
       "difficulty": 1,
       "licence": "CC0-1.0",
-      "verified": false,
+      "verified": true,
       "score": "pieces/silent-night-melody/score.musicxml",
       "song": "silent-night",
       "variant": "Melody"
@@ -251,7 +251,7 @@
       "composer": "Traditional (French melody, 18th century)",
       "difficulty": 1,
       "licence": "CC0-1.0",
-      "verified": false,
+      "verified": true,
       "score": "pieces/twinkle-twinkle/score.musicxml"
     },
     {
@@ -260,7 +260,7 @@
       "composer": "Traditional (English carol)",
       "difficulty": 1,
       "licence": "CC0-1.0",
-      "verified": false,
+      "verified": true,
       "score": "pieces/we-wish-you-a-merry-christmas-melody/score.musicxml",
       "song": "we-wish-you-a-merry-christmas",
       "variant": "Melody"
@@ -271,7 +271,7 @@
       "composer": "Traditional (African-American spiritual)",
       "difficulty": 1,
       "licence": "CC0-1.0",
-      "verified": false,
+      "verified": true,
       "score": "pieces/when-the-saints-melody/score.musicxml",
       "song": "when-the-saints",
       "variant": "Melody"
@@ -282,7 +282,7 @@
       "composer": "Traditional (American, 18th century)",
       "difficulty": 1,
       "licence": "CC0-1.0",
-      "verified": false,
+      "verified": true,
       "score": "pieces/yankee-doodle/score.musicxml"
     },
     {
@@ -291,7 +291,7 @@
       "composer": "Traditional (American hymn tune 'New Britain', 1829)",
       "difficulty": 2,
       "licence": "CC0-1.0",
-      "verified": false,
+      "verified": true,
       "score": "pieces/amazing-grace/score.musicxml",
       "song": "amazing-grace",
       "variant": "Two hands"
@@ -302,7 +302,7 @@
       "composer": "Traditional (Scottish)",
       "difficulty": 2,
       "licence": "CC0-1.0",
-      "verified": false,
+      "verified": true,
       "score": "pieces/auld-lang-syne/score.musicxml",
       "song": "auld-lang-syne",
       "variant": "Two hands"
@@ -313,7 +313,7 @@
       "composer": "Johann Friedrich Burgmüller",
       "difficulty": 2,
       "licence": "public-domain",
-      "verified": false,
+      "verified": true,
       "score": "pieces/ballade-burgmuller/score.musicxml"
     },
     {
@@ -322,7 +322,7 @@
       "composer": "Traditional (Italian)",
       "difficulty": 2,
       "licence": "CC0-1.0",
-      "verified": false,
+      "verified": true,
       "score": "pieces/bella-ciao/score.musicxml",
       "song": "bella-ciao",
       "variant": "Two hands"
@@ -333,7 +333,7 @@
       "composer": "Johann Pachelbel",
       "difficulty": 2,
       "licence": "CC0-1.0",
-      "verified": false,
+      "verified": true,
       "score": "pieces/canon-in-d-melody/score.musicxml",
       "song": "canon-in-d",
       "variant": "Melody"
@@ -344,7 +344,7 @@
       "composer": "Johann Friedrich Burgmüller",
       "difficulty": 2,
       "licence": "public-domain",
-      "verified": false,
+      "verified": true,
       "score": "pieces/consolation/score.musicxml"
     },
     {
@@ -353,7 +353,7 @@
       "composer": "Traditional (Welsh carol 'Nos Galan')",
       "difficulty": 2,
       "licence": "CC0-1.0",
-      "verified": false,
+      "verified": true,
       "score": "pieces/deck-the-halls/score.musicxml",
       "song": "deck-the-halls",
       "variant": "Two hands"
@@ -364,7 +364,7 @@
       "composer": "Wolfgang Amadeus Mozart",
       "difficulty": 2,
       "licence": "CC0-1.0",
-      "verified": false,
+      "verified": true,
       "score": "pieces/eine-kleine-nachtmusik-melody/score.musicxml",
       "song": "eine-kleine-nachtmusik",
       "variant": "Melody"
@@ -375,7 +375,7 @@
       "composer": "Ludwig van Beethoven",
       "difficulty": 2,
       "licence": "CC0-1.0",
-      "verified": false,
+      "verified": true,
       "score": "pieces/fur-elise-opening/score.musicxml",
       "song": "fur-elise-opening",
       "variant": "Two hands"
@@ -386,7 +386,7 @@
       "composer": "Traditional (spring carol 'Tempus adest floridum', 1582)",
       "difficulty": 2,
       "licence": "CC0-1.0",
-      "verified": false,
+      "verified": true,
       "score": "pieces/good-king-wenceslas/score.musicxml",
       "song": "good-king-wenceslas",
       "variant": "Two hands"
@@ -397,7 +397,7 @@
       "composer": "Traditional (English, 16th century)",
       "difficulty": 2,
       "licence": "CC0-1.0",
-      "verified": false,
+      "verified": true,
       "score": "pieces/greensleeves-melody/score.musicxml",
       "song": "greensleeves",
       "variant": "Melody"
@@ -408,7 +408,7 @@
       "composer": "Mildred J. Hill",
       "difficulty": 2,
       "licence": "CC0-1.0",
-      "verified": false,
+      "verified": true,
       "score": "pieces/happy-birthday/score.musicxml"
     },
     {
@@ -417,7 +417,7 @@
       "composer": "Felix Mendelssohn",
       "difficulty": 2,
       "licence": "CC0-1.0",
-      "verified": false,
+      "verified": true,
       "score": "pieces/hark-the-herald-angels-sing/score.musicxml",
       "song": "hark-the-herald-angels-sing",
       "variant": "Two hands"
@@ -428,7 +428,7 @@
       "composer": "Edvard Grieg",
       "difficulty": 2,
       "licence": "CC0-1.0",
-      "verified": false,
+      "verified": true,
       "score": "pieces/hall-of-the-mountain-king-melody/score.musicxml",
       "song": "hall-of-the-mountain-king",
       "variant": "Melody"
@@ -439,7 +439,7 @@
       "composer": "Lowell Mason",
       "difficulty": 2,
       "licence": "CC0-1.0",
-      "verified": false,
+      "verified": true,
       "score": "pieces/joy-to-the-world/score.musicxml",
       "song": "joy-to-the-world",
       "variant": "Two hands"
@@ -450,7 +450,7 @@
       "composer": "Johann Friedrich Burgmüller",
       "difficulty": 2,
       "licence": "public-domain",
-      "verified": false,
+      "verified": true,
       "score": "pieces/la-candeur/score.musicxml"
     },
     {
@@ -459,7 +459,7 @@
       "composer": "Antonín Dvořák",
       "difficulty": 2,
       "licence": "CC0-1.0",
-      "verified": false,
+      "verified": true,
       "score": "pieces/largo-new-world/score.musicxml",
       "song": "largo-new-world",
       "variant": "Two hands"
@@ -470,7 +470,7 @@
       "composer": "Johannes Brahms",
       "difficulty": 2,
       "licence": "CC0-1.0",
-      "verified": false,
+      "verified": true,
       "score": "pieces/brahms-lullaby/score.musicxml",
       "song": "brahms-lullaby",
       "variant": "Two hands"
@@ -481,7 +481,7 @@
       "composer": "Pyotr Ilyich Tchaikovsky",
       "difficulty": 2,
       "licence": "public-domain",
-      "verified": false,
+      "verified": true,
       "score": "pieces/march-of-the-wooden-soldiers/score.musicxml"
     },
     {
@@ -490,7 +490,7 @@
       "composer": "Christian Petzold",
       "difficulty": 2,
       "licence": "CC0-1.0",
-      "verified": false,
+      "verified": true,
       "score": "pieces/minuet-in-g/score.musicxml",
       "song": "minuet-in-g",
       "variant": "Two hands"
@@ -501,7 +501,7 @@
       "composer": "Christian Petzold",
       "difficulty": 2,
       "licence": "public-domain",
-      "verified": false,
+      "verified": true,
       "score": "pieces/bach-minuet-in-g-complete/score.musicxml"
     },
     {
@@ -510,7 +510,7 @@
       "composer": "Christian Petzold",
       "difficulty": 2,
       "licence": "public-domain",
-      "verified": false,
+      "verified": true,
       "score": "pieces/bach-minuet-in-g-minor/score.musicxml"
     },
     {
@@ -519,7 +519,7 @@
       "composer": "Johann Sebastian Bach",
       "difficulty": 2,
       "licence": "public-domain",
-      "verified": false,
+      "verified": true,
       "score": "pieces/bach-musette-in-d/score.musicxml"
     },
     {
@@ -528,7 +528,7 @@
       "composer": "Ludwig van Beethoven",
       "difficulty": 2,
       "licence": "CC0-1.0",
-      "verified": false,
+      "verified": true,
       "score": "pieces/ode-to-joy-full/score.musicxml",
       "song": "ode-to-joy",
       "variant": "Full"
@@ -539,7 +539,7 @@
       "composer": "Pyotr Ilyich Tchaikovsky",
       "difficulty": 2,
       "licence": "public-domain",
-      "verified": false,
+      "verified": true,
       "score": "pieces/old-french-song/score.musicxml"
     },
     {
@@ -548,7 +548,7 @@
       "composer": "Johann Sebastian Bach",
       "difficulty": 2,
       "licence": "CC0-1.0",
-      "verified": false,
+      "verified": true,
       "score": "pieces/prelude-in-c-melody/score.musicxml",
       "song": "prelude-in-c",
       "variant": "Right hand"
@@ -559,7 +559,7 @@
       "composer": "Franz Xaver Gruber",
       "difficulty": 2,
       "licence": "CC0-1.0",
-      "verified": false,
+      "verified": true,
       "score": "pieces/silent-night/score.musicxml",
       "song": "silent-night",
       "variant": "Two hands"
@@ -570,7 +570,7 @@
       "composer": "Johann Friedrich Burgmüller",
       "difficulty": 2,
       "licence": "public-domain",
-      "verified": false,
+      "verified": true,
       "score": "pieces/tendre-fleur/score.musicxml"
     },
     {
@@ -579,7 +579,7 @@
       "composer": "Traditional (English carol)",
       "difficulty": 2,
       "licence": "CC0-1.0",
-      "verified": false,
+      "verified": true,
       "score": "pieces/we-wish-you-a-merry-christmas/score.musicxml",
       "song": "we-wish-you-a-merry-christmas",
       "variant": "Two hands"
@@ -590,7 +590,7 @@
       "composer": "Traditional (African-American spiritual)",
       "difficulty": 2,
       "licence": "CC0-1.0",
-      "verified": false,
+      "verified": true,
       "score": "pieces/when-the-saints/score.musicxml",
       "song": "when-the-saints",
       "variant": "Two hands"
@@ -601,7 +601,7 @@
       "composer": "Johann Pachelbel",
       "difficulty": 3,
       "licence": "CC0-1.0",
-      "verified": false,
+      "verified": true,
       "score": "pieces/canon-in-d/score.musicxml",
       "song": "canon-in-d",
       "variant": "Two hands"
@@ -612,7 +612,7 @@
       "composer": "Wolfgang Amadeus Mozart",
       "difficulty": 3,
       "licence": "CC0-1.0",
-      "verified": false,
+      "verified": true,
       "score": "pieces/eine-kleine-nachtmusik/score.musicxml",
       "song": "eine-kleine-nachtmusik",
       "variant": "Two hands"
@@ -623,7 +623,7 @@
       "composer": "Ludwig van Beethoven",
       "difficulty": 3,
       "licence": "public-domain",
-      "verified": false,
+      "verified": true,
       "score": "pieces/fur-elise-complete/score.musicxml"
     },
     {
@@ -632,7 +632,7 @@
       "composer": "Traditional (English, 16th century)",
       "difficulty": 3,
       "licence": "CC0-1.0",
-      "verified": false,
+      "verified": true,
       "score": "pieces/greensleeves/score.musicxml",
       "song": "greensleeves",
       "variant": "Two hands"
@@ -643,7 +643,7 @@
       "composer": "Edvard Grieg",
       "difficulty": 3,
       "licence": "CC0-1.0",
-      "verified": false,
+      "verified": true,
       "score": "pieces/hall-of-the-mountain-king/score.musicxml",
       "song": "hall-of-the-mountain-king",
       "variant": "Two hands"
@@ -654,7 +654,7 @@
       "composer": "Johann Friedrich Burgmüller",
       "difficulty": 3,
       "licence": "public-domain",
-      "verified": false,
+      "verified": true,
       "score": "pieces/innocence/score.musicxml"
     },
     {
@@ -663,7 +663,7 @@
       "composer": "Johann Sebastian Bach",
       "difficulty": 3,
       "licence": "public-domain",
-      "verified": false,
+      "verified": true,
       "score": "pieces/bach-invention-13/score.musicxml"
     },
     {
@@ -672,7 +672,7 @@
       "composer": "Johann Sebastian Bach",
       "difficulty": 3,
       "licence": "public-domain",
-      "verified": false,
+      "verified": true,
       "score": "pieces/bach-invention-14/score.musicxml"
     },
     {
@@ -681,7 +681,7 @@
       "composer": "Johann Sebastian Bach",
       "difficulty": 3,
       "licence": "public-domain",
-      "verified": false,
+      "verified": true,
       "score": "pieces/bach-invention-2/score.musicxml"
     },
     {
@@ -690,7 +690,7 @@
       "composer": "Johann Sebastian Bach",
       "difficulty": 3,
       "licence": "public-domain",
-      "verified": false,
+      "verified": true,
       "score": "pieces/bach-invention-4/score.musicxml"
     },
     {
@@ -699,7 +699,7 @@
       "composer": "Johann Sebastian Bach",
       "difficulty": 3,
       "licence": "public-domain",
-      "verified": false,
+      "verified": true,
       "score": "pieces/bach-invention-8/score.musicxml"
     },
     {
@@ -708,7 +708,7 @@
       "composer": "Johann Friedrich Burgmüller",
       "difficulty": 3,
       "licence": "public-domain",
-      "verified": false,
+      "verified": true,
       "score": "pieces/arabesque-burgmuller/score.musicxml"
     },
     {
@@ -717,7 +717,7 @@
       "composer": "Ludwig van Beethoven",
       "difficulty": 3,
       "licence": "public-domain",
-      "verified": false,
+      "verified": true,
       "score": "pieces/beethoven-menuett-woo82/score.musicxml"
     },
     {
@@ -726,7 +726,7 @@
       "composer": "Pyotr Ilyich Tchaikovsky",
       "difficulty": 3,
       "licence": "public-domain",
-      "verified": false,
+      "verified": true,
       "score": "pieces/morning-prayer/score.musicxml"
     },
     {
@@ -735,7 +735,7 @@
       "composer": "Ludwig van Beethoven",
       "difficulty": 3,
       "licence": "public-domain",
-      "verified": false,
+      "verified": true,
       "score": "pieces/beethoven-sonata-20-menuetto/score.musicxml"
     },
     {
@@ -744,7 +744,7 @@
       "composer": "Johann Sebastian Bach",
       "difficulty": 3,
       "licence": "CC0-1.0",
-      "verified": false,
+      "verified": true,
       "score": "pieces/prelude-in-c/score.musicxml",
       "song": "prelude-in-c",
       "variant": "Two hands"
@@ -755,7 +755,7 @@
       "composer": "Johann Friedrich Burgmüller",
       "difficulty": 3,
       "licence": "public-domain",
-      "verified": false,
+      "verified": true,
       "score": "pieces/progres/score.musicxml"
     },
     {
@@ -764,7 +764,7 @@
       "composer": "Frédéric Chopin",
       "difficulty": 3,
       "licence": "public-domain",
-      "verified": false,
+      "verified": true,
       "score": "pieces/chopin-waltz-op69-2/score.musicxml"
     },
     {
@@ -773,7 +773,7 @@
       "composer": "Robert Schumann",
       "difficulty": 4,
       "licence": "public-domain",
-      "verified": false,
+      "verified": true,
       "score": "pieces/gluckes-genug/score.musicxml"
     },
     {
@@ -782,7 +782,7 @@
       "composer": "Johann Friedrich Burgmüller",
       "difficulty": 4,
       "licence": "public-domain",
-      "verified": false,
+      "verified": true,
       "score": "pieces/la-pastorale/score.musicxml"
     },
     {
@@ -791,7 +791,7 @@
       "composer": "Scott Joplin",
       "difficulty": 4,
       "licence": "public-domain",
-      "verified": false,
+      "verified": true,
       "score": "pieces/maple-leaf-rag/score.musicxml"
     },
     {
@@ -800,7 +800,7 @@
       "composer": "Frédéric Chopin",
       "difficulty": 4,
       "licence": "public-domain",
-      "verified": false,
+      "verified": true,
       "score": "pieces/chopin-prelude-4/score.musicxml"
     },
     {
@@ -809,7 +809,7 @@
       "composer": "Scott Joplin",
       "difficulty": 4,
       "licence": "public-domain",
-      "verified": false,
+      "verified": true,
       "score": "pieces/the-entertainer/score.musicxml"
     }
   ]

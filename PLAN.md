@@ -272,16 +272,23 @@ compatibility matrix (spec §5).
   (the Gymnopédies, Rondo alla Turca, three Chopin preludes, Mozart K. 331, Schubert's Marche
   militaire, Prelude in C) were left out until a dated source is found; difficulty from the estimator, all `verified: false`. Left: reviews, a third level for more
   songs, pieces with triplets or ornaments (the converter refuses them), Bella Ciao (P4-14).
-- [~] **P4-14** Bella Ciao (maintainer's request). Added 2026-10-09 at two levels (melody, two hands):
-  an own CC0 arrangement of the melody as set CC0 by Peter Gerloff on Wikimedia Commons. The origin of
-  the tune is disputed (linked to a 1919 recording by Mishka Ziganoff, who died in 1967), which the
-  provenance says plainly. Left: the legal consultation (P2-18) before anyone verifies it.
+- [x] **P4-14** Bella Ciao (maintainer's request). Added 2026-10-09 at two levels (melody, two hands):
+      an own CC0 arrangement of the melody as set CC0 by Peter Gerloff on Wikimedia Commons. The origin of
+      the tune is disputed (linked to a 1919 recording by Mishka Ziganoff, who died in 1967), which the
+      provenance says plainly. The maintainer accepted it as traditional and verified it on 2026-10-09;
+      revisit after the legal consultation (P2-18).
 - [x] **P4-13c** Music review of the whole catalogue (2026-10-09,
       `catalogue/reviews/2026-10-09-music-review.md`): an automated review against public-domain scores and
       the Mutopia MIDI; 18 pieces corrected (wrong notes in Amazing Grace, rhythms in Brahms' Lullaby and
       the Largo, an invented left hand in Mountain King, titles of Consolation and WoO 82, …). Thirty-seconds
       and triplets added to arrange.py and the converter, so Invention 14 and Für Elise are complete;
-      da capos written out for WoO 82 and the Musette. Left: a human reviewer to set `verified`.
+      da capos written out for WoO 82 and the Musette. All 81 pieces verified by the maintainer
+      (KunalGehlot, 2026-10-09) on the basis of this review.
+- [x] **P4-18** Scrubbing in the scrolling score (2026-10-09): the play bar stays in the middle and a
+      drag (or a sideways trackpad scroll) moves the whole piece under it, back and forth; the
+      score, cursor and falling notes follow, a playing run pauses and Play starts from there, wait
+      mode moves to the step at that place. Tests: unit (inverse cursor map, session seek) and
+      Playwright in Chromium and WebKit.
 - [x] **P4-15** Release hardening (2026-10-09, ADR 0013). Done: Content-Security-Policy (meta tag in
       the build and `public/_headers`), SVG sanitiser for engraved scores, zip and file size limits,
       an error boundary, storage that survives a blocked IndexedDB (localStorage copy), ordered saves,
@@ -323,6 +330,10 @@ Record the outcome as an ADR in `docs/adr/` and tick it here.
 - [x] Engine exposes a plain C ABI instead of wasm-bindgen glue — ADR 0002.
 
 ## Changelog
+
+- **2026-10-09** — Maintainer approval: all 81 catalogue pieces verified, ADRs 0010–0014 accepted,
+  Bella Ciao accepted as traditional. Score scrubbing (P4-18), MIDI help for Firefox and Safari,
+  engine build that finds rustup's toolchain.
 
 - **2026-10-09** — Release pass: 27 more famous public-domain pieces (79 in the catalogue), search,
   note names, remembered practice choices, hand-coloured played notes, security hardening (CSP, SVG

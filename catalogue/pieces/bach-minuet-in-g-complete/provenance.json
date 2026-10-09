@@ -15,7 +15,8 @@
   },
   "print_source": "Bach-Gesellschaft, 1851-1899",
   "difficulty": 2,
-  "reviewed_by": null,
-  "verified": false,
+  "reviewed_by": "KunalGehlot",
+  "verified": true,
+  "reviewed_on": "2026-10-09",
   "score_file": "score.musicxml"
 }

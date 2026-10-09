@@ -1,6 +1,6 @@
 # 0014 — Translations keyed by the English text
 
-- **Status:** proposed
+- **Status:** accepted (approved by the maintainer, 2026-10-09)
 - **Date:** 2026-10-09
 - **Plan task:** P2-14
 

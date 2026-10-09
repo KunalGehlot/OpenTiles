@@ -5,11 +5,10 @@ it. There is no server component (the optional sync server is separate, `docs/sy
 
 ## Before the first public deployment
 
-1. **Decide what the catalogue shows.** A production build lists only pieces with
-   `verified: true` (spec §2) and shows an **empty catalogue** while every piece is unverified.
-   Either have a person who did not add a piece review it (`catalogue/REVIEWING.md`) and set
-   `verified`, or build a preview with `VITE_SHOW_UNVERIFIED=1`, which labels each card
-   "Awaiting review". Agents may not set `verified` themselves.
+1. **The catalogue.** A production build lists only pieces with `verified: true` (spec §2). All 81
+   pieces were verified by the maintainer on 2026-10-09. A piece added later stays hidden until a
+   person who did not add it reviews it (`catalogue/REVIEWING.md`); `VITE_SHOW_UNVERIFIED=1` builds a
+   preview that shows unverified pieces too, labelled "Awaiting review".
 2. Replace the postal address placeholder in the Impressum (`apps/web/src/legal/`).
 3. Make the repository public only after the history check in `STATE.md` (delete and recreate it).
 4. Run the checks: `pnpm check`, `cargo test --workspace --release`,

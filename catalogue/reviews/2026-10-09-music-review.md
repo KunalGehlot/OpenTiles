@@ -191,3 +191,8 @@ The four open items were settled as follows; the files changed accordingly.
 4. **largo-new-world**: the doubled note values stay (easier to read for beginners).
 5. Accidentals in converted pieces are now spelled by melodic direction (sharp going up, flat going
    down); chopin-waltz-op69-2, the-entertainer and march-of-the-wooden-soldiers were converted again.
+
+## Approval (2026-10-09)
+
+The maintainer (KunalGehlot) approved all open items the same day and verified all 81 pieces,
+Bella Ciao included (accepted as a traditional melody, knowing of the dispute about its origin).
