@@ -247,32 +247,32 @@ compatibility matrix (spec §5).
   drain over the note's length, "hold longer" / "let go" labels and a hold count in the summary
   (MIDI and on-screen keys; the microphone cannot see key release); every run is recorded and
   can be heard back as played or polished; WAV rendered offline, for catalogue pieces only
-  (ADR 0010). Left: the maintainer's decision on WAV files for library pieces (ADR 0010 is
-  proposed), and a manual check on an iPad.
+  (ADR 0010, accepted 2026-10-09: WAV files for catalogue pieces only). Left: a manual check on
+  an iPad.
 - [~] **P4-10** UI redesign: a proper visual system (type, spacing, colour, icons), refined
   practice screen and canvas, better Home and Library. Done: design tokens in light, dark and high
-  contrast with a contrast test (`apps/web/src/styles/`, ADR 0011, proposed); system fonts,
+  contrast with a contrast test (`apps/web/src/styles/`, ADR 0011); system fonts,
   restyled native controls, `lucide-react` icons; a new Home (hero, "continue" card, path),
   Library, Settings and About; a slim practice header with an Options panel, quiet control rows and
   icon-only secondary buttons at ⅓ width; a new canvas (tiles, bar numbers, shaded black-key lanes,
-  key bloom, larger finger numbers) and end-of-run ring. Left: the maintainer's review rounds (the
-  first looks "a little better", with more to do), an iPad check including frame time on an older
-  iPad (not measured yet), Detector Lab polish, a manual light/dark switch, German strings
-  (P2-14).
+  key bloom, larger finger numbers) and end-of-run ring; several review rounds with the maintainer
+  (2026-10-08 and 09). Left: the next polish round is P5-09 (manual light/dark switch, logo,
+  Detector Lab, 44 px touch targets); an iPad check including frame time on an older iPad (P5-10).
 - [x] **P4-11** Smooth motion and a sensible falling-notes layout on wide windows. Done: a steady
       drawing clock nudged toward the audio clock, time-based wait-mode easing, white keys capped at
-      64 px with more octaves shown on wide windows (ADR 0012, proposed). Left: frame time on an older
+      64 px with more octaves shown on wide windows (ADR 0012). Left: frame time on an older
       iPad (not measured).
 - [x] **P4-12** Score views (NEXT-PHASE.md P4-11 to P4-15). Done: the cursor glides over bar lines
       (test), the score returns to its start a second after a run (page view: page 1), the scrolling
       score has no scroll bar and can be dragged or swiped with coasting, the play bar stays in the
       middle (ADR 0009 decision 5 superseded by ADR 0012), the page view is a centred page, not
-      stretched, and the score is larger on big windows. Left: a check on WebKit and an iPad.
+      stretched, and the score is larger on big windows. Left: a check on an iPad (WebKit is covered by
+      the Playwright runs).
 - [~] **P4-13** Several levels per song and more pieces (NEXT-PHASE.md P4-16, P4-17; ADR 0012).
   Done: optional `song` and `variant` fields in schema, validator and index; Home links the other
-  levels under a card; 19 melody levels, "Ode to Joy (full tune)" and "Happy Birthday to You", all
-  `verified: false`. Left: reviews (a person who did not add them), longer pieces and more
-  songs (PDMX pipeline or exact hand transcriptions), a third level for more songs.
+  levels under a card; 19 melody levels, "Ode to Joy (full tune)" and "Happy Birthday to You",
+  verified after the music review (P4-13c). Left: longer pieces and more songs (PDMX pipeline or
+  exact hand transcriptions), a third level for more songs.
 - [~] **P4-13b** Famous public-domain pieces at scale (2026-10-09). Done: `tools/pipeline/midi_arrange.py`
   turns a public-domain Mutopia Project typesetting (MIDI) into an `arrange.py` arrangement with one
   voice per hand; 27 pieces added (Bach inventions, minuets and Musette; Für Elise, The
@@ -280,8 +280,10 @@ compatibility matrix (spec §5).
   prelude and waltz, two Beethoven minuets), 79 in all, each with its print and year recorded
   (`print_source`, refused when undated or from 1930 on); pieces whose source page gave no date
   (the Gymnopédies, Rondo alla Turca, three Chopin preludes, Mozart K. 331, Schubert's Marche
-  militaire, Prelude in C) were left out until a dated source is found; difficulty from the estimator, all `verified: false`. Left: reviews, a third level for more
-  songs, pieces with triplets or ornaments (the converter refuses them), Bella Ciao (P4-14).
+  militaire, Prelude in C) were left out until a dated source is found; difficulty from the
+  estimator; verified after the music review (P4-13c). Left: a third level for more songs, the
+  undated pieces above, pieces whose ornaments matter (the converter leaves grace notes out and
+  refuses rubato; thirty-seconds and triplets work with `--fine` since P4-13c).
 - [x] **P4-14** Bella Ciao (maintainer's request). Added 2026-10-09 at two levels (melody, two hands):
       an own CC0 arrangement of the melody as set CC0 by Peter Gerloff on Wikimedia Commons. The origin of
       the tune is disputed (linked to a 1919 recording by Mishka Ziganoff, who died in 1967), which the
@@ -362,8 +364,8 @@ images, sounds or fonts, and credit the inspiration in [CREDITS.md](CREDITS.md).
 - [ ] **P5-09** (APP) Smoothness pass, reviewed together in the maintainer's dark-mode Chrome: home to
       playing in two clicks, one transport bar, route and panel transitions, 44 px touch targets on
       coarse pointers, a manual light/dark switch, a refreshed logo, Detector Lab polish.
-- [ ] **P5-10** (human) Release gate: frame time on an older iPad, MIDI keyboard check in Firefox and
-      Safari, postal address in the Impressum, legal consultation (P2-18), domain and trademark, a
+- [ ] **P5-10** (human) Release gate: frame time on an older iPad, a MIDI keyboard on an iPad through
+      the iPad app (Safari has no Web MIDI; Firefox confirmed working 2026-10-09), postal address in the Impressum, legal consultation (P2-18), domain and trademark, a
       native German read-through, README screenshots from CC0 pieces only.
 
 Left out on purpose: 128 General MIDI instruments (a piano trainer, and extra sample licences and
