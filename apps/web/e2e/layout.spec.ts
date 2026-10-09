@@ -162,3 +162,16 @@ test('practice survives rotation and resizing', async ({ page }) => {
     await tapExpectedKey(page);
   }
 });
+
+test('the Options panel fits a short window and scrolls to its last item', async ({ page }) => {
+  await page.setViewportSize({ width: 820, height: 375 });
+  await openPractice(page);
+  await page.getByRole('button', { name: 'Options' }).click();
+  const panel = page.getByRole('group', { name: 'Options' });
+  await expect(panel).toBeVisible();
+  const box = await panel.boundingBox();
+  expect((box?.y ?? 0) + (box?.height ?? 0)).toBeLessThanOrEqual(375);
+  const last = panel.getByRole('link', { name: 'All settings' });
+  await last.scrollIntoViewIfNeeded();
+  await expect(last).toBeInViewport();
+});

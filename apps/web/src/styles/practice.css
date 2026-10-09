@@ -159,6 +159,11 @@
   flex-direction: column;
   gap: var(--space-3);
   width: min(20rem, calc(100vw - 1rem));
+  /* A short window (phone landscape, Stage Manager) scrolls the panel instead of cutting it off. */
+  max-height: calc(100vh - 4rem);
+  max-height: calc(100dvh - 4rem);
+  overflow-y: auto;
+  overscroll-behavior: contain;
   padding: var(--space-4);
   border: 1px solid var(--line-strong);
   border-radius: var(--radius);
