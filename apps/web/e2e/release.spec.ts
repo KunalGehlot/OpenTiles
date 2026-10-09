@@ -142,7 +142,14 @@ test('the German pages fit a ⅓-width iPad window, also with large print', asyn
   await page.setViewportSize({ width: 320, height: 768 });
   await page.goto('./#/settings');
   await page.getByLabel(/Große Schrift/).check();
-  for (const url of ['./#/settings', './', './#/library', './#/sheet-music', './#/about']) {
+  for (const url of [
+    './#/settings',
+    './',
+    './#/library',
+    './#/sheet-music',
+    './#/about',
+    './#/drills',
+  ]) {
     await page.goto(url);
     await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
     const widths = await page.evaluate(() => ({

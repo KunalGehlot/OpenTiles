@@ -57,6 +57,8 @@ answer away, so the learner would be matching colours rather than reading the st
   that.
 - A drill's range is fixed per level and clef; a learner cannot yet choose exact notes or add
   accidentals beyond the key signature. Rhythm reading is left for later.
+- Listen mode stays available in a drill and plays the notes: hearing a drill is a choice the learner
+  makes, not something the screen does for them, so it was left in rather than hidden.
 - Wait-mode speed is a fair measure only when the learner plays as soon as they have read a note;
   play-along mode at a set tempo is the stricter test and works with drills unchanged.
 

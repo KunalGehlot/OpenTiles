@@ -224,7 +224,7 @@ test('the new pages fit a ⅓-width iPad window, also with large print', async (
   await page.setViewportSize({ width: 320, height: 768 });
   await page.goto('./#/settings');
   await page.getByLabel(/Large print/).check();
-  for (const url of ['./#/settings', './#/privacy', './#/impressum/de', './']) {
+  for (const url of ['./#/settings', './#/privacy', './#/impressum/de', './', './#/drills']) {
     await page.goto(url);
     await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
     const widths = await page.evaluate(() => ({
