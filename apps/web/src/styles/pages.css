@@ -464,6 +464,12 @@ button.copy-link--done {
   margin-inline: auto;
 }
 
+/* The sight-reading page (P5-05) is one settings card with a start button. */
+.drills .row {
+  padding-top: var(--space-3);
+  border-top: 1px solid var(--line);
+}
+
 .settings > section {
   display: flex;
   flex-direction: column;

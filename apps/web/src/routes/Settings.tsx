@@ -35,6 +35,7 @@ import {
 } from '../input/midi-input';
 import type { MidiKeyboardInput } from '../input/midi-input';
 import { labelStyleFor, noteLabel } from '../lib/notes';
+import { Setting, Toggle } from '../ui/SettingRow';
 import type { NoteLabelSetting, SpellingSetting } from '../lib/notes';
 
 /** Default export so the route can be lazy-loaded. */
@@ -101,46 +102,6 @@ export default function Settings() {
 }
 
 /** One setting: its name (and a line of help) on the left, the control on the right. */
-function Setting({
-  label,
-  hint,
-  className,
-  children,
-}: {
-  label: string;
-  hint?: string;
-  className?: string;
-  children: React.ReactNode;
-}) {
-  return (
-    <label className={className ? `setting ${className}` : 'setting'}>
-      <span className="setting__text">
-        <span className="setting__label">{label}</span>
-        {hint && <span className="setting__hint">{hint}</span>}
-      </span>
-      {children}
-    </label>
-  );
-}
-
-function Toggle({
-  label,
-  description,
-  checked,
-  onChange,
-}: {
-  label: string;
-  description?: string;
-  checked: boolean;
-  onChange: (on: boolean) => void;
-}) {
-  return (
-    <Setting label={label} hint={description} className="toggle">
-      <input type="checkbox" checked={checked} onChange={(e) => onChange(e.target.checked)} />
-    </Setting>
-  );
-}
-
 function TriSelect({
   label,
   value,

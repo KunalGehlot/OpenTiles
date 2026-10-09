@@ -244,11 +244,14 @@ export class PracticeRenderer {
     const current = new Set(
       session.mode === 'wait' ? (session.wait.current?.notes ?? []).map((n) => n.id) : [],
     );
-    for (const n of session.song.notes) {
-      const y0 = yOf(n.startBeat);
-      const y1 = yOf(n.startBeat + n.durationBeats);
-      if (y1 > top || y0 < -10) continue;
-      this.drawNote(ctx, n, y1, y0, session, current.has(n.id));
+    // A sight-reading drill shows no falling notes: the score is what is read (P5-05).
+    if (session.guide === 'full') {
+      for (const n of session.song.notes) {
+        const y0 = yOf(n.startBeat);
+        const y1 = yOf(n.startBeat + n.durationBeats);
+        if (y1 > top || y0 < -10) continue;
+        this.drawNote(ctx, n, y1, y0, session, current.has(n.id));
+      }
     }
     // Now-line.
     ctx.fillStyle = p.nowLine;
@@ -535,7 +538,7 @@ export class PracticeRenderer {
   ): void {
     const p = this.palette;
     const height = this.keyboardHeight;
-    const expectedNotes = session.expectedNotes();
+    const expectedNotes = session.guide === 'none' ? [] : session.expectedNotes();
     const expected = new Set(expectedNotes.map((n) => n.pitch));
     const handOf = new Map<number, 'left' | 'right'>();
     // Fingers on the keys to play next (P4-08); the song carries them only when they are shown.

@@ -480,6 +480,12 @@ label.check {
   margin: 0;
 }
 
+/* A sight-reading drill's speed (P5-05). */
+.summary .drill-speed {
+  font-size: var(--text-md);
+  font-variant-numeric: tabular-nums;
+}
+
 .ring {
   --size: 8rem;
 

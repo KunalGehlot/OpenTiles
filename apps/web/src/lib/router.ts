@@ -4,7 +4,10 @@ import { useEffect, useState } from 'react';
 export type Route =
   | { name: 'home' }
   | { name: 'library' }
-  | { name: 'practice'; source: 'catalogue' | 'library'; id: string }
+  /** `drill` ids are generated drill options, not stored pieces (P5-05). */
+  | { name: 'practice'; source: 'catalogue' | 'library' | 'drill'; id: string }
+  /** Sight-reading drills: choose a clef, key and level (P5-05). */
+  | { name: 'drills' }
   | { name: 'lab' }
   | { name: 'about' }
   /** Where to find free and licensed sheet music to import. */
@@ -27,10 +30,15 @@ export function parseHash(hash: string): Route {
     case 'library':
       return { name: 'library' };
     case 'practice':
-      if ((parts[1] === 'catalogue' || parts[1] === 'library') && parts[2]) {
+      if (
+        (parts[1] === 'catalogue' || parts[1] === 'library' || parts[1] === 'drill') &&
+        parts[2]
+      ) {
         return { name: 'practice', source: parts[1], id: parts[2] };
       }
       return { name: 'home' };
+    case 'drills':
+      return { name: 'drills' };
     case 'lab':
       return { name: 'lab' };
     case 'about':

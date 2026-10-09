@@ -146,6 +146,19 @@ export async function recordRun(key: string, accuracy: number, seconds: number):
   });
 }
 
+/**
+ * Adds practice time to today without a progress record: for sight-reading drills (P5-05), which
+ * are made up on the spot and have no piece to track.
+ */
+export async function recordPracticeTime(seconds: number): Promise<void> {
+  if (!(seconds > 0)) return;
+  await db.transaction('rw', db.days, async () => {
+    const day = localDay();
+    const d = await db.days.get(day);
+    await db.days.put({ day, seconds: (d?.seconds ?? 0) + seconds });
+  });
+}
+
 /** Consecutive days with practice, ending today or yesterday. */
 export function streak(days: readonly DayStat[], today = new Date()): number {
   const set = new Set(days.filter((d) => d.seconds > 0).map((d) => d.day));

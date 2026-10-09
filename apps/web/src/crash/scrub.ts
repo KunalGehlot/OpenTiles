@@ -18,7 +18,7 @@ const FILE_NAME = new RegExp(
 const BLOB_URL = /\bblob:[^\s)"'<>]+/gi;
 const DATA_URL = /\bdata:[^\s)"'<>]+/gi;
 /** Hash routes that carry an id: #/practice/library/12, #/sign-in/<token>, ... */
-const ID_ROUTE = /#\/(practice\/(?:library|catalogue)|sign-in|sync\/sign-in)\/[^\s)"'<>:]+/gi;
+const ID_ROUTE = /#\/(practice\/(?:library|catalogue|drill)|sign-in|sync\/sign-in)\/[^\s)"'<>:]+/gi;
 const ANY_FRAGMENT = /#[^\s)"'<>/][^\s)"'<>]*/g;
 const QUERY = /\?[^\s)"'<>#:]+/g;
 /** Text in quotes in a message is usually data (a title, a value), not code. */

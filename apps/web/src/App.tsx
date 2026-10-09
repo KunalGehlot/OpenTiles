@@ -10,6 +10,7 @@ import type { Route } from './lib/router';
 import { ErrorBoundary } from './ui/ErrorBoundary';
 import { language, t } from './i18n';
 import { SheetMusic } from './routes/SheetMusic';
+import { Drills } from './routes/Drills';
 
 // Settings pulls in the encryption code (Argon2id, zip, sync client); load it only when opened.
 const Settings = lazy(() => import('./routes/Settings'));
@@ -22,6 +23,7 @@ function nav(): { route: Route; label: string }[] {
   return [
     { route: { name: 'home' }, label: t('Pieces') },
     { route: { name: 'library' }, label: t('My library') },
+    { route: { name: 'drills' }, label: t('Sight-reading') },
     { route: { name: 'sheet-music' }, label: t('Find sheet music') },
     { route: { name: 'lab' }, label: t('Detector Lab') },
     { route: { name: 'about' }, label: t('About') },
@@ -59,6 +61,7 @@ export function App() {
           {route.name === 'home' && <Home />}
           {route.name === 'library' && <Library />}
           {route.name === 'practice' && <Practice source={route.source} id={route.id} />}
+          {route.name === 'drills' && <Drills />}
           {route.name === 'lab' && <DetectorLab />}
           {route.name === 'about' && <About />}
           {route.name === 'sheet-music' && <SheetMusic />}

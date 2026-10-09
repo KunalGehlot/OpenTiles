@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   ChevronLeft,
   Gauge,
@@ -31,12 +31,14 @@ import {
 import type { MidiKeyboardInput } from '../input/midi-input';
 import type { MicInput } from '../input/mic-input';
 import { TouchInput } from '../input/touch-input';
-import { href } from '../lib/router';
+import { href, navigate } from '../lib/router';
 import { ListenBack } from '../practice/ListenBack';
 import { connectClickTrack, MetronomeControl } from '../practice/MetronomeControl';
 import { MicCalibration } from '../practice/MicCalibration';
 import { MidiLatencyCalibration } from '../practice/MidiLatencyCalibration';
 import { prepareSong } from '../practice/prepare';
+import { drillRoute, loadDrill, loadDrillPrefs, notesPerMinute } from '../practice/drill';
+import type { DrillPrefs } from '../practice/drill';
 import { LiveStatsStrip } from '../practice/LiveStatsStrip';
 import { OverviewStrip } from '../practice/OverviewStrip';
 import { SectionBar } from '../practice/SectionBar';
@@ -58,7 +60,7 @@ import {
   getMidiCalibration,
   micCalibrationSkipped,
 } from '../storage/calibration';
-import { db, recordRun } from '../storage/db';
+import { db, recordPracticeTime, recordRun } from '../storage/db';
 import { hitTest, rangeFor } from '../views/keyboard';
 import { LoopDrag } from '../views/loop-drag';
 import { PracticeRenderer } from '../views/renderer';
@@ -72,17 +74,27 @@ import { Popover } from '../ui/Popover';
 import { t } from '../i18n';
 
 interface Loaded {
-  source: 'catalogue' | 'library';
+  source: 'catalogue' | 'library' | 'drill';
   song: Song;
   title: string;
   subtitle?: string;
   progressKey: string;
   notation: NotationSource;
+  /** A sight-reading drill (P5-05): what it hides, and the choices for the next one. */
+  drill?: { guide: 'keys' | 'none'; prefs: DrillPrefs };
 }
 
 const NO_BARS: readonly number[] = [];
+/** How long an endless drill's result stays before the next drill starts. */
+const ENDLESS_PAUSE_MS = 2500;
 
-export function Practice({ source, id }: { source: 'catalogue' | 'library'; id: string }) {
+export function Practice({
+  source,
+  id,
+}: {
+  source: 'catalogue' | 'library' | 'drill';
+  id: string;
+}) {
   const [loaded, setLoaded] = useState<Loaded | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [prefs, setPrefs] = useState<PracticePrefs | null>(null);
@@ -101,6 +113,19 @@ export function Practice({ source, id }: { source: 'catalogue' | 'library'; id: 
     setLoaded(null);
     setError(null);
     const load = async (): Promise<Loaded> => {
+      if (source === 'drill') {
+        const drillPrefs = await loadDrillPrefs();
+        const d = loadDrill(id, drillPrefs.letters);
+        return {
+          source,
+          song: d.song,
+          title: d.title,
+          subtitle: t('Sight-reading'),
+          progressKey: `drill:${id}`,
+          notation: { kind: 'musicxml', text: d.musicxml, transpose: 0 },
+          drill: { guide: drillPrefs.showKeys ? 'keys' : 'none', prefs: drillPrefs },
+        };
+      }
       if (source === 'catalogue') {
         const { piece, song, bytes } = await loadCatalogueSong(id);
         return {
@@ -151,13 +176,27 @@ function PracticeView({
   subtitle,
   progressKey,
   notation,
-  prefs,
+  drill,
+  prefs: savedPrefs,
 }: Loaded & { prefs: PracticePrefs }) {
   const settings = useAppSettings();
+  // A drill starts in wait mode with both hands, shows the score and nothing that gives the notes
+  // away (no falling notes, no overview), and keeps the learner's choices for pieces as they are.
+  const prefs = useMemo<PracticePrefs>(
+    () => (drill ? { ...savedPrefs, mode: 'wait', hands: 'both', overview: false } : savedPrefs),
+    [drill, savedPrefs],
+  );
+  const remember = useCallback(
+    (patch: Partial<PracticePrefs>) => {
+      if (!drill) savePracticePrefs(patch);
+      else if (patch.liveStats !== undefined) savePracticePrefs({ liveStats: patch.liveStats });
+    },
+    [drill],
+  );
   // The piece fitted to the learner's keyboard (P4-07), with the fingers they chose (P4-08).
   // Keyed on plain values: other settings changing must not restart the run.
   const { size, low, keys } = settings.keyboard;
-  const fingering = settings.fingering;
+  const fingering = drill ? 'off' : settings.fingering;
   const range = useMemo(() => keyboardRange({ size, low, keys }), [size, low, keys]);
   // Semitones the learner moved the piece by on this visit (P5-04). The score is drawn moved too,
   // and suggested fingers are worked out again for the new key.
@@ -199,19 +238,26 @@ function PracticeView({
   const touch = useRef(new TouchInput());
   const pointers = useRef(new Map<number, number>());
   const [loopDrag] = useState(() => new LoopDrag(session, () => rendererRef.current));
-  const [view, setView] = usePracticeView(notation);
+  const [chosenView, setView] = usePracticeView(notation);
+  // The page view shows the whole drill at once, so the learner can read ahead.
+  const view = drill ? 'page' : chosenView;
 
   // Wire the session to React and inputs.
   useEffect(() => {
     session.onStatus = setStatus;
-    session.onFinish = (summary, seconds) => void recordRun(progressKey, summary.accuracy, seconds);
+    session.guide = drill?.guide ?? 'full';
+    session.onFinish = (summary, seconds) =>
+      void (drill
+        ? recordPracticeTime(seconds)
+        : recordRun(progressKey, summary.accuracy, seconds));
     session.onTempo = (factor) => {
       setTempo(factor);
-      savePracticePrefs({ tempo: factor });
+      remember({ tempo: factor });
     };
     // Loop runs count as practice time but not as a best score for the whole piece.
     const unsubscribe = session.addLoopListener(
-      (run) => void recordRun(progressKey, 0, run.seconds),
+      (run) =>
+        void (drill ? recordPracticeTime(run.seconds) : recordRun(progressKey, 0, run.seconds)),
     );
     // Start from the learner's last choices.
     session.setMode(prefs.mode);
@@ -228,7 +274,15 @@ function PracticeView({
       keys.stop();
       session.stop();
     };
-  }, [session, progressKey, prefs, startHands]);
+  }, [session, progressKey, prefs, startHands, drill, remember]);
+
+  // Endless drills (P5-05): a new one follows a finished one after a moment to see the result.
+  const finished = status.finished;
+  useEffect(() => {
+    if (!finished || !drill?.prefs.endless) return;
+    const timer = window.setTimeout(() => navigate(drillRoute(drill.prefs)), ENDLESS_PAUSE_MS);
+    return () => window.clearTimeout(timer);
+  }, [finished, drill]);
 
   useEffect(() => {
     // While the microphone is being set up, the set-up decides what it listens for.
@@ -454,7 +508,7 @@ function PracticeView({
 
   const changeMode = (m: PracticeMode) => {
     setMode(m);
-    savePracticePrefs({ mode: m });
+    remember({ mode: m });
     session.setMode(m);
     mic?.setMode(m === 'play-along' ? 'play-along' : 'wait');
   };
@@ -585,32 +639,34 @@ function PracticeView({
                 <option value="off">{t('Off')}</option>
               </select>
             </label>
-            <div className="field">
-              <span className="field__label" id="transpose-label">
-                {t('Transpose')}
-              </span>
-              <div className="stepper" role="group" aria-labelledby="transpose-label">
-                <button
-                  type="button"
-                  aria-label={t('Down a semitone')}
-                  disabled={moved <= limits.down}
-                  onClick={() => setShift(Math.max(limits.down, moved - 1))}
-                >
-                  <Minus />
-                </button>
-                <output aria-live="polite" data-testid="transpose">
-                  {shiftLabel(moved)}
-                </output>
-                <button
-                  type="button"
-                  aria-label={t('Up a semitone')}
-                  disabled={moved >= limits.up}
-                  onClick={() => setShift(Math.min(limits.up, moved + 1))}
-                >
-                  <Plus />
-                </button>
+            {!drill && (
+              <div className="field">
+                <span className="field__label" id="transpose-label">
+                  {t('Transpose')}
+                </span>
+                <div className="stepper" role="group" aria-labelledby="transpose-label">
+                  <button
+                    type="button"
+                    aria-label={t('Down a semitone')}
+                    disabled={moved <= limits.down}
+                    onClick={() => setShift(Math.max(limits.down, moved - 1))}
+                  >
+                    <Minus />
+                  </button>
+                  <output aria-live="polite" data-testid="transpose">
+                    {shiftLabel(moved)}
+                  </output>
+                  <button
+                    type="button"
+                    aria-label={t('Up a semitone')}
+                    disabled={moved >= limits.up}
+                    onClick={() => setShift(Math.min(limits.up, moved + 1))}
+                  >
+                    <Plus />
+                  </button>
+                </div>
               </div>
-            </div>
+            )}
             <label className="field">
               <span className="field__label">{t('Black keys')}</span>
               <select
@@ -625,24 +681,26 @@ function PracticeView({
                 <option value="flats">{t('Flats (♭)')}</option>
               </select>
             </label>
-            <label className="check">
-              <input
-                type="checkbox"
-                checked={overview}
-                onChange={(e) => {
-                  setOverview(e.target.checked);
-                  savePracticePrefs({ overview: e.target.checked });
-                }}
-              />
-              {t('Overview of the piece')}
-            </label>
+            {!drill && (
+              <label className="check">
+                <input
+                  type="checkbox"
+                  checked={overview}
+                  onChange={(e) => {
+                    setOverview(e.target.checked);
+                    remember({ overview: e.target.checked });
+                  }}
+                />
+                {t('Overview of the piece')}
+              </label>
+            )}
             <label className="check">
               <input
                 type="checkbox"
                 checked={liveStats}
                 onChange={(e) => {
                   setLiveStats(e.target.checked);
-                  savePracticePrefs({ liveStats: e.target.checked });
+                  remember({ liveStats: e.target.checked });
                 }}
               />
               {t('Live stats')}
@@ -726,7 +784,7 @@ function PracticeView({
                 aria-pressed={hands === h}
                 onClick={() => {
                   setHands(h);
-                  savePracticePrefs({ hands: h });
+                  remember({ hands: h });
                   session.setHands(h);
                 }}
               >
@@ -741,7 +799,7 @@ function PracticeView({
                 checked={accompany}
                 onChange={(e) => {
                   setAccompany(e.target.checked);
-                  savePracticePrefs({ accompany: e.target.checked });
+                  remember({ accompany: e.target.checked });
                   session.accompany = e.target.checked;
                 }}
               />
@@ -775,7 +833,7 @@ function PracticeView({
             onChange={(e) => {
               const factor = Number(e.target.value) / 100;
               setTempo(factor);
-              savePracticePrefs({ tempo: factor });
+              remember({ tempo: factor });
               session.setTempo(factor);
             }}
           />
@@ -798,11 +856,11 @@ function PracticeView({
         {liveStats && <LiveStatsStrip stats={status.live} mode={mode} />}
         {inputError && <span className="error">{inputError}</span>}
         <div className="session-status__view">
-          <ViewToggle view={view} onChange={setView} notation={shownNotation} />
+          {!drill && <ViewToggle view={view} onChange={setView} notation={shownNotation} />}
         </div>
       </div>
       {/* Above the loop controls, so it stays put under the pointer when they appear. */}
-      {overview && (
+      {overview && !drill && (
         <OverviewStrip
           session={session}
           song={prepared.played}
@@ -825,6 +883,7 @@ function PracticeView({
           suggested={prepared.suggested}
           notation={shownNotation}
           layout={view}
+          main={drill !== undefined}
           hardest={
             status.finished && summary
               ? summary.hardestMeasures.map((m) => m.measureIndex)
@@ -864,6 +923,25 @@ function PracticeView({
                 </span>
                 <span className="ring__label">{t('accuracy')}</span>
               </div>
+              {drill && mode === 'wait' && status.elapsed > 0 && (
+                <p className="drill-speed" data-testid="drill-speed">
+                  <strong>
+                    {t('{n} notes a minute', {
+                      n: notesPerMinute(status.live.perfect + status.live.good, status.elapsed),
+                    })}
+                  </strong>
+                  {status.live.perfect + status.live.good > 0 && (
+                    <>
+                      {' · '}
+                      {t('{percent} % at the first try', {
+                        percent: Math.round(
+                          (status.live.perfect / (status.live.perfect + status.live.good)) * 100,
+                        ),
+                      })}
+                    </>
+                  )}
+                </p>
+              )}
               {(status.elapsed > 0 || (mode === 'play-along' && summary.meanOffsetMs > 0)) && (
                 <p className="muted">
                   {status.elapsed > 0 && <>{Math.round(status.elapsed)} s</>}
@@ -906,13 +984,34 @@ function PracticeView({
                 <ListenBack session={session} title={title} allowSave={source === 'catalogue'} />
               )}
               <div className="row summary__actions">
-                <button className="primary" onClick={() => session.rebuild()}>
-                  <RotateCcw /> {t('Play again')}
-                </button>
-                <a className="button" href={href({ name: 'home' })}>
-                  {t('Choose another piece')}
-                </a>
+                {drill ? (
+                  <>
+                    <a className="button primary" href={href(drillRoute(drill.prefs))}>
+                      <Play /> {t('Next drill')}
+                    </a>
+                    <button onClick={() => session.rebuild()}>
+                      <RotateCcw /> {t('Play again')}
+                    </button>
+                    <a className="button" href={href({ name: 'drills' })}>
+                      {t('Change the drill')}
+                    </a>
+                  </>
+                ) : (
+                  <>
+                    <button className="primary" onClick={() => session.rebuild()}>
+                      <RotateCcw /> {t('Play again')}
+                    </button>
+                    <a className="button" href={href({ name: 'home' })}>
+                      {t('Choose another piece')}
+                    </a>
+                  </>
+                )}
               </div>
+              {drill?.prefs.endless && (
+                <p className="muted" role="status">
+                  {t('The next drill starts in a moment.')}
+                </p>
+              )}
             </div>
           </div>
         )}
