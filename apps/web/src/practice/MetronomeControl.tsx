@@ -26,11 +26,12 @@ export function MetronomeControl({
 }) {
   const [volume, setVolume] = useState(initialVolume);
 
-  const toggle = async () => {
-    // Audio may only start from a gesture (Safari); this click is one.
-    await connectClickTrack(session, volume);
+  const toggle = () => {
+    // The choice applies and is remembered at once; the click sound joins as soon as the browser
+    // starts audio, which may only happen from a gesture (Safari): this click is one.
     session.setMetronome(!on);
     savePracticePrefs({ metronome: !on });
+    connectClickTrack(session, volume).catch(() => {});
   };
 
   return (
@@ -42,7 +43,7 @@ export function MetronomeControl({
             ? t('Metronome on: clicks on every beat, accented on the first beat of the bar')
             : t('Metronome off')
         }
-        onClick={() => void toggle()}
+        onClick={toggle}
       >
         <Metronome />
         <span className="btn-label">{t('Metronome')}</span>

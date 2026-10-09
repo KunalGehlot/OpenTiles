@@ -342,9 +342,13 @@ images, sounds or fonts, and credit the inspiration in [CREDITS.md](CREDITS.md).
       `#000000` as a shared colour). Sightread is GPL-3.0 (GitHub and its LICENSE file; no "or later"
       notice), OpenTiles is AGPL-3.0-or-later; GPLv3 §13 / AGPLv3 §13 allow combining, and nothing has
       been taken. Wording uses "an LLM" and names no vendor. Left: ask in P2-18.
-- [ ] **P5-00** (GOV) Housekeeping that blocks release: push `P4-10-ui-redesign` and open the PR; fix
+- [~] **P5-00** (GOV) Housekeeping that blocks release: push `P4-10-ui-redesign` and open the PR; fix
       the Firefox and iPad-profile Playwright failures in CI; delete and recreate the GitHub
-      repository before it is made public (see STATE.md).
+      repository before it is made public (see STATE.md). Done: the branch is pushed with PR #1;
+      WebKit and the iPad profile pass in CI. The Firefox failures had two causes in the app, both
+      fixed: the first import waited for Firefox's storage-permission prompt, and a sound device
+      that never starts (as on the Linux runner) froze the metronome, runs and the falling notes.
+      Left: recreate the repository before it goes public.
 - [ ] **P5-02** (APP) Keep the screen awake while practising (Screen Wake Lock API, requested from a
       user gesture, released on pause, hidden tab or leaving the page; no error where it is missing).
 - [ ] **P5-03** (APP) Note labels: letters, German names (H instead of B), Fixed-Do; one setting that

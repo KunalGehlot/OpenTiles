@@ -36,6 +36,10 @@ test('the metronome and wait mode work without sound', async ({ page }) => {
   await page.getByRole('button', { name: 'Right', exact: true }).click();
   const metronome = page.getByRole('button', { name: 'Metronome', exact: true });
   await metronome.click();
+  // At once, not after unlockAudio() gives up waiting for sound, and remembered right away.
+  await expect(metronome).toHaveAttribute('aria-pressed', 'true', { timeout: 1000 });
+  await page.waitForTimeout(300);
+  await page.reload();
   await expect(metronome).toHaveAttribute('aria-pressed', 'true');
   const stats = page.locator('.stats');
   await page.keyboard.press('KeyD'); // E4
