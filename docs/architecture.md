@@ -214,6 +214,15 @@ numbers, shaded black-key lanes, a glossy keyboard and a short bloom on a played
 are built once per resize, there is no `shadowBlur`, and the font is set only when it changes; frame
 time on an older iPad has not been measured yet.
 
+## Practice screen strips (P5-07)
+
+Two optional strips sit above the falling notes. The live stats strip reads `status.live`, a
+`LiveTally` the session feeds from its own judgements (play-along: on time is perfect, early or
+late good; wait mode: right at the first try is perfect, after a wrong key good). The overview strip
+(`apps/web/src/practice/OverviewStrip.tsx`) draws the piece's notes once as an SVG, moves its
+position marker from `requestAnimationFrame` (not React), and sets loops and positions only through
+`session.setLoop()` and `session.seek()`, like the loop controls and the canvas drag.
+
 ## Storage
 
 - **Private library:** IndexedDB via Dexie — original file bytes, the parsed `Song`, practice

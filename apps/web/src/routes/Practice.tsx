@@ -37,6 +37,8 @@ import { connectClickTrack, MetronomeControl } from '../practice/MetronomeContro
 import { MicCalibration } from '../practice/MicCalibration';
 import { MidiLatencyCalibration } from '../practice/MidiLatencyCalibration';
 import { prepareSong } from '../practice/prepare';
+import { LiveStatsStrip } from '../practice/LiveStatsStrip';
+import { OverviewStrip } from '../practice/OverviewStrip';
 import { SectionBar } from '../practice/SectionBar';
 import {
   shiftLabel,
@@ -182,6 +184,8 @@ function PracticeView({
   const [hands, setHands] = useState<HandFilter>(startHands);
   const [tempo, setTempo] = useState(prefs.tempo);
   const [accompany, setAccompany] = useState(prefs.accompany);
+  const [liveStats, setLiveStats] = useState(prefs.liveStats);
+  const [overview, setOverview] = useState(prefs.overview);
   const [midi, setMidi] = useState<{ input: MidiKeyboardInput; devices: string[] } | null>(null);
   const [mic, setMic] = useState<MicInput | null>(null);
   const [inputError, setInputError] = useState<string | null>(null);
@@ -621,6 +625,28 @@ function PracticeView({
                 <option value="flats">{t('Flats (♭)')}</option>
               </select>
             </label>
+            <label className="check">
+              <input
+                type="checkbox"
+                checked={overview}
+                onChange={(e) => {
+                  setOverview(e.target.checked);
+                  savePracticePrefs({ overview: e.target.checked });
+                }}
+              />
+              {t('Overview of the piece')}
+            </label>
+            <label className="check">
+              <input
+                type="checkbox"
+                checked={liveStats}
+                onChange={(e) => {
+                  setLiveStats(e.target.checked);
+                  savePracticePrefs({ liveStats: e.target.checked });
+                }}
+              />
+              {t('Live stats')}
+            </label>
             {midiSupported() && (
               <>
                 <label className="field">
@@ -769,11 +795,21 @@ function PracticeView({
           <span className="stat stat--ok">✓ {status.correct}</span>
           <span className="stat stat--bad">✗ {status.wrong}</span>
         </span>
+        {liveStats && <LiveStatsStrip stats={status.live} mode={mode} />}
         {inputError && <span className="error">{inputError}</span>}
         <div className="session-status__view">
           <ViewToggle view={view} onChange={setView} notation={shownNotation} />
         </div>
       </div>
+      {/* Above the loop controls, so it stays put under the pointer when they appear. */}
+      {overview && (
+        <OverviewStrip
+          session={session}
+          song={prepared.played}
+          status={status}
+          onLoop={() => setShowLoop(true)}
+        />
+      )}
       {(fit || moved !== 0) && (
         <p className="practice-note muted" role="status">
           {[shiftMessage(moved), fit].filter(Boolean).join(' ')}

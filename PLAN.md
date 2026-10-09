@@ -372,9 +372,14 @@ images, sounds or fonts, and credit the inspiration in [CREDITS.md](CREDITS.md).
       performance recorder. Saving the recording as a MIDI file for the user's own device needs an
       ADR first (guardrail 1: the only export is the encrypted backup; ADR 0010 limits WAV files to
       catalogue pieces) and a question to the lawyer in P2-18.
-- [ ] **P5-07** (APP) A slim live stats strip (perfect, good, missed, streak; off by default) and an
+- [x] **P5-07** (APP) A slim live stats strip (perfect, good, missed, streak; off by default) and an
       overview strip of the whole piece with loop handles and the hardest bars. Check first what
-      `SectionBar` and `loop-drag` already cover.
+      `SectionBar` and `loop-drag` already cover. Done: Options → "Live stats" (off by default:
+      perfect, good, missed, wrong, streak and best streak; `LiveTally` in `packages/practice`) and
+      "Overview of the piece" (on; a picture of the notes, the position, the hardest bars after a
+      run; tap a bar to go there, drag to loop bars, a handle on each end of the loop that also
+      moves with the arrow keys). It uses the session's own loop and seek, so the loop controls,
+      the canvas drag and the strip always agree. Hidden in short landscape windows.
 - [ ] **P5-08** (APP) Library preview before opening and collections. Not selected for this round.
 - [ ] **P5-09** (APP) Smoothness pass, reviewed together in the maintainer's dark-mode Chrome: home to
       playing in two clicks, one transport bar, route and panel transitions, 44 px touch targets on

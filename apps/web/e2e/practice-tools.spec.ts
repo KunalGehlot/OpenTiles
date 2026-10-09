@@ -145,3 +145,58 @@ test('the microphone set-up runs once per microphone and can be skipped', async 
   await expect(page.getByText('Microphone listening')).toBeVisible({ timeout: 10_000 });
   await expect(dialog).toHaveCount(0);
 });
+
+test('the overview strip loops bars by dragging, moves the loop with its handles and goes to a bar (P5-07)', async ({
+  page,
+}) => {
+  await openPractice(page);
+  const strip = page.getByRole('group', { name: 'Overview of the piece' });
+  await expect(strip).toBeVisible();
+  const box = await strip.boundingBox();
+  if (!box) throw new Error('No overview strip');
+  const y = box.y + box.height / 2;
+  // Drag across the first quarter of the piece.
+  await page.mouse.move(box.x + 2, y);
+  await page.mouse.down();
+  await page.mouse.move(box.x + box.width * 0.15, y, { steps: 5 });
+  await page.mouse.move(box.x + box.width * 0.25, y, { steps: 5 });
+  await page.mouse.up();
+  const section = page.getByRole('group', { name: 'Loop a section' });
+  await expect(section).toContainText(/Looping bars 1–\d/);
+  await expect(page.getByRole('combobox', { name: 'From bar' })).toHaveValue('0');
+  const end = page.getByRole('slider', { name: 'Loop ends at bar' });
+  const before = Number(await end.getAttribute('aria-valuenow'));
+  expect(before).toBeGreaterThan(1);
+  // The end handle moves with the arrow keys.
+  await end.focus();
+  await page.keyboard.press('ArrowLeft');
+  await expect(end).toHaveAttribute('aria-valuenow', String(before - 1));
+  await expect(page.getByRole('combobox', { name: 'To bar' })).toHaveValue(String(before - 2));
+  await page.getByRole('button', { name: 'Whole piece' }).click();
+  await expect(end).toHaveCount(0);
+
+  // A tap goes to that bar: wait mode moves on to a later step.
+  await expect(page.locator('.stats')).toContainText('Step 1/');
+  await page.mouse.click(box.x + box.width * 0.6, y);
+  await expect(page.locator('.stats')).not.toContainText('Step 1/');
+});
+
+test('live stats are off until chosen, then count the run (P5-07)', async ({ page }) => {
+  await openPractice(page);
+  await expect(page.getByTestId('live-stats')).toHaveCount(0);
+  await page.getByRole('button', { name: 'Options' }).click();
+  await page.getByRole('checkbox', { name: 'Live stats' }).check();
+  await page.keyboard.press('Escape');
+  const live = page.getByTestId('live-stats');
+  await expect(live).toBeVisible();
+  await page.keyboard.press('KeyD'); // E4, right
+  await page.keyboard.press('KeyA'); // C4, wrong
+  await page.keyboard.press('KeyD'); // E4, right after a wrong key
+  await expect(live).toContainText('1 perfect');
+  await expect(live).toContainText('1 good');
+  await expect(live).toContainText('1 wrong');
+  await expect(live).toContainText('streak 1');
+  // Remembered on this device.
+  await page.reload();
+  await expect(page.getByTestId('live-stats')).toBeVisible();
+});
