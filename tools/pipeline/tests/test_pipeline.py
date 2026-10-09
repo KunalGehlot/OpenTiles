@@ -133,6 +133,19 @@ class ValidateTest(unittest.TestCase):
         r["single_hand"] = "both"
         self.assertTrue(any("single_hand" in e for e in self.check(r)))
 
+    def test_print_source_must_name_an_old_print(self):
+        r = copy.deepcopy(GOOD)
+        r.update(print_source="Collection Litolff, 19th Century")
+        self.assertEqual(self.check(r), [])
+        r.update(print_source="Breitkopf & Härtel, 1888", print_year=1888)
+        self.assertEqual(self.check(r), [])
+        # The print is recorded for the reviewer; an undated or recent one is refused.
+        r.update(print_source="Edition Peters")
+        r.pop("print_year")
+        self.assertTrue(any("no year or century" in e for e in self.check(r)))
+        r.update(print_source="Dover, 1989", print_year=1989)
+        self.assertTrue(any("not before 1930" in e for e in self.check(r)))
+
     def test_edition_evidence(self):
         r = copy.deepcopy(GOOD)
         r["edition_note"] = "A nice score."

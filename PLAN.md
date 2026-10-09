@@ -262,10 +262,12 @@ compatibility matrix (spec §5).
   songs (PDMX pipeline or exact hand transcriptions), a third level for more songs.
 - [~] **P4-13b** Famous public-domain pieces at scale (2026-10-09). Done: `tools/pipeline/midi_arrange.py`
   turns a public-domain Mutopia Project typesetting (MIDI) into an `arrange.py` arrangement with one
-  voice per hand; 37 pieces added (Bach inventions, Prelude in C, minuets and Musette; Für Elise,
-  Rondo alla Turca, Gymnopédies, The Entertainer, Maple Leaf Rag, Tchaikovsky and Schumann
-  children's pieces, Burgmüller, Chopin preludes and a waltz, Schubert's Marche militaire), 89 in
-  all, difficulty from the estimator, all `verified: false`. Left: reviews, a third level for more
+  voice per hand; 27 pieces added (Bach inventions, minuets and Musette; Für Elise, The
+  Entertainer, Maple Leaf Rag, Tchaikovsky and Schumann children's pieces, Burgmüller, a Chopin
+  prelude and waltz, two Beethoven minuets), 79 in all, each with its print and year recorded
+  (`print_source`, refused when undated or from 1930 on); pieces whose source page gave no date
+  (the Gymnopédies, Rondo alla Turca, three Chopin preludes, Mozart K. 331, Schubert's Marche
+  militaire, Prelude in C) were left out until a dated source is found; difficulty from the estimator, all `verified: false`. Left: reviews, a third level for more
   songs, pieces with triplets or ornaments (the converter refuses them), Bella Ciao (P4-14).
 - [~] **P4-14** Bella Ciao (maintainer's request, asked for twice). Blocked on the notes, not only on
   the legal question: the melody could not be confirmed note for note from a source that may be
@@ -309,7 +311,7 @@ Record the outcome as an ADR in `docs/adr/` and tick it here.
 
 ## Changelog
 
-- **2026-10-09** — Release pass: 37 more famous public-domain pieces (89 in the catalogue), search,
+- **2026-10-09** — Release pass: 27 more famous public-domain pieces (79 in the catalogue), search,
   note names, remembered practice choices, hand-coloured played notes, security hardening (CSP, SVG
   sanitiser, archive limits, error boundary), install and build warnings fixed, failing catalogue
   tests fixed (P4-13b, P4-15, P4-16).

@@ -123,6 +123,15 @@
     "single_hand": {
       "enum": ["right", "left"],
       "description": "Only for pieces written for one hand: the hand that plays. Without it the score must have notes for both hands."
+    },
+    "print_source": {
+      "type": "string",
+      "description": "For a score typeset by someone else from an older print: the print named on the source page (publisher and year, or century). Recorded for the reviewer; the print must be old enough that nothing of it is protected (spec §9, §§ 70/71 UrhG)."
+    },
+    "print_year": {
+      "type": "integer",
+      "maximum": 1929,
+      "description": "Year of that print when known. Must be before 1930."
     }
   },
   "additionalProperties": false,

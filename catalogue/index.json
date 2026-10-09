@@ -708,15 +708,6 @@
       "score": "pieces/morning-prayer/score.musicxml"
     },
     {
-      "slug": "mozart-k331-theme",
-      "title": "Piano Sonata K. 331: theme",
-      "composer": "Wolfgang Amadeus Mozart",
-      "difficulty": 3,
-      "licence": "public-domain",
-      "verified": false,
-      "score": "pieces/mozart-k331-theme/score.musicxml"
-    },
-    {
       "slug": "beethoven-sonata-20-menuetto",
       "title": "Piano Sonata No. 20: Tempo di Menuetto (Op. 49 No. 2)",
       "composer": "Ludwig van Beethoven",
@@ -724,15 +715,6 @@
       "licence": "public-domain",
       "verified": false,
       "score": "pieces/beethoven-sonata-20-menuetto/score.musicxml"
-    },
-    {
-      "slug": "chopin-prelude-6",
-      "title": "Prelude in B minor (Op. 28 No. 6)",
-      "composer": "Frédéric Chopin",
-      "difficulty": 3,
-      "licence": "public-domain",
-      "verified": false,
-      "score": "pieces/chopin-prelude-6/score.musicxml"
     },
     {
       "slug": "prelude-in-c",
@@ -746,15 +728,6 @@
       "variant": "Two hands"
     },
     {
-      "slug": "bach-prelude-in-c-complete",
-      "title": "Prelude in C major (BWV 846, complete)",
-      "composer": "Johann Sebastian Bach",
-      "difficulty": 3,
-      "licence": "public-domain",
-      "verified": false,
-      "score": "pieces/bach-prelude-in-c-complete/score.musicxml"
-    },
-    {
       "slug": "progres",
       "title": "Progrès (Op. 100 No. 6)",
       "composer": "Johann Friedrich Burgmüller",
@@ -762,15 +735,6 @@
       "licence": "public-domain",
       "verified": false,
       "score": "pieces/progres/score.musicxml"
-    },
-    {
-      "slug": "rondo-alla-turca",
-      "title": "Rondo alla Turca (Piano Sonata K. 331, finale)",
-      "composer": "Wolfgang Amadeus Mozart",
-      "difficulty": 3,
-      "licence": "public-domain",
-      "verified": false,
-      "score": "pieces/rondo-alla-turca/score.musicxml"
     },
     {
       "slug": "the-entertainer",
@@ -791,33 +755,6 @@
       "score": "pieces/chopin-waltz-op69-2/score.musicxml"
     },
     {
-      "slug": "gymnopedie-1",
-      "title": "Gymnopédie No. 1",
-      "composer": "Erik Satie",
-      "difficulty": 4,
-      "licence": "public-domain",
-      "verified": false,
-      "score": "pieces/gymnopedie-1/score.musicxml"
-    },
-    {
-      "slug": "gymnopedie-2",
-      "title": "Gymnopédie No. 2",
-      "composer": "Erik Satie",
-      "difficulty": 4,
-      "licence": "public-domain",
-      "verified": false,
-      "score": "pieces/gymnopedie-2/score.musicxml"
-    },
-    {
-      "slug": "gymnopedie-3",
-      "title": "Gymnopédie No. 3",
-      "composer": "Erik Satie",
-      "difficulty": 4,
-      "licence": "public-domain",
-      "verified": false,
-      "score": "pieces/gymnopedie-3/score.musicxml"
-    },
-    {
       "slug": "la-pastorale",
       "title": "La Pastorale (Op. 100 No. 3)",
       "composer": "Johann Friedrich Burgmüller",
@@ -836,24 +773,6 @@
       "score": "pieces/maple-leaf-rag/score.musicxml"
     },
     {
-      "slug": "chopin-prelude-7",
-      "title": "Prelude in A major (Op. 28 No. 7)",
-      "composer": "Frédéric Chopin",
-      "difficulty": 4,
-      "licence": "public-domain",
-      "verified": false,
-      "score": "pieces/chopin-prelude-7/score.musicxml"
-    },
-    {
-      "slug": "chopin-prelude-20",
-      "title": "Prelude in C minor (Op. 28 No. 20)",
-      "composer": "Frédéric Chopin",
-      "difficulty": 4,
-      "licence": "public-domain",
-      "verified": false,
-      "score": "pieces/chopin-prelude-20/score.musicxml"
-    },
-    {
       "slug": "chopin-prelude-4",
       "title": "Prelude in E minor (Op. 28 No. 4)",
       "composer": "Frédéric Chopin",
@@ -870,15 +789,6 @@
       "licence": "public-domain",
       "verified": false,
       "score": "pieces/gluckes-genug/score.musicxml"
-    },
-    {
-      "slug": "schubert-marche-militaire",
-      "title": "Marche militaire No. 1 (D. 733)",
-      "composer": "Franz Schubert",
-      "difficulty": 5,
-      "licence": "public-domain",
-      "verified": false,
-      "score": "pieces/schubert-marche-militaire/score.musicxml"
     }
   ]
 }

@@ -106,10 +106,14 @@ class BuildTests(unittest.TestCase):
         text = ma.build(ma.parse_midi(midi([grace, note(0, 4 * PPQ, 36)])), "G", "N", 80)
         self.assertNotIn("C#4", text)
 
-    def test_a_short_last_bar_means_a_pickup(self):
+    def test_a_pickup_is_given_by_the_caller_not_guessed(self):
         rh = note(0, PPQ, 67) + note(PPQ, 4 * PPQ, 72)
-        text = ma.build(ma.parse_midi(midi([rh, note(PPQ, 4 * PPQ, 48)])), "Up", "N", 80)
-        self.assertIn("pickup: yes", text)
+        data = ma.parse_midi(midi([rh, note(PPQ, 4 * PPQ, 48)]))
+        self.assertIn("pickup: yes", ma.build(data, "Up", "N", 80, pickup=4))
+        # Without one, the first bar is a full bar and the short end is padded with rests.
+        plain = ma.build(data, "Up", "N", 80)
+        self.assertNotIn("pickup", plain)
+        self.assertIn("arrange", arrange.to_musicxml(arrange.parse(plain)) and "arrange")
 
 
 if __name__ == "__main__":

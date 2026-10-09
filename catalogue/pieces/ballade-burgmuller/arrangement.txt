@@ -6,52 +6,51 @@ composer: Johann Friedrich Burgmüller
 key: -3
 time: 3/8
 tempo: 96
-pickup: yes
-RH: [C4 Eb4 G4]e [C4 Eb4 G4]e | [C4 Eb4 G4]e [C4 Eb4 G4]e [C4 Eb4 G4]e | [C4 Eb4 G4]e [C4 Eb4 G4]e [C4 Eb4 G4]e | [C4 Eb4 G4]e [C4 Eb4 G4]e [C4 Eb4 G4]e
-RH: [C4 Eb4 G4]e [C4 Eb4 G4]e [C4 Eb4 G4]e | [C4 Eb4 G4]e [C4 Eb4 G4]e [C4 Eb4 G4]e | [C4 Eb4 G4]e [C4 Eb4 G4]e [C4 Eb4 G4]e | [C4 Eb4 G4]e [C4 Eb4 Gb4]e [C4 Eb4 Gb4]e
-RH: [C4 Eb4 Gb4]e [C4 Eb4 G4]e [C4 Eb4 G4]e | [C4 Eb4 G4]e [C4 Eb4 Gb4]e [C4 Eb4 Gb4]e | [C4 Eb4 Gb4]e [C4 Eb4 G4]e [C4 Eb4 G4]e | [C4 Eb4 G4]e [C4 Eb4 G4]e [C4 Eb4 G4]e
-RH: [C4 Eb4 G4]e [C4 Eb4 G4]e [C4 Eb4 G4]e | [C4 Eb4 G4]e [C4 Eb4 G4]e [C4 Eb4 G4]e | [C4 Eb4 G4]e [C4 Eb4 G4]e [C4 Eb4 G4]e | [C4 Eb4 G4]e [C4 Eb4 Gb4]e [C4 Eb4 Gb4]e
-RH: [C4 Eb4 Gb4]e [C4 Eb4 G4]e [C4 Eb4 G4]e | [C4 Eb4 G4]e [C4 Eb4 Gb4]e [C4 Eb4 Gb4]e | [C4 Eb4 Gb4]e [C4 Eb4 G4]e [C4 Eb4 G4]e | re [G4 C5]e [G4 C5]e
-RH: re [G4 B4]e [G4 B4]e | re [G4 F5]e [G4 F5]e | re [G4 Eb5]e [G4 Eb5]e | re G5e Eb5e
-RH: C5e G4e Eb4e | C4e rq | rq. | re [Eb4 G4]q
-RH: re G3q | re [D4 G4]q | re G4q | re C5q
-RH: re B4q | re G5q | re G4q | re C5q
-RH: re B4q | re A5q | G5e G5q | re F5q
-RH: E5e G5q | F5e E5q | D5e C5q | re E5q
-RH: D5e C5e C5e | B4e Bb4e A4e | Ab4e Ab4q | G4e Ab4q
-RH: G4e G4e C5e | B4e Bb4e A4e | Ab4e Ab4q | G4e Ab4q
-RH: G4e Ab4q | re F4q | re D4q | re G4q
-RH: re [C4 Eb4 G4]e [C4 Eb4 G4]e | [C4 Eb4 G4]e [C4 Eb4 G4]e [C4 Eb4 G4]e | [C4 Eb4 G4]e [C4 Eb4 G4]e [C4 Eb4 G4]e | [C4 Eb4 G4]e [C4 Eb4 G4]e [C4 Eb4 G4]e
-RH: [C4 Eb4 G4]e [C4 Eb4 G4]e [C4 Eb4 G4]e | [C4 Eb4 G4]e [C4 Eb4 G4]e [C4 Eb4 G4]e | [C4 Eb4 G4]e [C4 Eb4 G4]e [C4 Eb4 G4]e | [C4 Eb4 G4]e [C4 Eb4 Gb4]e [C4 Eb4 Gb4]e
-RH: [C4 Eb4 Gb4]e [C4 Eb4 G4]e [C4 Eb4 G4]e | [C4 Eb4 G4]e [C4 Eb4 Gb4]e [C4 Eb4 Gb4]e | [C4 Eb4 Gb4]e [C4 Eb4 G4]e [C4 Eb4 G4]e | [C4 Eb4 G4]e [C4 Eb4 G4]e [C4 Eb4 G4]e
-RH: [C4 Eb4 G4]e [C4 Eb4 G4]e [C4 Eb4 G4]e | [C4 Eb4 G4]e [C4 Eb4 G4]e [C4 Eb4 G4]e | [C4 Eb4 G4]e [C4 Eb4 G4]e [C4 Eb4 G4]e | [C4 Eb4 G4]e [C4 Eb4 Gb4]e [C4 Eb4 Gb4]e
-RH: [C4 Eb4 Gb4]e [C4 Eb4 G4]e [C4 Eb4 G4]e | [C4 Eb4 G4]e [C4 Eb4 Gb4]e [C4 Eb4 Gb4]e | [C4 Eb4 Gb4]e [C4 Eb4 G4]e [C4 Eb4 G4]e | re [G4 C5]e [G4 C5]e
-RH: re [G4 B4]e [G4 B4]e | re [G4 F5]e [G4 F5]e | re [G4 Eb5]e [G4 Eb5]e | re G5e Eb5e
-RH: C5e G4e Eb4e | C4e rq | rq. | re [Eb4 G4]q
-RH: re G3q | re [D4 G4]q | re C4s B3s C4s G3s | A3s B3s C4s B3s C4s G3s
-RH: A3s B3s C4s B3s C4s G3s | A3s B3s C4s B3s C4s G3s | A3s B3s C4q | re [G4 C5]e [G4 C5]e
-RH: re [G5 C6]e [G5 C6]e | re [G6 C7]e [G6 C7]e | re [C4 Eb4]q | rq.
-LH: rq | rq. | re C3s B2s C3s G2s | A2s B2s C3s B2s C3s G2s
-LH: A2s B2s C3e re | Eb3e G3e re | C3e A3q | rq.
-LH: C3e A3q | rq. | re C3s B2s C3s G2s | A2s B2s C3s B2s C3s G2s
-LH: A2s B2s C3e re | Eb3e G3e re | C3e A3q | rq.
-LH: C3e A3q | rq. | re G3e G3e | re [Eb3 G3]e [Eb3 G3]e
-LH: re [D3 G3]e [D3 G3]e | re [B2 G3]e [B2 G3]e | re [C3 G3]e [C3 G3]e | rq.
-LH: rq. | re G3e Eb3e | C3e G2q | re [G3 C4]q
-LH: re G2q | re [G3 B3]q | rq [E3 G3 C4]e | [E3 G3 C4]e re [E3 G3 C4]e
-LH: [E3 G3 C4]e re [F3 G3 D4]e | [F3 G3 D4]e re [F3 G3 D4]e | [F3 G3 D4]e re [E3 G3 C4]e | [E3 G3 C4]e re [E3 G3 C4]e
-LH: [E3 G3 C4]e re [F3 G3 D4]e | [F3 G3 D4]e re [F3 G3 D4]e | [F3 G3 D4]e re [E3 G3 C4]e | [E3 G3 C4]e re [A3 Db4]e
-LH: [A3 Db4]e re [D3 F3 A3]e | [D3 F3 A3]e re [F3 A3 D4]e | [F3 A3 D4]e re [G3 C4 E4]e | [G3 C4 E4]e re [G3 B3 F4]e
-LH: [G3 B3 F4]e [C4 E4]e re | rq. | rq [G3 B3 D4]e | [G3 B3 D4]e re [G3 B3 D4]e
-LH: [G3 B3 D4]e [C4 E4]e re | rq. | rq [G3 B3 D4]e | [G3 B3 D4]e re [G3 B3 D4]e
-LH: [G3 B3 D4]e Ab3q | re F3q | re D3q | re G3q
-LH: re C3q | rq. | re C3s B2s C3s G2s | A2s B2s C3s B2s C3s G2s
-LH: A2s B2s C3e re | Eb3e G3e re | C3e A3q | rq.
-LH: C3e A3q | rq. | re C3s B2s C3s G2s | A2s B2s C3s B2s C3s G2s
-LH: A2s B2s C3e re | Eb3e G3e re | C3e A3q | rq.
-LH: C3e A3q | rq. | re G3e G3e | re [Eb3 G3]e [Eb3 G3]e
-LH: re [D3 G3]e [D3 G3]e | re [B2 G3]e [B2 G3]e | re [C3 G3]e [C3 G3]e | rq.
-LH: rq. | re G3e Eb3e | C3e G2q | re [G3 C4]q
-LH: re G2q | re [G3 B3]q | re C3s B2s C3s G2s | A2s B2s C3s B2s C3s G2s
-LH: A2s B2s C3s B2s C3s G2s | A2s B2s C3s B2s C3s G2s | A2s B2s C3q | re [C4 Eb4]e [C4 Eb4]e
-LH: re [C5 Eb5]e [C5 Eb5]e | re [C6 Eb6]e [C6 Eb6]e | re [C3 G3]q | rq.
+RH: [C4 Eb4 G4]e [C4 Eb4 G4]e [C4 Eb4 G4]e | [C4 Eb4 G4]e [C4 Eb4 G4]e [C4 Eb4 G4]e | [C4 Eb4 G4]e [C4 Eb4 G4]e [C4 Eb4 G4]e | [C4 Eb4 G4]e [C4 Eb4 G4]e [C4 Eb4 G4]e
+RH: [C4 Eb4 G4]e [C4 Eb4 G4]e [C4 Eb4 G4]e | [C4 Eb4 G4]e [C4 Eb4 G4]e [C4 Eb4 G4]e | [C4 Eb4 G4]e [C4 Eb4 G4]e [C4 Eb4 G4]e | [C4 Eb4 Gb4]e [C4 Eb4 Gb4]e [C4 Eb4 Gb4]e
+RH: [C4 Eb4 G4]e [C4 Eb4 G4]e [C4 Eb4 G4]e | [C4 Eb4 Gb4]e [C4 Eb4 Gb4]e [C4 Eb4 Gb4]e | [C4 Eb4 G4]e [C4 Eb4 G4]e [C4 Eb4 G4]e | [C4 Eb4 G4]e [C4 Eb4 G4]e [C4 Eb4 G4]e
+RH: [C4 Eb4 G4]e [C4 Eb4 G4]e [C4 Eb4 G4]e | [C4 Eb4 G4]e [C4 Eb4 G4]e [C4 Eb4 G4]e | [C4 Eb4 G4]e [C4 Eb4 G4]e [C4 Eb4 G4]e | [C4 Eb4 Gb4]e [C4 Eb4 Gb4]e [C4 Eb4 Gb4]e
+RH: [C4 Eb4 G4]e [C4 Eb4 G4]e [C4 Eb4 G4]e | [C4 Eb4 Gb4]e [C4 Eb4 Gb4]e [C4 Eb4 Gb4]e | [C4 Eb4 G4]e [C4 Eb4 G4]e re | [G4 C5]e [G4 C5]e re
+RH: [G4 B4]e [G4 B4]e re | [G4 F5]e [G4 F5]e re | [G4 Eb5]e [G4 Eb5]e re | G5e Eb5e C5e
+RH: G4e Eb4e C4e | rq. | rq. | [Eb4 G4]q re
+RH: G3q re | [D4 G4]q re | G4q. | C5q.
+RH: B4q. | G5q. | G4q. | C5q.
+RH: B4q. | A5q G5e | G5q. | F5q E5e
+RH: G5q F5e | E5q D5e | C5q. | E5q D5e
+RH: C5e C5e B4e | Bb4e A4e Ab4e | Ab4q G4e | Ab4q G4e
+RH: G4e C5e B4e | Bb4e A4e Ab4e | Ab4q G4e | Ab4q G4e
+RH: Ab4q. | F4q. | D4q. | G4q.
+RH: [C4 Eb4 G4]e [C4 Eb4 G4]e [C4 Eb4 G4]e | [C4 Eb4 G4]e [C4 Eb4 G4]e [C4 Eb4 G4]e | [C4 Eb4 G4]e [C4 Eb4 G4]e [C4 Eb4 G4]e | [C4 Eb4 G4]e [C4 Eb4 G4]e [C4 Eb4 G4]e
+RH: [C4 Eb4 G4]e [C4 Eb4 G4]e [C4 Eb4 G4]e | [C4 Eb4 G4]e [C4 Eb4 G4]e [C4 Eb4 G4]e | [C4 Eb4 G4]e [C4 Eb4 G4]e [C4 Eb4 G4]e | [C4 Eb4 Gb4]e [C4 Eb4 Gb4]e [C4 Eb4 Gb4]e
+RH: [C4 Eb4 G4]e [C4 Eb4 G4]e [C4 Eb4 G4]e | [C4 Eb4 Gb4]e [C4 Eb4 Gb4]e [C4 Eb4 Gb4]e | [C4 Eb4 G4]e [C4 Eb4 G4]e [C4 Eb4 G4]e | [C4 Eb4 G4]e [C4 Eb4 G4]e [C4 Eb4 G4]e
+RH: [C4 Eb4 G4]e [C4 Eb4 G4]e [C4 Eb4 G4]e | [C4 Eb4 G4]e [C4 Eb4 G4]e [C4 Eb4 G4]e | [C4 Eb4 G4]e [C4 Eb4 G4]e [C4 Eb4 G4]e | [C4 Eb4 Gb4]e [C4 Eb4 Gb4]e [C4 Eb4 Gb4]e
+RH: [C4 Eb4 G4]e [C4 Eb4 G4]e [C4 Eb4 G4]e | [C4 Eb4 Gb4]e [C4 Eb4 Gb4]e [C4 Eb4 Gb4]e | [C4 Eb4 G4]e [C4 Eb4 G4]e re | [G4 C5]e [G4 C5]e re
+RH: [G4 B4]e [G4 B4]e re | [G4 F5]e [G4 F5]e re | [G4 Eb5]e [G4 Eb5]e re | G5e Eb5e C5e
+RH: G4e Eb4e C4e | rq. | rq. | [Eb4 G4]q re
+RH: G3q re | [D4 G4]q re | C4s B3s C4s G3s A3s B3s | C4s B3s C4s G3s A3s B3s
+RH: C4s B3s C4s G3s A3s B3s | C4s B3s C4s G3s A3s B3s | C4q re | [G4 C5]e [G4 C5]e re
+RH: [G5 C6]e [G5 C6]e re | [G6 C7]e [G6 C7]e re | [C4 Eb4]q. | rq.
+LH: rq. | rq. | C3s B2s C3s G2s A2s B2s | C3s B2s C3s G2s A2s B2s
+LH: C3e re Eb3e | G3e re C3e | A3q. | rq C3e
+LH: A3q. | rq. | C3s B2s C3s G2s A2s B2s | C3s B2s C3s G2s A2s B2s
+LH: C3e re Eb3e | G3e re C3e | A3q. | rq C3e
+LH: A3q. | rq. | G3e G3e re | [Eb3 G3]e [Eb3 G3]e re
+LH: [D3 G3]e [D3 G3]e re | [B2 G3]e [B2 G3]e re | [C3 G3]e [C3 G3]e re | rq.
+LH: rq. | G3e Eb3e C3e | G2q re | [G3 C4]q re
+LH: G2q re | [G3 B3]q re | re [E3 G3 C4]e [E3 G3 C4]e | re [E3 G3 C4]e [E3 G3 C4]e
+LH: re [F3 G3 D4]e [F3 G3 D4]e | re [F3 G3 D4]e [F3 G3 D4]e | re [E3 G3 C4]e [E3 G3 C4]e | re [E3 G3 C4]e [E3 G3 C4]e
+LH: re [F3 G3 D4]e [F3 G3 D4]e | re [F3 G3 D4]e [F3 G3 D4]e | re [E3 G3 C4]e [E3 G3 C4]e | re [A3 Db4]e [A3 Db4]e
+LH: re [D3 F3 A3]e [D3 F3 A3]e | re [F3 A3 D4]e [F3 A3 D4]e | re [G3 C4 E4]e [G3 C4 E4]e | re [G3 B3 F4]e [G3 B3 F4]e
+LH: [C4 E4]e rq | rq. | re [G3 B3 D4]e [G3 B3 D4]e | re [G3 B3 D4]e [G3 B3 D4]e
+LH: [C4 E4]e rq | rq. | re [G3 B3 D4]e [G3 B3 D4]e | re [G3 B3 D4]e [G3 B3 D4]e
+LH: Ab3q. | F3q. | D3q. | G3q.
+LH: C3q re | rq. | C3s B2s C3s G2s A2s B2s | C3s B2s C3s G2s A2s B2s
+LH: C3e re Eb3e | G3e re C3e | A3q. | rq C3e
+LH: A3q. | rq. | C3s B2s C3s G2s A2s B2s | C3s B2s C3s G2s A2s B2s
+LH: C3e re Eb3e | G3e re C3e | A3q. | rq C3e
+LH: A3q. | rq. | G3e G3e re | [Eb3 G3]e [Eb3 G3]e re
+LH: [D3 G3]e [D3 G3]e re | [B2 G3]e [B2 G3]e re | [C3 G3]e [C3 G3]e re | rq.
+LH: rq. | G3e Eb3e C3e | G2q re | [G3 C4]q re
+LH: G2q re | [G3 B3]q re | C3s B2s C3s G2s A2s B2s | C3s B2s C3s G2s A2s B2s
+LH: C3s B2s C3s G2s A2s B2s | C3s B2s C3s G2s A2s B2s | C3q re | [C4 Eb4]e [C4 Eb4]e re
+LH: [C5 Eb5]e [C5 Eb5]e re | [C6 Eb6]e [C6 Eb6]e re | [C3 G3]q. | rq.

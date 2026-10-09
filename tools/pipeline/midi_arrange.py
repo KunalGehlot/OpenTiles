@@ -291,6 +291,7 @@ def build(
     hands: str = "auto",
     comments: list[str] | None = None,
     bars_per_line: int = 4,
+    pickup: int = 0,
 ) -> str:
     midi_notes, _ = drop_ornaments(midi.notes, midi.ppq)
     check_grid(midi_notes, midi.ppq)
@@ -303,11 +304,12 @@ def build(
     rh = hand_chords(rh_notes, midi.ppq)
     lh = hand_chords(lh_notes, midi.ppq)
     total = max(c[1] for c in rh + lh)
-    # The last bar is complete in a file that starts on the downbeat; when it is not, the piece
-    # starts with a pickup of the missing length (LilyPond \\partial) and the first bar is short.
-    rem = total % bar
-    first = rem if rem else bar
-    pickup = rem != 0
+    # A pickup (an incomplete first bar) cannot be told from the notes alone: a file may end on a
+    # short final note. The caller says how long it is, from the typesetting source (LilyPond's
+    # \\partial); `0` means the first bar is a full one and a short last bar is padded with rests.
+    first = pickup if 0 < pickup < bar else bar
+    body = max(0, total - first)
+    total = first + -(-body // bar) * bar if body else first
     lines: list[str] = []
     for c in comments or []:
         lines.append(f"# {c}")
@@ -318,7 +320,7 @@ def build(
         f"time: {num}/{den}",
         f"tempo: {int(round(tempo if tempo else (midi.tempos[0][1] if midi.tempos else 100)))}",
     ]
-    if pickup:
+    if 0 < pickup < bar:
         lines.append("pickup: yes")
     for label, chords in (("RH", rh), ("LH", lh)):
         if not chords:
@@ -335,13 +337,14 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("--title", required=True)
     ap.add_argument("--composer", required=True)
     ap.add_argument("--tempo", type=float, default=None, help="quarter notes per minute (default: the file's)")
+    ap.add_argument("--pickup", type=int, default=0, help="length of an incomplete first bar, in sixteenths (LilyPond \\\\partial 8 = 2)")
     ap.add_argument("--hands", default="auto", choices=["auto", "pitch", "single"])
     ap.add_argument("--comment", action="append", default=[], help="header comment line (repeatable)")
     args = ap.parse_args(argv)
     with open(args.midi, "rb") as f:
         data = f.read()
     try:
-        text = build(parse_midi(data), args.title, args.composer, args.tempo, args.hands, args.comment)
+        text = build(parse_midi(data), args.title, args.composer, args.tempo, args.hands, args.comment, pickup=args.pickup)
     except MidiError as e:
         print(f"midi_arrange: {e}", file=sys.stderr)
         return 1

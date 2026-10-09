@@ -48,7 +48,10 @@ OPTIONAL = {
     "reviewed_on": str,
     "song": str,
     "variant": str,
+    "print_source": str,
+    "print_year": int,
 }
+PRINT_BEFORE = 1930
 QID = re.compile(r"^Q[1-9][0-9]*$")
 DATE = re.compile(r"^\d{4}-\d{2}-\d{2}$")
 
@@ -156,6 +159,13 @@ def validate_piece(piece: Piece, release_year: int) -> list[str]:
     edition_errors, _ = editions.check_provenance(r)
     errors += edition_errors
 
+    # A score typeset from an older print: the print must be old (nothing of a recent edition is free).
+    year = r.get("print_year")
+    if year is not None and year >= PRINT_BEFORE:
+        errors.append(f"print_year {year} is not before {PRINT_BEFORE}: a recent print may be protected")
+    if r.get("print_source") and not _print_is_dated(r):
+        errors.append("print_source names a print with no year or century: say when it was printed")
+
     # Spec §9 step 4: the file must parse and make musical sense.
     score = piece.path / r["score_file"]
     if not score.exists():
@@ -171,6 +181,13 @@ def validate_piece(piece: Piece, release_year: int) -> list[str]:
             else:
                 errors += [f"score: {e}" for e in check_score(root, r.get("single_hand"))]
     return errors
+
+
+def _print_is_dated(r: dict) -> bool:
+    """True when print_year is set or the source names a year or an earlier century."""
+    if r.get("print_year") is not None:
+        return True
+    return bool(re.search(r"\b1[5-9]\d\d|\b(?:17|18|19)th[ -]century", str(r.get("print_source", "")), re.I))
 
 
 def review_notes(piece: Piece) -> list[str]:

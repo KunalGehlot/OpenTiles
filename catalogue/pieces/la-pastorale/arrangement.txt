@@ -6,20 +6,19 @@ composer: Johann Friedrich Burgmüller
 key: 1
 time: 6/8
 tempo: 104
-pickup: yes
-RH: G4e B4e | C5e D5e B4e E5e D5e G5e | E5e D5e B4e C5e D5q | re B4e D5e E5e D5q
-RH: re G5e D5e B4e A4q | re C5e A4e B4e G4q | re G4e B4e C5e D5q | re B4e D5e E5e D5q
-RH: re D5e B4e G5e F#5q | re E5e F#5e E5e D5q | re D6q re A5q | re C5e E5e D5e B4q
-RH: re D5e C#5e D5e A5q | re C5e E5e D5e B4q | re D5e E5e D5e C#5q | rh D5e D#5e
-RH: D#5e D#5e D5e C5e B4e C5e | D5e F#5e E5e C5e B4q | re A4e D5e D5e D5q | re B4e D5e E5e D5q
-RH: re G5e D5e B4e A4q | re C5e A4e B4e G4q | re G4e B4e C5e D5q | re B4e D5e E5e D5q
-RH: re C5e E5e G5e G5e D5e | B4e B4q A4e G4q | re A4e E4e F#4e G4q | re A4e E4e F#4e G4e B4e
-RH: D5e G5e B5e D6e G6q
-LH: rq | rh. | rh [G3 B3 D4]e [G3 B3 D4]e | [G3 B3 D4]e [G3 B3 D4]q. [G3 B3 D4]e [G3 B3 D4]e
-LH: [G3 B3 D4]e [G3 B3 D4]q. [G3 C4 D4]e [G3 C4 D4]e | [G3 C4 D4]e [G3 C4 D4]q. [G3 B3 D4]e [G3 B3 D4]e | [G3 B3 D4]e [G3 B3 D4]q. [G3 B3 D4]e [G3 B3 D4]e | [G3 B3 D4]e [G3 B3 D4]q. [G3 B3 D4]e [G3 B3 D4]e
-LH: [G3 B3 D4]e [G3 B3 D4]q. A3e A4e | A4e G4e A4e G4e F#4e A4e | F#4e D4q re [F#3 C4]e D4e | D4e D4q. [G3 B3]e D4e
-LH: D4e D4q. [F#3 C4]e D4e | D4e D4q. [G3 B3]e D4e | D4e D4q. re A#4e | A#4e A#4e A4e G4e F#4q
-LH: rh G4q | re [C4 E4]q. D4e G4e | G4e F#4q re [G3 B3 D4]e [G3 B3 D4]e | [G3 B3 D4]e [G3 B3 D4]q. [G3 B3 D4]e [G3 B3 D4]e
-LH: [G3 B3 D4]e [G3 B3 D4]q. [G3 C4 D4]e [G3 C4 D4]e | [G3 C4 D4]e [G3 C4 D4]q. [G3 B3 D4]e [G3 B3 D4]e | [G3 B3 D4]e [G3 B3 D4]q. [F3 G3 B3 D4]e [F3 G3 B3 D4]e | [F3 G3 B3 D4]e [F3 G3 B3 D4]q. [E3 G3 C4]e [E3 G3 C4]e
-LH: [E3 G3 C4]e [E3 G3 C4]q. [D3 G3 B3]q | re D3e D4e C4e [G3 B3]e [G3 B3 D4]e | [G3 B3 D4]e [G3 C4 D4]q. [G3 B3 D4]e [G3 B3 D4]e | [G3 B3 D4]e [G3 C4 D4]q. [G3 B3 D4]q
-LH: re [G3 B3 D4]q re G2q
+RH: G4e B4e C5e D5e B4e E5e | D5e G5e E5e D5e B4e C5e | D5q. B4e D5e E5e | D5q. G5e D5e B4e
+RH: A4q. C5e A4e B4e | G4q. G4e B4e C5e | D5q. B4e D5e E5e | D5q. D5e B4e G5e
+RH: F#5q. E5e F#5e E5e | D5q. D6q re | A5q. C5e E5e D5e | B4q. D5e C#5e D5e
+RH: A5q. C5e E5e D5e | B4q. D5e E5e D5e | C#5h. | D5e D#5e D#5e D#5e D5e C5e
+RH: B4e C5e D5e F#5e E5e C5e | B4q. A4e D5e D5e | D5q. B4e D5e E5e | D5q. G5e D5e B4e
+RH: A4q. C5e A4e B4e | G4q. G4e B4e C5e | D5q. B4e D5e E5e | D5q. C5e E5e G5e
+RH: G5e D5e B4e B4q A4e | G4q. A4e E4e F#4e | G4q. A4e E4e F#4e | G4e B4e D5e G5e B5e D6e
+RH: G6q rh
+LH: rh. | rh. | [G3 B3 D4]e [G3 B3 D4]e [G3 B3 D4]e [G3 B3 D4]q. | [G3 B3 D4]e [G3 B3 D4]e [G3 B3 D4]e [G3 B3 D4]q.
+LH: [G3 C4 D4]e [G3 C4 D4]e [G3 C4 D4]e [G3 C4 D4]q. | [G3 B3 D4]e [G3 B3 D4]e [G3 B3 D4]e [G3 B3 D4]q. | [G3 B3 D4]e [G3 B3 D4]e [G3 B3 D4]e [G3 B3 D4]q. | [G3 B3 D4]e [G3 B3 D4]e [G3 B3 D4]e [G3 B3 D4]q.
+LH: A3e A4e A4e G4e A4e G4e | F#4e A4e F#4e D4q re | [F#3 C4]e D4e D4e D4q. | [G3 B3]e D4e D4e D4q.
+LH: [F#3 C4]e D4e D4e D4q. | [G3 B3]e D4e D4e D4q. | re A#4e A#4e A#4e A4e G4e | F#4h.
+LH: G4q. [C4 E4]q. | D4e G4e G4e F#4q re | [G3 B3 D4]e [G3 B3 D4]e [G3 B3 D4]e [G3 B3 D4]q. | [G3 B3 D4]e [G3 B3 D4]e [G3 B3 D4]e [G3 B3 D4]q.
+LH: [G3 C4 D4]e [G3 C4 D4]e [G3 C4 D4]e [G3 C4 D4]q. | [G3 B3 D4]e [G3 B3 D4]e [G3 B3 D4]e [G3 B3 D4]q. | [F3 G3 B3 D4]e [F3 G3 B3 D4]e [F3 G3 B3 D4]e [F3 G3 B3 D4]q. | [E3 G3 C4]e [E3 G3 C4]e [E3 G3 C4]e [E3 G3 C4]q.
+LH: [D3 G3 B3]q. D3e D4e C4e | [G3 B3]e [G3 B3 D4]e [G3 B3 D4]e [G3 C4 D4]q. | [G3 B3 D4]e [G3 B3 D4]e [G3 B3 D4]e [G3 C4 D4]q. | [G3 B3 D4]q re [G3 B3 D4]q re
+LH: G2q rh

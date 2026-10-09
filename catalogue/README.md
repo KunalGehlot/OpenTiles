@@ -88,7 +88,11 @@ python3 tools/pipeline/arrange.py arrangement.txt > score.musicxml
 It writes one voice per hand, cuts a held note at the next onset and a note that crosses a barline
 at the barline, and refuses triplets and finer rhythms (grace notes are dropped). Read the result
 before committing it, say in the first comment line where the notes came from, and name the
-typesetter in `transcriber`. Only use files whose licence is _Public Domain_ or CC0, never
+typesetter in `transcriber`. Copy the source line from the piece's page into `print_source` (the print the
+typesetter worked from, with its year or century; `print_year` when a single year is known). The validator
+refuses a print without a year or century, and a year of 1930 or later: a recent edition may be protected.
+Also read the piece's `.ly` file for `\partial` (a pickup) and pass `--pickup` in sixteenths, because the
+converter cannot tell a pickup from a short last bar. Only use files whose licence is _Public Domain_ or CC0, never
 CC BY-SA, which would not fit a CC0 catalogue. Leave `verified: false`.
 
 ### Finding pieces in PDMX
