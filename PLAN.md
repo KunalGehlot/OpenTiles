@@ -28,6 +28,9 @@ sync, and release hardening. What is left is mostly human work and gates:
 - **Code still open:** MIDI out and Bluetooth MIDI pairing in the iPad app, the sustain pedal, frame time
   on an older iPad, a native speaker's read-through of the German, more catalogue pieces (P3-05).
 
+The task list for this round is [Phase 5 — Release polish](#phase-5--release-polish-from-2026-10-09),
+starting with P5-00 (push the branch, open the pull request, CI).
+
 ## Phases and gates
 
 v1.0 is planned for August 2027 at roughly 8–10 hours a week, with December 2026 kept light. Each
@@ -262,13 +265,13 @@ compatibility matrix (spec §5).
       drawing clock nudged toward the audio clock, time-based wait-mode easing, white keys capped at
       64 px with more octaves shown on wide windows (ADR 0012). Left: frame time on an older
       iPad (not measured).
-- [x] **P4-12** Score views (NEXT-PHASE.md P4-11 to P4-15). Done: the cursor glides over bar lines
+- [x] **P4-12** Score views (the maintainer's feedback of 2026-10-08). Done: the cursor glides over bar lines
       (test), the score returns to its start a second after a run (page view: page 1), the scrolling
       score has no scroll bar and can be dragged or swiped with coasting, the play bar stays in the
       middle (ADR 0009 decision 5 superseded by ADR 0012), the page view is a centred page, not
       stretched, and the score is larger on big windows. Left: a check on an iPad (WebKit is covered by
       the Playwright runs).
-- [~] **P4-13** Several levels per song and more pieces (NEXT-PHASE.md P4-16, P4-17; ADR 0012).
+- [~] **P4-13** Several levels per song and more pieces (ADR 0012).
   Done: optional `song` and `variant` fields in schema, validator and index; Home links the other
   levels under a card; 19 melody levels, "Ode to Joy (full tune)" and "Happy Birthday to You",
   verified after the music review (P4-13c). Left: longer pieces and more songs (PDMX pipeline or
