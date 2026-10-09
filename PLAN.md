@@ -185,7 +185,10 @@ engines.
 ### Storage, accessibility, legal (STORE, APP, GOV)
 
 - [x] **P2-13** One-tap encrypted backup file (`.zip`) and restore.
-- [ ] **P2-14** Translations: English and German.
+- [x] **P2-14** Translations: English and German. Done 2026-10-09 (ADR 0014): every screen, canvas
+      label and import message in German (about 430 strings), a first visit follows the browser's
+      language, German note names on the falling notes; a unit test fails on any untranslated string.
+      Left: a native speaker's read-through.
 - [~] **P2-15** Accessibility: large print, high contrast, left-handed layout, keyboard shortcuts,
   Bluetooth foot-pedal page turn. Done: settings for large print, high contrast, left-handed controls, reduced motion, shortcuts list, pedal key. Left: practice view reading the left-handed flag beyond CSS; pedal hook wired to the page score.
 - [x] **P2-16** Licence scanner for third-party dependencies in CI.
@@ -278,6 +281,10 @@ compatibility matrix (spec §5).
       an error boundary, storage that survives a blocked IndexedDB (localStorage copy), ordered saves,
       persistent storage requested on a settings change, `uuid` audit finding fixed, build warning
       removed. Left: a real deployment (docs/deploying.md), a pen test, a check on WebKit and an iPad.
+- [x] **P4-17** "Find sheet music" page (2026-10-09): where to get free (public-domain, openly
+      licensed) and licensed sheet music in formats OpenTiles opens, with plain outside links only.
+      Downloaders that get round a paywall and collections of unlicensed arrangements are left out
+      on purpose (legal guardrails).
 - [x] **P4-16** Learner features (2026-10-09). Done: search in the piece list and the library
       (accents ignored); note names on the falling notes (setting, default on); practice choices
       (mode, hands, tempo, accompany, metronome and volume) remembered on this device; played notes keep

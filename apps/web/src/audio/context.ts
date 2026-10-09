@@ -1,5 +1,6 @@
 // One shared AudioContext. Safari only allows audio to start from a user gesture (spec §5), so
 // the context is created and resumed inside click/tap handlers via unlockAudio().
+import { t } from '../i18n';
 
 let context: AudioContext | null = null;
 
@@ -13,7 +14,7 @@ export async function unlockAudio(): Promise<AudioContext> {
     const Ctor =
       window.AudioContext ??
       (window as unknown as { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
-    if (!Ctor) throw new Error('This browser does not support Web Audio.');
+    if (!Ctor) throw new Error(t('This browser does not support Web Audio.'));
     context = new Ctor({ latencyHint: 'interactive' });
   }
   if (context.state !== 'running') await context.resume();

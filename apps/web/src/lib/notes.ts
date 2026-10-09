@@ -21,7 +21,21 @@ export function parseNoteNames(text: string): number[] | null {
 const SHARP_NAMES = ['C', 'C♯', 'D', 'D♯', 'E', 'F', 'F♯', 'G', 'G♯', 'A', 'A♯', 'B'];
 const FLAT_NAMES = ['C', 'D♭', 'D', 'E♭', 'E', 'F', 'G♭', 'G', 'A♭', 'A', 'B♭', 'B'];
 
-/** The note's letter name without an octave: "C", "F♯" (or "G♭" when `flats`). */
-export function pitchClassName(pitch: number, flats = false): string {
-  return (flats ? FLAT_NAMES : SHARP_NAMES)[((Math.round(pitch) % 12) + 12) % 12] ?? 'C';
+// German names: H is B natural, B is B flat; sharps add -is, flats -es (Es, As, Des, Ges).
+const GERMAN_SHARP_NAMES = ['C', 'Cis', 'D', 'Dis', 'E', 'F', 'Fis', 'G', 'Gis', 'A', 'Ais', 'H'];
+const GERMAN_FLAT_NAMES = ['C', 'Des', 'D', 'Es', 'E', 'F', 'Ges', 'G', 'As', 'A', 'B', 'H'];
+
+/**
+ * The note's letter name without an octave: "C", "F♯" (or "G♭" when `flats`). With `german`, the
+ * German names a German learner reads: "Fis", "B" for B♭, "H" for B.
+ */
+export function pitchClassName(pitch: number, flats = false, german = false): string {
+  const names = german
+    ? flats
+      ? GERMAN_FLAT_NAMES
+      : GERMAN_SHARP_NAMES
+    : flats
+      ? FLAT_NAMES
+      : SHARP_NAMES;
+  return names[((Math.round(pitch) % 12) + 12) % 12] ?? 'C';
 }

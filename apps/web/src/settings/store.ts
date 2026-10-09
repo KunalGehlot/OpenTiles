@@ -4,6 +4,7 @@
 import { useSyncExternalStore } from 'react';
 import { getSetting, setSetting } from '../storage/db';
 import { requestPersistence } from '../storage/persist';
+import { browserLanguage, setLanguage } from '../i18n';
 import {
   DEFAULT_APP_SETTINGS,
   canvasLabelScale,
@@ -32,6 +33,7 @@ function mediaPreferences(): MediaPreferences {
 }
 
 function apply(): void {
+  setLanguage(current.language);
   effective = effectiveAccessibility(current, mediaPreferences());
   if (typeof document !== 'undefined') {
     const root = document.documentElement;
@@ -47,7 +49,11 @@ function apply(): void {
 export function loadAppSettings(): Promise<AppSettings> {
   loaded ??= getSetting<unknown>(APP_SETTINGS_KEY, null)
     .then((stored) => {
-      current = normaliseSettings(stored);
+      // A first visit follows the browser's language; after that, the saved choice.
+      current =
+        stored === null || stored === undefined
+          ? { ...normaliseSettings(null), language: browserLanguage() }
+          : normaliseSettings(stored);
       ready = true;
       apply();
       return current;

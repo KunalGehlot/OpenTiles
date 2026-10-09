@@ -530,6 +530,17 @@ button.copy-link--done {
   min-width: min(11rem, 100%);
 }
 
+/* Safari sizes a select to its longest option and does not shrink it in a flex row; let it shrink
+   to the column so a long option (or a German one) never pushes the page sideways. */
+.setting select {
+  flex: 0 1 auto;
+  width: auto;
+  max-width: 100%;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
 .setting.toggle {
   flex-wrap: nowrap;
   flex-direction: row;
@@ -602,4 +613,43 @@ button.copy-link--done {
 .searchbox input[type='search'] {
   width: 100%;
   padding-inline-start: 2.4rem;
+}
+
+/* Find sheet music: one card per site. */
+.source-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 18rem), 1fr));
+  gap: var(--space-3);
+  margin: var(--space-3) 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.source {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.source__name {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-weight: 650;
+}
+
+.source__name > svg {
+  width: 0.9em;
+  height: 0.9em;
+  opacity: 0.7;
+}
+
+.source__description,
+.source__formats {
+  margin: 0;
+}
+
+.source__formats {
+  margin-top: auto;
+  font-size: var(--text-sm);
 }

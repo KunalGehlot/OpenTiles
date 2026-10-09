@@ -49,6 +49,7 @@ import type { NotationSource } from '../views/score/notation';
 import { ScoreView } from '../views/score/ScoreView';
 import { usePracticeView, ViewToggle } from '../views/score/ViewToggle';
 import { Popover } from '../ui/Popover';
+import { t } from '../i18n';
 
 interface Loaded {
   source: 'catalogue' | 'library';
@@ -92,7 +93,7 @@ export function Practice({ source, id }: { source: 'catalogue' | 'library'; id: 
         };
       }
       const item = await db.library.get(Number(id));
-      if (!item) throw new Error('This piece is not in your library on this device.');
+      if (!item) throw new Error(t('This piece is not in your library on this device.'));
       return {
         source,
         song: item.song,
@@ -114,12 +115,12 @@ export function Practice({ source, id }: { source: 'catalogue' | 'library'; id: 
       <div className="session-message">
         <p className="error">{error}</p>
         <a className="button" href={href({ name: 'home' })}>
-          <ChevronLeft /> Back to pieces
+          <ChevronLeft /> {t('Back to pieces')}
         </a>
       </div>
     );
   }
-  if (!loaded || !prefs) return <p className="session-message muted">Loading…</p>;
+  if (!loaded || !prefs) return <p className="session-message muted">{t('Loading…')}</p>;
   return <PracticeView key={loaded.progressKey} {...loaded} prefs={prefs} />;
 }
 
@@ -172,9 +173,9 @@ function PracticeView({
   useEffect(() => {
     session.onStatus = setStatus;
     session.onFinish = (summary, seconds) => void recordRun(progressKey, summary.accuracy, seconds);
-    session.onTempo = (t) => {
-      setTempo(t);
-      savePracticePrefs({ tempo: t });
+    session.onTempo = (factor) => {
+      setTempo(factor);
+      savePracticePrefs({ tempo: factor });
     };
     // Loop runs count as practice time but not as a best score for the whole piece.
     const unsubscribe = session.addLoopListener(
@@ -186,13 +187,13 @@ function PracticeView({
     session.setTempo(prefs.tempo);
     session.accompany = prefs.accompany;
     session.setMetronome(prefs.metronome);
-    const t = touch.current;
-    t.onNote = (e) => session.input(e);
-    t.onRelease = (p, time) => session.release(p, time);
-    void t.start();
+    const keys = touch.current;
+    keys.onNote = (e) => session.input(e);
+    keys.onRelease = (p, time) => session.release(p, time);
+    void keys.start();
     return () => {
       unsubscribe();
-      t.stop();
+      keys.stop();
       session.stop();
     };
   }, [session, progressKey, prefs, startHands]);
@@ -343,7 +344,7 @@ function PracticeView({
       setMidi({ input, devices: input.deviceNames });
       await applyMidiCalibration(input.deviceNames);
     } catch (e) {
-      setInputError(e instanceof Error ? e.message : String(e));
+      setInputError(e instanceof Error ? t(e.message) : String(e));
     }
   };
 
@@ -388,7 +389,9 @@ function PracticeView({
       }
     } catch (e) {
       setInputError(
-        e instanceof Error ? `Microphone: ${e.message}` : 'The microphone could not be started.',
+        e instanceof Error
+          ? t('Microphone: {message}', { message: t(e.message) })
+          : t('The microphone could not be started.'),
       );
     } finally {
       setBusy(false);
@@ -416,7 +419,9 @@ function PracticeView({
       <header className="bar session-bar">
         <a className="back" href={href(backRoute)}>
           <ChevronLeft />
-          <span className="back__label">{source === 'library' ? 'My library' : 'Pieces'}</span>
+          <span className="back__label">
+            {source === 'library' ? t('My library') : t('Pieces')}
+          </span>
         </a>
         <h1 className="session-title">
           <span className="session-title__name">{title}</span>
@@ -426,34 +431,37 @@ function PracticeView({
           {midiSupported() ? (
             midi ? (
               <>
-                <span className="chip chip--live" title="A MIDI keyboard is connected">
+                <span className="chip chip--live" title={t('A MIDI keyboard is connected')}>
                   <Piano />
                   <span className="chip__text">
-                    MIDI: {midi.devices.join(', ') || 'no device connected'}
+                    MIDI: {midi.devices.join(', ') || t('no device connected')}
                   </span>
                 </span>
-                <button onClick={() => setMidiCalibrating(true)} title="Measure keyboard delay">
+                <button
+                  onClick={() => setMidiCalibrating(true)}
+                  title={t('Measure keyboard delay')}
+                >
                   <Gauge />
-                  <span className="btn-label">Calibrate timing</span>
+                  <span className="btn-label">{t('Calibrate timing')}</span>
                 </button>
               </>
             ) : (
               <button onClick={() => void connectMidi()}>
                 <Piano />
-                <span className="btn-label">Connect MIDI keyboard</span>
+                <span className="btn-label">{t('Connect MIDI keyboard')}</span>
               </button>
             )
           ) : (
-            <span className="chip" title="Safari and iPad browsers have no Web MIDI">
+            <span className="chip" title={t('Safari and iPad browsers have no Web MIDI')}>
               <Piano />
-              <span className="chip__text">MIDI not available in this browser</span>
+              <span className="chip__text">{t('MIDI not available in this browser')}</span>
             </span>
           )}
           {mic ? (
             <>
               <span className="chip chip--live chip--pulse">
                 <Mic />
-                <span className="chip__text">Microphone listening</span>
+                <span className="chip__text">{t('Microphone listening')}</span>
               </span>
               <button
                 onClick={() => {
@@ -463,20 +471,20 @@ function PracticeView({
                 }}
               >
                 <SlidersHorizontal />
-                <span className="btn-label">Set up microphone</span>
+                <span className="btn-label">{t('Set up microphone')}</span>
               </button>
             </>
           ) : (
             <button disabled={busy} aria-busy={busy} onClick={() => void connectMic()}>
               <Mic />
-              <span className="btn-label">{busy ? 'Starting…' : 'Use microphone'}</span>
+              <span className="btn-label">{busy ? t('Starting…') : t('Use microphone')}</span>
             </button>
           )}
-          <Popover label="Options" icon={<SettingsIcon />}>
+          <Popover label={t('Options')} icon={<SettingsIcon />}>
             <label className="field">
-              <span className="field__label">Keyboard size</span>
+              <span className="field__label">{t('Keyboard size')}</span>
               <select
-                aria-label="Keyboard size"
+                aria-label={t('Keyboard size')}
                 value={settings.keyboard.size}
                 onChange={(e) =>
                   void updateAppSettings({
@@ -484,45 +492,48 @@ function PracticeView({
                   })
                 }
               >
-                <option value="auto">Fit piece</option>
+                <option value="auto">{t('Fit piece')}</option>
                 {KEYBOARD_PRESETS.map((p) => (
                   <option key={p.id} value={p.id}>
                     {p.keys}
                   </option>
                 ))}
-                <option value="custom">Custom ({keyCount(customKeyboard(low, keys))})</option>
+                <option value="custom">
+                  {t('Custom ({n})', { n: keyCount(customKeyboard(low, keys)) })}
+                </option>
               </select>
             </label>
             <label className="field">
-              <span className="field__label">Fingers</span>
+              <span className="field__label">{t('Fingers')}</span>
               <select
-                aria-label="Fingering"
+                aria-label={t('Fingering')}
                 value={settings.fingering}
                 onChange={(e) =>
                   void updateAppSettings({ fingering: e.target.value as FingeringDisplay })
                 }
               >
-                <option value="suggested">Suggested</option>
-                <option value="written">As written</option>
-                <option value="off">Off</option>
+                <option value="suggested">{t('Suggested')}</option>
+                <option value="written">{t('As written')}</option>
+                <option value="off">{t('Off')}</option>
               </select>
             </label>
             <p className="muted popover__hint">
-              The on-screen keys and the computer keys A–; always play. Pieces are moved by octaves
-              to fit the keyboard you choose.
+              {t(
+                'The on-screen keys and the computer keys A–; always play. Pieces are moved by octaves to fit the keyboard you choose.',
+              )}
             </p>
-            <a href={href({ name: 'settings' })}>All settings</a>
+            <a href={href({ name: 'settings' })}>{t('All settings')}</a>
           </Popover>
         </div>
       </header>
       <div className="bar session-controls">
         <div className="group">
-          <div className="segmented" role="group" aria-label="Mode">
+          <div className="segmented" role="group" aria-label={t('Mode')}>
             {(
               [
-                ['wait', 'Wait'],
-                ['listen', 'Listen'],
-                ['play-along', 'Play along'],
+                ['wait', t('Wait')],
+                ['listen', t('Listen')],
+                ['play-along', t('Play along')],
               ] as const
             ).map(([m, label]) => (
               <button key={m} aria-pressed={mode === m} onClick={() => changeMode(m)}>
@@ -533,21 +544,21 @@ function PracticeView({
           {mode !== 'wait' && (
             <button className="primary" onClick={() => void toggle()}>
               {status.playing ? <Square /> : <Play />}
-              {status.playing ? 'Stop' : mode === 'listen' ? 'Play' : 'Start'}
+              {status.playing ? t('Stop') : mode === 'listen' ? t('Play') : t('Start')}
             </button>
           )}
           <button onClick={() => session.rebuild()}>
             <RotateCcw />
-            <span className="btn-label">Restart</span>
+            <span className="btn-label">{t('Restart')}</span>
           </button>
         </div>
         <div className="group">
-          <div className="segmented" role="group" aria-label="Hands">
+          <div className="segmented" role="group" aria-label={t('Hands')}>
             {(
               [
-                ['left', 'Left'],
-                ['both', 'Both'],
-                ['right', 'Right'],
+                ['left', t('Left')],
+                ['both', t('Both')],
+                ['right', t('Right')],
               ] as const
             ).map(([h, label]) => (
               <button
@@ -574,7 +585,7 @@ function PracticeView({
                   session.accompany = e.target.checked;
                 }}
               />
-              Play other hand
+              {t('Play other hand')}
             </label>
           )}
         </div>
@@ -587,14 +598,14 @@ function PracticeView({
               if (status.loop) session.setLoop(null);
               setShowLoop(!(showLoop || status.loop !== null));
             }}
-            title="Loop a range of bars (or drag across the falling notes)"
+            title={t('Loop a range of bars (or drag across the falling notes)')}
           >
             <Repeat />
-            <span className="btn-label">Loop</span>
+            <span className="btn-label">{t('Loop')}</span>
           </button>
         </div>
-        <label className="tempo" title="Practice tempo">
-          <span className="tempo__label">Tempo</span>
+        <label className="tempo" title={t('Practice tempo')}>
+          <span className="tempo__label">{t('Tempo')}</span>
           <input
             type="range"
             min={25}
@@ -602,10 +613,10 @@ function PracticeView({
             step={5}
             value={Math.round(tempo * 100)}
             onChange={(e) => {
-              const t = Number(e.target.value) / 100;
-              setTempo(t);
-              savePracticePrefs({ tempo: t });
-              session.setTempo(t);
+              const factor = Number(e.target.value) / 100;
+              setTempo(factor);
+              savePracticePrefs({ tempo: factor });
+              session.setTempo(factor);
             }}
           />
           <span className="tempo__value">{Math.round(tempo * 100)} %</span>
@@ -615,7 +626,10 @@ function PracticeView({
         <span className="stats" aria-live="polite">
           {mode === 'wait' ? (
             <span className="stat">
-              Step {Math.min(status.stepIndex + 1, status.stepCount)}/{status.stepCount}
+              {t('Step {step}/{count}', {
+                step: Math.min(status.stepIndex + 1, status.stepCount),
+                count: status.stepCount,
+              })}
             </span>
           ) : null}
           <span className="stat stat--ok">✓ {status.correct}</span>
@@ -658,54 +672,64 @@ function PracticeView({
       >
         <canvas
           ref={canvasRef}
-          aria-label="Falling notes and piano keyboard"
+          aria-label={t('Falling notes and piano keyboard')}
           role="img"
           data-keys={`${keysRange.low}-${keysRange.high}`}
         />
         {status.finished && summary && (
           <div className="overlay">
             <div className="panel stack summary">
-              <h2>Well played!</h2>
+              <h2>{t('Well played!')}</h2>
               <div
                 className="ring"
                 role="img"
-                aria-label={`Accuracy ${Math.round(summary.accuracy * 100)} %`}
+                aria-label={t('Accuracy {percent} %', {
+                  percent: Math.round(summary.accuracy * 100),
+                })}
                 style={{ '--pct': Math.round(summary.accuracy * 100) } as React.CSSProperties}
               >
                 <span className="ring__value">
                   {Math.round(summary.accuracy * 100)}
                   <small> %</small>
                 </span>
-                <span className="ring__label">accuracy</span>
+                <span className="ring__label">{t('accuracy')}</span>
               </div>
               {(status.elapsed > 0 || (mode === 'play-along' && summary.meanOffsetMs > 0)) && (
                 <p className="muted">
                   {status.elapsed > 0 && <>{Math.round(status.elapsed)} s</>}
                   {mode === 'play-along' && summary.meanOffsetMs > 0 && (
                     <>
-                      {status.elapsed > 0 && ' · '}timing ±{Math.round(summary.meanOffsetMs)} ms
+                      {status.elapsed > 0 && ' · '}
+                      {t('timing ±{ms} ms', { ms: Math.round(summary.meanOffsetMs) })}
                     </>
                   )}
                 </p>
               )}
               {mode === 'play-along' && (
                 <p className="muted">
-                  {summary.hit} on time, {summary.early} early, {summary.late} late,{' '}
-                  {summary.missed} missed
-                  {summary.extra > 0 && <>, {summary.extra} extra</>}
+                  {t('{hit} on time, {early} early, {late} late, {missed} missed', {
+                    hit: summary.hit,
+                    early: summary.early,
+                    late: summary.late,
+                    missed: summary.missed,
+                  })}
+                  {summary.extra > 0 && <>, {t('{n} extra', { n: summary.extra })}</>}
                 </p>
               )}
               {summary.hardestMeasures.length > 0 && (
                 <p className="muted">
-                  Hardest bars:{' '}
-                  {summary.hardestMeasures.map((m) => measureLabel(m.measureIndex)).join(', ')}
+                  {t('Hardest bars: {bars}', {
+                    bars: summary.hardestMeasures
+                      .map((m) => measureLabel(m.measureIndex))
+                      .join(', '),
+                  })}
                 </p>
               )}
               {holdCount > 0 && (
                 <p className="muted" data-testid="hold-summary">
-                  Held well: {holds.good} of {holdCount}
-                  {holds.short > 0 && <> · {holds.short} too short</>}
-                  {holds.long > 0 && <> · {holds.long} too long</>}
+                  {t('Held well: {good} of {count}', { good: holds.good, count: holdCount })}
+                  {holds.short > 0 && <> · {t('{n} too short', { n: holds.short })}</>}
+                  {holds.long > 0 && <> · {t('{n} too long', { n: holds.long })}</>}
                 </p>
               )}
               {status.recorded && (
@@ -713,10 +737,10 @@ function PracticeView({
               )}
               <div className="row summary__actions">
                 <button className="primary" onClick={() => session.rebuild()}>
-                  <RotateCcw /> Play again
+                  <RotateCcw /> {t('Play again')}
                 </button>
                 <a className="button" href={href({ name: 'home' })}>
-                  Choose another piece
+                  {t('Choose another piece')}
                 </a>
               </div>
             </div>

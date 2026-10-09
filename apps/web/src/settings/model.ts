@@ -4,6 +4,7 @@
 import { customKeyboard, keyCount, presetById } from '@opentiles/practice';
 import type { KeyboardRange } from '@opentiles/practice';
 import { isBlackKey, noteName, PIANO_HIGH, PIANO_LOW } from '@opentiles/song-model';
+import { t } from '../i18n';
 
 /** `system` follows the operating system's preference (prefers-contrast, prefers-reduced-motion). */
 export type TriState = 'system' | 'on' | 'off';
@@ -64,21 +65,39 @@ export const DEFAULT_APP_SETTINGS: Readonly<AppSettings> = Object.freeze({
 }) as Readonly<AppSettings>;
 
 /** Keys most Bluetooth page-turn pedals send, in the order the settings list offers them. */
-export const PEDAL_KEYS: readonly { key: string; label: string }[] = [
-  { key: 'ArrowRight', label: 'Right arrow' },
-  { key: 'ArrowLeft', label: 'Left arrow' },
-  { key: 'ArrowDown', label: 'Down arrow' },
-  { key: 'ArrowUp', label: 'Up arrow' },
-  { key: 'PageDown', label: 'Page Down' },
-  { key: 'PageUp', label: 'Page Up' },
-  { key: ' ', label: 'Space' },
-  { key: 'Enter', label: 'Enter' },
+export const PEDAL_KEYS: readonly string[] = [
+  'ArrowRight',
+  'ArrowLeft',
+  'ArrowDown',
+  'ArrowUp',
+  'PageDown',
+  'PageUp',
+  ' ',
+  'Enter',
 ];
 
+/** A pedal key's name in the current language. */
 export function pedalKeyLabel(key: string): string {
-  return (
-    PEDAL_KEYS.find((k) => k.key === key)?.label ?? (key.length === 1 ? key.toUpperCase() : key)
-  );
+  switch (key) {
+    case 'ArrowRight':
+      return t('Right arrow');
+    case 'ArrowLeft':
+      return t('Left arrow');
+    case 'ArrowDown':
+      return t('Down arrow');
+    case 'ArrowUp':
+      return t('Up arrow');
+    case 'PageDown':
+      return t('Page Down');
+    case 'PageUp':
+      return t('Page Up');
+    case ' ':
+      return t('Space');
+    case 'Enter':
+      return t('Enter');
+    default:
+      return key.length === 1 ? key.toUpperCase() : key;
+  }
 }
 
 function tri(value: unknown, fallback: TriState): TriState {
@@ -146,7 +165,11 @@ export function keyboardRange(k: KeyboardSetting): KeyboardRange | null {
 
 /** "86 keys (A0–B♭7)". */
 export function keyboardLabel(range: KeyboardRange): string {
-  return `${keyCount(range)} keys (${noteName(range.low)}–${noteName(range.high)})`;
+  return t('{n} keys ({low}–{high})', {
+    n: keyCount(range),
+    low: noteName(range.low),
+    high: noteName(range.high),
+  });
 }
 
 /** White keys a custom keyboard can start on, lowest first (real keyboards start on one). */
@@ -165,14 +188,28 @@ export function fitMessage(
   fit: { shift: number; folded: number },
   range: KeyboardRange,
 ): string | null {
-  const board = `your ${keyCount(range)}-key keyboard`;
-  const notes = `${fit.folded} ${fit.folded === 1 ? 'note' : 'notes'}`;
-  if (fit.shift === 0) return fit.folded > 0 ? `${notes} moved by octaves to fit ${board}.` : null;
+  const keys = keyCount(range);
+  const n = fit.folded;
+  if (fit.shift === 0) {
+    if (n === 0) return null;
+    return n === 1
+      ? t('1 note moved by octaves to fit your {keys}-key keyboard.', { keys })
+      : t('{n} notes moved by octaves to fit your {keys}-key keyboard.', { n, keys });
+  }
   const octaves = Math.abs(fit.shift) / 12;
-  const moved = `Moved ${fit.shift > 0 ? 'up' : 'down'} ${octaves === 1 ? 'an octave' : `${octaves} octaves`} to fit ${board}`;
-  return fit.folded > 0
-    ? `${moved}; ${notes} ${fit.folded === 1 ? 'was' : 'were'} also moved into range.`
-    : `${moved}.`;
+  const up = fit.shift > 0;
+  const moved =
+    octaves === 1
+      ? up
+        ? t('Moved up an octave to fit your {keys}-key keyboard', { keys })
+        : t('Moved down an octave to fit your {keys}-key keyboard', { keys })
+      : up
+        ? t('Moved up {octaves} octaves to fit your {keys}-key keyboard', { octaves, keys })
+        : t('Moved down {octaves} octaves to fit your {keys}-key keyboard', { octaves, keys });
+  if (n === 0) return `${moved}.`;
+  return n === 1
+    ? `${moved}; ${t('1 note was also moved into range.')}`
+    : `${moved}; ${t('{n} notes were also moved into range.', { n })}`;
 }
 
 export interface MediaPreferences {
@@ -231,14 +268,19 @@ export function pedalAction(
 }
 
 /** Keyboard shortcuts shown on the settings page. Keep in step with the practice view. */
-export const KEYBOARD_SHORTCUTS: readonly { keys: string; action: string }[] = [
-  { keys: 'Space', action: 'Start or pause playback (not in wait mode)' },
-  { keys: 'R', action: 'Start the piece again' },
-  {
-    keys: 'A W S E D F T G Y H U J K O L P ;',
-    action: 'Play notes from C upwards, like piano keys',
-  },
-  { keys: 'Z / X', action: 'Move the computer-keyboard octave down / up' },
-  { keys: 'Tab / Shift+Tab', action: 'Move between buttons and controls' },
-  { keys: 'Pedal keys', action: 'Turn the page forward / back when the foot pedal is switched on' },
-];
+export function keyboardShortcuts(): { keys: string; action: string }[] {
+  return [
+    { keys: t('Space'), action: t('Start or pause playback (not in wait mode)') },
+    { keys: 'R', action: t('Start the piece again') },
+    {
+      keys: 'A W S E D F T G Y H U J K O L P ;',
+      action: t('Play notes from C upwards, like piano keys'),
+    },
+    { keys: 'Z / X', action: t('Move the computer-keyboard octave down / up') },
+    { keys: t('Tab / Shift+Tab'), action: t('Move between buttons and controls') },
+    {
+      keys: t('Pedal keys'),
+      action: t('Turn the page forward / back when the foot pedal is switched on'),
+    },
+  ];
+}

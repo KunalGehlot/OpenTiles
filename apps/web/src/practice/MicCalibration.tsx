@@ -16,23 +16,35 @@ import { now, unlockAudio } from '../audio/context';
 import type { MicInput } from '../input/mic-input';
 import { setMicCalibration, skipMicCalibration } from '../storage/calibration';
 import type { MicCalibration as StoredMicCalibration } from '../storage/calibration';
+import { t } from '../i18n';
 
 const KEY_TIMEOUT_MS = 4000;
 const LATENCY_CLICKS = 8;
 
 type Phase = 'intro' | 'noise' | 'keys' | 'latency-offer' | 'latency' | 'done';
 
-const VERDICT_TEXT: Record<MicLevelVerdict, string> = {
-  ok: 'The level is good.',
-  quiet: 'The piano sounds quiet. Move the device closer to the piano if notes are missed.',
-  loud: 'The piano is very loud for this microphone. Move the device a little further away.',
-  noisy: 'The room is noisy. Notes may be missed or misheard; a quieter room helps.',
-  unknown: 'No keys were heard, so the level could not be checked.',
-};
+function verdictText(verdict: MicLevelVerdict): string {
+  switch (verdict) {
+    case 'ok':
+      return t('The level is good.');
+    case 'quiet':
+      return t('The piano sounds quiet. Move the device closer to the piano if notes are missed.');
+    case 'loud':
+      return t(
+        'The piano is very loud for this microphone. Move the device a little further away.',
+      );
+    case 'noisy':
+      return t('The room is noisy. Notes may be missed or misheard; a quieter room helps.');
+    default:
+      return t('No keys were heard, so the level could not be checked.');
+  }
+}
 
 const describeKey = (pitch: number) => {
-  if (pitch === 60) return 'middle C';
-  return pitch < 60 ? `the low ${noteName(pitch)}` : `the high ${noteName(pitch)}`;
+  if (pitch === 60) return t('middle C');
+  return pitch < 60
+    ? t('the low {note}', { note: noteName(pitch) })
+    : t('the high {note}', { note: noteName(pitch) });
 };
 
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
@@ -151,7 +163,7 @@ export function MicCalibration({
       for (const e of events) if (e.kind === 'onset') onsets.push(e.time);
     };
     const clicks = clickTrain(now() + 0.5, LATENCY_CLICKS, 0.6);
-    clicks.forEach((t) => track.click(t, true));
+    clicks.forEach((time) => track.click(time, true));
     await sleep(((clicks[clicks.length - 1] ?? 0) - now() + 0.6) * 1000);
     mic.onDetector = previous;
     track.volume = previousVolume;
@@ -181,73 +193,83 @@ export function MicCalibration({
   const keyPitch = CALIBRATION_PITCHES[keyIndex] ?? 60;
 
   return (
-    <div className="overlay calibration" role="dialog" aria-label="Microphone set-up">
+    <div className="overlay calibration" role="dialog" aria-label={t('Microphone set-up')}>
       <div className="panel stack">
-        <h2 style={{ marginTop: 0 }}>Set up the microphone</h2>
+        <h2 style={{ marginTop: 0 }}>{t('Set up the microphone')}</h2>
         {phase === 'intro' && (
           <>
             <p>
-              About 10 seconds: first stay quiet for 2 seconds, then play three keys when asked.
-              This tunes note detection to your piano and room.
+              {t(
+                'About 10 seconds: first stay quiet for 2 seconds, then play three keys when asked. This tunes note detection to your piano and room.',
+              )}
             </p>
             <div className="row">
               <button className="primary" onClick={() => void run()}>
-                Start
+                {t('Start')}
               </button>
-              <button onClick={skip}>Skip</button>
+              <button onClick={skip}>{t('Skip')}</button>
             </div>
           </>
         )}
-        {phase === 'noise' && <p aria-live="polite">Stay quiet for 2 seconds…</p>}
+        {phase === 'noise' && <p aria-live="polite">{t('Stay quiet for 2 seconds…')}</p>}
         {phase === 'keys' && (
           <>
             <p aria-live="polite">
-              Play <strong>{describeKey(keyPitch)}</strong> ({noteName(keyPitch)}) and let it ring.
+              {t('Play {key} ({note}) and let it ring.', {
+                key: describeKey(keyPitch),
+                note: noteName(keyPitch),
+              })}
             </p>
             <p className="muted">
-              Key {keyIndex + 1} of {CALIBRATION_PITCHES.length}
-              {heardKeys.length > 0 && <> · heard {heardKeys.map(noteName).join(', ')}</>}
+              {t('Key {n} of {count}', { n: keyIndex + 1, count: CALIBRATION_PITCHES.length })}
+              {heardKeys.length > 0 && (
+                <> · {t('heard {notes}', { notes: heardKeys.map(noteName).join(', ') })}</>
+              )}
             </p>
             <div className="row">
-              <button onClick={() => skipKey.current?.()}>Skip this key</button>
-              <button onClick={skip}>Skip set-up</button>
+              <button onClick={() => skipKey.current?.()}>{t('Skip this key')}</button>
+              <button onClick={skip}>{t('Skip set-up')}</button>
             </div>
           </>
         )}
         {phase === 'latency-offer' && (
           <>
-            <p>{VERDICT_TEXT[verdict]}</p>
+            <p>{verdictText(verdict)}</p>
             <p>
-              Optional: check the delay of the microphone. Turn the speakers up; the app plays 8
-              clicks and listens for them (5 seconds).
+              {t(
+                'Optional: check the delay of the microphone. Turn the speakers up; the app plays 8 clicks and listens for them (5 seconds).',
+              )}
             </p>
             <div className="row">
               <button className="primary" onClick={() => void runLatency()}>
-                Check delay
+                {t('Check delay')}
               </button>
-              <button onClick={finish}>Not now</button>
+              <button onClick={finish}>{t('Not now')}</button>
             </div>
           </>
         )}
-        {phase === 'latency' && <p aria-live="polite">Listening for the clicks… keep quiet.</p>}
+        {phase === 'latency' && (
+          <p aria-live="polite">{t('Listening for the clicks… keep quiet.')}</p>
+        )}
         {phase === 'done' && result && (
           <>
-            <p>{VERDICT_TEXT[verdict]}</p>
+            <p>{verdictText(verdict)}</p>
             <ul className="muted">
               {result.tuningCents !== null && (
                 <li>
-                  Piano tuning: {result.tuningCents >= 0 ? '+' : ''}
-                  {result.tuningCents.toFixed(0)} cents from A = 440 Hz
+                  {t('Piano tuning: {cents} cents from A = 440 Hz', {
+                    cents: `${result.tuningCents >= 0 ? '+' : ''}${result.tuningCents.toFixed(0)}`,
+                  })}
                 </li>
               )}
               {result.latency !== null && (
-                <li>Microphone delay: {Math.round(result.latency * 1000)} ms</li>
+                <li>{t('Microphone delay: {ms} ms', { ms: Math.round(result.latency * 1000) })}</li>
               )}
             </ul>
-            <p className="muted">Saved for this microphone on this device.</p>
+            <p className="muted">{t('Saved for this microphone on this device.')}</p>
             <div className="row">
               <button className="primary" onClick={() => onClose(result)}>
-                Done
+                {t('Done')}
               </button>
             </div>
           </>

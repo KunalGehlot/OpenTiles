@@ -21,6 +21,7 @@ import {
 import type { KeyboardLayout, KeyRect } from './keyboard';
 import type { PracticeSession } from './session';
 import { appSettings, effectiveSettings, labelScale } from '../settings/store';
+import { language, t } from '../i18n';
 import { pitchClassName } from '../lib/notes';
 
 const FONT = "system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif";
@@ -315,7 +316,7 @@ export class PracticeRenderer {
     for (const l of session.labels) {
       const key = keyAt(this.layout, l.pitch);
       if (!key || l.until <= now) continue;
-      const text = LABEL_TEXT[l.kind];
+      const text = labelText(l.kind);
       const w = ctx.measureText(text).width + 12;
       const cx = Math.min(this.width - w / 2, Math.max(w / 2, key.x + key.width / 2));
       // Early labels sit a little higher than late ones, so the direction reads at a glance;
@@ -480,7 +481,11 @@ export class PracticeRenderer {
         this.setFont(ctx, 600, Math.min(size, w * 0.62));
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
-        ctx.fillText(pitchClassName(n.pitch, this.flats), x + w / 2, y + size * 0.5 + 5);
+        ctx.fillText(
+          pitchClassName(n.pitch, this.flats, language() === 'de'),
+          x + w / 2,
+          y + size * 0.5 + 5,
+        );
         ctx.textBaseline = 'alphabetic';
       }
     }
@@ -624,12 +629,18 @@ export class PracticeRenderer {
   }
 }
 
-const LABEL_TEXT: Record<'early' | 'late' | 'short' | 'long', string> = {
-  early: 'early',
-  late: 'late',
-  short: 'hold longer',
-  long: 'let go',
-};
+function labelText(kind: 'early' | 'late' | 'short' | 'long'): string {
+  switch (kind) {
+    case 'early':
+      return t('early');
+    case 'late':
+      return t('late');
+    case 'short':
+      return t('hold longer');
+    default:
+      return t('let go');
+  }
+}
 
 function roundRect(
   ctx: CanvasRenderingContext2D,

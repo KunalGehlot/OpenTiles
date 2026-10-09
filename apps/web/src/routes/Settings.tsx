@@ -3,8 +3,8 @@ import { BackupSection } from '../backup/BackupSection';
 import { href } from '../lib/router';
 import { customKeyboard, KEYBOARD_PRESETS } from '@opentiles/practice';
 import {
-  KEYBOARD_SHORTCUTS,
   keyboardLabel,
+  keyboardShortcuts,
   lowestKeyChoices,
   MIN_CUSTOM_KEYS,
   PEDAL_KEYS,
@@ -20,6 +20,7 @@ import type {
 import { updateAppSettings, useAppSettings } from '../settings/store';
 import { syncServerUrl } from '../sync/config';
 import { SyncSection } from '../sync/SyncSection';
+import { language, t } from '../i18n';
 
 /** Default export so the route can be lazy-loaded. */
 export default function Settings() {
@@ -27,30 +28,24 @@ export default function Settings() {
   const set = (patch: Partial<AppSettings>) => void updateAppSettings(patch);
   return (
     <article className="settings">
-      <h1>Settings</h1>
-      <p className="lead">Settings are kept on this device.</p>
+      <h1>{t('Settings')}</h1>
+      <p className="lead">{t('Settings are kept on this device.')}</p>
 
       <section aria-labelledby="language-title">
-        <h2 id="language-title">Language</h2>
-        <Setting label="Language">
+        <h2 id="language-title">{t('Language')}</h2>
+        <Setting label={t('Language')}>
           <select
             value={settings.language}
             onChange={(e) => set({ language: e.target.value === 'de' ? 'de' : 'en' })}
           >
-            <option value="en">English</option>
+            <option value="en" lang="en">
+              English
+            </option>
             <option value="de" lang="de">
               Deutsch
             </option>
           </select>
         </Setting>
-        {settings.language === 'de' && (
-          <p className="muted" lang="de">
-            Die deutsche Übersetzung kommt bald. Bis dahin ist OpenTiles auf Englisch; die{' '}
-            <a href={href({ name: 'privacy', lang: 'de' })}>Datenschutzerklärung</a> und das{' '}
-            <a href={href({ name: 'impressum', lang: 'de' })}>Impressum</a> gibt es schon auf
-            Deutsch.
-          </p>
-        )}
       </section>
 
       <Practice settings={settings} set={set} />
@@ -60,22 +55,28 @@ export default function Settings() {
       <CrashReports settings={settings} set={set} />
 
       <section aria-labelledby="legal-title">
-        <h2 id="legal-title">Privacy and legal</h2>
+        <h2 id="legal-title">{t('Privacy and legal')}</h2>
         <ul className="link-list">
           <li>
-            <a href={href({ name: 'privacy', lang: 'en' })}>Privacy policy</a> ·{' '}
+            <a href={href({ name: 'privacy', lang: 'en' })} lang="en">
+              Privacy policy
+            </a>{' '}
+            ·{' '}
             <a href={href({ name: 'privacy', lang: 'de' })} lang="de">
               Datenschutzerklärung
             </a>
           </li>
           <li>
-            <a href={href({ name: 'impressum', lang: 'en' })}>Impressum (legal notice)</a> ·{' '}
+            <a href={href({ name: 'impressum', lang: 'en' })} lang="en">
+              Impressum (legal notice)
+            </a>{' '}
+            ·{' '}
             <a href={href({ name: 'impressum', lang: 'de' })} lang="de">
               Impressum (Deutsch)
             </a>
           </li>
           <li>
-            <a href={href({ name: 'about' })}>About OpenTiles</a>
+            <a href={href({ name: 'about' })}>{t('About OpenTiles')}</a>
           </li>
         </ul>
       </section>
@@ -141,15 +142,13 @@ function TriSelect({
           onChange(e.target.value === 'on' ? 'on' : e.target.value === 'off' ? 'off' : 'system')
         }
       >
-        <option value="system">Same as this device</option>
-        <option value="on">On</option>
-        <option value="off">Off</option>
+        <option value="system">{t('Same as this device')}</option>
+        <option value="on">{t('On')}</option>
+        <option value="off">{t('Off')}</option>
       </select>
     </Setting>
   );
 }
-
-const LOWEST_KEYS = lowestKeyChoices();
 
 /** Your keyboard (P4-07) and fingering (P4-08). */
 function Practice({
@@ -165,26 +164,27 @@ function Practice({
   const maxKeys = 108 - k.low + 1;
   return (
     <section aria-labelledby="practice-title">
-      <h2 id="practice-title">Practice</h2>
-      <h3>Your keyboard</h3>
+      <h2 id="practice-title">{t('Practice')}</h2>
+      <h3>{t('Your keyboard')}</h3>
       <p className="muted">
-        The practice screen draws the keys your instrument has. A piece that goes beyond them is
-        moved by octaves so you can still play it, and the screen says so.
+        {t(
+          'The practice screen draws the keys your instrument has. A piece that goes beyond them is moved by octaves so you can still play it, and the screen says so.',
+        )}
       </p>
-      <Setting label="Keyboard size">
+      <Setting label={t('Keyboard size')}>
         <select value={k.size} onChange={(e) => setKeyboard({ size: e.target.value })}>
-          <option value="auto">Fit the keys to each piece</option>
+          <option value="auto">{t('Fit the keys to each piece')}</option>
           {KEYBOARD_PRESETS.map((p) => (
             <option key={p.id} value={p.id}>
               {keyboardLabel(p)}
             </option>
           ))}
-          <option value="custom">Custom</option>
+          <option value="custom">{t('Custom')}</option>
         </select>
       </Setting>
       {k.size === 'custom' && (
         <>
-          <Setting label="Lowest key">
+          <Setting label={t('Lowest key')}>
             <select
               value={k.low}
               onChange={(e) => {
@@ -192,7 +192,7 @@ function Practice({
                 setKeyboard({ low, keys: Math.min(k.keys, 108 - low + 1) });
               }}
             >
-              {LOWEST_KEYS.map((c) => (
+              {lowestKeyChoices().map((c) => (
                 <option key={c.pitch} value={c.pitch}>
                   {c.label}
                 </option>
@@ -206,23 +206,27 @@ function Practice({
         </>
       )}
 
-      <h3>Fingering</h3>
+      <h3>{t('Fingering')}</h3>
       <Setting
-        label="Fingers to show"
-        hint="Suggested fingers follow common piano fingering and keep any the score already has. They appear on the falling notes, the keys to play next and, lighter, in the score."
+        label={t('Fingers to show')}
+        hint={t(
+          'Suggested fingers follow common piano fingering and keep any the score already has. They appear on the falling notes, the keys to play next and, lighter, in the score.',
+        )}
       >
         <select
           value={settings.fingering}
           onChange={(e) => set({ fingering: e.target.value as FingeringDisplay })}
         >
-          <option value="suggested">Suggested where the score has none</option>
-          <option value="written">Only those written in the score</option>
-          <option value="off">None</option>
+          <option value="suggested">{t('Suggested where the score has none')}</option>
+          <option value="written">{t('Only those written in the score')}</option>
+          <option value="off">{t('None')}</option>
         </select>
       </Setting>
       <Toggle
-        label="Note names"
-        description="Show the name of each note (C, F♯, B♭) at the top of the falling notes. The fingers stay at the bottom."
+        label={t('Note names')}
+        description={t(
+          'Show the name of each note (C, F♯, B♭) at the top of the falling notes. The fingers stay at the bottom.',
+        )}
         checked={settings.noteNames}
         onChange={(noteNames) => set({ noteNames })}
       />
@@ -250,7 +254,7 @@ function KeyCountInput({
   const n = Number(draft);
   const valid = Number.isInteger(n) && n >= MIN_CUSTOM_KEYS && n <= max;
   return (
-    <Setting label="Number of keys">
+    <Setting label={t('Number of keys')}>
       <input
         type="number"
         inputMode="numeric"
@@ -280,65 +284,66 @@ function Accessibility({
   const setPedal = (p: Partial<PedalSettings>) => set({ pedal: { ...pedal, ...p } });
   return (
     <section aria-labelledby="a11y-title">
-      <h2 id="a11y-title">Accessibility</h2>
+      <h2 id="a11y-title">{t('Accessibility')}</h2>
       <Toggle
-        label="Large print"
-        description="Bigger text, buttons and keyboard labels."
+        label={t('Large print')}
+        description={t('Bigger text, buttons and keyboard labels.')}
         checked={settings.largePrint}
         onChange={(v) => set({ largePrint: v })}
       />
       <TriSelect
-        label="High contrast"
+        label={t('High contrast')}
         value={settings.highContrast}
         onChange={(v) => set({ highContrast: v })}
       />
       <TriSelect
-        label="Reduce motion"
+        label={t('Reduce motion')}
         value={settings.reducedMotion}
         onChange={(v) => set({ reducedMotion: v })}
       />
       <Toggle
-        label="Left-handed layout"
-        description="Practice controls on the left."
+        label={t('Left-handed layout')}
+        description={t('Practice controls on the left.')}
         checked={settings.leftHanded}
         onChange={(v) => set({ leftHanded: v })}
       />
 
-      <h3>Foot pedal page turn</h3>
+      <h3>{t('Foot pedal page turn')}</h3>
       <p className="muted">
-        Bluetooth page-turn pedals connect like a keyboard. Choose the keys your pedal sends, or
-        press the pedal while “Listen” is on.
+        {t(
+          'Bluetooth page-turn pedals connect like a keyboard. Choose the keys your pedal sends, or press the pedal after “Detect key”.',
+        )}
       </p>
       <Toggle
-        label="Turn pages with a foot pedal"
+        label={t('Turn pages with a foot pedal')}
         checked={pedal.enabled}
         onChange={(v) => setPedal({ enabled: v })}
       />
       {pedal.enabled && (
         <>
           <PedalKey
-            label="Next page"
+            label={t('Next page')}
             value={pedal.nextKey}
             onChange={(k) => setPedal({ nextKey: k })}
           />
           <PedalKey
-            label="Previous page"
+            label={t('Previous page')}
             value={pedal.previousKey}
             onChange={(k) => setPedal({ previousKey: k })}
           />
         </>
       )}
 
-      <h3>Keyboard shortcuts</h3>
+      <h3>{t('Keyboard shortcuts')}</h3>
       <table className="shortcuts">
         <thead>
           <tr>
-            <th scope="col">Keys</th>
-            <th scope="col">What they do</th>
+            <th scope="col">{t('Keys')}</th>
+            <th scope="col">{t('What they do')}</th>
           </tr>
         </thead>
         <tbody>
-          {KEYBOARD_SHORTCUTS.map((s) => (
+          {keyboardShortcuts().map((s) => (
             <tr key={s.keys}>
               <td>
                 <kbd>{s.keys}</kbd>
@@ -362,14 +367,14 @@ function PedalKey({
   onChange: (key: string) => void;
 }) {
   const [listening, setListening] = useState(false);
-  const known = PEDAL_KEYS.some((k) => k.key === value);
+  const known = PEDAL_KEYS.includes(value);
   return (
     <div className="setting-pair">
       <Setting label={label}>
         <select value={value} onChange={(e) => onChange(e.target.value)}>
           {PEDAL_KEYS.map((k) => (
-            <option key={k.key} value={k.key}>
-              {k.label}
+            <option key={k} value={k}>
+              {pedalKeyLabel(k)}
             </option>
           ))}
           {!known && <option value={value}>{pedalKeyLabel(value)}</option>}
@@ -389,7 +394,7 @@ function PedalKey({
         }}
         onBlur={() => setListening(false)}
       >
-        {listening ? 'Press the pedal…' : 'Listen'}
+        {listening ? t('Press the pedal…') : t('Detect key')}
       </button>
     </div>
   );
@@ -405,21 +410,21 @@ function CrashReports({
   const available = syncServerUrl() !== null;
   return (
     <section aria-labelledby="crash-title">
-      <h2 id="crash-title">Crash reports</h2>
+      <h2 id="crash-title">{t('Crash reports')}</h2>
       <p className="muted">
-        Off unless you switch them on. When on, an error that stops the app sends the error message
-        and where in the app's code it happened. Titles, file names, links and email addresses are
-        removed first, and reports are not linked to you.{' '}
-        <a href={href({ name: 'privacy', lang: 'en' })}>Details</a>.
+        {t(
+          "Off unless you switch them on. When on, an error that stops the app sends the error message and where in the app's code it happened. Titles, file names, links and email addresses are removed first, and reports are not linked to you.",
+        )}{' '}
+        <a href={href({ name: 'privacy', lang: language() })}>{t('Details')}</a>.
       </p>
       {available ? (
         <Toggle
-          label="Send anonymous crash reports"
+          label={t('Send anonymous crash reports')}
           checked={settings.crashReports}
           onChange={(v) => set({ crashReports: v })}
         />
       ) : (
-        <p className="muted">This copy of OpenTiles has no server to send reports to.</p>
+        <p className="muted">{t('This copy of OpenTiles has no server to send reports to.')}</p>
       )}
     </section>
   );

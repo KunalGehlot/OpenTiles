@@ -6,6 +6,7 @@ import type { InputAdapter, NoteEvent } from '@opentiles/practice';
 import { now } from '../audio/context';
 import { audioTimeOf } from './clock-sync';
 import { parseMidiMessage } from './midi-message';
+import { t } from '../i18n';
 import { NativeMidiInput, nativeMidiAvailable } from './native-midi-input';
 
 /** What the practice screen needs from a MIDI keyboard, wherever its notes come from. */
@@ -37,7 +38,7 @@ export class MidiInput implements MidiKeyboardInput {
   private access: MIDIAccess | null = null;
 
   async start(): Promise<void> {
-    if (!webMidiSupported()) throw new Error('This browser has no MIDI support.');
+    if (!webMidiSupported()) throw new Error(t('This browser has no MIDI support.'));
     this.access = await navigator.requestMIDIAccess();
     this.attach();
     this.access.onstatechange = () => this.attach();

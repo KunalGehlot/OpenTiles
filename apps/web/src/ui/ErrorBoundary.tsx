@@ -1,4 +1,5 @@
 import { Component } from 'react';
+import { t } from '../i18n';
 import type { ErrorInfo, ReactNode } from 'react';
 
 interface Props {
@@ -34,17 +35,18 @@ export class ErrorBoundary extends Component<Props, { failed: boolean }> {
     if (!this.state.failed) return this.props.children;
     return (
       <div className="session-message" role="alert">
-        <h1>Something went wrong on this screen</h1>
+        <h1>{t('Something went wrong on this screen')}</h1>
         <p className="muted">
-          Your pieces and settings are safe on this device. Reloading usually fixes it, for example
-          after OpenTiles was updated while this page was open.
+          {t(
+            'Your pieces and settings are safe on this device. Reloading usually fixes it, for example after OpenTiles was updated while this page was open.',
+          )}
         </p>
         <p>
           <button className="primary" onClick={() => window.location.reload()}>
-            Reload
+            {t('Reload')}
           </button>{' '}
           <a className="button" href="#/">
-            Back to pieces
+            {t('Back to pieces')}
           </a>
         </p>
       </div>

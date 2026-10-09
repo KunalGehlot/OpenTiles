@@ -96,3 +96,59 @@ test('note names can be switched off and stay off after a reload', async ({ page
   await page.reload();
   await expect(page.getByLabel('Note names', { exact: false })).not.toBeChecked();
 });
+
+test('the whole app can be switched to German and stays German after a reload', async ({
+  page,
+}) => {
+  await page.goto('./#/settings');
+  await page.getByRole('combobox', { name: 'Language' }).selectOption('de');
+  await expect(page.getByRole('heading', { name: 'Einstellungen', level: 1 })).toBeVisible();
+  await expect(page.locator('html')).toHaveAttribute('lang', 'de');
+  await page.reload();
+  await page.goto('./');
+  await expect(page.getByRole('heading', { name: 'Kostenlos Klavier üben' })).toBeVisible();
+  await expect(page.getByRole('link', { name: 'Noten finden' }).first()).toBeVisible();
+  await page.goto('./#/practice/catalogue/ode-to-joy');
+  await expect(page.getByRole('button', { name: 'Neu starten' })).toBeVisible();
+  await page.goto('./#/settings');
+  await page.getByRole('combobox', { name: 'Sprache' }).selectOption('en');
+  await expect(page.getByRole('heading', { name: 'Settings', level: 1 })).toBeVisible();
+});
+
+test('a German browser gets German on the first visit', async ({ browser }) => {
+  const context = await browser.newContext({ locale: 'de-DE', serviceWorkers: 'block' });
+  const page = await context.newPage();
+  await page.goto('./');
+  await expect(page.getByRole('heading', { name: 'Kostenlos Klavier üben' })).toBeVisible();
+  await context.close();
+});
+
+test('the sheet-music page lists only outside links that open in a new tab', async ({ page }) => {
+  await page.goto('./#/sheet-music');
+  await expect(page.getByRole('heading', { name: 'Find sheet music', level: 1 })).toBeVisible();
+  const links = page.locator('.source__name');
+  expect(await links.count()).toBeGreaterThan(8);
+  for (const link of await links.all()) {
+    await expect(link).toHaveAttribute('target', '_blank');
+    await expect(link).toHaveAttribute('rel', /noopener/);
+    expect(await link.getAttribute('href')).toMatch(/^https:\/\//);
+  }
+});
+
+test('the German pages fit a ⅓-width iPad window, also with large print', async ({ browser }) => {
+  const context = await browser.newContext({ locale: 'de-DE', serviceWorkers: 'block' });
+  const page = await context.newPage();
+  await page.setViewportSize({ width: 320, height: 768 });
+  await page.goto('./#/settings');
+  await page.getByLabel(/Große Schrift/).check();
+  for (const url of ['./#/settings', './', './#/library', './#/sheet-music', './#/about']) {
+    await page.goto(url);
+    await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
+    const widths = await page.evaluate(() => ({
+      page: document.documentElement.scrollWidth,
+      viewport: document.documentElement.clientWidth,
+    }));
+    expect(widths.page, url).toBeLessThanOrEqual(widths.viewport);
+  }
+  await context.close();
+});

@@ -7,6 +7,8 @@ export type Route =
   | { name: 'practice'; source: 'catalogue' | 'library'; id: string }
   | { name: 'lab' }
   | { name: 'about' }
+  /** Where to find free and licensed sheet music to import. */
+  | { name: 'sheet-music' }
   | { name: 'settings' }
   | { name: 'privacy'; lang: LegalLang }
   | { name: 'impressum'; lang: LegalLang }
@@ -33,6 +35,8 @@ export function parseHash(hash: string): Route {
       return { name: 'lab' };
     case 'about':
       return { name: 'about' };
+    case 'sheet-music':
+      return { name: 'sheet-music' };
     case 'settings':
       return { name: 'settings' };
     case 'privacy':

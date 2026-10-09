@@ -494,3 +494,23 @@ html[data-high-contrast] a {
 html[data-high-contrast] :focus-visible {
   outline-width: 3px;
 }
+
+/* In a narrow window (⅓ of an iPad, large print, longer German labels) a button may wrap rather than
+   push the page wider than the screen. */
+@media (max-width: 480px) {
+  button,
+  .button {
+    max-width: 100%;
+    white-space: normal;
+  }
+
+  h1,
+  h2,
+  h3,
+  p,
+  li,
+  label {
+    hyphens: auto;
+    overflow-wrap: break-word;
+  }
+}

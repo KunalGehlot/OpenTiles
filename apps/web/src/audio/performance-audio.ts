@@ -4,6 +4,7 @@ import type { RenderNote } from '@opentiles/practice';
 import type { Instrument, Voice } from './instrument';
 import { loadPianoSamples } from './sampler';
 import { Piano, pianoSampleBase } from './synth';
+import { t } from '../i18n';
 
 const LOOK_AHEAD = 0.3;
 const TICK_MS = 50;
@@ -132,7 +133,7 @@ export async function renderWav(notes: readonly RenderNote[], sampleRate = 44100
   const Ctor =
     window.OfflineAudioContext ??
     (window as unknown as { webkitOfflineAudioContext?: OfflineCtor }).webkitOfflineAudioContext;
-  if (!Ctor) throw new Error('This browser cannot render audio files.');
+  if (!Ctor) throw new Error(t('This browser cannot render audio files.'));
   const seconds = renderLength(notes) + TAIL;
   const ctx = new Ctor(2, Math.ceil(seconds * sampleRate), sampleRate);
   const base = pianoSampleBase();

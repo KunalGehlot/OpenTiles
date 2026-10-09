@@ -162,8 +162,12 @@ test('the privacy policy and Impressum exist in English and German', async ({ pa
 test('the Home page shows a difficulty path with progress and teacher links', async ({
   page,
   context,
+  browserName,
 }) => {
-  await context.grantPermissions(['clipboard-read', 'clipboard-write']);
+  // Only Chromium knows the clipboard permissions; elsewhere the copy may fall back to showing the
+  // link in a field.
+  const clipboard = browserName === 'chromium';
+  if (clipboard) await context.grantPermissions(['clipboard-read', 'clipboard-write']);
   await page.goto('./');
   const path = page.getByRole('list', { name: 'Difficulty path' });
   await expect(path.getByRole('heading', { name: 'Level 1 · First steps' })).toBeVisible();
@@ -196,11 +200,20 @@ test('the Home page shows a difficulty path with progress and teacher links', as
   await expect(path.locator('.path-level').first()).toContainText(/1 of \d+ mastered · 1 played/);
 
   await page.getByRole('button', { name: 'Copy link to Ode to Joy (theme)' }).click();
-  await expect(page.getByRole('button', { name: 'Copy link to Ode to Joy (theme)' })).toHaveText(
-    'Link copied',
-  );
-  const copied = await page.evaluate(() => navigator.clipboard.readText());
-  expect(copied).toMatch(/#\/practice\/catalogue\/ode-to-joy$/);
+  if (clipboard) {
+    await expect(page.getByRole('button', { name: 'Copy link to Ode to Joy (theme)' })).toHaveText(
+      'Link copied',
+    );
+    const copied = await page.evaluate(() => navigator.clipboard.readText());
+    expect(copied).toMatch(/#\/practice\/catalogue\/ode-to-joy$/);
+  } else {
+    const done = page.getByRole('button', { name: 'Copy link to Ode to Joy (theme)' });
+    const fallback = page.getByRole('textbox', { name: 'Link to Ode to Joy (theme)' });
+    await expect(done.filter({ hasText: 'Link copied' }).or(fallback)).toBeVisible();
+    if (await fallback.isVisible()) {
+      await expect(fallback).toHaveValue(/#\/practice\/catalogue\/ode-to-joy$/);
+    }
+  }
 
   // Library items never get a link.
   await page.goto('./#/library');

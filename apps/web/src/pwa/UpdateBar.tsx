@@ -1,4 +1,5 @@
 import { useSyncExternalStore } from 'react';
+import { t } from '../i18n';
 import { updates } from './update-store';
 
 /**
@@ -14,15 +15,15 @@ export function UpdateBar() {
   if (status !== 'available' && status !== 'applying') return null;
   return (
     <div className="update-bar" role="status">
-      <span>Update available</span>
+      <span>{t('Update available')}</span>
       <button
         className="primary"
         disabled={status === 'applying'}
         onClick={() => void updates.apply()}
       >
-        {status === 'applying' ? 'Reloading…' : 'Reload'}
+        {status === 'applying' ? t('Reloading…') : t('Reload')}
       </button>
-      <button className="update-bar__close" aria-label="Dismiss" onClick={updates.dismiss}>
+      <button className="update-bar__close" aria-label={t('Dismiss')} onClick={updates.dismiss}>
         ×
       </button>
     </div>

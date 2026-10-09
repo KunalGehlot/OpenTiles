@@ -5,6 +5,7 @@ import { unlockAudio } from '../audio/context';
 import { clickTrackFor } from '../audio/click-track';
 import type { PracticeSession } from '../views/session';
 import { savePracticePrefs } from './prefs';
+import { t } from '../i18n';
 
 /** Routes the session's clicks through the metronome's own volume. Call from a user gesture. */
 export async function connectClickTrack(session: PracticeSession, volume?: number) {
@@ -38,20 +39,20 @@ export function MetronomeControl({
         aria-pressed={on}
         title={
           on
-            ? 'Metronome on: clicks on every beat, accented on the first beat of the bar'
-            : 'Metronome off'
+            ? t('Metronome on: clicks on every beat, accented on the first beat of the bar')
+            : t('Metronome off')
         }
         onClick={() => void toggle()}
       >
         <Metronome />
-        <span className="btn-label">Metronome</span>
+        <span className="btn-label">{t('Metronome')}</span>
       </button>
       {on && (
         <input
           type="range"
           className="metronome-volume"
-          aria-label="Click volume"
-          title="Click volume"
+          aria-label={t('Click volume')}
+          title={t('Click volume')}
           min={0}
           max={100}
           step={5}
