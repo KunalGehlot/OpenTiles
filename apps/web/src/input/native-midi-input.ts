@@ -8,6 +8,7 @@ import { now } from '../audio/context';
 import { hasNativePlugin } from '../lib/native-shell';
 import { audioTimeOf, ClockSync } from './clock-sync';
 import type { MidiKeyboardInput } from './midi-input';
+import type { MidiSink } from '../audio/midi-out';
 import { parseNativeNote, parseNativeSources } from './midi-message';
 import type { NativeSource } from './midi-message';
 
@@ -58,6 +59,15 @@ export class NativeMidiInput implements MidiKeyboardInput {
 
   get deviceNames(): string[] {
     return this.sources.map((s) => s.name);
+  }
+
+  /** The iPad app reads keyboards only; MIDI out through CoreMIDI is not written yet. */
+  get outputNames(): string[] {
+    return [];
+  }
+
+  output(): MidiSink | null {
+    return null;
   }
 
   async start(): Promise<void> {

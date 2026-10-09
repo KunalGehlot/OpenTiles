@@ -380,3 +380,26 @@ describe('scrubbing (P4-18)', () => {
     expect(session.wait.finished).toBe(false);
   });
 });
+
+describe('MIDI keys on this device', () => {
+  it('echoes MIDI notes on this device when asked, and stops them on release', () => {
+    const { session, clock } = setup();
+    const log: string[] = [];
+    session.midiEcho = {
+      volume: 1,
+      noteOn: (p) => {
+        log.push(`on ${p}`);
+        return { stop: () => log.push(`off ${p}`) };
+      },
+      play: () => ({ stop: () => {} }),
+      click: () => {},
+    };
+    session.input({ pitch: 60, time: clock.t, confidence: 1, source: 'midi' });
+    session.input({ pitch: 64, time: clock.t, confidence: 1, source: 'touch' });
+    session.release(60);
+    expect(log).toEqual(['on 60', 'off 60']);
+    session.midiEcho = null;
+    session.input({ pitch: 62, time: clock.t, confidence: 1, source: 'midi' });
+    expect(log).toHaveLength(2);
+  });
+});

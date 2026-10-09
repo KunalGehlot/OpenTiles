@@ -31,6 +31,18 @@ export interface KeyboardSetting {
   keys: number;
 }
 
+/** Where the app's own notes play: this device, the MIDI keyboard's sound, or both. */
+export type MidiPlayback = 'device' | 'keyboard' | 'both';
+
+export interface MidiSetting {
+  /** Play the keys pressed on a MIDI keyboard through this device too. */
+  echo: boolean;
+  /** Where the app's notes (listen mode, the other hand, listening back) play. */
+  playback: MidiPlayback;
+  /** The MIDI output to play on; empty for the keyboard that is connected. */
+  output: string;
+}
+
 /** Which fingers to show (P4-08): suggested ones fill the gaps the score leaves. */
 export type FingeringDisplay = 'suggested' | 'written' | 'off';
 
@@ -49,6 +61,7 @@ export interface AppSettings {
   fingering: FingeringDisplay;
   /** Note names (C, F♯, B♭) at the top of each falling note. */
   noteNames: boolean;
+  midi: MidiSetting;
 }
 
 export const DEFAULT_APP_SETTINGS: Readonly<AppSettings> = Object.freeze({
@@ -62,6 +75,7 @@ export const DEFAULT_APP_SETTINGS: Readonly<AppSettings> = Object.freeze({
   keyboard: Object.freeze({ size: 'auto', low: PIANO_LOW, keys: 88 }),
   fingering: 'suggested',
   noteNames: true,
+  midi: Object.freeze({ echo: false, playback: 'device', output: '' }),
 }) as Readonly<AppSettings>;
 
 /** Keys most Bluetooth page-turn pedals send, in the order the settings list offers them. */
@@ -133,6 +147,16 @@ export function normaliseSettings(value: unknown): AppSettings {
     keyboard: normaliseKeyboard(v.keyboard),
     fingering: v.fingering === 'written' || v.fingering === 'off' ? v.fingering : 'suggested',
     noteNames: bool(v.noteNames, d.noteNames),
+    midi: normaliseMidi(v.midi),
+  };
+}
+
+function normaliseMidi(value: unknown): MidiSetting {
+  const v = typeof value === 'object' && value !== null ? (value as Record<string, unknown>) : {};
+  return {
+    echo: bool(v.echo, false),
+    playback: v.playback === 'keyboard' || v.playback === 'both' ? v.playback : 'device',
+    output: typeof v.output === 'string' && v.output.length <= 200 ? v.output : '',
   };
 }
 

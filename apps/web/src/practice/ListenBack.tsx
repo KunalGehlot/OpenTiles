@@ -42,7 +42,8 @@ export function ListenBack({ session, title, allowSave }: Props) {
     }
     try {
       const ctx = await unlockAudio();
-      const p = playNotes(synthFor(ctx), notes(version), now);
+      // The same place as the app's other notes: this device, the MIDI keyboard or both.
+      const p = playNotes(session.instrument ?? synthFor(ctx), notes(version), now);
       playback.current = p;
       setPlaying(true);
       await p.ended;

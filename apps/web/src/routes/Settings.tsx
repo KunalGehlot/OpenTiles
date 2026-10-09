@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { BackupSection } from '../backup/BackupSection';
 import { href } from '../lib/router';
 import { customKeyboard, KEYBOARD_PRESETS } from '@opentiles/practice';
@@ -14,6 +14,7 @@ import type {
   AppSettings,
   FingeringDisplay,
   KeyboardSetting,
+  MidiPlayback,
   PedalSettings,
   TriState,
 } from '../settings/model';
@@ -21,6 +22,19 @@ import { updateAppSettings, useAppSettings } from '../settings/store';
 import { syncServerUrl } from '../sync/config';
 import { SyncSection } from '../sync/SyncSection';
 import { language, t } from '../i18n';
+import { unlockAudio } from '../audio/context';
+import { MidiOutInstrument } from '../audio/midi-out';
+import {
+  createMidiInput,
+  describeMidiError,
+  midiSupported,
+  midiUnavailableMessage,
+  midiUnavailableReason,
+  noKeyboardMessage,
+  pickOutput,
+} from '../input/midi-input';
+import type { MidiKeyboardInput } from '../input/midi-input';
+import { noteName } from '@opentiles/song-model';
 
 /** Default export so the route can be lazy-loaded. */
 export default function Settings() {
@@ -49,6 +63,7 @@ export default function Settings() {
       </section>
 
       <Practice settings={settings} set={set} />
+      <MidiSection settings={settings} set={set} />
       <Accessibility settings={settings} set={set} />
       <BackupSection />
       <SyncSection />
@@ -230,6 +245,131 @@ function Practice({
         checked={settings.noteNames}
         onChange={(noteNames) => set({ noteNames })}
       />
+    </section>
+  );
+}
+
+/**
+ * MIDI keyboard: where notes sound, which output to play on, and a live test that shows what the
+ * keyboard sends, so a learner can tell at once whether this browser hears it.
+ */
+function MidiSection({
+  settings,
+  set,
+}: {
+  settings: AppSettings;
+  set: (p: Partial<AppSettings>) => void;
+}) {
+  const m = settings.midi;
+  const setMidi = (p: Partial<AppSettings['midi']>) => set({ midi: { ...m, ...p } });
+  const [input, setInput] = useState<MidiKeyboardInput | null>(null);
+  const [devices, setDevices] = useState<string[]>([]);
+  const [outputs, setOutputs] = useState<string[]>([]);
+  const [lastNote, setLastNote] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  useEffect(() => () => input?.stop(), [input]);
+
+  const test = async () => {
+    setError(null);
+    try {
+      const next = createMidiInput();
+      next.onNote = (e) => setLastNote(`${noteName(e.pitch)} (${e.velocity ?? 0})`);
+      next.onDevicesChanged = (names) => {
+        setDevices(names);
+        setOutputs(next.outputNames);
+      };
+      await next.start();
+      setInput(next);
+      setDevices(next.deviceNames);
+      setOutputs(next.outputNames);
+      if (next.deviceNames.length === 0) setError(noKeyboardMessage(navigator.userAgent));
+    } catch (e) {
+      setError(describeMidiError(e, navigator.userAgent));
+    }
+  };
+
+  const sendTestNote = async () => {
+    const sink = input?.output(m.output);
+    if (!sink) return;
+    const ctx = await unlockAudio();
+    const out = new MidiOutInstrument(sink, () => ctx.currentTime);
+    out.play(60, ctx.currentTime, 0.6, 90);
+  };
+
+  const supported = midiSupported();
+  const chosen = pickOutput(outputs, devices, m.output);
+  return (
+    <section aria-labelledby="midi-title">
+      <h2 id="midi-title">{t('MIDI keyboard')}</h2>
+      {!supported && (
+        <p className="notice">
+          {midiUnavailableMessage(
+            midiUnavailableReason({
+              userAgent: navigator.userAgent,
+              maxTouchPoints: navigator.maxTouchPoints,
+              secure: window.isSecureContext,
+            }),
+          )}
+        </p>
+      )}
+      <Toggle
+        label={t('Play my MIDI keys on this device')}
+        description={t(
+          'The notes you play on the keyboard also sound from this computer or tablet: for a keyboard without speakers, or to listen in headphones on this device. Turn the keyboard’s own volume down if you hear both.',
+        )}
+        checked={m.echo}
+        onChange={(echo) => setMidi({ echo })}
+      />
+      <Setting
+        label={t('App’s notes play on')}
+        hint={t(
+          'Listen mode, the other hand and listening back. “My MIDI keyboard” plays them with the keyboard’s own sound; the metronome stays on this device.',
+        )}
+      >
+        <select
+          value={m.playback}
+          onChange={(e) => setMidi({ playback: e.target.value as MidiPlayback })}
+        >
+          <option value="device">{t('This device')}</option>
+          <option value="keyboard">{t('My MIDI keyboard')}</option>
+          <option value="both">{t('Both')}</option>
+        </select>
+      </Setting>
+      {supported && (
+        <>
+          <h3>{t('Test your keyboard')}</h3>
+          <p className="muted">
+            {t(
+              'Connect the keyboard and switch it on, then press Test and play a key. The note shows here, so you can see that this browser hears it.',
+            )}
+          </p>
+          <div className="row">
+            <button onClick={() => void test()}>{input ? t('Test again') : t('Test')}</button>
+            {input && chosen && (
+              <button onClick={() => void sendTestNote()}>{t('Play a test note on it')}</button>
+            )}
+          </div>
+          {input && (
+            <ul className="muted" data-testid="midi-test">
+              <li>{t('Keyboards: {names}', { names: devices.join(', ') || t('none found') })}</li>
+              <li>{t('Last note: {note}', { note: lastNote ?? t('none yet — play a key') })}</li>
+            </ul>
+          )}
+          {input && outputs.length > 1 && (
+            <Setting label={t('Play the app’s notes on')}>
+              <select value={m.output} onChange={(e) => setMidi({ output: e.target.value })}>
+                <option value="">{t('The connected keyboard')}</option>
+                {outputs.map((o) => (
+                  <option key={o} value={o}>
+                    {o}
+                  </option>
+                ))}
+              </select>
+            </Setting>
+          )}
+          {error && <p className="error">{error}</p>}
+        </>
+      )}
     </section>
   );
 }

@@ -15,6 +15,8 @@ export interface Instrument {
   play(pitch: number, when: number, duration: number, velocity?: number): Voice;
   /** A short click for count-ins, metronome and the latency test. */
   click(when: number, accent?: boolean): void;
+  /** Stops every note at once, including ones scheduled ahead (a MIDI keyboard needs this). */
+  silence?(): void;
 }
 
 /**

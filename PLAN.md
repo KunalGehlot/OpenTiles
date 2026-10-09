@@ -286,6 +286,12 @@ compatibility matrix (spec §5).
       and triplets added to arrange.py and the converter, so Invention 14 and Für Elise are complete;
       da capos written out for WoO 82 and the Musette. All 81 pieces verified by the maintainer
       (KunalGehlot, 2026-10-09) on the basis of this review.
+- [x] **P4-19** MIDI keyboard settings (2026-10-09): play the keys pressed on a MIDI keyboard on this
+      device too (for keyboards without speakers or for headphones), and play the app's notes
+      (listen mode, the other hand, listening back) on this device, the keyboard's own sound or both,
+      through MIDI out; a choice of output when there are several; a live keyboard test in Settings.
+      Firefox messages now cover its two real limits (no hot-plugging; the site permission add-on
+      off localhost). Left: MIDI out from the iPad app (CoreMIDI send), the sustain pedal.
 - [x] **P4-18** Scrubbing in the scrolling score (2026-10-09): the play bar stays in the middle and a
       drag (or a sideways trackpad scroll) moves the whole piece under it, back and forth; the
       score, cursor and falling notes follow, a playing run pauses and Play starts from there, wait

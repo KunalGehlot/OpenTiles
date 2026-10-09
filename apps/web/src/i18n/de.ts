@@ -666,8 +666,6 @@ export const de: Readonly<Record<string, string>> = {
     'MIDI-Keyboards funktionieren nur auf einer sicheren Seite. Öffne OpenTiles über https oder als localhost auf diesem Computer.',
   'This browser cannot connect to MIDI keyboards. Use Chrome, Edge or Firefox, or the microphone.':
     'Dieser Browser kann sich nicht mit MIDI-Keyboards verbinden. Nutze Chrome, Edge oder Firefox oder das Mikrofon.',
-  'Firefox asks to install a small “site permission” add-on before a page may use MIDI. Click “Connect MIDI keyboard” again and accept it (Continue to installation, then Add). If you declined it before, allow MIDI for this site again in Firefox: Settings → Privacy & Security → Permissions.':
-    'Firefox fragt, ob ein kleines „Website-Berechtigungs“-Add-on installiert werden darf, bevor eine Seite MIDI nutzen kann. Klick noch einmal auf „MIDI-Keyboard verbinden“ und stimme zu (Mit Installation fortfahren, dann Hinzufügen). Wenn du es vorher abgelehnt hast, erlaube MIDI für diese Seite wieder in Firefox: Einstellungen → Datenschutz & Sicherheit → Berechtigungen.',
   'The browser did not allow MIDI for this page. Allow MIDI devices for this site in the browser settings, then try again.':
     'Der Browser hat MIDI für diese Seite nicht erlaubt. Erlaube MIDI-Geräte für diese Seite in den Browser-Einstellungen und versuch es noch einmal.',
   'MIDI keyboard': 'MIDI-Keyboard',
@@ -678,4 +676,31 @@ export const de: Readonly<Record<string, string>> = {
     'Webseiten auf iPad und iPhone können keine MIDI-Keyboards lesen: Safari und alle anderen Browser dort nutzen Apples WebKit-Engine, die kein Web MIDI hat. Apps aus dem App Store wie Flowkey nutzen stattdessen Apples CoreMIDI, genau wie die OpenTiles-App für das iPad. Im Browser nimm das Mikrofon: Es hört deinem Klavier zu.',
   'Safari cannot read MIDI keyboards: its WebKit engine has no Web MIDI (native apps use Apple’s CoreMIDI instead). Open OpenTiles in Chrome, Edge or Firefox on this Mac, or use the microphone.':
     'Safari kann keine MIDI-Keyboards lesen: Seine WebKit-Engine hat kein Web MIDI (Apps nutzen stattdessen Apples CoreMIDI). Öffne OpenTiles auf diesem Mac in Chrome, Edge oder Firefox oder nutze das Mikrofon.',
+  // MIDI keyboard settings
+  'Firefox did not give this page access to MIDI. Firefox only sees keyboards that were connected and switched on when it started: connect the keyboard, quit Firefox completely and open it again, then click “Connect MIDI keyboard” and allow access. On a website (not localhost) Firefox also asks to add a small “site permission” add-on: accept it. If you declined before, allow MIDI again under Settings → Privacy & Security → Permissions.':
+    'Firefox hat dieser Seite keinen Zugriff auf MIDI gegeben. Firefox sieht nur Keyboards, die beim Start schon verbunden und eingeschaltet waren: Verbinde das Keyboard, beende Firefox ganz und öffne es wieder, dann klick auf „MIDI-Keyboard verbinden“ und erlaube den Zugriff. Auf einer Website (nicht localhost) fragt Firefox außerdem, ob ein kleines „Website-Berechtigungs“-Add-on hinzugefügt werden darf: Stimme zu. Wenn du vorher abgelehnt hast, erlaube MIDI wieder unter Einstellungen → Datenschutz & Sicherheit → Berechtigungen.',
+  'Firefox found no MIDI keyboard. It only sees keyboards that were connected and switched on when it started: quit Firefox completely, check the keyboard is on, and open Firefox again.':
+    'Firefox hat kein MIDI-Keyboard gefunden. Es sieht nur Keyboards, die beim Start schon verbunden und eingeschaltet waren: Beende Firefox ganz, prüf, ob das Keyboard an ist, und öffne Firefox wieder.',
+  'No MIDI keyboard found. Connect it and switch it on; it appears here by itself.':
+    'Kein MIDI-Keyboard gefunden. Verbinde es und schalte es ein; es erscheint hier von selbst.',
+  'App’s notes play on': 'Noten der App spielen auf',
+  'This device': 'Diesem Gerät',
+  'My MIDI keyboard': 'Meinem MIDI-Keyboard',
+  'Play my MIDI keys on this device': 'Meine MIDI-Tasten auf diesem Gerät spielen',
+  'The notes you play on the keyboard also sound from this computer or tablet: for a keyboard without speakers, or to listen in headphones on this device. Turn the keyboard’s own volume down if you hear both.':
+    'Die Noten, die du auf dem Keyboard spielst, klingen auch aus diesem Computer oder Tablet: für ein Keyboard ohne Lautsprecher oder zum Hören mit Kopfhörern an diesem Gerät. Dreh die Lautstärke des Keyboards herunter, wenn du beides hörst.',
+  'Listen mode, the other hand and listening back. “My MIDI keyboard” plays them with the keyboard’s own sound; the metronome stays on this device.':
+    'Anhören, die andere Hand und das Nachhören. „Meinem MIDI-Keyboard“ spielt sie mit dem Klang des Keyboards; das Metronom bleibt auf diesem Gerät.',
+  'Test your keyboard': 'Keyboard testen',
+  'Connect the keyboard and switch it on, then press Test and play a key. The note shows here, so you can see that this browser hears it.':
+    'Verbinde das Keyboard und schalte es ein, dann drück auf Testen und spiel eine Taste. Die Note erscheint hier – so siehst du, dass dieser Browser sie hört.',
+  'Test again': 'Noch einmal testen',
+  Test: 'Testen',
+  'Play a test note on it': 'Testnote darauf spielen',
+  'Keyboards: {names}': 'Keyboards: {names}',
+  'none found': 'keines gefunden',
+  'Last note: {note}': 'Letzte Note: {note}',
+  'none yet — play a key': 'noch keine – spiel eine Taste',
+  'Play the app’s notes on': 'Noten der App spielen auf',
+  'The connected keyboard': 'Dem verbundenen Keyboard',
 };

@@ -36,6 +36,7 @@ import type {
 import { TempoMap } from '@opentiles/song-model';
 import type { Hand, Song, SongNote } from '@opentiles/song-model';
 import type { PianoSynth } from '../audio/synth';
+import type { Instrument, Voice } from '../audio/instrument';
 
 export type PracticeMode = 'wait' | 'listen' | 'play-along';
 
@@ -181,6 +182,12 @@ export class PracticeSession {
   accompany = true;
   /** Play a sound for notes from inputs that make none themselves (touch). */
   soundForTouch = true;
+  /**
+   * Plays the notes of a MIDI keyboard on this device too (Settings → MIDI keyboard), for keyboards
+   * with no speakers or for headphones on the computer. Null: the keyboard's own sound only.
+   */
+  midiEcho: Instrument | null = null;
+  private echoVoices = new Map<number, Voice>();
 
   steps: Step[] = [];
   wait: WaitMode;
@@ -274,6 +281,11 @@ export class PracticeSession {
     if (song === this.songValue) return;
     this.songValue = song;
     this.rebuild();
+  }
+
+  /** What the session plays through: this device, the MIDI keyboard or both (Settings). */
+  get instrument(): Instrument | null {
+    return this.synth;
   }
 
   setSynth(s: PianoSynth | null): void {
@@ -472,6 +484,10 @@ export class PracticeSession {
     if (e.source === 'touch' && this.soundForTouch && this.synth) {
       this.synth.play(e.pitch, t, 0.6, e.velocity ?? 90);
     }
+    if ((e.source === 'midi' || e.source === 'native-midi') && this.midiEcho) {
+      this.echoVoices.get(e.pitch)?.stop(t);
+      this.echoVoices.set(e.pitch, this.midiEcho.noteOn(e.pitch, e.velocity ?? 90, t));
+    }
     if (!this.startedAt) this.startedAt = t;
     if (!this.runStartedAt) this.runStartedAt = t;
     this.keys.set(e.pitch, 'held');
@@ -533,6 +549,8 @@ export class PracticeSession {
   release(pitch: number, time = this.clock()): void {
     this.keys.delete(pitch);
     this.recorder.noteOff(pitch, time);
+    this.echoVoices.get(pitch)?.stop();
+    this.echoVoices.delete(pitch);
     const hold = this.holds.get(pitch);
     if (!hold || hold.end !== undefined) return;
     hold.end = Math.max(hold.start, time);
@@ -772,6 +790,8 @@ export class PracticeSession {
     this.scorer = null;
     this.schedule = [];
     this.clicks = [];
+    // Notes already sent ahead to a MIDI keyboard would otherwise keep sounding.
+    this.synth?.silence?.();
     this.emitStatus();
   }
 

@@ -14,13 +14,15 @@ import {
 import { customKeyboard, KEYBOARD_PRESETS, keyCount } from '@opentiles/practice';
 import type { HandFilter } from '@opentiles/practice';
 import type { Song } from '@opentiles/song-model';
-import { now, unlockAudio } from '../audio/context';
+import { audioContext, now, unlockAudio } from '../audio/context';
+import { MidiOutInstrument, playbackInstrument } from '../audio/midi-out';
 import { synthFor } from '../audio/synth';
 import { loadCatalogueSong } from '../catalogue/catalogue';
 import {
   createMidiInput,
   describeMidiError,
   midiSupported,
+  noKeyboardMessage,
   midiUnavailableMessage,
   midiUnavailableReason,
 } from '../input/midi-input';
@@ -35,7 +37,7 @@ import { MidiLatencyCalibration } from '../practice/MidiLatencyCalibration';
 import { prepareSong } from '../practice/prepare';
 import { SectionBar } from '../practice/SectionBar';
 import { fitMessage, keyboardRange } from '../settings/model';
-import type { FingeringDisplay } from '../settings/model';
+import type { FingeringDisplay, MidiPlayback } from '../settings/model';
 import { loadPracticePrefs, savePracticePrefs } from '../practice/prefs';
 import type { PracticePrefs } from '../practice/prefs';
 import { updateAppSettings, useAppSettings } from '../settings/store';
@@ -280,11 +282,32 @@ function PracticeView({
     return () => window.removeEventListener('keydown', onKey);
   });
 
+  /**
+   * Where notes sound (Settings → MIDI keyboard): the app's own notes on this device, the MIDI
+   * keyboard or both, and the keys played on the MIDI keyboard echoed on this device or not.
+   */
+  const { echo: midiEcho, playback: midiPlayback, output: midiOutput } = settings.midi;
+  const applySound = (ctx: AudioContext) => {
+    const device = synthFor(ctx);
+    const sink = midi?.input.output(midiOutput) ?? null;
+    const keyboard = sink ? new MidiOutInstrument(sink, () => ctx.currentTime) : null;
+    session.setSynth(playbackInstrument(device, keyboard, midiPlayback));
+    session.midiEcho = midiEcho ? device : null;
+  };
+
   const ensureAudio = async () => {
     const ctx = await unlockAudio();
-    session.setSynth(synthFor(ctx));
+    applySound(ctx);
     await connectClickTrack(session);
   };
+
+  // A changed setting, or a keyboard connected later, applies at once once audio is running.
+  useEffect(() => {
+    const ctx = audioContext();
+    if (ctx) applySound(ctx);
+    // applySound reads exactly these values.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [midi, midiEcho, midiPlayback, midiOutput]);
 
   const toggle = async () => {
     await ensureAudio();
@@ -348,6 +371,7 @@ function PracticeView({
       input.onDevicesChanged = (devices) => setMidi((m) => (m ? { ...m, devices } : m));
       await input.start();
       setMidi({ input, devices: input.deviceNames });
+      if (input.deviceNames.length === 0) setInputError(noKeyboardMessage(navigator.userAgent));
       await applyMidiCalibration(input.deviceNames);
     } catch (e) {
       setInputError(describeMidiError(e, navigator.userAgent));
@@ -537,6 +561,36 @@ function PracticeView({
                 <option value="off">{t('Off')}</option>
               </select>
             </label>
+            {midiSupported() && (
+              <>
+                <label className="field">
+                  <span className="field__label">{t('App’s notes play on')}</span>
+                  <select
+                    aria-label={t('App’s notes play on')}
+                    value={midiPlayback}
+                    onChange={(e) =>
+                      void updateAppSettings({
+                        midi: { ...settings.midi, playback: e.target.value as MidiPlayback },
+                      })
+                    }
+                  >
+                    <option value="device">{t('This device')}</option>
+                    <option value="keyboard">{t('My MIDI keyboard')}</option>
+                    <option value="both">{t('Both')}</option>
+                  </select>
+                </label>
+                <label className="check">
+                  <input
+                    type="checkbox"
+                    checked={midiEcho}
+                    onChange={(e) =>
+                      void updateAppSettings({ midi: { ...settings.midi, echo: e.target.checked } })
+                    }
+                  />
+                  {t('Play my MIDI keys on this device')}
+                </label>
+              </>
+            )}
             <p className="muted popover__hint">
               {t(
                 'The on-screen keys and the computer keys A–; always play. Pieces are moved by octaves to fit the keyboard you choose.',

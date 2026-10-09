@@ -8,12 +8,32 @@ import { audioTimeOf } from './clock-sync';
 import { parseMidiMessage } from './midi-message';
 import { t } from '../i18n';
 import { NativeMidiInput, nativeMidiAvailable } from './native-midi-input';
+import type { MidiSink } from '../audio/midi-out';
 
 /** What the practice screen needs from a MIDI keyboard, wherever its notes come from. */
 export interface MidiKeyboardInput extends InputAdapter {
   onRelease: (pitch: number, time: number) => void;
   onDevicesChanged: (names: string[]) => void;
   readonly deviceNames: string[];
+  /** MIDI outputs the app can play its notes on (Settings → MIDI keyboard). */
+  readonly outputNames: string[];
+  /** The output called `name`; with no name, the one belonging to the connected keyboard. */
+  output(name?: string): MidiSink | null;
+}
+
+/**
+ * The output to play on: the one asked for by name, else the one named like a connected keyboard
+ * (a keyboard's input and output share its name), else the only one there is.
+ */
+export function pickOutput(
+  outputs: readonly string[],
+  inputs: readonly string[],
+  name = '',
+): string | null {
+  if (name && outputs.includes(name)) return name;
+  const same = outputs.find((o) => inputs.includes(o));
+  if (same) return same;
+  return outputs.length === 1 ? (outputs[0] ?? null) : null;
 }
 
 export function webMidiSupported(): boolean {
@@ -69,6 +89,15 @@ export function midiUnavailableMessage(reason: MidiUnavailable): string {
   }
 }
 
+/** What to say when MIDI access worked but no keyboard is there. */
+export function noKeyboardMessage(userAgent: string): string {
+  return /Firefox\//.test(userAgent)
+    ? t(
+        'Firefox found no MIDI keyboard. It only sees keyboards that were connected and switched on when it started: quit Firefox completely, check the keyboard is on, and open Firefox again.',
+      )
+    : t('No MIDI keyboard found. Connect it and switch it on; it appears here by itself.');
+}
+
 /** A plain explanation of a failed MIDI request, with what to do about it. */
 export function describeMidiError(error: unknown, userAgent: string): string {
   const name = error instanceof DOMException || error instanceof Error ? error.name : '';
@@ -76,7 +105,7 @@ export function describeMidiError(error: unknown, userAgent: string): string {
   if (name === 'SecurityError' || name === 'NotAllowedError') {
     return firefox
       ? t(
-          'Firefox asks to install a small “site permission” add-on before a page may use MIDI. Click “Connect MIDI keyboard” again and accept it (Continue to installation, then Add). If you declined it before, allow MIDI for this site again in Firefox: Settings → Privacy & Security → Permissions.',
+          'Firefox did not give this page access to MIDI. Firefox only sees keyboards that were connected and switched on when it started: connect the keyboard, quit Firefox completely and open it again, then click “Connect MIDI keyboard” and allow access. On a website (not localhost) Firefox also asks to add a small “site permission” add-on: accept it. If you declined before, allow MIDI again under Settings → Privacy & Security → Permissions.',
         )
       : t(
           'The browser did not allow MIDI for this page. Allow MIDI devices for this site in the browser settings, then try again.',
@@ -113,6 +142,23 @@ export class MidiInput implements MidiKeyboardInput {
   get deviceNames(): string[] {
     if (!this.access) return [];
     return [...this.access.inputs.values()].map((i) => i.name ?? 'MIDI device');
+  }
+
+  get outputNames(): string[] {
+    if (!this.access) return [];
+    return [...this.access.outputs.values()].map((o) => o.name ?? 'MIDI device');
+  }
+
+  output(name = ''): MidiSink | null {
+    if (!this.access) return null;
+    const outputs = [...this.access.outputs.values()];
+    const pick = pickOutput(this.outputNames, this.deviceNames, name);
+    const port = outputs.find((o) => (o.name ?? 'MIDI device') === pick);
+    if (!port) return null;
+    return {
+      send: (data, timestamp) => port.send(data, timestamp),
+      clear: () => (port as MIDIOutput & { clear?: () => void }).clear?.(),
+    };
   }
 
   private attach(): void {
