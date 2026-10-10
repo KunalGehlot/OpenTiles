@@ -5,8 +5,8 @@ import { customKeyboard, keyCount, presetById } from '@opentiles/practice';
 import type { KeyboardRange } from '@opentiles/practice';
 import { isBlackKey, PIANO_HIGH, PIANO_LOW } from '@opentiles/song-model';
 import { t } from '../i18n';
-import { NOTE_LABEL_SETTINGS, noteLabel } from '../lib/notes';
-import type { NoteLabelSetting } from '../lib/notes';
+import { NOTE_LABEL_SETTINGS, noteLabel, SPELLING_SETTINGS } from '../lib/notes';
+import type { NoteLabelSetting, SpellingSetting } from '../lib/notes';
 
 /** `system` follows the operating system's preference (prefers-contrast, prefers-reduced-motion). */
 export type TriState = 'system' | 'on' | 'off';
@@ -65,6 +65,8 @@ export interface AppSettings {
   noteNames: boolean;
   /** How note names are written everywhere: letters, German (H) or Fixed-Do (P5-03). */
   noteLabels: NoteLabelSetting;
+  /** Black keys on the falling notes and keys: as the key signature, or sharps or flats (P5-04). */
+  noteSpelling: SpellingSetting;
   midi: MidiSetting;
 }
 
@@ -80,6 +82,7 @@ export const DEFAULT_APP_SETTINGS: Readonly<AppSettings> = Object.freeze({
   fingering: 'suggested',
   noteNames: true,
   noteLabels: 'auto',
+  noteSpelling: 'key',
   midi: Object.freeze({ echo: false, playback: 'device', output: '' }),
 }) as Readonly<AppSettings>;
 
@@ -153,6 +156,7 @@ export function normaliseSettings(value: unknown): AppSettings {
     fingering: v.fingering === 'written' || v.fingering === 'off' ? v.fingering : 'suggested',
     noteNames: bool(v.noteNames, d.noteNames),
     noteLabels: NOTE_LABEL_SETTINGS.find((s) => s === v.noteLabels) ?? d.noteLabels,
+    noteSpelling: SPELLING_SETTINGS.find((s) => s === v.noteSpelling) ?? d.noteSpelling,
     midi: normaliseMidi(v.midi),
   };
 }

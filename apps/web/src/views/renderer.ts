@@ -22,7 +22,8 @@ import type { KeyboardLayout, KeyRect } from './keyboard';
 import type { PracticeSession } from './session';
 import { appSettings, effectiveSettings, labelScale } from '../settings/store';
 import { t } from '../i18n';
-import { noteLabel, pitchClassName } from '../lib/notes';
+import { noteLabel, pitchClassName, spellingFor } from '../lib/notes';
+import type { Spelling } from '../lib/notes';
 
 const FONT = "system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif";
 /** How long a played key blooms (seconds); the session keeps its flashes this long. */
@@ -137,9 +138,9 @@ export class PracticeRenderer {
   private keybed: CanvasGradient | null = null;
   /** Read once per frame: Large print scales labels, Reduce motion switches the bloom off. */
   private scale = 1;
-  /** Per frame: show note names, and spell black keys as flats in a flat key. */
+  /** Per frame: show note names, and spell black keys as the key or the learner chose (P5-04). */
   private noteNames = true;
-  private flats = false;
+  private spelling: Spelling = 'sharps';
   private calm = false;
   /** The font last set on the context; resizing the canvas resets it. */
   private font = '';
@@ -217,7 +218,10 @@ export class PracticeRenderer {
     this.scale = labelScale();
     this.calm = effectiveSettings().reducedMotion;
     this.noteNames = appSettings().noteNames;
-    this.flats = (session.song.keySignatures[0]?.fifths ?? 0) < 0;
+    this.spelling = spellingFor(
+      appSettings().noteSpelling,
+      session.song.keySignatures[0]?.fifths ?? 0,
+    );
     ctx.setTransform(this.dpr, 0, 0, this.dpr, 0, 0);
     ctx.fillStyle = p.background;
     ctx.fillRect(0, 0, this.width, this.height);
@@ -506,11 +510,7 @@ export class PracticeRenderer {
         this.setFont(ctx, 600, Math.min(size, w * 0.62));
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
-        ctx.fillText(
-          pitchClassName(n.pitch, this.flats ? 'flats' : 'sharps'),
-          x + w / 2,
-          y + size * 0.5 + 5,
-        );
+        ctx.fillText(pitchClassName(n.pitch, this.spelling), x + w / 2, y + size * 0.5 + 5);
         ctx.textBaseline = 'alphabetic';
       }
     }
@@ -577,7 +577,7 @@ export class PracticeRenderer {
       ctx.textAlign = 'center';
       if (this.noteNames && expected.has(k.pitch)) {
         // The key to play is named at its front edge, below its finger when there is room (P5-03).
-        const name = pitchClassName(k.pitch, this.flats ? 'flats' : 'sharps');
+        const name = pitchClassName(k.pitch, this.spelling);
         const size = Math.min(Math.max(k.width * 0.42, 10), 15) * this.scale;
         const finger = fingerOf.has(k.pitch)
           ? top + bh + (height - bh) * 0.4 + this.fingerSize(k) / 2 + 2
@@ -616,7 +616,7 @@ export class PracticeRenderer {
       this.drawHold(ctx, k, session, now, top, bh);
       if (this.noteNames && expected.has(k.pitch)) {
         // Above the finger, which sits near the front edge; only where the name fits the key.
-        const name = pitchClassName(k.pitch, this.flats ? 'flats' : 'sharps');
+        const name = pitchClassName(k.pitch, this.spelling);
         const size = Math.min(Math.max(k.width * 0.5, 9), 13) * this.scale;
         if (bh >= 60 && this.fitFont(ctx, name, 600, size, k.width - 2)) {
           ctx.fillStyle = p.onHand;

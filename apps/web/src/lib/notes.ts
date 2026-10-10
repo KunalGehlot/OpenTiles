@@ -52,6 +52,17 @@ const NAMES: Record<NoteLabelStyle, { sharp: readonly string[]; flat: readonly s
 export type Spelling = 'sharps' | 'flats' | 'common';
 const COMMON_FLATS = new Set([3, 8, 10]);
 
+/** The setting for black keys: as the key signature has them, or always sharps or flats (P5-04). */
+export type SpellingSetting = 'key' | 'sharps' | 'flats';
+
+export const SPELLING_SETTINGS: readonly SpellingSetting[] = ['key', 'sharps', 'flats'];
+
+/** The spelling for a piece whose key signature has `fifths` (negative: flats). */
+export function spellingFor(setting: SpellingSetting, fifths: number): Spelling {
+  if (setting !== 'key') return setting;
+  return fifths < 0 ? 'flats' : 'sharps';
+}
+
 /** The style an `auto` setting means in the app's language. */
 export function labelStyleFor(setting: NoteLabelSetting, language: string): NoteLabelStyle {
   if (setting !== 'auto') return setting;

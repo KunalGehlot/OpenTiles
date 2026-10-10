@@ -35,7 +35,7 @@ import {
 } from '../input/midi-input';
 import type { MidiKeyboardInput } from '../input/midi-input';
 import { labelStyleFor, noteLabel } from '../lib/notes';
-import type { NoteLabelSetting } from '../lib/notes';
+import type { NoteLabelSetting, SpellingSetting } from '../lib/notes';
 
 /** Default export so the route can be lazy-loaded. */
 export default function Settings() {
@@ -267,6 +267,21 @@ function Practice({
           <option value="letters">{t('Letters: C D E F G A B')}</option>
           <option value="german">{t('German: C D E F G A H, with B for B♭')}</option>
           <option value="fixed-do">{t('Fixed do: Do Re Mi Fa Sol La Si')}</option>
+        </select>
+      </Setting>
+      <Setting
+        label={t('Black keys')}
+        hint={t(
+          'How the black keys are named on the falling notes and the keys: as the key signature has them, or always with sharps or flats.',
+        )}
+      >
+        <select
+          value={settings.noteSpelling}
+          onChange={(e) => set({ noteSpelling: e.target.value as SpellingSetting })}
+        >
+          <option value="key">{t('As the key')}</option>
+          <option value="sharps">{t('Sharps (♯)')}</option>
+          <option value="flats">{t('Flats (♭)')}</option>
         </select>
       </Setting>
     </section>
