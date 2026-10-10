@@ -1,10 +1,12 @@
 // App-wide settings (P2-15 accessibility, language, crash reports, P4-07 keyboard size, P4-08
-// fingering), as plain data. Pure: no DOM or IndexedDB here, so the rules are unit-tested in Node.
+// fingering, P5-03 note names), as plain data. Pure: no DOM or IndexedDB here, so the rules are unit-tested in Node.
 // The store in ./store.ts persists them.
 import { customKeyboard, keyCount, presetById } from '@opentiles/practice';
 import type { KeyboardRange } from '@opentiles/practice';
-import { isBlackKey, noteName, PIANO_HIGH, PIANO_LOW } from '@opentiles/song-model';
+import { isBlackKey, PIANO_HIGH, PIANO_LOW } from '@opentiles/song-model';
 import { t } from '../i18n';
+import { NOTE_LABEL_SETTINGS, noteLabel } from '../lib/notes';
+import type { NoteLabelSetting } from '../lib/notes';
 
 /** `system` follows the operating system's preference (prefers-contrast, prefers-reduced-motion). */
 export type TriState = 'system' | 'on' | 'off';
@@ -59,8 +61,10 @@ export interface AppSettings {
   crashReports: boolean;
   keyboard: KeyboardSetting;
   fingering: FingeringDisplay;
-  /** Note names (C, F♯, B♭) at the top of each falling note. */
+  /** Note names (C, F♯, B♭) at the top of each falling note and on the keys to play. */
   noteNames: boolean;
+  /** How note names are written everywhere: letters, German (H) or Fixed-Do (P5-03). */
+  noteLabels: NoteLabelSetting;
   midi: MidiSetting;
 }
 
@@ -75,6 +79,7 @@ export const DEFAULT_APP_SETTINGS: Readonly<AppSettings> = Object.freeze({
   keyboard: Object.freeze({ size: 'auto', low: PIANO_LOW, keys: 88 }),
   fingering: 'suggested',
   noteNames: true,
+  noteLabels: 'auto',
   midi: Object.freeze({ echo: false, playback: 'device', output: '' }),
 }) as Readonly<AppSettings>;
 
@@ -147,6 +152,7 @@ export function normaliseSettings(value: unknown): AppSettings {
     keyboard: normaliseKeyboard(v.keyboard),
     fingering: v.fingering === 'written' || v.fingering === 'off' ? v.fingering : 'suggested',
     noteNames: bool(v.noteNames, d.noteNames),
+    noteLabels: NOTE_LABEL_SETTINGS.find((s) => s === v.noteLabels) ?? d.noteLabels,
     midi: normaliseMidi(v.midi),
   };
 }
@@ -191,8 +197,8 @@ export function keyboardRange(k: KeyboardSetting): KeyboardRange | null {
 export function keyboardLabel(range: KeyboardRange): string {
   return t('{n} keys ({low}–{high})', {
     n: keyCount(range),
-    low: noteName(range.low),
-    high: noteName(range.high),
+    low: noteLabel(range.low),
+    high: noteLabel(range.high),
   });
 }
 
@@ -200,7 +206,7 @@ export function keyboardLabel(range: KeyboardRange): string {
 export function lowestKeyChoices(): { pitch: number; label: string }[] {
   const out: { pitch: number; label: string }[] = [];
   for (let p = PIANO_LOW; p <= 72; p++)
-    if (!isBlackKey(p)) out.push({ pitch: p, label: noteName(p) });
+    if (!isBlackKey(p)) out.push({ pitch: p, label: noteLabel(p) });
   return out;
 }
 

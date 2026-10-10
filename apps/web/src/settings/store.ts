@@ -5,6 +5,7 @@ import { useSyncExternalStore } from 'react';
 import { getSetting, setSetting } from '../storage/db';
 import { requestPersistence } from '../storage/persist';
 import { browserLanguage, setLanguage } from '../i18n';
+import { labelStyleFor, setNoteLabelStyle } from '../lib/notes';
 import {
   DEFAULT_APP_SETTINGS,
   canvasLabelScale,
@@ -34,6 +35,7 @@ function mediaPreferences(): MediaPreferences {
 
 function apply(): void {
   setLanguage(current.language);
+  setNoteLabelStyle(labelStyleFor(current.noteLabels, current.language));
   effective = effectiveAccessibility(current, mediaPreferences());
   if (typeof document !== 'undefined') {
     const root = document.documentElement;

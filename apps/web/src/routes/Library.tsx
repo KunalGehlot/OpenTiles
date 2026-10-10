@@ -1,7 +1,7 @@
 import { useLiveQuery } from 'dexie-react-hooks';
 import { useEffect, useRef, useState } from 'react';
 import { FileMusic, FilePlus, Play, ShieldCheck, Trash2 } from 'lucide-react';
-import { estimateDifficulty, noteName, SUPPORTED_EXTENSIONS } from '@opentiles/song-model';
+import { estimateDifficulty, SUPPORTED_EXTENSIONS } from '@opentiles/song-model';
 import type { Song } from '@opentiles/song-model';
 import {
   AUDIO_EXTENSIONS,
@@ -11,6 +11,7 @@ import {
 } from '../lib/audio-import';
 import type { AudioImportStage } from '../lib/audio-import';
 import { applySettings, DEFAULT_SETTINGS, handCounts } from '../lib/import-settings';
+import { noteLabel } from '../lib/notes';
 import { href } from '../lib/router';
 import { matchesQuery } from '../catalogue/search';
 import { db, getSetting, setSetting } from '../storage/db';
@@ -408,8 +409,8 @@ function ImportReview({
             {' '}
             ·{' '}
             {t('range {low}–{high}', {
-              low: noteName(Math.min(...pitches)),
-              high: noteName(Math.max(...pitches)),
+              low: noteLabel(Math.min(...pitches)),
+              high: noteLabel(Math.max(...pitches)),
             })}
           </>
         )}
@@ -476,7 +477,7 @@ function ImportReview({
               value={pending.settings.splitPoint ?? 60}
               onChange={(e) => set({ splitPoint: Number(e.target.value) })}
             />
-            <span>{noteName(pending.settings.splitPoint ?? 60)}</span>
+            <span>{noteLabel(pending.settings.splitPoint ?? 60)}</span>
           </span>
         </label>
       )}

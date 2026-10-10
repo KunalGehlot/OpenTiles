@@ -89,12 +89,13 @@ test('the Content-Security-Policy blocks nothing the app needs', async ({ page }
 
 test('note names can be switched off and stay off after a reload', async ({ page }) => {
   await page.goto('./#/settings');
-  const toggle = page.getByLabel('Note names', { exact: false });
+  // The switch, not the "How note names are written" choice below it (P5-03).
+  const toggle = page.getByRole('checkbox', { name: /^Note names/ });
   await expect(toggle).toBeChecked();
   await toggle.uncheck();
   await page.waitForTimeout(400);
   await page.reload();
-  await expect(page.getByLabel('Note names', { exact: false })).not.toBeChecked();
+  await expect(page.getByRole('checkbox', { name: /^Note names/ })).not.toBeChecked();
 });
 
 test('the whole app can be switched to German and stays German after a reload', async ({
