@@ -37,12 +37,14 @@ device and shown on the home page.
 
 Choose the input at the top of the practice screen. You can switch at any time.
 
-| Input                 | Best for                         | Works in                                      |
-| --------------------- | -------------------------------- | --------------------------------------------- |
-| **MIDI keyboard**     | Digital pianos and controllers   | Chrome, Edge, Firefox; the iPad app (planned) |
-| **Microphone**        | Acoustic pianos, iPads in Safari | All current browsers                          |
-| **On-screen keys**    | Trying the app without any gear  | All current browsers                          |
-| **Computer keyboard** | Quick tests on a laptop          | All current browsers                          |
+| Input                 | Best for                        | Works in                        |
+| --------------------- | ------------------------------- | ------------------------------- |
+| **MIDI keyboard**     | Digital pianos and controllers  | Chrome, Edge, Firefox (desktop) |
+| **Microphone**        | Acoustic pianos                 | Chrome, Edge, Firefox (desktop) |
+| **On-screen keys**    | Trying the app without any gear | Chrome, Edge, Firefox (desktop) |
+| **Computer keyboard** | Quick tests on a laptop         | Chrome, Edge, Firefox (desktop) |
+
+Safari is not supported (see [browser support](../README.md#browser-support)).
 
 ### MIDI keyboard
 
@@ -50,8 +52,7 @@ Plug the keyboard in (USB, or Bluetooth where your system pairs it) and switch i
 **Connect MIDI keyboard**; the browser asks for permission once. The keyboard then appears by
 itself whenever it is connected.
 
-- Safari does not support Web MIDI, so on an iPad a MIDI keyboard needs the OpenTiles iPad app,
-  which is built but not yet released. Until then, use the microphone on iPad.
+- MIDI needs a browser with Web MIDI: Chrome, Edge or Firefox.
 - If your keyboard feels late or early, open **Options → Calibrate timing** or **Measure keyboard
   delay**. OpenTiles then corrects its scoring for that keyboard.
 - **Play my MIDI keys on this device** makes the app play the sound of the keys you press. Leave it
@@ -188,11 +189,8 @@ The full, current list is in **Settings → Keyboard shortcuts**.
 
 OpenTiles is a progressive web app (PWA).
 
-- **Install it.** In Chrome or Edge use the install icon in the address bar. On iPad or iPhone tap
-  **Share → Add to Home Screen** and open OpenTiles from its icon. It then opens full screen and
-  works offline.
-- **On iPad, install it.** In a normal Safari tab, Safari may delete a site's data after seven days
-  without a visit. The home-screen app keeps your library and progress safe.
+- **Install it (optional).** In Chrome or Edge use the install icon in the address bar. OpenTiles
+  then opens in its own window and works offline.
 - **Updates.** The app asks before it updates itself.
 - **Where your data lives.** Your library, progress and settings are in your browser's storage on
   this device. Clearing site data deletes them, so make an encrypted backup under **Settings →

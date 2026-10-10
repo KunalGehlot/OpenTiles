@@ -22,14 +22,12 @@ No. There are no accounts. Your library and progress are stored in your browser 
 
 ### Which devices and browsers work?
 
-Any current browser on a computer, tablet or phone. iPad Safari is a first-class target. Web MIDI
-(plugging in a keyboard) works in Chrome, Edge and Firefox but not in Safari; on iPad a MIDI
-keyboard needs the OpenTiles iPad app, which is not released yet. The microphone and on-screen keys
-work everywhere.
+Desktop Chrome, Edge and Firefox. **Safari is not supported**, and phones and tablets are not a
+target. See [browser support](../README.md#browser-support).
 
 ### Does it work offline?
 
-Yes, once it has loaded. Install it to your home screen for the most reliable offline use.
+Yes, once it has loaded. In Chrome or Edge you can also install it as an app.
 
 ### How is it different from Flowkey, Simply Piano or Sightread?
 
@@ -49,7 +47,7 @@ very welcome: use the
 
 ### My MIDI keyboard is not found.
 
-- Use Chrome, Edge or Firefox. Safari cannot do Web MIDI.
+- Use Chrome, Edge or Firefox. Safari has no Web MIDI and is not supported.
 - Connect and switch on the keyboard, then reload the page and press **Connect MIDI keyboard**.
 - Allow the MIDI permission when the browser asks. If you refused, reset the site's permissions in
   the browser's address bar.
@@ -123,8 +121,7 @@ restore it on another device. Optional encrypted sync is described in [docs/sync
 ### I cleared my browser data and my library is gone.
 
 Without a backup it cannot be recovered; the data only ever existed on that device. Making a backup
-now and then is the cure. On iPad, install OpenTiles to the home screen so Safari does not clear its
-data after a week without a visit.
+now and then is the cure.
 
 ## Getting involved
 
