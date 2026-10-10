@@ -437,6 +437,72 @@ button.copy-link--done {
   font-size: var(--text-md);
 }
 
+/* Files dragged over the page (ADR 0018: a PDF and its MIDI file are often dropped together). */
+.import-box--drop {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+}
+
+.library-item__meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-1) var(--space-2);
+}
+
+.library-item__note {
+  margin: 0;
+  font-size: var(--text-sm);
+}
+
+/* The PDF kept with a piece: its name shortened to one line, so a long download name never pushes
+   the card wider than a ⅓-width window. */
+.library-item__sheet {
+  flex-wrap: nowrap;
+  gap: var(--space-1);
+  color: var(--muted);
+  font-size: var(--text-sm);
+}
+
+.library-item__sheet-name {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.sheet-line {
+  flex-wrap: nowrap;
+  gap: var(--space-2);
+}
+
+.sheet-line__name {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+/* The import review over another screen ("Add the MIDI or score file"). */
+.import-dialog {
+  width: min(36rem, calc(100vw - 2 * var(--space-4)));
+  max-width: none;
+  max-height: calc(100dvh - 2 * var(--space-4));
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: var(--text);
+}
+
+.import-dialog::backdrop {
+  background: color-mix(in srgb, var(--bg) 72%, transparent);
+}
+
+.import-dialog > .panel {
+  margin: 0;
+  box-shadow: var(--shadow-3);
+}
+
 .field {
   display: flex;
   flex-direction: column;
