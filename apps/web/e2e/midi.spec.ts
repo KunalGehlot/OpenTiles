@@ -3,26 +3,29 @@ import type { Page } from '@playwright/test';
 
 // MIDI keyboards through Web MIDI, with a stand-in keyboard: the page gets a fake
 // navigator.requestMIDIAccess with one input and one output called "Test Keyboard". Notes are
-// "played" with window.__midiPress and everything the app sends is kept in window.__midiSent.
+// "played" with window.__midiPress, everything the app sends is kept in window.__midiSent, and
+// window.__midiRequests counts the requests for access.
 async function fakeKeyboard(page: Page) {
   await page.addInitScript(() => {
-    type Handler = ((e: { data: Uint8Array; timeStamp: number }) => void) | null;
     const w = window as unknown as {
       __midiSent: number[][];
       __midiPress: (pitch: number) => void;
+      __midiRequests: number;
     };
     w.__midiSent = [];
-    const input = {
+    w.__midiRequests = 0;
+    const input = Object.assign(new EventTarget(), {
       id: 'in',
       name: 'Test Keyboard',
       state: 'connected',
       connection: 'closed',
-      onmidimessage: null as Handler,
       open: async () => {
         input.connection = 'open';
         return input;
       },
-    };
+    });
+    const message = (data: number[]) =>
+      Object.defineProperty(new Event('midimessage'), 'data', { value: new Uint8Array(data) });
     const output = {
       id: 'out',
       name: 'Test Keyboard',
@@ -33,24 +36,18 @@ async function fakeKeyboard(page: Page) {
       open: async () => output,
     };
     w.__midiPress = (pitch: number) => {
-      const timeStamp = performance.now();
-      input.onmidimessage?.({ data: new Uint8Array([0x90, pitch, 100]), timeStamp });
-      setTimeout(
-        () =>
-          input.onmidimessage?.({
-            data: new Uint8Array([0x80, pitch, 0]),
-            timeStamp: performance.now(),
-          }),
-        100,
-      );
+      input.dispatchEvent(message([0x90, pitch, 100]));
+      setTimeout(() => input.dispatchEvent(message([0x80, pitch, 0])), 100);
     };
     Object.defineProperty(navigator, 'requestMIDIAccess', {
       configurable: true,
-      value: async () => ({
-        inputs: new Map([['in', input]]),
-        outputs: new Map([['out', output]]),
-        onstatechange: null,
-      }),
+      value: async () => {
+        w.__midiRequests += 1;
+        return Object.assign(new EventTarget(), {
+          inputs: new Map([['in', input]]),
+          outputs: new Map([['out', output]]),
+        });
+      },
     });
   });
 }
@@ -101,4 +98,43 @@ test('the app’s notes can play on the MIDI keyboard, and Stop silences it', as
   await expect
     .poll(async () => (await sent(page)).some((m) => m[0] === 0xb0 && m[1] === 123))
     .toBe(true);
+});
+
+// Firefox closes a device for the whole page when any access's port objects are collected, and
+// on a Mac may not find it again until it restarts, so the app asks for access once (P5-12).
+test('one MIDI connection serves every screen, so the keyboard stays after moving around', async ({
+  page,
+}) => {
+  await fakeKeyboard(page);
+  const press = (pitch: number) =>
+    page.evaluate(
+      (p) => (window as unknown as { __midiPress: (p: number) => void }).__midiPress(p),
+      pitch,
+    );
+  const go = (hash: string) => page.evaluate((h) => (location.hash = h), hash);
+  await page.goto('./#/settings');
+  const section = page.locator('section', {
+    has: page.getByRole('heading', { name: 'MIDI keyboard' }),
+  });
+  await section.getByRole('button', { name: 'Test', exact: true }).click();
+  await press(60);
+  await expect(section.getByTestId('midi-test')).toContainText('Last note: C4 (100)');
+
+  for (const piece of ['twinkle-twinkle', 'ode-to-joy']) {
+    await go(`#/practice/catalogue/${piece}`);
+    await page.getByRole('button', { name: 'Connect MIDI keyboard' }).click();
+    await expect(page.getByText('MIDI: Test Keyboard')).toBeVisible();
+  }
+  // Ode to Joy's first step (E4 and C3), played on the keyboard, moves wait mode on.
+  await press(64);
+  await press(48);
+  await expect(page.locator('.stats')).toContainText('Step 2/');
+
+  await go('#/settings');
+  await section.getByRole('button', { name: 'Test', exact: true }).click();
+  await press(62);
+  await expect(section.getByTestId('midi-test')).toContainText('Last note: D4 (100)');
+  expect(
+    await page.evaluate(() => (window as unknown as { __midiRequests: number }).__midiRequests),
+  ).toBe(1);
 });

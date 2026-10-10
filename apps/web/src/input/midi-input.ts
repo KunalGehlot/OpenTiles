@@ -119,6 +119,25 @@ export function describeMidiError(error: unknown, userAgent: string): string {
   return error instanceof Error ? t(error.message) : String(error);
 }
 
+let sharedAccess: Promise<MIDIAccess> | null = null;
+
+/**
+ * The page's one MIDIAccess, requested on first use and kept until the page closes. Firefox gives
+ * every requestMIDIAccess() its own port objects but closes a device by its id when any of them is
+ * garbage-collected (midirMIDIPlatformService::ScheduleClose), which silences the others; and when
+ * the last access is gone it stops its MIDI service, whose CoreMIDI client on a Mac may then not
+ * be created again until Firefox restarts (Apple's MIDIClientDispose note). Each screen used to
+ * request its own access and drop it on leaving, so the keyboard fell silent and then went
+ * missing. A refusal is not kept, so allowing MIDI later and trying again works.
+ */
+export function midiAccess(): Promise<MIDIAccess> {
+  sharedAccess ??= navigator.requestMIDIAccess().catch((error: unknown) => {
+    sharedAccess = null;
+    throw error;
+  });
+  return sharedAccess;
+}
+
 /** The MIDI input for this platform: CoreMIDI in the iPad app, Web MIDI everywhere else. */
 export function createMidiInput(): MidiKeyboardInput {
   return nativeMidiAvailable() ? new NativeMidiInput() : new MidiInput();
@@ -130,13 +149,16 @@ export class MidiInput implements MidiKeyboardInput {
   onRelease: (pitch: number, time: number) => void = () => {};
   onDevicesChanged: (names: string[]) => void = () => {};
   private access: MIDIAccess | null = null;
+  // Listeners, not onmidimessage: the access and its ports are shared with every other screen.
+  private readonly onMidiMessage = (e: Event) => this.onMessage(e as MIDIMessageEvent);
+  private readonly onStateChange = () => this.attach();
 
   async start(): Promise<void> {
     if (!webMidiSupported()) throw new Error(t('This browser has no MIDI support.'));
-    this.access = await navigator.requestMIDIAccess();
+    this.access = await midiAccess();
     this.attach();
     // A keyboard plugged in, switched on or unplugged later shows up here.
-    this.access.onstatechange = () => this.attach();
+    this.access.addEventListener('statechange', this.onStateChange);
   }
 
   get deviceNames(): string[] {
@@ -164,8 +186,10 @@ export class MidiInput implements MidiKeyboardInput {
   private attach(): void {
     if (!this.access) return;
     for (const input of this.access.inputs.values()) {
-      input.onmidimessage = (e) => this.onMessage(e);
-      // Setting onmidimessage opens the port in Chrome; open it explicitly for other browsers.
+      // Adding the same listener again does nothing, so this only reaches new ports.
+      input.addEventListener('midimessage', this.onMidiMessage);
+      // A listener opens the port in Chrome; open it explicitly for other browsers. Ports are
+      // never closed: in Firefox that would close the device for the whole page.
       if (input.connection !== 'open') void input.open().catch(() => {});
     }
     this.onDevicesChanged(this.deviceNames);
@@ -187,10 +211,13 @@ export class MidiInput implements MidiKeyboardInput {
     }
   }
 
+  /** Stops listening. The access and its open ports stay for the next screen (see midiAccess). */
   stop(): void {
     if (!this.access) return;
-    for (const input of this.access.inputs.values()) input.onmidimessage = null;
-    this.access.onstatechange = null;
+    for (const input of this.access.inputs.values()) {
+      input.removeEventListener('midimessage', this.onMidiMessage);
+    }
+    this.access.removeEventListener('statechange', this.onStateChange);
     this.access = null;
   }
 }
