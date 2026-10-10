@@ -4,10 +4,11 @@
 
 # OpenTiles
 
-**A free, open-source piano trainer that runs in your browser — iPad Safari included.**
+**A free, open-source piano trainer that runs in your browser.**
 
-See the music, play it, get instant feedback. Practise in wait mode, play along at your own tempo,
-loop the hard bars, and track your progress. No account, no install, no payment. Ever.
+Learn a piece with falling notes or sheet music, play it on a MIDI keyboard or an acoustic piano,
+and get instant feedback. Practise in wait mode, play along at your own tempo, loop the hard bars
+and track your progress. No account, no tracking, no payment. Ever.
 
 [![CI](https://github.com/KunalGehlot/OpenTiles/actions/workflows/ci.yml/badge.svg)](https://github.com/KunalGehlot/OpenTiles/actions/workflows/ci.yml)
 [![Licence: AGPL-3.0-or-later](https://img.shields.io/badge/licence-AGPL--3.0--or--later-1f6f5c.svg)](LICENSE)
@@ -28,7 +29,7 @@ loop the hard bars, and track your progress. No account, no install, no payment.
 > modes with a MIDI keyboard (Chrome, Edge, Firefox), the microphone or the on-screen keys; falling
 > notes and score views; a catalogue of 81 reviewed public-domain pieces; your own MusicXML, MuseScore,
 > ABC and MIDI files; English and German. Before a public release: the microphone test on real pianos
-> and iPads, a legal review, the deployment, and the iPad app (for MIDI keyboards on iPad) on a device.
+> a legal review and the deployment.
 > There is no hosted version to try yet; you can [run it yourself](#run-it-yourself) in a few minutes.
 > See [PLAN.md](PLAN.md).
 
@@ -47,7 +48,7 @@ loop the hard bars, and track your progress. No account, no install, no payment.
   Every piece has a recorded source and a reviewer.
 - **Bring your own music.** Import MusicXML, MuseScore, ABC or MIDI files, or even a recording of a
   piano. Your library never leaves your device.
-- **Works offline.** Install it to your home screen; it keeps working on a plane.
+- **Works offline.** Once loaded it keeps working without a connection, and you can install it as an app.
 - **Private by design.** No account, no analytics, no cookies, no third-party requests.
 - **Accessible.** High contrast, large print, reduced motion, left-handed layout, keyboard-only use.
 - **English and German.**
@@ -60,9 +61,20 @@ loop the hard bars, and track your progress. No account, no install, no payment.
 | :---------------------------------------------------------------------------------------: | :---------------------------------------------------------------------------------------------: |
 | <img src="docs/images/home.png" alt="The home page with the path of pieces"  width="420"> | <img src="docs/images/practice-falling-notes.png" alt="Falling notes in wait mode" width="420"> |
 
-<img src="docs/images/ipad-landscape.png" alt="Practising on an iPad in landscape" width="640">
-
 </details>
+
+## Browser support
+
+OpenTiles is built for a computer with a MIDI keyboard or a piano in the room.
+
+| Browser                | Status                                                                 |
+| ---------------------- | ---------------------------------------------------------------------- |
+| Chrome, Edge (desktop) | Supported, including MIDI keyboards                                    |
+| Firefox (desktop)      | Supported, including MIDI keyboards                                    |
+| Safari (macOS, iPadOS) | **Not supported.** It has no Web MIDI and the app does not work in it. |
+
+Phones and tablets are not a target. An experimental iPad app is in the repository
+([`apps/ios-shell`](apps/ios-shell/README.md)) but is unfinished and unreleased.
 
 ## Why
 
@@ -78,14 +90,14 @@ music is either public domain or your own.
 | Free forever                 | No paywall, ads or premium tier on any learning feature                          |
 | Bring your own music         | Your library is private; the platform never shares or distributes your files     |
 | Public-domain-only catalogue | Every catalogue piece is verified public domain or CC0, with provenance recorded |
-| Works everywhere             | Installable web app; iPad Safari is a first-class target                         |
+| Runs in the browser          | A web app: nothing to install, and it keeps working offline once loaded          |
 | Local-first and private      | Works offline; files stay on your device; optional sync is end-to-end encrypted  |
 | Open by default              | AGPL-3.0 code, open formats (MusicXML, MIDI), CC0 catalogue metadata             |
 
 ## How it works
 
 - **Inputs:** a MIDI keyboard (where the browser supports Web MIDI), the microphone for acoustic
-  pianos and iPads, or the on-screen keyboard.
+  pianos, or the on-screen keyboard.
 - **Score-informed listening:** the app always knows which notes come next, so the microphone only
   has to answer "are these notes sounding now?". That is what makes acoustic pianos work in a
   browser. The detector is written in Rust and runs as WebAssembly inside an AudioWorklet.
@@ -126,7 +138,7 @@ every change keeps, and how to run the end-to-end tests.
 | Path                  | Contents                                                        |
 | --------------------- | --------------------------------------------------------------- |
 | `apps/web`            | The web app (React + Vite, PWA)                                 |
-| `apps/ios-shell`      | Capacitor wrapper + CoreMIDI plugin (MIDI keyboards on iPad)    |
+| `apps/ios-shell`      | Experimental Capacitor wrapper for iPad (not released)          |
 | `apps/sync-api`       | Optional server for end-to-end encrypted backup and sync        |
 | `packages/engine`     | Rust note-detection engine → WebAssembly, with its AudioWorklet |
 | `packages/song-model` | The `Song` model and MusicXML / MIDI parsers                    |

@@ -19,7 +19,7 @@ body:
     id: setup
     attributes:
       label: Device, OS and browser
-      placeholder: iPad (9th gen), iPadOS 26.1, Safari
+      placeholder: Windows 11, Chrome 140
   - type: dropdown
     id: input
     attributes:

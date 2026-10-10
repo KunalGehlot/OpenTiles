@@ -19,7 +19,7 @@ body:
     id: device
     attributes:
       label: Device, OS and browser
-      placeholder: iPad (9th gen), iPadOS 26.1, Safari — Home Screen app
+      placeholder: Windows 11, Chrome 140
     validations:
       required: true
   - type: dropdown
