@@ -143,9 +143,11 @@ Open **My library** and press **Import a file…**.
 | ABC        | `.abc`                              | Plain-text notation, common for folk tunes               |
 | MIDI       | `.mid`                              | Hands are split at a point you can change                |
 | Recordings | `.wav` `.mp3` `.m4a` `.ogg` `.flac` | The notes are detected on your device; approximate       |
+| Sheet PDF  | `.pdf`                              | Kept with a piece as your sheet music; no notes are read |
 
 After choosing a file you see a **Check the import** step: the title, an estimated difficulty, the
-hand split point (for MIDI) and the tempo. Change what is wrong, then **Save to my library**.
+hand split point (for MIDI) and the tempo. Change what is wrong, then **Save to my library**. You can
+pick or drop several files at once; each piece is checked in turn.
 
 - Files are converted **in your browser** and stored in its private storage. Nothing is uploaded and
   there is no way to share a library item.
@@ -153,9 +155,27 @@ hand split point (for MIDI) and the tempo. Change what is wrong, then **Save to 
   this the first time.
 - Looking for music? The **Find sheet music** page lists sources of free and public-domain scores,
   and how to turn a PDF into a file OpenTiles can open.
-- PDFs and photos of sheet music cannot be opened directly. Convert them to MusicXML first.
+- OpenTiles does not read notes from a PDF or a photo of sheet music. To practise a piece you only
+  have as a PDF, find its MIDI or MusicXML file, or convert the PDF with a scanning tool.
 
-To delete a piece, open **My library** and use **Delete** on its card.
+To delete a piece, open **My library** and use **Delete** on its card. Its sheet music goes with it.
+
+### Sheet music PDFs
+
+Sites that offer a piece as a PDF usually offer a MIDI file of the same name. Pick both together, or
+drop them on the library page, and they become one piece: the notes, the feedback and the falling
+notes come from the MIDI file, and the PDF is kept as the sheet music you read.
+
+- Files are matched by name, ignoring upper and lower case and the extension. If you pick one score
+  file and one PDF whose names differ, OpenTiles asks whether they belong together.
+- The check step shows **Sheet music:** and the PDF's name. **Leave out the sheet music** imports the
+  notes alone.
+- A PDF on its own becomes a _sheet only_ piece. You can open it, but to practise it add its MIDI or
+  score file with **Add the MIDI or score file** on its card.
+- Every piece's card can **Add sheet music (PDF)**, or **Replace** and **Remove** the one it has. A
+  piece with sheet music has a **Sheet** badge.
+- PDFs up to 60 MB are accepted. Like the rest of your library they stay on this device and go only
+  into your own encrypted backup.
 
 ## Settings
 
@@ -169,8 +189,8 @@ Open **Settings**; changes are kept on your device.
   offered) and press the pedal to try it.
 - **Accessibility** — high contrast, large print, reduced motion and a left-handed layout (practice
   controls on the left).
-- **Backup** — save an encrypted backup of your library and progress, and restore it on another
-  device. Optional encrypted sync needs a sync server; see [docs/sync.md](sync.md).
+- **Backup** — save an encrypted backup of your library (sheet music included) and progress, and
+  restore it on another device. Optional encrypted sync needs a sync server; see [docs/sync.md](sync.md).
 - **Crash reports** — off unless you switch them on, and only if your copy has a server to send to.
 
 ## Keyboard shortcuts

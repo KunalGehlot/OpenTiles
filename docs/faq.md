@@ -81,12 +81,17 @@ sends.
 
 MusicXML (`.musicxml`, `.xml`, `.mxl`), MuseScore (`.mscz`, `.mscx`), ABC (`.abc`), MIDI (`.mid`)
 and recordings (`.wav`, `.mp3`, `.m4a`, `.ogg`, `.flac`). Notes from a recording are detected on your
-device and are only approximate. See [Bringing your own music](user-guide.md#bringing-your-own-music).
+device and are only approximate. A sheet-music PDF (`.pdf`) is kept with a piece. See
+[Bringing your own music](user-guide.md#bringing-your-own-music).
 
 ### Can I import a PDF or a photo of sheet music?
 
-Not directly. Convert it to MusicXML with a notation program or a scanning tool first; the
-**Find sheet music** page in the app explains how.
+A PDF, yes, as the sheet music of a piece. Import it together with the piece's MIDI or score file
+(sites that offer a PDF usually offer a MIDI file of the same name): the notes come from the MIDI
+file, and the PDF is kept as the sheet you read. A PDF on its own can be read but not practised,
+because OpenTiles does not read notes from PDFs or photos. To get notes from a scan, convert it to
+MusicXML with a scanning tool first; the **Find sheet music** page in the app explains how. See
+[Sheet music PDFs](user-guide.md#sheet-music-pdfs).
 
 ### Can I share my imported pieces with other people?
 
