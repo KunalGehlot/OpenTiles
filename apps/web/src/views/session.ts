@@ -187,6 +187,11 @@ export class PracticeSession {
   /** Play a sound for notes from inputs that make none themselves (touch). */
   soundForTouch = true;
   /**
+   * How much the screen gives away (P5-05): falling notes and the keys to press (`full`), the keys
+   * only (`keys`), or nothing but the score (`none`, for sight-reading drills).
+   */
+  guide: 'full' | 'keys' | 'none' = 'full';
+  /**
    * Plays the notes of a MIDI keyboard on this device too (Settings → MIDI keyboard), for keyboards
    * with no speakers or for headphones on the computer. Null: the keyboard's own sound only.
    */

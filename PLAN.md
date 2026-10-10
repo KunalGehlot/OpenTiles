@@ -364,10 +364,14 @@ images, sounds or fonts, and credit the inspiration in [CREDITS.md](CREDITS.md).
       screen says "Transposed up 2 semitones."; Verovio engraves the score in the new key. Left: the
       shift is not remembered between visits; at ±6 semitones the song's key becomes F♯ where
       Verovio engraves G♭, so with "as the key" the falling notes and the score spell it differently.
-- [ ] **P5-05** (APP, PRAC) Sight-reading drills (the "Speed" and "Infinite" ideas): random notes or
-      generated phrases on a staff, with clef, key signature, letters on/off and a speed readout. Works
-      with MIDI, microphone and the on-screen keyboard through the usual `NoteEvent` stream. Material is
-      generated in code, so it is CC0 by construction. Needs an ADR for the generator and the scoring.
+- [~] **P5-05** (APP, PRAC) Sight-reading drills (the "Speed" and "Infinite" ideas): random notes or
+  generated phrases on a staff, with clef, key signature, letters on/off and a speed readout. Works
+  with MIDI, microphone and the on-screen keyboard through the usual `NoteEvent` stream. Material is
+  generated in code, so it is CC0 by construction. Needs an ADR for the generator and the scoring.
+  Done: ADR 0015 (proposed); a "Sight-reading" page (clef, key, range, single notes or phrases, note
+  names under the notes, the key to press, endless); drills open in the practice screen with no
+  falling notes or lit keys, and end with notes a minute and the share right at the first try.
+  Left: the maintainer's decision on ADR 0015; rhythm reading and accidentals beyond the key.
 - [ ] **P5-06** (APP) Free play with recording and listen-back, using the existing sampler and the
       performance recorder. Saving the recording as a MIDI file for the user's own device needs an
       ADR first (guardrail 1: the only export is the encrypted backup; ADR 0010 limits WAV files to

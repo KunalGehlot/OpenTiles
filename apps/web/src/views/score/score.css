@@ -30,6 +30,17 @@
   flex: 0 0 clamp(230px, 32vh, 320px);
 }
 
+/* A sight-reading drill (P5-05): the score is what is read, so it takes the room and the canvas
+   keeps the keyboard and space for the after-run summary. */
+.ot-score-panel.ot-score-panel--main {
+  flex: 1 1 auto;
+  justify-content: center;
+}
+
+.ot-score-panel--main ~ .practice-canvas-wrap {
+  flex: 0 0 clamp(230px, 30vh, 300px);
+}
+
 .ot-score-host {
   position: relative;
   overflow-x: hidden;

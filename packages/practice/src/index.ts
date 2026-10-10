@@ -69,3 +69,14 @@ export type {
 } from './performance';
 export { LiveTally, NO_LIVE_STATS } from './live-stats';
 export type { LiveStats } from './live-stats';
+export {
+  DRILL_DEFAULTS,
+  drillId,
+  generateDrill,
+  normaliseDrillOptions,
+  parseDrillId,
+  seededRandom,
+  stepXml,
+  stepPitch,
+} from './drills';
+export type { Drill, DrillClef, DrillKind, DrillNote, DrillOptions } from './drills';

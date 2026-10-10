@@ -223,6 +223,16 @@ late good; wait mode: right at the first try is perfect, after a wrong key good)
 position marker from `requestAnimationFrame` (not React), and sets loops and positions only through
 `session.setLoop()` and `session.seek()`, like the loop controls and the canvas drag.
 
+## Sight-reading drills (P5-05, ADR 0015)
+
+`packages/practice/src/drills.ts` generates a drill from its options and a seed and writes it as
+MusicXML. The practice screen loads `#/practice/drill/<options>.<seed>` like any MusicXML piece:
+Verovio engraves the text and `parseMusicXml` makes the `Song` from the same text, so glyphs and
+notes match. Drills show the page view, not the falling notes.
+`PracticeSession.guide` (`full`, `keys`, `none`) decides what the canvas shows: drills hide the
+falling notes and the keys to press unless the learner asks for the keys. Drills add practice time
+(`recordPracticeTime`) but no progress record.
+
 ## Storage
 
 - **Private library:** IndexedDB via Dexie — original file bytes, the parsed `Song`, practice

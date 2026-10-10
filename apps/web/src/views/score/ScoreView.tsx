@@ -23,6 +23,8 @@ interface Props {
   suggested: ReadonlySet<string>;
   notation: Extract<NotationSource, { kind: 'musicxml' | 'abc' }>;
   layout: ScoreLayout;
+  /** The score takes the room the falling notes would (sight-reading drills, P5-05). */
+  main?: boolean;
   /** Playback measure indices to mark after a run (P1-24); empty while practising. */
   hardest: readonly number[];
 }
@@ -31,7 +33,15 @@ interface Props {
 const NEXT_KEYS = new Set(['PageDown', 'ArrowRight', 'Space']);
 const PREVIOUS_KEYS = new Set(['PageUp', 'ArrowLeft']);
 
-export function ScoreView({ session, song, suggested, notation, layout, hardest }: Props) {
+export function ScoreView({
+  session,
+  song,
+  suggested,
+  notation,
+  layout,
+  hardest,
+  main = false,
+}: Props) {
   const hostRef = useRef<HTMLDivElement>(null);
   const stripRef = useRef<HTMLDivElement>(null);
   const cursorRef = useRef<HTMLDivElement>(null);
@@ -122,7 +132,7 @@ export function ScoreView({ session, song, suggested, notation, layout, hardest 
 
   return (
     <section
-      className={`ot-score-panel ${layout}`}
+      className={`ot-score-panel ${layout}${main ? ' ot-score-panel--main' : ''}`}
       aria-label={layout === 'page' ? t('Score, page view') : t('Score, scrolling')}
     >
       {state === 'loading' && <p className="ot-score-status muted">{t('Drawing the score…')}</p>}
