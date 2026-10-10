@@ -13,7 +13,20 @@ export const OPERATOR = {
   postalAddress: '[postal address to be added]',
 } as const;
 
-const UPDATED = '2026-10-07';
+/**
+ * Where the site is served from (ADR 0016). A copy of OpenTiles hosted elsewhere changes this and
+ * the two "Requests to the internet" paragraphs below. Checked against GitHub's own pages on
+ * 2026-10-10: Pages logs and stores visitors' IP addresses for security purposes, and GitHub
+ * complies with the EU-U.S. Data Privacy Framework. The wording waits for the lawyer (P2-18).
+ */
+const HOST = {
+  service: 'GitHub Pages',
+  company: 'GitHub, Inc., 88 Colin P. Kelly Jr. St., San Francisco, CA 94107, USA',
+  privacy:
+    'https://docs.github.com/en/site-policy/privacy-policies/github-general-privacy-statement',
+} as const;
+
+const UPDATED = '2026-10-10';
 
 function LangSwitch({ page, lang }: { page: 'privacy' | 'impressum'; lang: LegalLang }) {
   return (
@@ -38,6 +51,14 @@ function Page({ lang, children }: { lang: LegalLang; children: ReactNode }) {
     <article className="stack prose legal" lang={lang}>
       {children}
     </article>
+  );
+}
+
+function HostPrivacy({ children }: { children: ReactNode }) {
+  return (
+    <a href={HOST.privacy} target="_blank" rel="noopener noreferrer">
+      {children}
+    </a>
   );
 }
 
@@ -85,8 +106,8 @@ function PrivacyEn({ sync }: { sync: boolean }) {
         <li>
           <strong>Settings</strong> (IndexedDB, with a small copy in local storage): language,
           accessibility options, foot-pedal keys, keyboard and fingering choices, whether note names
-          are shown, whether crash reports are on, that you confirmed the import terms, and what you
-          last chose on the practice screen (mode, hands, tempo, metronome).
+          are shown, {sync && 'whether crash reports are on, '}that you confirmed the import terms,
+          and what you last chose on the practice screen (mode, hands, tempo, metronome).
         </li>
         <li>
           <strong>A note in local storage</strong> that you closed the “Add to Home Screen” hint.
@@ -106,11 +127,15 @@ function PrivacyEn({ sync }: { sync: boolean }) {
 
       <h2>Requests to the internet</h2>
       <p>
-        The app loads its own files from the website it is served from. That web host receives the
-        usual technical request data (IP address, time, requested file, browser) to deliver the
-        pages; this is needed to show the website at all (Art. 6(1)(f) GDPR). OpenTiles adds nothing
-        to these requests and loads nothing from other companies: no fonts, scripts or images from
-        third parties.
+        The app loads its own files from the website it is served from. This website is hosted on{' '}
+        {HOST.service}, a service of {HOST.company}. To deliver the pages, GitHub receives the usual
+        technical request data (IP address, time, requested file, browser), and it logs and stores
+        visitors&apos; IP addresses for security purposes. This is needed to show the website at all
+        (Art. 6(1)(f) GDPR). GitHub, Inc. is in the USA and has certified to the EU-U.S. Data
+        Privacy Framework, for which the EU has adopted an adequacy decision (Art. 45 GDPR); see{' '}
+        <HostPrivacy>GitHub&apos;s privacy statement</HostPrivacy>. OpenTiles adds nothing to these
+        requests and loads nothing from other companies: no fonts, scripts or images from third
+        parties.
       </p>
 
       <h2>Backup files</h2>
@@ -119,38 +144,42 @@ function PrivacyEn({ sync }: { sync: boolean }) {
         uploaded anywhere. Without your passphrase nobody can read it, including us.
       </p>
 
-      <h2>Optional sync</h2>
-      {!sync && <p>This copy of OpenTiles has no sync service; nothing is synced.</p>}
-      <p>
-        If you switch sync on, your library is encrypted on your device with a key protected by your
-        passphrase before anything is uploaded. The sync server (hosted in the EU) stores:
-      </p>
-      <ul>
-        <li>your email address, to sign you in and to send sign-in links;</li>
-        <li>
-          encrypted records and their size, version and time of change — it cannot read titles, file
-          names, files, progress or settings;
-        </li>
-        <li>the encrypted (wrapped) copy of your library key;</li>
-        <li>public keys of your passkeys, and when they and your sessions were last used.</li>
-      </ul>
-      <p>
-        It never receives your passphrase, your recovery code or the library key. Your IP address is
-        used only in memory to limit abuse and is not stored. Request logs hold the method, the
-        route pattern, the status and the duration. Legal basis: providing the service you asked for
-        (Art. 6(1)(b) GDPR). Deleting your account in Settings removes the account and every stored
-        record at once; sessions expire 90 days after last use.
-      </p>
+      {sync && (
+        <>
+          <h2>Optional sync</h2>
+          <p>
+            If you switch sync on, your library is encrypted on your device with a key protected by
+            your passphrase before anything is uploaded. The sync server (hosted in the EU) stores:
+          </p>
+          <ul>
+            <li>your email address, to sign you in and to send sign-in links;</li>
+            <li>
+              encrypted records and their size, version and time of change — it cannot read titles,
+              file names, files, progress or settings;
+            </li>
+            <li>the encrypted (wrapped) copy of your library key;</li>
+            <li>public keys of your passkeys, and when they and your sessions were last used.</li>
+          </ul>
+          <p>
+            It never receives your passphrase, your recovery code or the library key. Your IP
+            address is used only in memory to limit abuse and is not stored. Request logs hold the
+            method, the route pattern, the status and the duration. Legal basis: providing the
+            service you asked for (Art. 6(1)(b) GDPR). Deleting your account in Settings removes the
+            account and every stored record at once; sessions expire 90 days after last use.
+          </p>
 
-      <h2>Crash reports (off unless you switch them on)</h2>
-      <p>
-        If you switch on crash reports in Settings, an error that stops the app is sent to the sync
-        server: the error message and a stack trace of the app's code, the app version and a coarse
-        platform such as “iOS / Safari”. Titles, file names, links with ids and email addresses are
-        removed on your device first and again on the server. Reports are not linked to an account
-        or an IP address, are timed to the hour, and are deleted after 30 days. Legal basis: your
-        consent (Art. 6(1)(a) GDPR), which you can withdraw in Settings at any time.
-      </p>
+          <h2>Crash reports (off unless you switch them on)</h2>
+          <p>
+            If you switch on crash reports in Settings, an error that stops the app is sent to the
+            sync server: the error message and a stack trace of the app's code, the app version and
+            a coarse platform such as “iOS / Safari”. Titles, file names, links with ids and email
+            addresses are removed on your device first and again on the server. Reports are not
+            linked to an account or an IP address, are timed to the hour, and are deleted after 30
+            days. Legal basis: your consent (Art. 6(1)(a) GDPR), which you can withdraw in Settings
+            at any time.
+          </p>
+        </>
+      )}
 
       <h2>Your rights</h2>
       <p>
@@ -198,9 +227,9 @@ function PrivacyDe({ sync }: { sync: boolean }) {
         <li>
           <strong>Einstellungen</strong> (IndexedDB, mit einer kleinen Kopie im Local Storage):
           Sprache, Barrierefreiheit, Fußpedal-Tasten, Tastatur- und Fingersatzwahl, ob Notennamen
-          angezeigt werden, ob Absturzberichte eingeschaltet sind, dass du den Importbedingungen
-          zugestimmt hast und was du zuletzt im Übungsbildschirm gewählt hast (Modus, Hände, Tempo,
-          Metronom).
+          angezeigt werden, {sync && 'ob Absturzberichte eingeschaltet sind, '}dass du den
+          Importbedingungen zugestimmt hast und was du zuletzt im Übungsbildschirm gewählt hast
+          (Modus, Hände, Tempo, Metronom).
         </li>
         <li>
           <strong>Ein Vermerk im Local Storage</strong>, dass du den Hinweis „Zum Home-Bildschirm“
@@ -222,11 +251,16 @@ function PrivacyDe({ sync }: { sync: boolean }) {
 
       <h2>Anfragen ins Internet</h2>
       <p>
-        Die App lädt ihre Dateien von der Website, über die sie ausgeliefert wird. Dieser Webhoster
-        erhält dabei die üblichen technischen Daten (IP-Adresse, Zeitpunkt, abgerufene Datei,
-        Browser), um die Seiten auszuliefern; das ist für die Anzeige der Website erforderlich (Art.
-        6 Abs. 1 lit. f DSGVO). OpenTiles fügt diesen Anfragen nichts hinzu und lädt nichts von
-        anderen Unternehmen: keine Schriften, Skripte oder Bilder von Dritten.
+        Die App lädt ihre Dateien von der Website, über die sie ausgeliefert wird. Diese Website
+        wird bei {HOST.service} gehostet, einem Dienst der {HOST.company}. Um die Seiten
+        auszuliefern, erhält GitHub die üblichen technischen Daten (IP-Adresse, Zeitpunkt,
+        abgerufene Datei, Browser) und protokolliert und speichert die IP-Adressen der Besucher aus
+        Sicherheitsgründen. Das ist für die Anzeige der Website erforderlich (Art. 6 Abs. 1 lit. f
+        DSGVO). GitHub, Inc. sitzt in den USA und ist nach dem EU-US Data Privacy Framework
+        zertifiziert, für das ein Angemessenheitsbeschluss der EU besteht (Art. 45 DSGVO); siehe die{' '}
+        <HostPrivacy>Datenschutzerklärung von GitHub</HostPrivacy>. OpenTiles fügt diesen Anfragen
+        nichts hinzu und lädt nichts von anderen Unternehmen: keine Schriften, Skripte oder Bilder
+        von Dritten.
       </p>
 
       <h2>Sicherungsdateien</h2>
@@ -236,49 +270,49 @@ function PrivacyDe({ sync }: { sync: boolean }) {
         niemand lesen, auch wir nicht.
       </p>
 
-      <h2>Optionale Synchronisierung</h2>
-      {!sync && (
-        <p>
-          Diese Ausgabe von OpenTiles hat keinen Synchronisierungsdienst; nichts wird übertragen.
-        </p>
-      )}
-      <p>
-        Wenn du die Synchronisierung einschaltest, wird deine Bibliothek vor jedem Hochladen auf
-        deinem Gerät verschlüsselt, mit einem Schlüssel, den deine Passphrase schützt. Der
-        Synchronisierungsserver (in der EU) speichert:
-      </p>
-      <ul>
-        <li>deine E-Mail-Adresse, für die Anmeldung und zum Versand von Anmeldelinks;</li>
-        <li>
-          verschlüsselte Datensätze mit Größe, Version und Änderungszeit – Titel, Dateinamen,
-          Dateien, Fortschritt und Einstellungen kann er nicht lesen;
-        </li>
-        <li>die verschlüsselte Kopie deines Bibliotheksschlüssels;</li>
-        <li>
-          öffentliche Schlüssel deiner Passkeys und wann diese und deine Sitzungen zuletzt genutzt
-          wurden.
-        </li>
-      </ul>
-      <p>
-        Deine Passphrase, deinen Wiederherstellungscode und den Bibliotheksschlüssel erhält er nie.
-        Deine IP-Adresse wird nur im Arbeitsspeicher zur Missbrauchsabwehr genutzt und nicht
-        gespeichert. Protokolle enthalten Methode, Routenmuster, Status und Dauer einer Anfrage.
-        Rechtsgrundlage: Erbringung des von dir gewünschten Dienstes (Art. 6 Abs. 1 lit. b DSGVO).
-        Wenn du dein Konto in den Einstellungen löschst, werden das Konto und alle gespeicherten
-        Datensätze auf einmal entfernt; Sitzungen laufen 90 Tage nach der letzten Nutzung ab.
-      </p>
+      {sync && (
+        <>
+          <h2>Optionale Synchronisierung</h2>
+          <p>
+            Wenn du die Synchronisierung einschaltest, wird deine Bibliothek vor jedem Hochladen auf
+            deinem Gerät verschlüsselt, mit einem Schlüssel, den deine Passphrase schützt. Der
+            Synchronisierungsserver (in der EU) speichert:
+          </p>
+          <ul>
+            <li>deine E-Mail-Adresse, für die Anmeldung und zum Versand von Anmeldelinks;</li>
+            <li>
+              verschlüsselte Datensätze mit Größe, Version und Änderungszeit – Titel, Dateinamen,
+              Dateien, Fortschritt und Einstellungen kann er nicht lesen;
+            </li>
+            <li>die verschlüsselte Kopie deines Bibliotheksschlüssels;</li>
+            <li>
+              öffentliche Schlüssel deiner Passkeys und wann diese und deine Sitzungen zuletzt
+              genutzt wurden.
+            </li>
+          </ul>
+          <p>
+            Deine Passphrase, deinen Wiederherstellungscode und den Bibliotheksschlüssel erhält er
+            nie. Deine IP-Adresse wird nur im Arbeitsspeicher zur Missbrauchsabwehr genutzt und
+            nicht gespeichert. Protokolle enthalten Methode, Routenmuster, Status und Dauer einer
+            Anfrage. Rechtsgrundlage: Erbringung des von dir gewünschten Dienstes (Art. 6 Abs. 1
+            lit. b DSGVO). Wenn du dein Konto in den Einstellungen löschst, werden das Konto und
+            alle gespeicherten Datensätze auf einmal entfernt; Sitzungen laufen 90 Tage nach der
+            letzten Nutzung ab.
+          </p>
 
-      <h2>Absturzberichte (nur wenn du sie einschaltest)</h2>
-      <p>
-        Wenn du Absturzberichte in den Einstellungen einschaltest, wird ein Fehler, der die App
-        stoppt, an den Synchronisierungsserver gesendet: die Fehlermeldung und ein Stacktrace des
-        App-Codes, die App-Version und eine grobe Plattformangabe wie „iOS / Safari“. Titel,
-        Dateinamen, Links mit Kennungen und E-Mail-Adressen werden vorher auf deinem Gerät und noch
-        einmal auf dem Server entfernt. Berichte werden keinem Konto und keiner IP-Adresse
-        zugeordnet, nur stundengenau datiert und nach 30 Tagen gelöscht. Rechtsgrundlage: deine
-        Einwilligung (Art. 6 Abs. 1 lit. a DSGVO), die du jederzeit in den Einstellungen widerrufen
-        kannst.
-      </p>
+          <h2>Absturzberichte (nur wenn du sie einschaltest)</h2>
+          <p>
+            Wenn du Absturzberichte in den Einstellungen einschaltest, wird ein Fehler, der die App
+            stoppt, an den Synchronisierungsserver gesendet: die Fehlermeldung und ein Stacktrace
+            des App-Codes, die App-Version und eine grobe Plattformangabe wie „iOS / Safari“. Titel,
+            Dateinamen, Links mit Kennungen und E-Mail-Adressen werden vorher auf deinem Gerät und
+            noch einmal auf dem Server entfernt. Berichte werden keinem Konto und keiner IP-Adresse
+            zugeordnet, nur stundengenau datiert und nach 30 Tagen gelöscht. Rechtsgrundlage: deine
+            Einwilligung (Art. 6 Abs. 1 lit. a DSGVO), die du jederzeit in den Einstellungen
+            widerrufen kannst.
+          </p>
+        </>
+      )}
 
       <h2>Deine Rechte</h2>
       <p>

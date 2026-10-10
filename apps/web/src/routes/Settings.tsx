@@ -547,7 +547,8 @@ function CrashReports({
   settings: AppSettings;
   set: (p: Partial<AppSettings>) => void;
 }) {
-  const available = syncServerUrl() !== null;
+  // Reports go to the sync server; a build without one has no crash reports to mention.
+  if (syncServerUrl() === null) return null;
   return (
     <section aria-labelledby="crash-title">
       <h2 id="crash-title">{t('Crash reports')}</h2>
@@ -557,15 +558,11 @@ function CrashReports({
         )}{' '}
         <a href={href({ name: 'privacy', lang: language() })}>{t('Details')}</a>.
       </p>
-      {available ? (
-        <Toggle
-          label={t('Send anonymous crash reports')}
-          checked={settings.crashReports}
-          onChange={(v) => set({ crashReports: v })}
-        />
-      ) : (
-        <p className="muted">{t('This copy of OpenTiles has no server to send reports to.')}</p>
-      )}
+      <Toggle
+        label={t('Send anonymous crash reports')}
+        checked={settings.crashReports}
+        onChange={(v) => set({ crashReports: v })}
+      />
     </section>
   );
 }

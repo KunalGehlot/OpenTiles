@@ -71,9 +71,9 @@ function catalogue(showUnverified: boolean): Plugin {
 
 /**
  * The Content-Security-Policy of the production build, as a <meta> tag so any static host serves
- * it (public/_headers and public/staticwebapp.config.json carry the same policy plus the headers a
- * tag cannot set). The app loads only its own files: no third-party scripts, fonts or images (hard
- * rule 5). connect-src is the app's own origin, plus the sync server's when the build has one
+ * it, GitHub Pages included, which sends no headers of ours (ADR 0016); public/_headers carries the
+ * same policy plus the headers a tag cannot set, for hosts that read it. The app loads only its own
+ * files: no third-party scripts, fonts or images (hard rule 5). connect-src is the app's own origin, plus the sync server's when the build has one
  * (VITE_SYNC_URL, docs/sync.md), so nothing else can be reached even by injected code.
  * 'wasm-unsafe-eval' lets the engine and the score engraver compile WebAssembly, the engraver's
  * notation font is embedded as a data: URL, and inline styles are style="" attributes set by React

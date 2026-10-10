@@ -10,7 +10,8 @@ permissions:
 
 concurrency:
   group: ci-${{ github.ref }}
-  cancel-in-progress: true
+  # A newer push replaces a pull request's run, but never stops a run on main that may be deploying.
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
   engine:
@@ -159,3 +160,43 @@ jobs:
             fi
           done
           exit $missing
+
+  deploy:
+    name: Deploy to GitHub Pages
+    # Only a green main goes live at opentiles.site (ADR 0016): every check above must pass first.
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    needs: [engine, web, e2e, sync-api, licences, catalogue]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    concurrency:
+      group: pages
+      cancel-in-progress: false
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: wasm32-unknown-unknown
+      - uses: Swatinem/rust-cache@v2
+      - run: pnpm install --frozen-lockfile
+      # The public build: verified catalogue pieces only, no sync server, so no crash reports either
+      # (VITE_SHOW_UNVERIFIED and VITE_SYNC_URL stay unset).
+      - run: pnpm --filter "@opentiles/web..." build
+      - run: test -s packages/engine/dist/engine.wasm && test -s packages/engine/dist/engine-simd.wasm
+      # Source maps stay out of the site: the code is in this repository, and they triple its size.
+      - run: find apps/web/dist -name '*.map' -delete
+      - uses: actions/upload-pages-artifact@v5
+        with:
+          path: apps/web/dist
+      - id: deployment
+        uses: actions/deploy-pages@v5

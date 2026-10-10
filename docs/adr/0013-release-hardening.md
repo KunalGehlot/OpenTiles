@@ -42,6 +42,8 @@ no limits on archive sizes, no error boundary, and saved settings only to Indexe
 The sync server is chosen when the app is built (`VITE_SYNC_URL`), not by the learner at runtime,
 so `connect-src` no longer allows every `https:` and `wss:` host. It is `'self'`, plus the sync
 server's origin when the build has one (`contentSecurityPolicy()` in `apps/web/vite.config.ts`).
-Injected code could otherwise send data to any host; now the browser refuses. The header files
-(`public/_headers`, the Azure `staticwebapp.config.json`) say `'self'` and must gain the sync
-origin in a build that has one, since the stricter of the header and the tag wins.
+Injected code could otherwise send data to any host; now the browser refuses. `public/_headers`
+says `'self'` and must gain the sync origin in a build that has one, since the stricter of the
+header and the tag wins. On GitHub Pages, which sends none of these headers (ADR 0016), the tag is
+the whole policy, and the app refuses to run inside a frame instead of relying on
+`frame-ancestors`.

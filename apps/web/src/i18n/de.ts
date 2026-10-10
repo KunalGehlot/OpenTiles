@@ -14,6 +14,8 @@ export const de: Readonly<Record<string, string>> = {
   Privacy: 'Datenschutz',
   'Free and open source · no tracking · no cookies':
     'Frei und quelloffen · kein Tracking · keine Cookies',
+  'OpenTiles opens in its own tab.': 'OpenTiles öffnet sich in einem eigenen Tab.',
+  'Open OpenTiles': 'OpenTiles öffnen',
   // Home and catalogue
   'First steps': 'Erste Schritte',
   Beginner: 'Anfänger',
@@ -331,8 +333,6 @@ export const de: Readonly<Record<string, string>> = {
     'Aus, solange du sie nicht einschaltest. Wenn sie an sind, sendet ein Fehler, der die App stoppt, die Fehlermeldung und die Stelle im Code der App. Titel, Dateinamen, Links und E-Mail-Adressen werden vorher entfernt, und Berichte werden nicht mit dir verknüpft.',
   Details: 'Details',
   'Send anonymous crash reports': 'Anonyme Absturzberichte senden',
-  'This copy of OpenTiles has no server to send reports to.':
-    'Diese Kopie von OpenTiles hat keinen Server, an den sie Berichte senden könnte.',
   // Loop and phrases
   'Loop a section': 'Abschnitt in Schleife üben',
   'Loop bars': 'Takte in Schleife',

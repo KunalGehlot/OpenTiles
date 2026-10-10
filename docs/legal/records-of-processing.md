@@ -25,16 +25,16 @@ completeness, not as processing activities:
 
 ## 1. Delivering the web app (static hosting)
 
-| Item               | Entry                                                                          |
-| ------------------ | ------------------------------------------------------------------------------ |
-| Purpose            | Serve the app's files to the browser                                           |
-| Legal basis        | Art. 6(1)(f) GDPR, legitimate interest in running the website                  |
-| Data subjects      | Visitors                                                                       |
-| Data               | IP address, time, requested file, user agent, referrer (web-server access log) |
-| Recipients         | The static web host (processor; data processing agreement to be signed)        |
-| Third countries    | None intended; choose an EU host                                               |
-| Retention          | Host access logs: at most 7 days, or the host's shortest setting               |
-| Technical measures | HTTPS only; no cookies; no third-party requests from the app                   |
+| Item               | Entry                                                                                                                                                                                                                                                                      |
+| ------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Purpose            | Serve the app's files to the browser                                                                                                                                                                                                                                       |
+| Legal basis        | Art. 6(1)(f) GDPR, legitimate interest in running the website                                                                                                                                                                                                              |
+| Data subjects      | Visitors                                                                                                                                                                                                                                                                   |
+| Data               | IP address, time, requested file, user agent, referrer (web-server access log)                                                                                                                                                                                             |
+| Recipients         | GitHub, Inc. (GitHub Pages, ADR 0016). GitHub logs and stores visitors' IP addresses for security purposes; whether it acts as processor or as a separate controller for this, and which data processing terms apply to a personal account, is open for the lawyer (P2-18) |
+| Third countries    | USA (GitHub, Inc.), under the EU-U.S. Data Privacy Framework adequacy decision (Art. 45 GDPR); GitHub's CDN serves from locations worldwide                                                                                                                                |
+| Retention          | Set by GitHub; Pages has no setting for it                                                                                                                                                                                                                                 |
+| Technical measures | HTTPS only; no cookies; no third-party requests from the app                                                                                                                                                                                                               |
 
 ## 2. Optional encrypted sync (P3-03)
 

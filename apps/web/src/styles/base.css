@@ -30,6 +30,12 @@ body {
   overflow-wrap: break-word;
 }
 
+/* Shown instead of the app inside another page's frame (main.tsx). */
+.framed {
+  margin: 0;
+  padding: var(--space-4);
+}
+
 /* ---- Type ---- */
 
 h1,
