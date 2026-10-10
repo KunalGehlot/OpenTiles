@@ -1,7 +1,7 @@
 import { existsSync, readFileSync, statSync } from 'node:fs';
 import { extname, join, resolve } from 'node:path';
 import react from '@vitejs/plugin-react';
-import { defineConfig } from 'vite';
+import { defineConfig, loadEnv } from 'vite';
 import type { Plugin } from 'vite';
 import { VitePWA } from 'vite-plugin-pwa';
 
@@ -71,37 +71,46 @@ function catalogue(showUnverified: boolean): Plugin {
 
 /**
  * The Content-Security-Policy of the production build, as a <meta> tag so any static host serves
- * it (public/_headers carries the same policy plus the headers a tag cannot set). The app loads
- * only its own files: no third-party scripts, fonts or images (hard rule 5). `https:` and `wss:`
- * in connect-src are for the sync server a learner may choose to connect (docs/sync.md); nothing
- * connects anywhere by default. 'wasm-unsafe-eval' lets the engine and the score engraver
- * compile WebAssembly, the engraver's notation font is embedded as a data: URL, and inline styles are
- * style="" attributes set by React and the canvas views.
+ * it (public/_headers and public/staticwebapp.config.json carry the same policy plus the headers a
+ * tag cannot set). The app loads only its own files: no third-party scripts, fonts or images (hard
+ * rule 5). connect-src is the app's own origin, plus the sync server's when the build has one
+ * (VITE_SYNC_URL, docs/sync.md), so nothing else can be reached even by injected code.
+ * 'wasm-unsafe-eval' lets the engine and the score engraver compile WebAssembly, the engraver's
+ * notation font is embedded as a data: URL, and inline styles are style="" attributes set by React
+ * and the canvas views.
  * Not applied in development, where Vite injects inline scripts.
  */
-export const CONTENT_SECURITY_POLICY = [
-  "default-src 'self'",
-  "script-src 'self' 'wasm-unsafe-eval'",
-  "style-src 'self' 'unsafe-inline'",
-  "img-src 'self' data: blob:",
-  "media-src 'self' blob:",
-  "font-src 'self' data:",
-  "connect-src 'self' https: wss:",
-  "worker-src 'self' blob:",
-  "manifest-src 'self'",
-  "object-src 'none'",
-  "base-uri 'self'",
-  "form-action 'self'",
-].join('; ');
+export function contentSecurityPolicy(syncUrl?: string): string {
+  let sync = '';
+  try {
+    if (syncUrl?.trim()) sync = ` ${new URL(syncUrl.trim()).origin}`;
+  } catch {
+    // Not a URL: the app has no sync then either (src/sync/config.ts).
+  }
+  return [
+    "default-src 'self'",
+    "script-src 'self' 'wasm-unsafe-eval'",
+    "style-src 'self' 'unsafe-inline'",
+    "img-src 'self' data: blob:",
+    "media-src 'self' blob:",
+    "font-src 'self' data:",
+    `connect-src 'self'${sync}`,
+    "worker-src 'self' blob:",
+    "manifest-src 'self'",
+    "object-src 'none'",
+    "base-uri 'self'",
+    "form-action 'self'",
+  ].join('; ');
+}
 
-function securityMeta(): Plugin {
+function securityMeta(policy: string): Plugin {
   return {
     name: 'opentiles-csp',
     apply: 'build',
     transformIndexHtml: () => [
       {
         tag: 'meta',
-        attrs: { 'http-equiv': 'Content-Security-Policy', content: CONTENT_SECURITY_POLICY },
+        attrs: { 'http-equiv': 'Content-Security-Policy', content: policy },
         injectTo: 'head-prepend',
       },
       { tag: 'meta', attrs: { name: 'referrer', content: 'no-referrer' }, injectTo: 'head' },
@@ -167,7 +176,7 @@ export default defineConfig(({ mode }) => ({
   base: './',
   plugins: [
     react(),
-    securityMeta(),
+    securityMeta(contentSecurityPolicy(loadEnv(mode, import.meta.dirname, 'VITE_').VITE_SYNC_URL)),
     catalogue(mode === 'development' || process.env.VITE_SHOW_UNVERIFIED === '1'),
     pwa(),
   ],

@@ -392,9 +392,16 @@ images, sounds or fonts, and credit the inspiration in [CREDITS.md](CREDITS.md).
       moves with the arrow keys). It uses the session's own loop and seek, so the loop controls,
       the canvas drag and the strip always agree. Hidden in short landscape windows.
 - [ ] **P5-08** (APP) Library preview before opening and collections. Not selected for this round.
-- [ ] **P5-09** (APP) Smoothness pass, reviewed together in the maintainer's dark-mode Chrome: home to
-      playing in two clicks, one transport bar, route and panel transitions, 44 px touch targets on
-      coarse pointers, a manual light/dark switch, a refreshed logo, Detector Lab polish.
+- [~] **P5-09** (APP) Smoothness pass, reviewed together in the maintainer's dark-mode Chrome: home to
+  playing in two clicks, one transport bar, route and panel transitions, 44 px touch targets on
+  coarse pointers, a manual light/dark switch, a refreshed logo, Detector Lab polish.
+  Done (2026-10-10, from the maintainer's report): after a run the position glides back to
+  the start the way a drag of the score moves it (the score, the play bar and the falling
+  notes together; it used to slide the score alone and then jump), and the first note waits
+  under the play bar from the start, so Play no longer jumps; under Reduce motion it jumps
+  straight back. Every key press, and every note the piece plays in listen and play-along,
+  dips its key for a moment, so a repeated note shows as a new press while the key stays lit.
+  Left: everything else on the list, and checking both changes in the maintainer's Chrome.
 - [ ] **P5-10** (human) Release gate: frame time on an older iPad, a MIDI keyboard on an iPad through
       the iPad app (Safari has no Web MIDI; Firefox confirmed working 2026-10-09), postal address in the Impressum, legal consultation (P2-18), domain and trademark, a
       native German read-through, README screenshots from CC0 pieces only.
@@ -426,6 +433,10 @@ Record the outcome as an ADR in `docs/adr/` and tick it here.
 - [x] Engine exposes a plain C ABI instead of wasm-bindgen glue — ADR 0002.
 
 ## Changelog
+
+- **2026-10-10** — P5-09 started: the return to the start after a run moves like a drag of the
+  score, repeated notes show on the keys, and the Content-Security-Policy allows connections only
+  to the app's own origin (and the sync server, when a build has one; ADR 0013 amended).
 
 - **2026-10-10** — The UI redesign and release pass (PR #1, P4-10…P4-19) and the Phase 5 work so
   far (P5-02 wake lock, P5-03 note names, P5-04 transpose, P5-07 live stats and overview, P5-05
