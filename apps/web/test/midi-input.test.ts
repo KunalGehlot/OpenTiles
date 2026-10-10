@@ -1,5 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { NoteEvent } from '@opentiles/practice';
+import type { MidiKeyboardInput } from '../src/input/midi-input';
 
 // A Web MIDI stand-in built on EventTarget, so listeners behave as in a browser.
 class FakeInput extends EventTarget {
@@ -115,6 +116,19 @@ describe('Web MIDI input (P5-12)', () => {
     expect(names.at(-1)).toEqual(['Test Keyboard', 'Second Keyboard']);
   });
 
+  it('asks again while a request is still waiting on the prompt, then keeps one access', async () => {
+    // The first request waits on a permission prompt the learner never sees; pressing Connect
+    // again must ask again (so the browser shows its prompt again), not wait on the old request.
+    requestMIDIAccess.mockReturnValueOnce(new Promise(() => {}));
+    const { MidiInput } = await load();
+    void new MidiInput().start();
+    const input = new MidiInput();
+    await input.start();
+    await new MidiInput().start();
+    expect(requestMIDIAccess).toHaveBeenCalledTimes(2);
+    expect(input.deviceNames).toEqual(['Test Keyboard']);
+  });
+
   it('asks again after a refusal, so allowing MIDI later works', async () => {
     requestMIDIAccess.mockRejectedValueOnce(new DOMException('no', 'NotAllowedError'));
     const { MidiInput } = await load();
@@ -123,5 +137,47 @@ describe('Web MIDI input (P5-12)', () => {
     await input.start();
     expect(requestMIDIAccess).toHaveBeenCalledTimes(2);
     expect(input.deviceNames).toEqual(['Test Keyboard']);
+  });
+});
+
+describe('waiting on the browser’s MIDI prompt', () => {
+  beforeEach(() => vi.useFakeTimers());
+  afterEach(() => vi.useRealTimers());
+
+  const fakeInput = (start: () => Promise<void>) => ({ start }) as unknown as MidiKeyboardInput;
+
+  it('says where the prompt is when the browser has not answered after a moment', async () => {
+    const { startMidiInput } = await load();
+    let answer = () => {};
+    const waiting = vi.fn();
+    const started = startMidiInput(
+      fakeInput(() => new Promise<void>((resolve) => (answer = resolve))),
+      waiting,
+    );
+    await vi.advanceTimersByTimeAsync(1000);
+    expect(waiting).toHaveBeenCalledTimes(1);
+    answer();
+    await started;
+  });
+
+  it('says nothing when access comes at once', async () => {
+    const { startMidiInput } = await load();
+    const waiting = vi.fn();
+    await startMidiInput(
+      fakeInput(async () => {}),
+      waiting,
+    );
+    await vi.advanceTimersByTimeAsync(2000);
+    expect(waiting).not.toHaveBeenCalled();
+  });
+
+  it('names Firefox’s add-on prompt in Firefox and the Allow button elsewhere', async () => {
+    const { midiWaitingMessage } = await load();
+    expect(midiWaitingMessage('Mozilla/5.0 (Macintosh) Gecko/20100101 Firefox/157.0')).toContain(
+      'add-on',
+    );
+    expect(midiWaitingMessage('Mozilla/5.0 (Macintosh) Chrome/154.0.0.0 Safari/537.36')).toContain(
+      'Allow',
+    );
   });
 });

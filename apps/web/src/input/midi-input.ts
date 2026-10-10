@@ -108,7 +108,7 @@ export function describeMidiError(error: unknown, userAgent: string): string {
           'Firefox did not give this page access to MIDI. Firefox only sees keyboards that were connected and switched on when it started: connect the keyboard, quit Firefox completely and open it again, then click “Connect MIDI keyboard” and allow access. On a website (not localhost) Firefox also asks to add a small “site permission” add-on: accept it. If you declined before, allow MIDI again under Settings → Privacy & Security → Permissions.',
         )
       : t(
-          'The browser did not allow MIDI for this page. Allow MIDI devices for this site in the browser settings, then try again.',
+          'The browser did not allow MIDI for this site. Click the icon at the left of the address bar, allow MIDI devices (Chrome lists them under Site settings), then press Connect again.',
         );
   }
   if (name === 'NotSupportedError') {
@@ -119,23 +119,54 @@ export function describeMidiError(error: unknown, userAgent: string): string {
   return error instanceof Error ? t(error.message) : String(error);
 }
 
-let sharedAccess: Promise<MIDIAccess> | null = null;
+let granted: MIDIAccess | null = null;
+// Every access the browser ever handed out, kept so none of them (or their ports) is collected.
+const kept: MIDIAccess[] = [];
 
 /**
- * The page's one MIDIAccess, requested on first use and kept until the page closes. Firefox gives
- * every requestMIDIAccess() its own port objects but closes a device by its id when any of them is
- * garbage-collected (midirMIDIPlatformService::ScheduleClose), which silences the others; and when
- * the last access is gone it stops its MIDI service, whose CoreMIDI client on a Mac may then not
- * be created again until Firefox restarts (Apple's MIDIClientDispose note). Each screen used to
- * request its own access and drop it on leaving, so the keyboard fell silent and then went
- * missing. A refusal is not kept, so allowing MIDI later and trying again works.
+ * The page's one MIDIAccess, kept until the page closes. Firefox gives every requestMIDIAccess()
+ * its own port objects but closes a device by its id when any of them is garbage-collected
+ * (midirMIDIPlatformService::ScheduleClose), which silences the others; and when the last access
+ * is gone it stops its MIDI service, whose CoreMIDI client on a Mac may then not be created again
+ * until Firefox restarts (Apple's MIDIClientDispose note). So once access is granted every screen
+ * shares it. Until then each call asks again: Chrome and Firefox show a permission prompt that is
+ * easy to miss, and a request still waiting on it would never settle, so pressing Connect again
+ * must show the prompt again rather than wait on the old request. A refusal is not kept either.
  */
-export function midiAccess(): Promise<MIDIAccess> {
-  sharedAccess ??= navigator.requestMIDIAccess().catch((error: unknown) => {
-    sharedAccess = null;
-    throw error;
-  });
-  return sharedAccess;
+export async function midiAccess(): Promise<MIDIAccess> {
+  if (granted) return granted;
+  const access = await navigator.requestMIDIAccess();
+  kept.push(access);
+  granted ??= access;
+  return granted;
+}
+
+/**
+ * Starts a MIDI input, and calls `onWaiting` if the browser has not answered after a moment: it is
+ * then showing its permission prompt, and nothing happens until the learner answers it.
+ */
+export async function startMidiInput(
+  input: MidiKeyboardInput,
+  onWaiting: () => void,
+  delayMs = 800,
+): Promise<void> {
+  const timer = setTimeout(onWaiting, delayMs);
+  try {
+    await input.start();
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
+/** Where to find the browser's MIDI permission prompt, for while a request is waiting on it. */
+export function midiWaitingMessage(userAgent: string): string {
+  return /Firefox\//.test(userAgent)
+    ? t(
+        'Firefox is asking whether this site may use MIDI devices (on a website it offers a small “site permission” add-on). Accept it in the box by the address bar. If you don’t see the box, click the icon at the left of the address bar.',
+      )
+    : t(
+        'Your browser is asking whether this site may use MIDI devices. Choose Allow in the box by the address bar. If you closed it, press Connect again, or click the icon at the left of the address bar and allow MIDI devices.',
+      );
 }
 
 /** The MIDI input for this platform: CoreMIDI in the iPad app, Web MIDI everywhere else. */

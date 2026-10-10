@@ -30,8 +30,10 @@ import {
   midiSupported,
   midiUnavailableMessage,
   midiUnavailableReason,
+  midiWaitingMessage,
   noKeyboardMessage,
   pickOutput,
+  startMidiInput,
 } from '../input/midi-input';
 import type { MidiKeyboardInput } from '../input/midi-input';
 import { labelStyleFor, noteLabel } from '../lib/notes';
@@ -267,10 +269,12 @@ function MidiSection({
   const [outputs, setOutputs] = useState<string[]>([]);
   const [lastNote, setLastNote] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [waiting, setWaiting] = useState(false);
   useEffect(() => () => input?.stop(), [input]);
 
   const test = async () => {
     setError(null);
+    setWaiting(false);
     try {
       const next = createMidiInput();
       next.onNote = (e) => setLastNote(`${noteLabel(e.pitch)} (${e.velocity ?? 0})`);
@@ -278,7 +282,7 @@ function MidiSection({
         setDevices(names);
         setOutputs(next.outputNames);
       };
-      await next.start();
+      await startMidiInput(next, () => setWaiting(true)).finally(() => setWaiting(false));
       setInput(next);
       setDevices(next.deviceNames);
       setOutputs(next.outputNames);
@@ -366,6 +370,11 @@ function MidiSection({
                 ))}
               </select>
             </Setting>
+          )}
+          {waiting && (
+            <p className="hint" role="status" data-testid="midi-waiting">
+              {midiWaitingMessage(navigator.userAgent)}
+            </p>
           )}
           {error && <p className="error">{error}</p>}
         </>

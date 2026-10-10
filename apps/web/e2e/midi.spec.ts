@@ -5,8 +5,8 @@ import type { Page } from '@playwright/test';
 // navigator.requestMIDIAccess with one input and one output called "Test Keyboard". Notes are
 // "played" with window.__midiPress, everything the app sends is kept in window.__midiSent, and
 // window.__midiRequests counts the requests for access.
-async function fakeKeyboard(page: Page) {
-  await page.addInitScript(() => {
+async function fakeKeyboard(page: Page, { firstRequestHangs = false } = {}) {
+  await page.addInitScript((hangs: boolean) => {
     const w = window as unknown as {
       __midiSent: number[][];
       __midiPress: (pitch: number) => void;
@@ -43,13 +43,15 @@ async function fakeKeyboard(page: Page) {
       configurable: true,
       value: async () => {
         w.__midiRequests += 1;
+        // Like a permission prompt the learner never answers.
+        if (hangs && w.__midiRequests === 1) await new Promise(() => {});
         return Object.assign(new EventTarget(), {
           inputs: new Map([['in', input]]),
           outputs: new Map([['out', output]]),
         });
       },
     });
-  });
+  }, firstRequestHangs);
 }
 
 const sent = (page: Page) =>
@@ -137,4 +139,17 @@ test('one MIDI connection serves every screen, so the keyboard stays after movin
   expect(
     await page.evaluate(() => (window as unknown as { __midiRequests: number }).__midiRequests),
   ).toBe(1);
+});
+
+// Chrome and Firefox ask before giving a page MIDI, and nothing happens until the learner answers.
+test('a MIDI request waiting on the browser says where to allow it, and Connect asks again', async ({
+  page,
+}) => {
+  await fakeKeyboard(page, { firstRequestHangs: true });
+  await page.goto('./#/practice/catalogue/ode-to-joy');
+  await page.getByRole('button', { name: 'Connect MIDI keyboard' }).click();
+  await expect(page.getByTestId('midi-waiting')).toContainText('address bar');
+  await page.getByRole('button', { name: 'Waiting for the browser…' }).click();
+  await expect(page.getByText('MIDI: Test Keyboard')).toBeVisible();
+  await expect(page.getByTestId('midi-waiting')).toHaveCount(0);
 });

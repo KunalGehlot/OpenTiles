@@ -27,6 +27,8 @@ import {
   noKeyboardMessage,
   midiUnavailableMessage,
   midiUnavailableReason,
+  midiWaitingMessage,
+  startMidiInput,
 } from '../input/midi-input';
 import type { MidiKeyboardInput } from '../input/midi-input';
 import type { MicInput } from '../input/mic-input';
@@ -230,6 +232,7 @@ function PracticeView({
   const [mic, setMic] = useState<MicInput | null>(null);
   const [inputError, setInputError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const [midiWaiting, setMidiWaiting] = useState(false);
   const [showLoop, setShowLoop] = useState(false);
   const [midiCalibrating, setMidiCalibrating] = useState(false);
   const [micCalibrating, setMicCalibrating] = useState<MicInput | null>(null);
@@ -449,12 +452,14 @@ function PracticeView({
 
   const connectMidi = async () => {
     setInputError(null);
+    setMidiWaiting(false);
     try {
       const input = createMidiInput();
       input.onNote = (e) => session.input(e);
       input.onRelease = (p, time) => session.release(p, time);
       input.onDevicesChanged = (devices) => setMidi((m) => (m ? { ...m, devices } : m));
-      await input.start();
+      // The browser's permission prompt is easy to miss, and nothing happens until it is answered.
+      await startMidiInput(input, () => setMidiWaiting(true)).finally(() => setMidiWaiting(false));
       setMidi({ input, devices: input.deviceNames });
       if (input.deviceNames.length === 0) setInputError(noKeyboardMessage(navigator.userAgent));
       await applyMidiCalibration(input.deviceNames);
@@ -568,9 +573,11 @@ function PracticeView({
                 </button>
               </>
             ) : (
-              <button onClick={() => void connectMidi()}>
+              <button aria-busy={midiWaiting} onClick={() => void connectMidi()}>
                 <Piano />
-                <span className="btn-label">{t('Connect MIDI keyboard')}</span>
+                <span className="btn-label">
+                  {midiWaiting ? t('Waiting for the browser…') : t('Connect MIDI keyboard')}
+                </span>
               </button>
             )
           ) : (
@@ -862,6 +869,11 @@ function PracticeView({
         </span>
         {liveStats && <LiveStatsStrip stats={status.live} mode={mode} />}
         {inputError && <span className="error">{inputError}</span>}
+        {midiWaiting && (
+          <span className="hint" role="status" data-testid="midi-waiting">
+            {midiWaitingMessage(navigator.userAgent)}
+          </span>
+        )}
         <div className="session-status__view">
           {!drill && <ViewToggle view={view} onChange={setView} notation={shownNotation} />}
         </div>
