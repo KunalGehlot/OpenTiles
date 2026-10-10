@@ -69,7 +69,7 @@ Bluetooth keyboards and speakers add delay; a wired connection is the most exact
 ### The microphone misses notes or hears notes that I did not play.
 
 Run **Set up microphone** for your room, keep the device close to the piano and keep the room quiet.
-Make sure the app's own sound is off while you play. If it still struggles, please report it with
+Do not use **Listen** mode or **Play other hand** at the same time, because the microphone would hear the app instead of the piano. If it still struggles, please report it with
 your device, browser and piano type.
 
 ### Can I turn pages with a foot pedal?
