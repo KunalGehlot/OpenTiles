@@ -67,11 +67,13 @@ export class ScoreController {
   private coasting = false;
   /** The learner moved the score; following resumes with an ease once playing goes on. */
   private free = false;
-  private homing = false;
+  /** The scrolling view has put the first note under the play bar (once the score is measured). */
+  private placed = false;
   /** A drag (or its coasting) is scrubbing through the piece: the beat under the play bar wins. */
   private scrubbed = false;
   private wheelTimer = 0;
-  private endedAt = 0;
+  /** The session's way back to the start after a run has been seen (see watchEnd). */
+  private returned = false;
   private lastTime = 0;
   /** Beats at which a note starts or ends, sorted: the colours change only when one is passed. */
   private readonly boundaries: number[];
@@ -351,13 +353,12 @@ export class ScoreController {
   private followCursor(beat: number, now: number): void {
     const dt = this.lastTime ? Math.min(0.1, now - this.lastTime) : 0;
     this.lastTime = now;
-    this.watchEnd(now);
+    this.watchEnd();
     // Page view: turn to the page the cursor is on whenever it moves to another page. After a run
-    // the score goes back to the first page (watchEnd).
-    if (this.layout === 'page' && !this.homing) {
-      const m = this.song.measures.findLast((x) => x.startBeat <= beat + 1e-6);
-      const page = m ? this.measurePage.get(m.sourceIndex) : undefined;
-      if (page !== undefined && page !== this.cursorPage && !this.session.runEnded) {
+    // the score turns straight to the page the run starts on (watchEnd).
+    if (this.layout === 'page' && !this.session.runEnded) {
+      const page = this.pageAt(beat);
+      if (page !== undefined && page !== this.cursorPage) {
         this.cursorPage = page;
         if (page !== this.shown) this.showPage(page);
       }
@@ -373,14 +374,25 @@ export class ScoreController {
     this.lastBeat = beat;
   }
 
+  private pageAt(beat: number): number | undefined {
+    const m = this.song.measures.findLast((x) => x.startBeat <= beat + 1e-6);
+    return m ? this.measurePage.get(m.sourceIndex) : undefined;
+  }
+
   /**
    * The scrolling view: the play bar stays in the middle (the strip is padded by half a view on
    * each side) and the score moves past it. A drag takes over; letting go coasts, and once playing
-   * goes on the score eases back to the bar without a jump.
+   * goes on the score eases back to the bar without a jump. After a run the session glides `beat`
+   * back to the start and the score follows it, just as it follows a drag.
    */
   private scrollStep(cursorX: number | null, beat: number, dt: number): void {
     const target =
       cursorX === null ? null : this.clampScroll(cursorX - this.host.clientWidth * 0.5);
+    if (!this.placed && target !== null && !this.drag?.active) {
+      // The first note starts under the play bar, where Play and the first key would put it.
+      this.placed = true;
+      this.scrollPos = target;
+    }
     if (this.drag?.active) {
       // The pointer owns the position.
     } else if (this.coasting) {
@@ -391,13 +403,7 @@ export class ScoreController {
         this.coasting = false;
         this.endScrub();
       }
-    } else if (this.homing) {
-      this.scrollPos += (0 - this.scrollPos) * (1 - Math.exp(-dt * 7));
-      if (this.scrollPos < 0.5) {
-        this.scrollPos = 0;
-        this.homing = false;
-      }
-    } else if (target !== null && !this.session.runEnded) {
+    } else if (target !== null && (!this.session.runEnded || this.session.returning)) {
       const moving = this.session.playing || Math.abs(beat - this.lastBeat) > 1e-4;
       if (moving && !this.free) this.scrollPos = target;
       else if (moving) {
@@ -427,7 +433,6 @@ export class ScoreController {
   private startScrub(): void {
     this.scrubbed = true;
     this.session.scrubbing = true;
-    this.homing = false;
     this.free = false;
   }
 
@@ -442,22 +447,24 @@ export class ScoreController {
     return Math.min(max, Math.max(0, x));
   }
 
-  /** A second after the last note the score goes back to the start (page view: page 1). */
-  private watchEnd(now: number): void {
-    if (!this.session.runEnded) {
-      this.endedAt = 0;
+  /**
+   * A moment after the last note the session takes the position back to the start. The scrolling
+   * view follows it like a drag (scrollStep); the page view turns straight to the start's page
+   * rather than flicking through every page on the way.
+   */
+  private watchEnd(): void {
+    if (!this.session.returning) {
+      this.returned = false;
       return;
     }
-    if (this.endedAt === 0) this.endedAt = now;
-    if (now - this.endedAt < 1 || this.endedAt < 0) return;
-    this.endedAt = -1;
+    if (this.returned) return;
+    this.returned = true;
     this.free = false;
+    this.coasting = false;
     if (this.layout === 'page') {
-      this.cursorPage = 1;
-      if (this.shown !== 1) this.showPage(1);
-    } else {
-      this.coasting = false;
-      this.homing = true;
+      const page = this.pageAt(this.session.homeBeat) ?? 1;
+      this.cursorPage = page;
+      if (this.shown !== page) this.showPage(page);
     }
   }
 

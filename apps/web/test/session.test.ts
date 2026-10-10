@@ -381,6 +381,108 @@ describe('scrubbing (P4-18)', () => {
   });
 });
 
+describe('after a run (P5-09)', () => {
+  /** Runs `seconds` of frames and returns the beat after each one. */
+  const trace = (h: ReturnType<typeof setup>, seconds: number) => {
+    const beats: number[] = [];
+    const end = h.clock.t + seconds;
+    while (h.clock.t < end) {
+      h.run(1 / 60);
+      beats.push(h.session.beat);
+    }
+    return beats;
+  };
+
+  it('glides back to the start as a drag would, keeping the result', () => {
+    const h = setup();
+    h.session.setMode('play-along');
+    h.session.start();
+    h.run(1.5 + 8 + 0.4); // lead-in, 16 beats, a moment after the last note
+    expect(h.session.status().finished).toBe(true);
+    const last = h.session.beat;
+    expect(last).toBeGreaterThan(15);
+    const beats = trace(h, 3);
+    // It rests on the last note for a moment, then moves back without a jump and lands on the start.
+    expect(beats.slice(0, 30).every((b) => b === last)).toBe(true);
+    const steps = beats.slice(1).map((b, i) => b - (beats[i] as number));
+    expect(steps.every((d) => d <= 1e-9)).toBe(true);
+    expect(Math.max(...steps.map((d) => -d))).toBeLessThan(1);
+    expect(steps.filter((d) => d < -1e-6).length).toBeGreaterThan(30);
+    expect(beats.at(-1)).toBe(0);
+    // The run's result stays on screen while the position goes home.
+    expect(h.session.returning).toBe(true);
+    expect(h.session.status().finished).toBe(true);
+  });
+
+  it('jumps straight back under Reduce motion', () => {
+    const h = setup();
+    h.session.glideHome = false;
+    h.session.setMode('listen');
+    h.session.start();
+    h.run(1.5 + 8 + 0.4);
+    const beats = trace(h, 2);
+    const moved = beats.filter((b, i) => i > 0 && b !== beats[i - 1]);
+    expect(moved).toEqual([0]);
+  });
+
+  it('glides back after a wait-mode run too', () => {
+    const h = setup(scale(2));
+    for (const p of [60, 62, 64, 65, 60, 62, 64, 65]) {
+      h.press(p);
+      h.run(0.3);
+      h.session.release(p, h.clock.t);
+    }
+    expect(h.session.status().finished).toBe(true);
+    const beats = trace(h, 3);
+    const from = beats.findIndex((b, i) => i > 0 && b < (beats[i - 1] as number) - 1e-6);
+    expect(from).toBeGreaterThan(0);
+    const back = beats.slice(from - 1);
+    expect(back.every((b, i) => i === 0 || b <= (back[i - 1] as number) + 1e-9)).toBe(true);
+    expect(beats.at(-1)).toBe(0);
+  });
+
+  it('lets a drag take over from the glide', () => {
+    const h = setup();
+    h.session.setMode('listen');
+    h.session.start();
+    h.run(1.5 + 8 + 0.4);
+    h.run(1.4); // the glide has begun
+    expect(h.session.returning).toBe(true);
+    h.session.seek(6);
+    h.run(1);
+    expect(h.session.beat).toBe(6);
+    expect(h.session.returning).toBe(false);
+  });
+});
+
+describe('key strikes (P5-09)', () => {
+  it('marks every press, so a repeated note dips the key again', () => {
+    const { session, clock, run, press } = setup();
+    press(60);
+    const first = clock.t;
+    expect(session.strikes.get(60)).toBe(first);
+    run(0.1);
+    session.release(60, clock.t);
+    run(0.05);
+    press(60);
+    expect(session.strikes.get(60)).toBeGreaterThan(first);
+    expect(session.strikes.get(60)).toBe(clock.t);
+  });
+
+  it('strikes the keys of a listen run as their notes start, a repeated pitch included', () => {
+    const song = scale(1);
+    song.notes = song.notes.map((n, i) => ({ ...n, pitch: [64, 64, 65, 67][i] as number }));
+    const { session, run } = setup(song);
+    session.setMode('listen');
+    session.start();
+    run(1.5 + 0.1); // lead-in, then just into the first note
+    expect(session.strikes.get(64)).toBeCloseTo(1.5, 6);
+    run(0.5); // into the second E
+    expect(session.strikes.get(64)).toBeCloseTo(2, 6);
+    expect(session.strikes.has(65)).toBe(false);
+  });
+});
+
 describe('MIDI keys on this device', () => {
   it('echoes MIDI notes on this device when asked, and stops them on release', () => {
     const { session, clock } = setup();

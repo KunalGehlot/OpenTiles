@@ -22,7 +22,7 @@ function AboutEn() {
         </li>
         <li>There are no analytics, cookies or third-party requests.</li>
         <li>
-          Read exactly what is stored, and what the optional sync server sees, in the{' '}
+          Read exactly what is stored, and what the web host sees, in the{' '}
           <a href={href({ name: 'privacy', lang: 'en' })}>privacy policy</a> (
           <a href={href({ name: 'privacy', lang: 'de' })} lang="de">
             Datenschutzerklärung
@@ -126,7 +126,7 @@ function AboutDe() {
         </li>
         <li>Es gibt keine Analysedienste, keine Cookies und keine Anfragen an Dritte.</li>
         <li>
-          Was genau gespeichert wird und was der optionale Sync-Server sieht, steht in der{' '}
+          Was genau gespeichert wird und was der Webhoster sieht, steht in der{' '}
           <a href={href({ name: 'privacy', lang: 'de' })}>Datenschutzerklärung</a> (
           <a href={href({ name: 'privacy', lang: 'en' })} lang="en">
             privacy policy

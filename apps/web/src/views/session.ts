@@ -172,7 +172,20 @@ const SCHEDULE_AHEAD = 0.3;
 /** Pause between the end of a looped section and its next run in wait mode (seconds). */
 const LOOP_PAUSE = 0.6;
 /** Seconds after a run ends before the display goes back to the start. */
-const HOME_AFTER_SECONDS = 2.2;
+const HOME_AFTER_SECONDS = 1.2;
+
+/**
+ * How long the glide back to the start takes: longer for a longer way back, but never so long that
+ * the learner waits for it (seconds).
+ */
+export function homeSeconds(beats: number): number {
+  return Math.min(1.4, 0.6 + 0.008 * Math.abs(beats));
+}
+
+/** Slow out of the end, steady through the middle, slow into the start: as a hand would drag it. */
+function easeInOut(k: number): number {
+  return 0.5 - 0.5 * Math.cos(Math.PI * k);
+}
 
 /** How long a judged hold bar stays on screen after it ends (seconds). */
 const HOLD_FADE = 0.4;
@@ -204,6 +217,14 @@ export class PracticeSession {
   beat = 0;
   readonly keys = new Map<number, KeyState>();
   flashes: Flash[] = [];
+  /**
+   * When each key was last struck (clock time): by the learner, or by the piece itself in listen
+   * and play-along. The keyboard dips the key for a moment, so a repeated note shows as a new press
+   * even while the key stays lit.
+   */
+  readonly strikes = new Map<number, number>();
+  /** Glide back to the start after a run instead of jumping there (off under Reduce motion). */
+  glideHome = true;
   /** Note ids already played correctly in this run (drawn differently). */
   readonly done = new Set<string>();
   /** Play-along judgements of this run by note id, for live colours (P1-24). */
@@ -242,6 +263,14 @@ export class PracticeSession {
   private finishedAt = 0;
   /** After a run the display went back to the start (the notes, cursor and score all follow `beat`). */
   private homed = false;
+  /**
+   * The glide back to the start after a run, as dragging the score there would look: `beat` moves,
+   * and the score, the cursor and the falling notes follow it. Null when not gliding.
+   */
+  private homing: { from: number; to: number; at: number; seconds: number } | null = null;
+  /** Start times of the notes in the learner's hands for this listen or play-along run, in order. */
+  private cues: { pitch: number; time: number }[] = [];
+  private cued = 0;
   /**
    * True while the learner drags the score (P4-18): the position follows the drag exactly, and wait
    * mode does not pull it to its step until the drag ends.
@@ -329,6 +358,16 @@ export class PracticeSession {
     return this.finishedAt > 0;
   }
 
+  /** After a run, once the position has started back to the start (gliding or there already). */
+  get returning(): boolean {
+    return this.finishedAt > 0 && this.homed;
+  }
+
+  /** Where a run starts and where the position goes back to after one. */
+  get homeBeat(): number {
+    return this.loopSpan?.fromBeat ?? this.steps[0]?.beat ?? 0;
+  }
+
   get playing(): boolean {
     return this.timeline !== null;
   }
@@ -379,6 +418,7 @@ export class PracticeSession {
     this.labels = [];
     this.marks.clear();
     this.flashes = [];
+    this.strikes.clear();
     this.resetRun();
     this.tally.reset();
     this.stepHadWrong = false;
@@ -386,6 +426,7 @@ export class PracticeSession {
     this.startedAt = 0;
     this.finishedAt = 0;
     this.homed = false;
+    this.homing = null;
     this.runStartedAt = 0;
     this.loopRestartAt = 0;
     this.waitClick = null;
@@ -509,6 +550,7 @@ export class PracticeSession {
     if (!this.startedAt) this.startedAt = t;
     if (!this.runStartedAt) this.runStartedAt = t;
     this.keys.set(e.pitch, 'held');
+    this.strikes.set(e.pitch, t);
     if (this.recordingKeys()) {
       this.recorder.noteOn({ ...e, time: e.time - (this.latency[e.source] ?? 0) });
     }
@@ -783,6 +825,7 @@ export class PracticeSession {
     this.tally.reset();
     this.finishedAt = 0;
     this.homed = false;
+    this.homing = null;
     const tl = this.timeline;
     const audible = this.song.notes.filter(
       (n) =>
@@ -792,6 +835,13 @@ export class PracticeSession {
     );
     this.schedule = audible.map((note) => ({ note, time: tl.timeOf(note.startBeat) }));
     this.scheduled = 0;
+    this.cues = this.song.notes
+      .filter(
+        (n) => this.inHands(n) && n.startBeat >= fromBeat - 1e-6 && n.startBeat < toBeat - 1e-6,
+      )
+      .map((n) => ({ pitch: n.pitch, time: tl.timeOf(n.startBeat) }))
+      .sort((a, b) => a.time - b.time);
+    this.cued = 0;
     this.clicks = this.metronome ? this.clickTimes(tl, fromBeat) : [];
     this.clicked = 0;
     if (this.mode === 'play-along') {
@@ -832,6 +882,7 @@ export class PracticeSession {
     if (this.timeline) this.stop();
     this.finishedAt = 0;
     this.homed = false;
+    this.homing = null;
     this.summary = null;
     this.beat = target;
     if (this.mode === 'wait' && this.steps.length > 0) {
@@ -857,11 +908,20 @@ export class PracticeSession {
     const dt = this.lastFramePerf ? Math.min(0.1, perf - this.lastFramePerf) : 0;
     this.lastFramePerf = perf;
     this.flashes = this.flashes.filter((f) => f.until > t);
-    // A little after a run ends, the display returns to the start of the piece, keeping the marks.
-    // The score view has by then scrolled back (score-controller.ts, watchEnd).
+    // A little after a run ends, the display glides back to the start of the piece, keeping the
+    // marks and the summary. The score view rides along on `beat` (score-controller.ts).
     if (this.finishedAt > 0 && !this.homed && t - this.finishedAt > HOME_AFTER_SECONDS) {
       this.homed = true;
-      this.beat = this.loopSpan?.fromBeat ?? this.steps[0]?.beat ?? 0;
+      const to = this.homeBeat;
+      if (this.glideHome && Math.abs(this.beat - to) > 1e-3) {
+        this.homing = { from: this.beat, to, at: t, seconds: homeSeconds(this.beat - to) };
+      } else this.beat = to;
+    }
+    if (this.homing) {
+      const h = this.homing;
+      const k = Math.min(1, Math.max(0, (t - h.at) / h.seconds));
+      this.beat = h.from + (h.to - h.from) * easeInOut(k);
+      if (k >= 1) this.homing = null;
     }
     if (this.holds.size > 0) this.runHolds(t);
     if (this.labels.length > 0) this.labels = this.labels.filter((l) => l.until > t);
@@ -889,6 +949,13 @@ export class PracticeSession {
       // The picture follows a steady clock; judging and scheduling use the audio clock itself.
       this.beat = this.timeline.beatAt(this.display());
       this.runSchedule(t);
+      // The piece strikes its own keys as their notes start, so a repeated note dips the key again.
+      while (this.cued < this.cues.length) {
+        const c = this.cues[this.cued];
+        if (!c || c.time > t) break;
+        this.cued += 1;
+        this.strikes.set(c.pitch, c.time);
+      }
       if (this.scorer) {
         for (const r of this.scorer.update(t)) {
           this.judged.set(r.note.id, 'missed');

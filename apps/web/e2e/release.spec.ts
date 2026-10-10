@@ -87,6 +87,25 @@ test('the Content-Security-Policy blocks nothing the app needs', async ({ page }
   expect(violations).toEqual([]);
 });
 
+test('the app refuses to run inside a frame and offers its own tab instead', async ({ page }) => {
+  // GitHub Pages cannot send frame-ancestors (ADR 0016), so the app guards against clickjacking.
+  await page.goto('./');
+  await expect(page.getByRole('heading', { name: 'Free piano practice' })).toBeVisible();
+  await page.evaluate(() => {
+    const frame = document.createElement('iframe');
+    frame.src = window.location.href;
+    frame.title = 'framed';
+    document.body.replaceChildren(frame);
+  });
+  const framed = page.frameLocator('iframe[title="framed"]');
+  await expect(framed.getByText('OpenTiles opens in its own tab.')).toBeVisible();
+  await expect(framed.getByRole('link', { name: 'Open OpenTiles' })).toHaveAttribute(
+    'target',
+    '_top',
+  );
+  await expect(framed.getByRole('heading', { name: 'Free piano practice' })).toHaveCount(0);
+});
+
 test('note names can be switched off and stay off after a reload', async ({ page }) => {
   await page.goto('./#/settings');
   // The switch, not the "How note names are written" choice below it (P5-03).

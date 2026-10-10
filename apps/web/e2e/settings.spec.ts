@@ -60,10 +60,8 @@ test('accessibility settings persist and apply app-wide', async ({ page }) => {
   await expect(page.getByRole('table')).toHaveCount(0);
   await page.goto('./#/settings');
   await expect(page.getByRole('cell', { name: 'Start the piece again' })).toBeVisible();
-  // Crash reports are off by default, and this build has no server to send them to.
-  await expect(
-    page.getByText('This copy of OpenTiles has no server to send reports to.'),
-  ).toBeVisible();
+  // Crash reports go to the sync server; this build has none, so they are not mentioned at all.
+  await expect(page.getByRole('heading', { name: 'Crash reports' })).toHaveCount(0);
 });
 
 test('follows prefers-reduced-motion until the user chooses', async ({ page }) => {
@@ -136,9 +134,13 @@ test('the privacy policy and Impressum exist in English and German', async ({ pa
   await page.getByRole('contentinfo').getByRole('link', { name: 'Privacy' }).click();
   await expect(page.getByRole('heading', { name: 'Privacy policy', level: 1 })).toBeVisible();
   await expect(page.getByText(/no cookies/).first()).toBeVisible();
+  // It names the host, and says nothing of sync or crash reports in a build without a sync server.
+  await expect(page.getByText(/hosted on GitHub Pages/)).toBeVisible();
+  await expect(page.locator('main')).not.toContainText(/sync|crash report/i);
   await page.getByRole('link', { name: 'Deutsch' }).click();
   await expect(page).toHaveURL(/#\/privacy\/de$/);
   await expect(page.getByRole('heading', { name: 'Datenschutzerklärung', level: 1 })).toBeVisible();
+  await expect(page.locator('main')).not.toContainText(/Synchronisier|Absturz/);
 
   await page.getByRole('contentinfo').getByRole('link', { name: 'Impressum' }).click();
   await expect(page.getByRole('heading', { name: /Impressum/, level: 1 })).toBeVisible();
@@ -146,7 +148,11 @@ test('the privacy policy and Impressum exist in English and German', async ({ pa
   await expect(
     page.getByRole('link', { name: 'Kunal.gehlot@rwth-aachen.de' }).first(),
   ).toBeVisible();
-  await expect(page.getByText('[postal address to be added]')).toBeVisible();
+  // The postal address is in the operator's own Impressum, linked rather than repeated.
+  await expect(page.getByRole('link', { name: 'gehlot.site/impressum' }).first()).toHaveAttribute(
+    'href',
+    'https://gehlot.site/impressum/',
+  );
   await expect(page.getByRole('heading', { name: /Notice and takedown/ })).toBeVisible();
   await page.getByRole('link', { name: 'Deutsch' }).click();
   await expect(

@@ -1,8 +1,11 @@
-# Response headers for static hosts that read this file (Netlify, Cloudflare Pages). On other hosts,
+# Response headers for static hosts that read this file (Netlify, Cloudflare Pages). GitHub Pages,
+# where opentiles.site is served from, ignores it and cannot set headers (ADR 0016). On other hosts,
 # set the same headers in the server configuration; the Content-Security-Policy is also in index.html
 # as a <meta> tag, but frame-ancestors only works as a header. See docs/deploying.md.
+# connect-src is the app's own origin only: a build with a sync server (VITE_SYNC_URL) must add that
+# server's origin here too, or the header blocks it even though the <meta> tag allows it.
 /*
-  Content-Security-Policy: default-src 'self'; script-src 'self' 'wasm-unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; media-src 'self' blob:; font-src 'self' data:; connect-src 'self' https: wss:; worker-src 'self' blob:; manifest-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'
+  Content-Security-Policy: default-src 'self'; script-src 'self' 'wasm-unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; media-src 'self' blob:; font-src 'self' data:; connect-src 'self'; worker-src 'self' blob:; manifest-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'
   X-Content-Type-Options: nosniff
   Referrer-Policy: no-referrer
   Permissions-Policy: microphone=(self), midi=(self), camera=(), geolocation=(), payment=(), usb=(), interest-cohort=()

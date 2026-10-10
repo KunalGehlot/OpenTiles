@@ -22,16 +22,15 @@ sync, and release hardening. What is left is mostly human work and gates:
 
 - **G0, the microphone gate:** record the test set on real pianos (P0-04), measure latency on iPads
   (P0-11), tune and write the gate report (P0-13).
-- **Legal and publishing:** the legal consultation (P2-18), the postal address in the Impressum, the
-  deployment (docs/deploying.md), domain and trademark.
+- **Legal and publishing:** the legal consultation (P2-18) and the trademark. The site deploys to GitHub Pages at opentiles.site (P5-11, ADR 0016).
 - **iPad app:** install on an iPad and test with a keyboard (P3-01); App Store (P3-02).
 - **Code still open:** MIDI out and Bluetooth MIDI pairing in the iPad app, the sustain pedal, frame time
   on an older iPad, a native speaker's read-through of the German, more catalogue pieces (P3-05).
 
 The task list for this round is [Phase 5 — Release polish](#phase-5--release-polish-from-2026-10-09).
 P5-01 to P5-05 and P5-07 are in `main` (merged 2026-10-10); left are P5-06 (free play), P5-09 (the
-smoothness pass with the maintainer), P5-10 (the human release gate) and recreating the repository
-before it goes public (P5-00).
+smoothness pass with the maintainer), P5-10 (the human release gate) and P5-11 (going live on
+opentiles.site). The repository is public; the maintainer decided not to recreate it (P5-00).
 
 ## Phases and gates
 
@@ -204,7 +203,7 @@ engines.
 - [~] **P2-15** Accessibility: large print, high contrast, left-handed layout, keyboard shortcuts,
   Bluetooth foot-pedal page turn. Done: settings for large print, high contrast, left-handed controls, reduced motion, shortcuts list, pedal key. Left: practice view reading the left-handed flag beyond CSS; pedal hook wired to the page score.
 - [x] **P2-16** Licence scanner for third-party dependencies in CI.
-- [~] **P2-17** Privacy policy, Impressum with notice-and-takedown address, records of processing. Done: privacy policy and Impressum (EN/DE), records of processing. Left: real postal address; lawyer review (P2-18).
+- [~] **P2-17** Privacy policy, Impressum with notice-and-takedown address, records of processing. Done: privacy policy and Impressum (EN/DE), records of processing; the postal address is the maintainer's own Impressum at gehlot.site, linked rather than repeated (2026-10-10). Left: lawyer review (P2-18).
 - [ ] **P2-18** (human) Legal consultation with a German copyright lawyer (timing is an open
       decision). Also ask: Bella Ciao (P4-14), the LLM disclosure and the Sightread credit wording
       (P5-01), and whether MIDI export of a user's own free-play recording breaks guardrail 1 (P5-06).
@@ -344,14 +343,15 @@ images, sounds or fonts, and credit the inspiration in [CREDITS.md](CREDITS.md).
       `#000000` as a shared colour). Sightread is GPL-3.0 (GitHub and its LICENSE file; no "or later"
       notice), OpenTiles is AGPL-3.0-or-later; GPLv3 §13 / AGPLv3 §13 allow combining, and nothing has
       been taken. Wording uses "an LLM" and names no vendor. Left: ask in P2-18.
-- [~] **P5-00** (GOV) Housekeeping that blocks release: push `P4-10-ui-redesign` and open the PR; fix
-  the Firefox and iPad-profile Playwright failures in CI; delete and recreate the GitHub
-  repository before it is made public (see STATE.md). Done: the branch went in through PR #1,
-  merged into `main` on 2026-10-10 together with the Phase 5 pull requests (#2 to #6);
-  WebKit and the iPad profile pass in CI. The Firefox failures had two causes in the app, both
-  fixed: the first import waited for Firefox's storage-permission prompt, and a sound device
-  that never starts (as on the Linux runner) froze the metronome, runs and the falling notes.
-  Left: recreate the repository before it goes public.
+- [x] **P5-00** (GOV) Housekeeping that blocks release: push `P4-10-ui-redesign` and open the PR; fix
+      the Firefox and iPad-profile Playwright failures in CI; delete and recreate the GitHub
+      repository before it is made public (see STATE.md). Done: the branch went in through PR #1,
+      merged into `main` on 2026-10-10 together with the Phase 5 pull requests (#2 to #6);
+      WebKit and the iPad profile pass in CI. The Firefox failures had two causes in the app, both
+      fixed: the first import waited for Firefox's storage-permission prompt, and a sound device
+      that never starts (as on the Linux runner) froze the metronome, runs and the falling notes.
+      Recreating the repository was dropped on 2026-10-10: the maintainer keeps the old history, and
+      the repository is public.
 - [x] **P5-02** (APP) Keep the screen awake while practising (Screen Wake Lock API, requested from a
       user gesture, released on pause, hidden tab or leaving the page; no error where it is missing).
       Done: held while a run plays and for five minutes after the last note, tap or key press (a
@@ -392,12 +392,30 @@ images, sounds or fonts, and credit the inspiration in [CREDITS.md](CREDITS.md).
       moves with the arrow keys). It uses the session's own loop and seek, so the loop controls,
       the canvas drag and the strip always agree. Hidden in short landscape windows.
 - [ ] **P5-08** (APP) Library preview before opening and collections. Not selected for this round.
-- [ ] **P5-09** (APP) Smoothness pass, reviewed together in the maintainer's dark-mode Chrome: home to
-      playing in two clicks, one transport bar, route and panel transitions, 44 px touch targets on
-      coarse pointers, a manual light/dark switch, a refreshed logo, Detector Lab polish.
+- [~] **P5-09** (APP) Smoothness pass, reviewed together in the maintainer's dark-mode Chrome: home to
+  playing in two clicks, one transport bar, route and panel transitions, 44 px touch targets on
+  coarse pointers, a manual light/dark switch, a refreshed logo, Detector Lab polish.
+  Done (2026-10-10, from the maintainer's report): after a run the position glides back to
+  the start the way a drag of the score moves it (the score, the play bar and the falling
+  notes together; it used to slide the score alone and then jump), and the first note waits
+  under the play bar from the start, so Play no longer jumps; under Reduce motion it jumps
+  straight back. Every key press, and every note the piece plays in listen and play-along,
+  dips its key for a moment, so a repeated note shows as a new press while the key stays lit.
+  Left: everything else on the list, and checking both changes in the maintainer's Chrome.
 - [ ] **P5-10** (human) Release gate: frame time on an older iPad, a MIDI keyboard on an iPad through
-      the iPad app (Safari has no Web MIDI; Firefox confirmed working 2026-10-09), postal address in the Impressum, legal consultation (P2-18), domain and trademark, a
-      native German read-through, README screenshots from CC0 pieces only.
+      the iPad app (Safari has no Web MIDI; Firefox confirmed working 2026-10-09), legal consultation (P2-18), trademark (the domain
+      opentiles.site was registered on 2026-10-10), a native German read-through, README
+      screenshots from CC0 pieces only.
+- [~] **P5-11** (GOV, APP) Publish the web app at opentiles.site on GitHub Pages (ADR 0016,
+  proposed). Done: a `deploy` job in CI that publishes `main` once every check passes; the app
+  refuses to run inside a frame (Pages cannot send `frame-ancestors`); `connect-src 'self'`; the
+  privacy policy (English and German) names GitHub Pages and the transfer basis, and mentions
+  sync and crash reports only in a build with a sync server, which the public site has not; the
+  same goes for the crash-report setting; records of processing §1 and `docs/deploying.md` updated;
+  the Impressum links the maintainer's own at gehlot.site for the postal address; Pages enabled
+  with the domain `opentiles.site` set (2026-10-10). Left: the DNS at Cloudflare ("DNS only", no
+  parking record) and the domain verification, the first deploy, HTTPS enforced and a header
+  check of the live site, and the lawyer's view of hosting in the USA (P2-18).
 
 Left out on purpose: 128 General MIDI instruments (a piano trainer, and extra sample licences and
 size), Sightread's song library and assets, and any analytics.
@@ -426,6 +444,13 @@ Record the outcome as an ADR in `docs/adr/` and tick it here.
 - [x] Engine exposes a plain C ABI instead of wasm-bindgen glue — ADR 0002.
 
 ## Changelog
+
+- **2026-10-10** — P5-09 started: the return to the start after a run moves like a drag of the
+  score, repeated notes show on the keys, and the Content-Security-Policy allows connections only
+  to the app's own origin (and the sync server, when a build has one; ADR 0013 amended). P5-11:
+  hosting on GitHub Pages at opentiles.site chosen (ADR 0016, proposed), the deploy job, the frame
+  guard and the privacy text for it. The Impressum links the maintainer's own (gehlot.site) for the
+  postal address.
 
 - **2026-10-10** — The UI redesign and release pass (PR #1, P4-10…P4-19) and the Phase 5 work so
   far (P5-02 wake lock, P5-03 note names, P5-04 transpose, P5-07 live stats and overview, P5-05

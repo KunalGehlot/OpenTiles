@@ -55,7 +55,7 @@ import type { FingeringDisplay, MidiPlayback } from '../settings/model';
 import type { SpellingSetting } from '../lib/notes';
 import { loadPracticePrefs, savePracticePrefs } from '../practice/prefs';
 import type { PracticePrefs } from '../practice/prefs';
-import { updateAppSettings, useAppSettings } from '../settings/store';
+import { updateAppSettings, useAppSettings, useEffectiveAccessibility } from '../settings/store';
 import {
   getMicCalibration,
   getMidiCalibration,
@@ -243,6 +243,11 @@ function PracticeView({
   // The page view shows the whole drill at once, so the learner can read ahead.
   const view = drill ? 'page' : chosenView;
   useScreenWakeLock(session, status.playing);
+  // After a run the position glides back to the start; under Reduce motion it jumps there.
+  const { reducedMotion } = useEffectiveAccessibility();
+  useEffect(() => {
+    session.glideHome = !reducedMotion;
+  }, [session, reducedMotion]);
 
   // Wire the session to React and inputs.
   useEffect(() => {
