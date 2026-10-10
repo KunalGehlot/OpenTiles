@@ -10,7 +10,8 @@ Last reviewed: 2026-10-07.
 
 ## Controller
 
-Kunal Gehlot, [postal address to be added], Kunal.gehlot@rwth-aachen.de.
+Kunal Gehlot, Kunal.gehlot@rwth-aachen.de; postal address in the operator's own Impressum,
+<https://gehlot.site/impressum/>, which the site's Impressum links.
 No data protection officer is required (fewer than 20 people process personal data, § 38 BDSG).
 
 ## Not processing by the controller
@@ -77,7 +78,6 @@ completeness, not as processing activities:
 
 ## Open items before launch
 
-- Postal address in the Impressum and here.
 - Data processing agreements with the web host, the sync host, object storage and the mail
   provider.
 - Lawyer review (P2-18).

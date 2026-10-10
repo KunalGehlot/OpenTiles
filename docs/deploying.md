@@ -11,7 +11,8 @@ The public site, <https://opentiles.site>, is served from GitHub Pages (ADR 0016
    pieces were verified by the maintainer on 2026-10-09. A piece added later stays hidden until a
    person who did not add it reviews it (`catalogue/REVIEWING.md`); `VITE_SHOW_UNVERIFIED=1` builds a
    preview that shows unverified pieces too, labelled "Awaiting review".
-2. Replace the postal address placeholder in the Impressum (`apps/web/src/legal/LegalPages.tsx`).
+2. The Impressum (`apps/web/src/legal/LegalPages.tsx`) links the maintainer's own Impressum at
+   gehlot.site for the postal address; a copy hosted by someone else needs its own operator details.
 3. Run the checks: `pnpm check`, `cargo test --workspace --release`,
    `python3 tools/pipeline/validate_catalogue.py`, `python3 -m unittest discover -s tools/pipeline/tests`,
    `pnpm --filter @opentiles/web e2e` and a manual pass on Safari and an iPad.
@@ -29,12 +30,21 @@ One-time setup (done on 2026-10-10; repeat only for a new repository or domain):
 1. Pages source "GitHub Actions":
    `gh api -X POST repos/KunalGehlot/OpenTiles/pages -f build_type=workflow`.
 2. Verify the domain in the maintainer's account (GitHub → Settings → Pages → Add a domain) and add
-   the TXT record it shows at the registrar, so no other repository can claim `opentiles.site`.
-3. DNS at the registrar (Namecheap): remove the parking records, then add
+   the TXT record it shows in the DNS, so no other repository can claim `opentiles.site`.
+3. DNS (the domain is registered at Namecheap; its DNS is at Cloudflare): remove the registrar's
+   parking record (`A @ 192.64.119.22`), then add
    - `A @` → `185.199.108.153`, `185.199.109.153`, `185.199.110.153`, `185.199.111.153`
    - `AAAA @` → `2606:50c0:8000::153`, `2606:50c0:8001::153`, `2606:50c0:8002::153`,
      `2606:50c0:8003::153`
    - `CNAME www` → `kunalgehlot.github.io` (Pages redirects `www` to the apex).
+
+   Every one of these records is **DNS only** (grey cloud) in Cloudflare, not proxied. Behind the
+   proxy GitHub sees Cloudflare's addresses, its DNS check fails and it issues no certificate; and
+   the proxy puts Cloudflare in front of every visit, can add its own scripts to the page (blocked
+   by the Content-Security-Policy, and against the no-tracking rule), and would be a second
+   processor the privacy policy does not name. `gh api repos/KunalGehlot/OpenTiles/pages/health`
+   reports what GitHub sees.
+
 4. Set the domain: `gh api -X PUT repos/KunalGehlot/OpenTiles/pages -f cname=opentiles.site`. Once
    GitHub has issued the certificate, enforce HTTPS:
    `gh api -X PUT repos/KunalGehlot/OpenTiles/pages -F https_enforced=true`.

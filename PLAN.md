@@ -22,8 +22,7 @@ sync, and release hardening. What is left is mostly human work and gates:
 
 - **G0, the microphone gate:** record the test set on real pianos (P0-04), measure latency on iPads
   (P0-11), tune and write the gate report (P0-13).
-- **Legal and publishing:** the legal consultation (P2-18), the postal address in the Impressum, the
-  trademark. The site deploys to GitHub Pages at opentiles.site (P5-11, ADR 0016).
+- **Legal and publishing:** the legal consultation (P2-18) and the trademark. The site deploys to GitHub Pages at opentiles.site (P5-11, ADR 0016).
 - **iPad app:** install on an iPad and test with a keyboard (P3-01); App Store (P3-02).
 - **Code still open:** MIDI out and Bluetooth MIDI pairing in the iPad app, the sustain pedal, frame time
   on an older iPad, a native speaker's read-through of the German, more catalogue pieces (P3-05).
@@ -204,7 +203,7 @@ engines.
 - [~] **P2-15** Accessibility: large print, high contrast, left-handed layout, keyboard shortcuts,
   Bluetooth foot-pedal page turn. Done: settings for large print, high contrast, left-handed controls, reduced motion, shortcuts list, pedal key. Left: practice view reading the left-handed flag beyond CSS; pedal hook wired to the page score.
 - [x] **P2-16** Licence scanner for third-party dependencies in CI.
-- [~] **P2-17** Privacy policy, Impressum with notice-and-takedown address, records of processing. Done: privacy policy and Impressum (EN/DE), records of processing. Left: real postal address; lawyer review (P2-18).
+- [~] **P2-17** Privacy policy, Impressum with notice-and-takedown address, records of processing. Done: privacy policy and Impressum (EN/DE), records of processing; the postal address is the maintainer's own Impressum at gehlot.site, linked rather than repeated (2026-10-10). Left: lawyer review (P2-18).
 - [ ] **P2-18** (human) Legal consultation with a German copyright lawyer (timing is an open
       decision). Also ask: Bella Ciao (P4-14), the LLM disclosure and the Sightread credit wording
       (P5-01), and whether MIDI export of a user's own free-play recording breaks guardrail 1 (P5-06).
@@ -404,7 +403,7 @@ images, sounds or fonts, and credit the inspiration in [CREDITS.md](CREDITS.md).
   dips its key for a moment, so a repeated note shows as a new press while the key stays lit.
   Left: everything else on the list, and checking both changes in the maintainer's Chrome.
 - [ ] **P5-10** (human) Release gate: frame time on an older iPad, a MIDI keyboard on an iPad through
-      the iPad app (Safari has no Web MIDI; Firefox confirmed working 2026-10-09), postal address in the Impressum, legal consultation (P2-18), trademark (the domain
+      the iPad app (Safari has no Web MIDI; Firefox confirmed working 2026-10-09), legal consultation (P2-18), trademark (the domain
       opentiles.site was registered on 2026-10-10), a native German read-through, README
       screenshots from CC0 pieces only.
 - [~] **P5-11** (GOV, APP) Publish the web app at opentiles.site on GitHub Pages (ADR 0016,
@@ -412,10 +411,11 @@ images, sounds or fonts, and credit the inspiration in [CREDITS.md](CREDITS.md).
   refuses to run inside a frame (Pages cannot send `frame-ancestors`); `connect-src 'self'`; the
   privacy policy (English and German) names GitHub Pages and the transfer basis, and mentions
   sync and crash reports only in a build with a sync server, which the public site has not; the
-  same goes for the crash-report setting; records of processing §1 and `docs/deploying.md` updated.
-  Left: the Impressum address, the domain's DNS and verification at the registrar, enabling
-  Pages, the first deploy and a header check of the live site, and the lawyer's view of hosting in
-  the USA (P2-18).
+  same goes for the crash-report setting; records of processing §1 and `docs/deploying.md` updated;
+  the Impressum links the maintainer's own at gehlot.site for the postal address; Pages enabled
+  with the domain `opentiles.site` set (2026-10-10). Left: the DNS at Cloudflare ("DNS only", no
+  parking record) and the domain verification, the first deploy, HTTPS enforced and a header
+  check of the live site, and the lawyer's view of hosting in the USA (P2-18).
 
 Left out on purpose: 128 General MIDI instruments (a piano trainer, and extra sample licences and
 size), Sightread's song library and assets, and any analytics.
@@ -449,7 +449,8 @@ Record the outcome as an ADR in `docs/adr/` and tick it here.
   score, repeated notes show on the keys, and the Content-Security-Policy allows connections only
   to the app's own origin (and the sync server, when a build has one; ADR 0013 amended). P5-11:
   hosting on GitHub Pages at opentiles.site chosen (ADR 0016, proposed), the deploy job, the frame
-  guard and the privacy text for it.
+  guard and the privacy text for it. The Impressum links the maintainer's own (gehlot.site) for the
+  postal address.
 
 - **2026-10-10** — The UI redesign and release pass (PR #1, P4-10…P4-19) and the Phase 5 work so
   far (P5-02 wake lock, P5-03 note names, P5-04 transpose, P5-07 live stats and overview, P5-05
