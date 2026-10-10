@@ -531,12 +531,12 @@ function LibraryCard({
           <Trash2 /> {t('Delete')}
         </button>
       </div>
-      <div className="row library-item__sheet">
+      <div className="library-item__sheet">
         {item.sheet ? (
           <>
-            <FileText />
             <span className="library-item__sheet-name" title={item.sheet.fileName}>
-              {item.sheet.fileName}
+              <FileText />
+              <span>{item.sheet.fileName}</span>
             </span>
             <button
               className="quiet"

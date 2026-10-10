@@ -455,30 +455,49 @@ button.copy-link--done {
   font-size: var(--text-sm);
 }
 
-/* The PDF kept with a piece: its name shortened to one line, so a long download name never pushes
-   the card wider than a ⅓-width window. */
+/* The PDF kept with a piece, at the foot of the card so the cards in a row line up: its name on one
+   line, shortened rather than pushing the card wider than a ⅓-width window, and its actions below. */
 .library-item__sheet {
-  flex-wrap: nowrap;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
   gap: var(--space-1);
+  margin-top: auto;
+  padding-top: var(--space-2);
+  border-top: 1px solid var(--line);
   color: var(--muted);
   font-size: var(--text-sm);
 }
 
+.library-item__sheet button {
+  padding-inline: 0.6rem;
+}
+
+/* The first action lines up with the text above it rather than with its own padding. */
+.library-item__sheet > button:first-of-type {
+  margin-left: -0.6rem;
+}
+
 .library-item__sheet-name {
-  flex: 1 1 auto;
+  display: flex;
+  flex: 1 1 100%;
+  align-items: center;
+  gap: var(--space-1);
   min-width: 0;
+}
+
+.library-item__sheet-name > span {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
 .sheet-line {
-  flex-wrap: nowrap;
-  gap: var(--space-2);
+  flex-wrap: wrap;
+  gap: var(--space-1) var(--space-2);
 }
 
 .sheet-line__name {
-  flex: 1 1 auto;
   min-width: 0;
   overflow-wrap: anywhere;
 }
