@@ -422,8 +422,14 @@ images, sounds or fonts, and credit the inspiration in [CREDITS.md](CREDITS.md).
   its own MIDI access and dropped it on leaving; Firefox closes a device for the whole page when any
   access's ports are garbage-collected, and once the last access is gone it stops its MIDI service,
   whose CoreMIDI client on a Mac may not come back until Firefox restarts. Done: one MIDI access
-  for the page, shared by every screen with listeners, ports never closed. Left: the maintainer's
-  check in Firefox with a real keyboard. Reloading or closing the tab still ends Firefox's MIDI
+  for the page, shared by every screen with listeners, ports never closed. Second report
+  (2026-10-10, "doesn't connect in Chrome either"): Chrome and Firefox ask for permission per site
+  and port, and the request waits until the learner answers; the app showed nothing meanwhile, and
+  the shared request kept a waiting one, so Connect never showed the prompt again. Now Connect
+  asks again until access is granted, says it is waiting and where to allow MIDI. Checked with a
+  virtual CoreMIDI keyboard in real Chrome and in Playwright's Firefox (prompts auto-accepted):
+  notes reach Settings and wait mode on every screen. Left: the maintainer's check with a real
+  keyboard in their own Chrome and Firefox. Reloading or closing the tab still ends Firefox's MIDI
   service; the app cannot prevent that.
 
 Left out on purpose: 128 General MIDI instruments (a piano trainer, and extra sample licences and
