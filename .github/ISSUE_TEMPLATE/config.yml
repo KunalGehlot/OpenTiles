@@ -1,5 +1,14 @@
 blank_issues_enabled: false
 contact_links:
+  - name: Ask a question
+    url: https://github.com/KunalGehlot/OpenTiles/discussions/new?category=q-a
+    about: How do I…? Is this expected? Questions belong in Discussions, where others can find the answer.
+  - name: Share an idea or show your setup
+    url: https://github.com/KunalGehlot/OpenTiles/discussions
+    about: Open-ended ideas, roadmap talk and show and tell.
+  - name: Read the user guide and FAQ
+    url: https://github.com/KunalGehlot/OpenTiles/blob/main/docs/faq.md
+    about: Quick answers on MIDI keyboards, the microphone, importing music and privacy.
   - name: Security or conduct report
     url: https://github.com/KunalGehlot/OpenTiles/security/advisories/new
     about: Please report security problems and conduct issues privately.

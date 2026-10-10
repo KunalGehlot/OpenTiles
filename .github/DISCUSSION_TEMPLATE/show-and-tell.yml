@@ -1,0 +1,16 @@
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Share how you use OpenTiles, a piece you finally got right, a setup that works, or a tool you built around it. Please only share public-domain or your own music.
+  - type: textarea
+    id: story
+    attributes:
+      label: What did you make or learn?
+    validations:
+      required: true
+  - type: input
+    id: setup
+    attributes:
+      label: Your setup
+      placeholder: Acoustic upright, laptop on the music stand, microphone
