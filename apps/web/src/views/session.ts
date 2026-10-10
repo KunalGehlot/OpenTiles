@@ -231,6 +231,8 @@ export class PracticeSession {
   private readonly tally = new LiveTally();
   /** A wrong key was played while the current wait-mode step was expected. */
   private stepHadWrong = false;
+  /** Clock time of the last note from any input; 0 before the first (keeps the screen on, P5-02). */
+  lastInputAt = 0;
 
   private timeline: Timeline | null = null;
   private scorer: PlayAlongScorer | null = null;
@@ -496,6 +498,7 @@ export class PracticeSession {
 
   input(e: NoteEvent): void {
     const t = this.clock();
+    this.lastInputAt = t;
     if (e.source === 'touch' && this.soundForTouch && this.synth) {
       this.synth.play(e.pitch, t, 0.6, e.velocity ?? 90);
     }

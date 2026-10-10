@@ -200,3 +200,45 @@ test('live stats are off until chosen, then count the run (P5-07)', async ({ pag
   await page.reload();
   await expect(page.getByTestId('live-stats')).toBeVisible();
 });
+
+test('the screen stays on while the practice screen is open (P5-02)', async ({ page }) => {
+  // A stand-in Screen Wake Lock that records requests and releases, in every engine.
+  await page.addInitScript(() => {
+    const log = { requests: 0, releases: 0 };
+    (window as unknown as { wakeLog: typeof log }).wakeLog = log;
+    Object.defineProperty(navigator, 'wakeLock', {
+      configurable: true,
+      value: {
+        request: () => {
+          log.requests += 1;
+          const listeners: (() => void)[] = [];
+          const sentinel = {
+            released: false,
+            release: () => {
+              if (!sentinel.released) {
+                sentinel.released = true;
+                log.releases += 1;
+                for (const l of listeners) l();
+              }
+              return Promise.resolve();
+            },
+            addEventListener: (_type: string, l: () => void) => listeners.push(l),
+          };
+          return Promise.resolve(sentinel);
+        },
+      },
+    });
+  });
+  const wakeLog = () =>
+    page.evaluate(
+      () => (window as unknown as { wakeLog: { requests: number; releases: number } }).wakeLog,
+    );
+  await page.goto('./');
+  expect(await wakeLog()).toEqual({ requests: 0, releases: 0 });
+  await page.goto('./#/practice/catalogue/ode-to-joy');
+  await expect(page.locator('canvas')).toBeVisible();
+  await expect.poll(async () => (await wakeLog()).requests).toBe(1);
+  await page.locator('.session-bar a.back').click();
+  await expect(page).toHaveURL(/#\/$/);
+  await expect.poll(async () => (await wakeLog()).releases).toBe(1);
+});

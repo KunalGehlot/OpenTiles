@@ -349,8 +349,12 @@ images, sounds or fonts, and credit the inspiration in [CREDITS.md](CREDITS.md).
   fixed: the first import waited for Firefox's storage-permission prompt, and a sound device
   that never starts (as on the Linux runner) froze the metronome, runs and the falling notes.
   Left: recreate the repository before it goes public.
-- [ ] **P5-02** (APP) Keep the screen awake while practising (Screen Wake Lock API, requested from a
+- [x] **P5-02** (APP) Keep the screen awake while practising (Screen Wake Lock API, requested from a
       user gesture, released on pause, hidden tab or leaving the page; no error where it is missing).
+      Done: held while a run plays and for five minutes after the last note, tap or key press (a
+      learner in wait mode may think for a while between notes, so "pause" is idle time there),
+      asked for again when the tab is visible again, released on leaving. Left: check on a real
+      iPad (P5-10).
 - [x] **P5-03** (APP) Note labels: letters, German names (H instead of B), Fixed-Do; one setting that
       the falling notes, the keyboard and the score fingerings share. Done: Settings → Fingering →
       "How note names are written" (as the language, letters, German, Fixed-Do). It names the

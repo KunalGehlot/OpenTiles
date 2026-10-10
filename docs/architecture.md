@@ -271,9 +271,15 @@ real devices in the device lab before a release.
       never Web MIDI output; the additive synthesiser plays until the samples are loaded.
 - [x] Request persistent storage on first import and prompt iPad users to Add to Home Screen
       (Safari can delete script-written data after seven days without a visit). `persist()` runs
-      on first import; the Library shows the hint after an import and the Home page shows a
+      on first import and is never awaited (Firefox asks the user first, and the promise waits for
+      the answer); the Library shows the hint after an import and the Home page shows a
       dismissible hint to iPad and iPhone users in a browser tab (dismissal kept in
       `localStorage`).
+- [x] Keep the screen on while practising (P5-02, `apps/web/src/practice/wake-lock.ts`): a
+      Screen Wake Lock held while a run plays and for five minutes after the last note, tap or key
+      press, asked for again when the tab comes back, released on leaving the practice screen.
+      Where a browser has no wake lock the screen sleeps as usual. Still needs a real iPad: Safari,
+      a Home Screen app and the iPad app's web view.
 - [x] Work fully offline after the first visit and install as an app (P1-23), see below. Still
       needs a real device: Add to Home Screen from Safari's Share menu, launch from the Home Screen
       in flight mode, and confirm the library is still there after more than seven days.
