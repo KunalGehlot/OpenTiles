@@ -10,10 +10,10 @@ export const OPERATOR = {
   name: 'Kunal Gehlot',
   email: 'Kunal.gehlot@rwth-aachen.de',
   /**
-   * The operator's own Impressum, which gives the postal address (§ 5 DDG, § 18 MStV). The
-   * maintainer chose to link it rather than repeat the address in this public repository.
+   * The operator's own website, a further way to reach them. It has no Impressum and no postal
+   * address; the maintainer keeps the address out of this public repository (P2-18).
    */
-  imprint: 'https://gehlot.site/impressum/',
+  website: 'https://gehlot.site/',
 } as const;
 
 /**
@@ -69,10 +69,10 @@ function Mail() {
   return <a href={`mailto:${OPERATOR.email}`}>{OPERATOR.email}</a>;
 }
 
-function Imprint() {
+function Website() {
   return (
-    <a href={OPERATOR.imprint} target="_blank" rel="noopener noreferrer">
-      gehlot.site/impressum
+    <a href={OPERATOR.website} target="_blank" rel="noopener noreferrer">
+      gehlot.site
     </a>
   );
 }
@@ -94,7 +94,7 @@ function PrivacyEn({ sync }: { sync: boolean }) {
 
       <h2>Who is responsible</h2>
       <p>
-        {OPERATOR.name}, <Mail />. Postal address: <Imprint />. See the{' '}
+        {OPERATOR.name}, <Mail />, <Website />. See the{' '}
         <a href={href({ name: 'impressum', lang: 'en' })}>Impressum</a>.
       </p>
 
@@ -215,7 +215,7 @@ function PrivacyDe({ sync }: { sync: boolean }) {
 
       <h2>Verantwortlicher</h2>
       <p>
-        {OPERATOR.name}, <Mail />. Postanschrift: <Imprint />. Siehe{' '}
+        {OPERATOR.name}, <Mail />, <Website />. Siehe{' '}
         <a href={href({ name: 'impressum', lang: 'de' })}>Impressum</a>.
       </p>
 
@@ -346,10 +346,10 @@ function Address({ lang }: { lang: LegalLang }) {
     <address style={{ fontStyle: 'normal' }}>
       {OPERATOR.name}
       <br />
-      {lang === 'de' ? 'Postanschrift: ' : 'Postal address: '}
-      <Imprint />
-      <br />
+      {lang === 'de' ? 'E-Mail: ' : 'Email: '}
       <Mail />
+      <br />
+      Website: <Website />
     </address>
   );
 }
@@ -367,8 +367,7 @@ function ImpressumEn() {
       <Address lang="en" />
       <h2>Responsible for content</h2>
       <p>
-        {OPERATOR.name} (postal address: <Imprint />
-        ), under § 18(2) MStV (German Interstate Media Treaty).
+        {OPERATOR.name} (contact as above), under § 18(2) MStV (German Interstate Media Treaty).
       </p>
       <h2>Notice and takedown</h2>
       <p>
@@ -398,10 +397,7 @@ function ImpressumDe() {
       <h2>Anbieter</h2>
       <Address lang="de" />
       <h2>Verantwortlich für den Inhalt</h2>
-      <p>
-        {OPERATOR.name} (Postanschrift: <Imprint />
-        ), gemäß § 18 Abs. 2 MStV.
-      </p>
+      <p>{OPERATOR.name} (Kontakt wie oben), gemäß § 18 Abs. 2 MStV.</p>
       <h2>Meldung von Rechtsverletzungen (Notice and Takedown)</h2>
       <p>
         Wenn du glaubst, dass ein Stück im öffentlichen Katalog noch urheberrechtlich geschützt ist

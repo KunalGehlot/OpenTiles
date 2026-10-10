@@ -445,12 +445,15 @@ Record the outcome as an ADR in `docs/adr/` and tick it here.
 
 ## Changelog
 
+- **2026-10-10** — Impressum: gehlot.site is given as the maintainer's website, a contact only;
+  it is no longer linked as an Impressum with the postal address (that site has neither).
+
 - **2026-10-10** — P5-09 started: the return to the start after a run moves like a drag of the
   score, repeated notes show on the keys, and the Content-Security-Policy allows connections only
   to the app's own origin (and the sync server, when a build has one; ADR 0013 amended). P5-11:
   hosting on GitHub Pages at opentiles.site chosen (ADR 0016, proposed), the deploy job, the frame
-  guard and the privacy text for it. The Impressum links the maintainer's own (gehlot.site) for the
-  postal address.
+  guard and the privacy text for it. The Impressum names the maintainer's website (gehlot.site) as
+  a contact; it has no postal address yet (P2-18).
 
 - **2026-10-10** — The UI redesign and release pass (PR #1, P4-10…P4-19) and the Phase 5 work so
   far (P5-02 wake lock, P5-03 note names, P5-04 transpose, P5-07 live stats and overview, P5-05
