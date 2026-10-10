@@ -1,0 +1,20 @@
+# Morning Prayer (Op. 39 No. 1) by Pyotr Ilyich Tchaikovsky: simplified one-voice-per-hand arrangement for OpenTiles, released under CC0 1.0.
+# Notes converted from the public-domain Mutopia Project typesetting by Rem Zolotykh (https://www.mutopiaproject.org/cgibin/piece-info.cgi?id=2032).
+# Made with tools/pipeline/midi_arrange.py: held notes are cut at the next onset, long notes at barlines, and rhythms are on a sixteenth grid.
+title: Morning Prayer (Op. 39 No. 1)
+composer: Pyotr Ilyich Tchaikovsky
+key: 1
+time: 3/4
+tempo: 72
+RH: [G4 B4]q [G4 B4]q. [F#4 A4]e | [G4 C5]q [G4 B4]h | [F#4 A4]q [E4 G4]q [E4 A4]q | [D#4 B4]h.
+RH: [D4 B4]q [C#4 E4]q. A4e | [C4 A4]q [B3 D4]q C4e F#4e | [D4 G4]q [E4 G4]q [G4 E5]e. A4s | [G4 A4]q F#4e E4e F#4q
+RH: [G4 B4]q [G4 B4]q. [F#4 A4]e | [G4 C5]q [G4 B4]q. [G4 B4]e | [G4 C5]q [G4 B4 D5]q [G4 C5 E5]q | [F#4 C#5 F#5]h F#5q
+RH: [B4 D#5]q [B4 E5]q A4e C#5e | [A4 D5]q [G4 B4]q [G4 C5]q | [E4 B4]e. A4s A4q [D4 F#4]e C4e | [B3 G4]q rq [B4 G5]q
+RH: [C5 F#5]e. C5s C5q [F#4 B4]e A4e | [G4 B4]q rq [B3 G4]q | [C4 F#4]e. C4s C4q [F#3 B3]e A3e | [G3 B3]q [G3 E4]q [G3 D4]q
+RH: [C#4 E4]h [C4 F#4]q | [B3 G4]h B3q | [B3 D4]q G4q [G4 B4]q | [G4 B4 D5]h.
+LH: [G3 D4]q [G3 D4]q. [D3 D4]e | [E3 C4]q [G3 D4]h | [D3 D4]q [E3 B3]q [C3 E3]q | [B2 F#3]h.
+LH: [G#2 E3]q [A2 E3]q G2q | [F#2 D3]q [G2 D3]q A2q | [B2 G3]q [C3 G3]q [C#3 A3]q | [D3 A3]h D4q
+LH: [G3 D4]q [G3 D4]q. [D3 D4]e | [E3 C4]q [G3 D4]q F4q | E4q D4q C4e B3e | A#3h.
+LH: [A3 F#4]q [G#3 E4]q G3q | [F#3 D4]q [G3 D4]q [E3 C4]q | [C3 G3]h D3q | G2e G2e G2e G2e [G2 D3]e G2e
+LH: [G2 D#3]e G2e G2e G2e G2e G2e | [G2 D3]e G2e G2e G2e [G2 D3]e G2e | [G2 D#3]e G2e G2e G2e G2e G2e | [G2 D3]e G2e [G2 C3]e G2e [G2 B2]e G2e
+LH: [G2 A#2]e G2e G2e G2e [G2 A2]e G2e | G2q D3h | [G2 D3]h. | [G2 D3]h.

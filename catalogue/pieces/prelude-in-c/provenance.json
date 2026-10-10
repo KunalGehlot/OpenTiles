@@ -13,7 +13,10 @@
     "date": "2026-10-07"
   },
   "difficulty": 3,
-  "reviewed_by": null,
-  "verified": false,
-  "score_file": "score.musicxml"
+  "reviewed_by": "KunalGehlot",
+  "verified": true,
+  "reviewed_on": "2026-10-09",
+  "score_file": "score.musicxml",
+  "song": "prelude-in-c",
+  "variant": "Two hands"
 }

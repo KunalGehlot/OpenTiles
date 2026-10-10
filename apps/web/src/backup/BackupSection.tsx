@@ -6,21 +6,29 @@ import { reloadAppSettings } from '../settings/store';
 import { requestPersistence } from '../storage/persist';
 import { backupFileName, createBackupFile, restoreBackupFile } from './backup';
 import type { BackupStage, RestoreSummary } from './backup';
+import { locale, t } from '../i18n';
 
-const STAGES: Record<BackupStage, { label: string; value: number }> = {
-  collecting: { label: 'Collecting your library…', value: 0.15 },
-  'deriving-key': { label: 'Protecting the key with your passphrase…', value: 0.4 },
-  encrypting: { label: 'Encrypting…', value: 0.75 },
-  decrypting: { label: 'Checking the passphrase and decrypting…', value: 0.4 },
-  merging: { label: 'Adding to this device…', value: 0.8 },
-};
+function stageOf(stage: BackupStage): { label: string; value: number } {
+  switch (stage) {
+    case 'collecting':
+      return { label: t('Collecting your library…'), value: 0.15 };
+    case 'deriving-key':
+      return { label: t('Protecting the key with your passphrase…'), value: 0.4 };
+    case 'encrypting':
+      return { label: t('Encrypting…'), value: 0.75 };
+    case 'decrypting':
+      return { label: t('Checking the passphrase and decrypting…'), value: 0.4 };
+    default:
+      return { label: t('Adding to this device…'), value: 0.8 };
+  }
+}
 
 function Progress({ stage }: { stage: BackupStage | 'done' | null }) {
   if (stage === null) return null;
-  const s = stage === 'done' ? { label: 'Done.', value: 1 } : STAGES[stage];
+  const s = stage === 'done' ? { label: t('Done.'), value: 1 } : stageOf(stage);
   return (
     <div className="stack" aria-live="polite">
-      <progress max={1} value={s.value} aria-label="Backup progress" />
+      <progress max={1} value={s.value} aria-label={t('Backup progress')} />
       <span className="muted">{s.label}</span>
     </div>
   );
@@ -41,11 +49,11 @@ function download(bytes: Uint8Array, name: string) {
 export function BackupSection() {
   return (
     <section aria-labelledby="backup-title" className="stack">
-      <h2 id="backup-title">Backup</h2>
+      <h2 id="backup-title">{t('Backup')}</h2>
       <p className="muted">
-        Save your library, progress and settings in one encrypted file that you keep. It never
-        leaves this device unless you move it yourself. Without the passphrase nobody can open it,
-        not even the OpenTiles project — so write the passphrase down.
+        {t(
+          'Save your library, progress and settings in one encrypted file that you keep. It never leaves this device unless you move it yourself. Without the passphrase nobody can open it, not even the OpenTiles project — so write the passphrase down.',
+        )}
       </p>
       <ExportBackup />
       <ImportBackup />
@@ -81,7 +89,7 @@ function ExportBackup() {
     return (
       <div className="row">
         <button className="primary" onClick={() => setOpen(true)}>
-          Export backup…
+          {t('Export backup…')}
         </button>
       </div>
     );
@@ -95,9 +103,9 @@ function ExportBackup() {
         void run();
       }}
     >
-      <h3 id="export-title">Export an encrypted backup</h3>
+      <h3 id="export-title">{t('Export an encrypted backup')}</h3>
       <label>
-        Passphrase
+        {t('Passphrase')}
         <input
           type="password"
           autoComplete="new-password"
@@ -109,7 +117,7 @@ function ExportBackup() {
         <strong>{strength.label}.</strong> {strength.hint}
       </p>
       <label>
-        Passphrase again
+        {t('Passphrase again')}
         <input
           type="password"
           autoComplete="new-password"
@@ -117,7 +125,7 @@ function ExportBackup() {
           onChange={(e) => setAgain(e.target.value)}
         />
       </label>
-      {mismatch && <p className="error">The two passphrases are different.</p>}
+      {mismatch && <p className="error">{t('The two passphrases are different.')}</p>}
       <Progress stage={stage} />
       {error && <p className="error">{error}</p>}
       <div className="row">
@@ -126,10 +134,10 @@ function ExportBackup() {
           className="primary"
           disabled={busy || strength.level === 0 || again !== pass}
         >
-          Download backup
+          {t('Download backup')}
         </button>
         <button type="button" onClick={() => setOpen(false)} disabled={busy}>
-          Close
+          {t('Close')}
         </button>
       </div>
     </form>
@@ -175,7 +183,8 @@ function ImportBackup() {
         { onProgress: setStage },
       );
       await reloadAppSettings();
-      await requestPersistence();
+      // Not awaited: Firefox asks the user first, and the promise waits for their answer.
+      void requestPersistence();
       setStage('done');
       setSummary(result);
       setFile(null);
@@ -189,13 +198,13 @@ function ImportBackup() {
   return (
     <div className="stack">
       <div className="row">
-        <button onClick={() => input.current?.click()}>Restore from a backup…</button>
+        <button onClick={() => input.current?.click()}>{t('Restore from a backup…')}</button>
         <input
           ref={input}
           type="file"
           hidden
           accept=".zip,application/zip"
-          aria-label="Backup file"
+          aria-label={t('Backup file')}
           onChange={(e) => void pick(e.target.files?.[0])}
         />
       </div>
@@ -208,13 +217,14 @@ function ImportBackup() {
             void run();
           }}
         >
-          <h3 id="import-title">Restore {file.name}</h3>
+          <h3 id="import-title">{t('Restore {name}', { name: file.name })}</h3>
           <p className="muted">
-            Made on {new Date(file.createdAt).toLocaleString()}. Pieces already on this device are
-            kept and not added twice.
+            {t('Made on {date}. Pieces already on this device are kept and not added twice.', {
+              date: new Date(file.createdAt).toLocaleString(locale()),
+            })}
           </p>
           <label>
-            {useCode ? 'Recovery code' : 'Backup passphrase'}
+            {useCode ? t('Recovery code') : t('Backup passphrase')}
             <input
               type={useCode ? 'text' : 'password'}
               autoComplete="off"
@@ -228,15 +238,15 @@ function ImportBackup() {
               checked={useCode}
               onChange={(e) => setUseCode(e.target.checked)}
             />
-            Use a recovery code instead
+            {t('Use a recovery code instead')}
           </label>
           <Progress stage={stage} />
           <div className="row">
             <button type="submit" className="primary" disabled={busy || pass.length === 0}>
-              Restore
+              {t('Restore')}
             </button>
             <button type="button" onClick={() => setFile(null)} disabled={busy}>
-              Cancel
+              {t('Cancel')}
             </button>
           </div>
         </form>
@@ -244,9 +254,15 @@ function ImportBackup() {
       {error && <p className="error">{error}</p>}
       {summary && (
         <p className="notice" role="status">
-          Restored: {summary.added} {summary.added === 1 ? 'piece' : 'pieces'} added
-          {summary.skipped > 0 && <>, {summary.skipped} already here</>}, {summary.progress}{' '}
-          progress {summary.progress === 1 ? 'entry' : 'entries'} merged.
+          {t('Restored:')}{' '}
+          {[
+            summary.added === 1 ? t('1 piece added') : t('{n} pieces added', { n: summary.added }),
+            ...(summary.skipped > 0 ? [t('{n} already here', { n: summary.skipped })] : []),
+            summary.progress === 1
+              ? t('1 progress entry merged')
+              : t('{n} progress entries merged', { n: summary.progress }),
+          ].join(', ')}
+          .
         </p>
       )}
     </div>

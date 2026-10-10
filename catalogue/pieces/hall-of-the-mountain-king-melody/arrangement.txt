@@ -1,0 +1,12 @@
+# Melody-only level: the right hand of the two-hand arrangement, the left hand resting.
+# In the Hall of the Mountain King from Peer Gynt (1875) by Edvard Grieg: the opening theme in B minor, closing chord added.
+# Original simplified arrangement for OpenTiles, released under CC0 1.0.
+title: In the Hall of the Mountain King (opening)
+composer: Edvard Grieg
+key: 2
+time: 4/4
+tempo: 96
+RH: B3e@1 C#4e D4e E4e F#4e D4e F#4q | E#4e C#4e E#4q E4e C4e E4q | B3e C#4e D4e E4e F#4e D4e F#4e B4e | A4e F#4e D4e F#4e A4h
+RH: B3e C#4e D4e E4e F#4e D4e F#4q | E#4e C#4e E#4q E4e C4e E4q | B3e C#4e D4e E4e F#4e D4e F#4e B4e | A4e F#4e D4e F#4e A4h
+RH: [B3 D4 F#4]w
+LH: rw | rw | rw | rw | rw | rw | rw | rw | rw

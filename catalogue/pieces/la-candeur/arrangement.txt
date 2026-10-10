@@ -1,0 +1,20 @@
+# La Candeur (Op. 100 No. 1) by Johann Friedrich Burgmüller: simplified one-voice-per-hand arrangement for OpenTiles, released under CC0 1.0.
+# Notes converted from the public-domain Mutopia Project typesetting by Bas Wassink (https://www.mutopiaproject.org/cgibin/piece-info.cgi?id=202).
+# Made with tools/pipeline/midi_arrange.py: held notes are cut at the next onset, long notes at barlines, and rhythms are on a sixteenth grid.
+title: La Candeur (Op. 100 No. 1)
+composer: Johann Friedrich Burgmüller
+key: 0
+time: 4/4
+tempo: 112
+RH: G5e E5e D5e C5e G5e E5e D5e C5e | C6e A5e G5e F5e C6e A5e G5e F5e | G5e E5e D5e C5e B4e C5e E5e F5e | G5e E5e D5e C5e B4e C5e D5e E5e
+RH: G5e F5e E5e D5e G5e F5e E5e D5e | F5e E5e D5e C5e F5e E5e D5e C5e | B4e A4e C5e B4e D5e C5e B4e A4e | G4e B4e C5e D5e G5q rq
+RH: F5e D5e C5e B4e F5e D5e C5e B4e | [C5 E5]w | F5e D5e C5e B4e F5e D5e C5e B4e | [C5 E5]w
+RH: G5e D#5e D5e C5e F#5e D#5e D5e C5e | A5e G5e C5e D5e F5e E5e G4e A4e | C5e B4e G4e A4e C5e B4e E5e D5e | E5h. rq
+RH: C5e B4e C5e D5e E5e F5e G5e C5e | F5e D5e C5e B4e F5e D5e C5e B4e | C5e B4e C5e D5e E5e F5e G5e C5e | F5e D5e C5e B4e F5e D5e C5e B4e
+RH: C5q rh. | [G4 C5 E5]h rh | [E4 C5]w
+LH: [C3 E3 G3]w | [C3 F3 A3]w | [C3 E3 G3]w | rw
+LH: [B2 F3 G3]w | [C3 E3 G3]w | [D3 F#3 C4]w | [G3 B3]h. rq
+LH: G3e B3e C4e D4e G3e B3e C4e D4e | G3e A3e B3e C4e D4e C4e E4e C4e | G3e B3e C4e D4e G3e B3e C4e D4e | G3e A3e B3e C4e D4e C4e E4e C4e
+LH: A3h [A3 C4]h | [G3 C4 E4]w | [G3 F4]h [G3 F4]h | C4e E4e F4e G4e C4q rq
+LH: [C4 E4]h rh | [C4 F4 G#4]h [C4 F4 G#4]h | [C4 E4 G4]w | [C4 F4 G#4]h [C4 F4 G#4]h
+LH: [C4 E4 G4]q rq C3e E3e F3e G3e | C3h C3e E3e F3e G3e | C3w

@@ -2,3 +2,17 @@ packages:
   - apps/*
   - apps/ios-shell/plugins/*
   - packages/*
+
+ignoredBuiltDependencies:
+  # core-js only prints a donation banner in its install script.
+  - core-js
+
+overrides:
+  # xcode (Capacitor CLI, iPad shell build tool only) pins uuid 7, which has an advisory.
+  uuid: '>=11.1.1'
+
+auditConfig:
+  ignoreGhsas:
+    # sprintf-js has no patched release. It is reached only through the argparse of TensorFlow.js
+    # inside Basic Pitch, with fixed format strings: no input of ours reaches the precision specifier.
+    - GHSA-hp3w-g68c-fv3c

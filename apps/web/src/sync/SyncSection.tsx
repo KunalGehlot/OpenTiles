@@ -5,17 +5,18 @@ import { passphraseStrength } from '../lib/passphrase';
 import { getSyncController, useSyncState } from './controller';
 import type { SyncController } from './local';
 import { passkeysSupported } from './webauthn';
+import { locale, t } from '../i18n';
 
 export function SyncSection() {
   const controller = getSyncController();
   if (controller === null) return null;
   return (
     <section aria-labelledby="sync-title" className="stack">
-      <h2 id="sync-title">Sync</h2>
+      <h2 id="sync-title">{t('Sync')}</h2>
       <p className="muted">
-        Keep your library on several devices. Everything is encrypted on this device with your sync
-        passphrase before it is uploaded; the server stores only your email address and data it
-        cannot read.
+        {t(
+          'Keep your library on several devices. Everything is encrypted on this device with your sync passphrase before it is uploaded; the server stores only your email address and data it cannot read.',
+        )}
       </p>
       <SyncBody controller={controller} />
     </section>
@@ -47,7 +48,7 @@ function SyncBody({ controller }: { controller: SyncController }) {
   }
   switch (state.phase) {
     case 'loading':
-      return <p className="muted">Loading…</p>;
+      return <p className="muted">{t('Loading…')}</p>;
     case 'signed-out':
       return <SignIn controller={controller} />;
     case 'needs-vault':
@@ -68,11 +69,11 @@ function SignIn({ controller }: { controller: SyncController }) {
   const { busy, error, run } = useAction();
   return (
     <div className="panel stack">
-      <h3>Sign in</h3>
+      <h3>{t('Sign in')}</h3>
       {passkeysSupported() && (
         <div className="row">
           <button disabled={busy} onClick={() => void run(() => controller.signInWithPasskey())}>
-            Sign in with a passkey
+            {t('Sign in with a passkey')}
           </button>
         </div>
       )}
@@ -87,7 +88,7 @@ function SignIn({ controller }: { controller: SyncController }) {
         }}
       >
         <label>
-          Email address
+          {t('Email address')}
           <input
             type="email"
             autoComplete="email"
@@ -98,7 +99,7 @@ function SignIn({ controller }: { controller: SyncController }) {
         </label>
         <div className="row">
           <button type="submit" disabled={busy || !email.includes('@')}>
-            Email me a sign-in link
+            {t('Email me a sign-in link')}
           </button>
         </div>
       </form>
@@ -111,11 +112,13 @@ function SignIn({ controller }: { controller: SyncController }) {
           }}
         >
           <p className="notice" role="status">
-            We sent a link and an 8-digit code to {email}. Open the link on this device, or type the
-            code here — on iPad, the code is easier if you added OpenTiles to the Home Screen.
+            {t(
+              'We sent a link and an 8-digit code to {email}. Open the link on this device, or type the code here — on iPad, the code is easier if you added OpenTiles to the Home Screen.',
+              { email },
+            )}
           </p>
           <label>
-            Code
+            {t('Code')}
             <input
               type="text"
               inputMode="numeric"
@@ -126,7 +129,7 @@ function SignIn({ controller }: { controller: SyncController }) {
           </label>
           <div className="row">
             <button type="submit" className="primary" disabled={busy || code.length < 8}>
-              Sign in
+              {t('Sign in')}
             </button>
           </div>
         </form>
@@ -158,13 +161,14 @@ function CreateKey({
         });
       }}
     >
-      <h3>Choose a sync passphrase</h3>
+      <h3>{t('Choose a sync passphrase')}</h3>
       <p className="muted">
-        You type it once on each new device. It never leaves this device. If you forget it and lose
-        the recovery code, the synced copy cannot be opened by anyone.
+        {t(
+          'You type it once on each new device. It never leaves this device. If you forget it and lose the recovery code, the synced copy cannot be opened by anyone.',
+        )}
       </p>
       <label>
-        Sync passphrase
+        {t('Sync passphrase')}
         <input
           type="password"
           autoComplete="new-password"
@@ -176,7 +180,7 @@ function CreateKey({
         <strong>{strength.label}.</strong> {strength.hint}
       </p>
       <label>
-        Passphrase again
+        {t('Passphrase again')}
         <input
           type="password"
           autoComplete="new-password"
@@ -185,9 +189,9 @@ function CreateKey({
         />
       </label>
       {again.length > 0 && again !== pass && (
-        <p className="error">The two passphrases are different.</p>
+        <p className="error">{t('The two passphrases are different.')}</p>
       )}
-      {busy && <p className="muted">Protecting the key with your passphrase…</p>}
+      {busy && <p className="muted">{t('Protecting the key with your passphrase…')}</p>}
       {error && <p className="error">{error}</p>}
       <div className="row">
         <button
@@ -195,10 +199,10 @@ function CreateKey({
           className="primary"
           disabled={busy || strength.level === 0 || again !== pass}
         >
-          Turn on sync
+          {t('Turn on sync')}
         </button>
         <button type="button" onClick={() => void controller.signOut()} disabled={busy}>
-          Sign out
+          {t('Sign out')}
         </button>
       </div>
     </form>
@@ -209,26 +213,27 @@ function RecoveryCode({ code, onDone }: { code: string; onDone: () => void }) {
   const [kept, setKept] = useState(false);
   return (
     <div className="panel stack" role="alertdialog" aria-labelledby="recovery-title">
-      <h3 id="recovery-title">Your recovery code</h3>
+      <h3 id="recovery-title">{t('Your recovery code')}</h3>
       <p className="notice notice--warn">
-        <strong>This is shown only once.</strong> Write it down or print it and keep it somewhere
-        safe. If you forget your passphrase, this code is the only way to open your synced library.
-        Nobody else can recover it for you.
+        <strong>{t('This is shown only once.')}</strong>{' '}
+        {t(
+          'Write it down or print it and keep it somewhere safe. If you forget your passphrase, this code is the only way to open your synced library. Nobody else can recover it for you.',
+        )}
       </p>
       <p className="recovery-code" translate="no">
         {code}
       </p>
       <div className="row">
-        <button onClick={() => window.print()}>Print</button>
-        <button onClick={() => void navigator.clipboard?.writeText(code)}>Copy</button>
+        <button onClick={() => window.print()}>{t('Print')}</button>
+        <button onClick={() => void navigator.clipboard?.writeText(code)}>{t('Copy')}</button>
       </div>
       <label>
-        <input type="checkbox" checked={kept} onChange={(e) => setKept(e.target.checked)} />I have
-        written down or saved my recovery code.
+        <input type="checkbox" checked={kept} onChange={(e) => setKept(e.target.checked)} />
+        {t('I have written down or saved my recovery code.')}
       </label>
       <div className="row">
         <button className="primary" disabled={!kept} onClick={onDone}>
-          Done
+          {t('Done')}
         </button>
       </div>
     </div>
@@ -248,17 +253,19 @@ function Unlock({ controller }: { controller: SyncController }) {
           const ok = await controller.unlock(
             useCode ? { recoveryCode: secret } : { passphrase: secret },
           );
-          if (!ok) setError('Sync is not set up for this account yet.');
+          if (!ok) setError(t('Sync is not set up for this account yet.'));
         });
       }}
     >
-      <h3>Unlock sync on this device</h3>
+      <h3>{t('Unlock sync on this device')}</h3>
       <p className="muted">
-        Signed in{controller.state.email ? ` as ${controller.state.email}` : ''}. Enter the sync
-        passphrase you chose on your first device.
+        {controller.state.email
+          ? t('Signed in as {email}.', { email: controller.state.email })
+          : t('Signed in.')}{' '}
+        {t('Enter the sync passphrase you chose on your first device.')}
       </p>
       <label>
-        {useCode ? 'Recovery code' : 'Sync passphrase'}
+        {useCode ? t('Recovery code') : t('Sync passphrase')}
         <input
           type={useCode ? 'text' : 'password'}
           autoComplete={useCode ? 'off' : 'current-password'}
@@ -268,16 +275,16 @@ function Unlock({ controller }: { controller: SyncController }) {
       </label>
       <label>
         <input type="checkbox" checked={useCode} onChange={(e) => setUseCode(e.target.checked)} />
-        Use the recovery code instead
+        {t('Use the recovery code instead')}
       </label>
-      {busy && <p className="muted">Unlocking…</p>}
+      {busy && <p className="muted">{t('Unlocking…')}</p>}
       {error && <p className="error">{error}</p>}
       <div className="row">
         <button type="submit" className="primary" disabled={busy || secret.length === 0}>
-          Unlock
+          {t('Unlock')}
         </button>
         <button type="button" onClick={() => void controller.signOut()} disabled={busy}>
-          Sign out
+          {t('Sign out')}
         </button>
       </div>
     </form>
@@ -293,15 +300,15 @@ function Ready({ controller }: { controller: SyncController }) {
   return (
     <div className="panel stack">
       <p>
-        Sync is on{state.email ? ` for ${state.email}` : ''}.{' '}
+        {state.email ? t('Sync is on for {email}.', { email: state.email }) : t('Sync is on.')}{' '}
         <span className="muted" role="status">
           {state.busy
-            ? 'Syncing…'
+            ? t('Syncing…')
             : last === null
-              ? 'Not synced yet.'
+              ? t('Not synced yet.')
               : last.error
-                ? `Last attempt failed: ${last.error}`
-                : `Last synced ${new Date(last.at).toLocaleString()}.`}
+                ? t('Last attempt failed: {error}', { error: t(last.error) })
+                : t('Last synced {date}.', { date: new Date(last.at).toLocaleString(locale()) })}
         </span>
       </p>
       <div className="row">
@@ -310,7 +317,7 @@ function Ready({ controller }: { controller: SyncController }) {
           disabled={busy || state.busy}
           onClick={() => void run(async () => void (await controller.syncNow()))}
         >
-          Sync now
+          {t('Sync now')}
         </button>
         <label>
           <input
@@ -318,7 +325,7 @@ function Ready({ controller }: { controller: SyncController }) {
             checked={state.auto}
             onChange={(e) => void controller.setAuto(e.target.checked)}
           />
-          Sync automatically while OpenTiles is open
+          {t('Sync automatically while OpenTiles is open')}
         </label>
       </div>
       {passkeysSupported() && (
@@ -332,26 +339,28 @@ function Ready({ controller }: { controller: SyncController }) {
               })
             }
           >
-            Add a passkey for faster sign-in
+            {t('Add a passkey for faster sign-in')}
           </button>
-          {passkeyAdded && <span role="status">Passkey added.</span>}
+          {passkeyAdded && <span role="status">{t('Passkey added.')}</span>}
         </div>
       )}
       {error && <p className="error">{error}</p>}
       <div className="row">
         <button disabled={busy} onClick={() => void run(() => controller.signOut())}>
-          Sign out on this device
+          {t('Sign out on this device')}
         </button>
       </div>
       <details>
-        <summary>Delete sync account</summary>
+        <summary>{t('Delete sync account')}</summary>
         <div className="stack">
           <p>
-            This deletes your account and every encrypted copy on the server, at once. Your library
-            on this device stays. Type <strong>delete</strong> to confirm.
+            {t(
+              'This deletes your account and every encrypted copy on the server, at once. Your library on this device stays. Type “{word}” to confirm.',
+              { word: t('delete') },
+            )}
           </p>
           <label>
-            Confirm
+            {t('Confirm')}
             <input
               type="text"
               value={confirmDelete}
@@ -361,10 +370,12 @@ function Ready({ controller }: { controller: SyncController }) {
           <div className="row">
             <button
               className="danger"
-              disabled={busy || confirmDelete.trim().toLowerCase() !== 'delete'}
+              disabled={
+                busy || ![t('delete'), 'delete'].includes(confirmDelete.trim().toLowerCase())
+              }
               onClick={() => void run(() => controller.deleteAccount())}
             >
-              Delete account and server data
+              {t('Delete account and server data')}
             </button>
           </div>
         </div>
@@ -392,16 +403,16 @@ export function SignInLink({ token }: { token: string }) {
       .catch((e: unknown) => setError(describeError(e)));
   }, [controller, token]);
   if (controller === null) {
-    return <p className="muted">This copy of OpenTiles has no sync service.</p>;
+    return <p className="muted">{t('This copy of OpenTiles has no sync service.')}</p>;
   }
   return (
     <section className="stack">
-      <h1>Signing in…</h1>
+      <h1>{t('Signing in…')}</h1>
       {error && (
         <>
           <p className="error">{error}</p>
           <p>
-            <a href="#/settings">Back to Settings</a>
+            <a href="#/settings">{t('Back to Settings')}</a>
           </p>
         </>
       )}

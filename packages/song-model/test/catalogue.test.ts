@@ -13,13 +13,17 @@ describe('catalogue scores', () => {
     const prov = JSON.parse(readFileSync(`${piecesDir}${slug}/provenance.json`, 'utf8')) as {
       score_file: string;
       title: string;
+      single_hand?: 'left' | 'right';
     };
     const bytes = readFileSync(`${piecesDir}${slug}/${prov.score_file}`);
     const song = importScore(prov.score_file, new Uint8Array(bytes), { domParser });
-    expect(song.title).toBe(prov.title);
+    // A level of a song may add a suffix to the record's title ("… (melody)"); the score keeps the name.
+    expect(prov.title.startsWith(song.title.replace(/\)$/, ''))).toBe(true);
     expect(song.notes.length).toBeGreaterThan(8);
     expect(song.warnings).toEqual([]);
-    expect(new Set(song.notes.map((n) => n.hand))).toEqual(new Set(['left', 'right']));
+    expect(new Set(song.notes.map((n) => n.hand))).toEqual(
+      new Set(prov.single_hand ? [prov.single_hand] : ['left', 'right']),
+    );
     for (const n of song.notes) {
       expect(n.pitch).toBeGreaterThanOrEqual(21);
       expect(n.pitch).toBeLessThanOrEqual(108);

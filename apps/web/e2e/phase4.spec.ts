@@ -3,6 +3,12 @@
 import { expect, test } from '@playwright/test';
 import type { Page } from '@playwright/test';
 
+/** The keyboard size and the fingers are in the Options panel of the practice header. */
+async function openOptions(page: Page): Promise<void> {
+  await page.getByRole('button', { name: 'Options' }).click();
+  await expect(page.getByRole('group', { name: 'Options' })).toBeVisible();
+}
+
 async function importTune(page: Page): Promise<void> {
   await page.goto('./#/library');
   await page.getByRole('button', { name: 'Import a file…' }).click();
@@ -33,11 +39,39 @@ test('a custom keyboard is set up in Settings and drawn in practice', async ({ p
   await page.goto('./#/practice/catalogue/ode-to-joy');
   const canvas = page.locator('canvas');
   await expect(canvas).toHaveAttribute('data-keys', '21-106');
-  // The practice bar switches size on the spot; a 25-key board starts at C3.
+  // The Options panel switches size on the spot; a 25-key board starts at C3.
+  await openOptions(page);
   await page.getByRole('combobox', { name: 'Keyboard size' }).selectOption('25');
   await expect(canvas).toHaveAttribute('data-keys', '48-72');
   await page.getByRole('combobox', { name: 'Keyboard size' }).selectOption('auto');
   await expect(canvas).not.toHaveAttribute('data-keys', '48-72');
+});
+
+test('the Options panel opens from its button and closes with Escape or a press outside', async ({
+  page,
+}) => {
+  await page.goto('./#/practice/catalogue/ode-to-joy');
+  await expect(page.locator('canvas')).toBeVisible();
+  const button = page.getByRole('button', { name: 'Options' });
+  const panel = page.getByRole('group', { name: 'Options' });
+  await expect(button).toHaveAttribute('aria-expanded', 'false');
+  await expect(panel).toHaveCount(0);
+
+  await button.click();
+  await expect(button).toHaveAttribute('aria-expanded', 'true');
+  await expect(panel).toBeVisible();
+  await expect(panel.getByRole('link', { name: 'All settings' })).toBeVisible();
+
+  // Escape closes it and puts focus back on the button.
+  await page.keyboard.press('Escape');
+  await expect(panel).toHaveCount(0);
+  await expect(button).toBeFocused();
+
+  // So does a press outside the panel.
+  await button.click();
+  await expect(panel).toBeVisible();
+  await page.mouse.click(40, 400);
+  await expect(panel).toHaveCount(0);
 });
 
 test('a piece too wide for the keyboard is moved and the screen says so', async ({ page }) => {
@@ -54,6 +88,7 @@ test('a piece too wide for the keyboard is moved and the screen says so', async 
     buffer: Buffer.from("X:1\nT:High Tune\nL:1/4\nK:C\nc'd'e'f'|\n", 'utf8'),
   });
   await page.getByRole('button', { name: 'Save to my library' }).click();
+  await openOptions(page);
   await page.getByRole('combobox', { name: 'Keyboard size' }).selectOption('25');
   await expect(
     page.getByRole('status').filter({ hasText: 'to fit your 25-key keyboard' }),
@@ -62,7 +97,11 @@ test('a piece too wide for the keyboard is moved and the screen says so', async 
 
 test('holds are judged, and the run can be heard back', async ({ page }) => {
   await importTune(page);
+  await openOptions(page);
   await page.getByRole('combobox', { name: 'Fingering' }).selectOption('suggested');
+  // Escape closes the panel and puts focus back on its button, so the computer keys play again.
+  await page.keyboard.press('Escape');
+  await expect(page.getByRole('group', { name: 'Options' })).toHaveCount(0);
   // The computer keyboard plays like a piano: A S D F are C D E F. The first note is only tapped.
   await page.keyboard.down('a');
   await page.keyboard.up('a');

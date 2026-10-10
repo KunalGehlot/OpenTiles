@@ -1,9 +1,32 @@
 // Canvas 2D drawing of falling notes and the keyboard, 60 fps, outside React (spec §6).
+//
+// P4-10: notes are tiles (an outline and a lit leading edge), bars are numbered, the black keys'
+// lanes are shaded, the keyboard has a shadow under its top edge and glossy black keys, finger
+// numbers are large, and a played key blooms for a third of a second. Everything is flat fills and
+// a few gradients built once per resize: no shadowBlur, no gradient per note, and the font is set
+// only when it changes (WebKit looks the font up on every assignment). Built to stay cheap on an
+// older iPad; frame time on a device has not been measured yet. A highlighted key stays one flat
+// token colour down to its bottom row (the Playwright probe in e2e/layout.spec.ts finds it there).
 import type { Song, SongNote } from '@opentiles/song-model';
-import { BLACK_HEIGHT, keyAt, keyboardHeightFor, layoutKeyboard } from './keyboard';
+import { isDark, parseColour, rgba } from './colour';
+import type { Rgb } from './colour';
+import {
+  BLACK_HEIGHT,
+  MAX_WHITE_WIDTH,
+  keyAt,
+  keyboardHeightFor,
+  layoutKeyboard,
+  widenRange,
+} from './keyboard';
 import type { KeyboardLayout, KeyRect } from './keyboard';
 import type { PracticeSession } from './session';
-import { labelScale } from '../settings/store';
+import { appSettings, effectiveSettings, labelScale } from '../settings/store';
+import { language, t } from '../i18n';
+import { pitchClassName } from '../lib/notes';
+
+const FONT = "system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif";
+/** How long a played key blooms (seconds); the session keeps its flashes this long. */
+const BLOOM_SECONDS = 0.35;
 
 export interface Palette {
   background: string;
@@ -21,34 +44,76 @@ export interface Palette {
   black: string;
   nowLine: string;
   text: string;
+  accent: string;
+  /** Marks drawn on a hand colour: finger numbers and the early/late labels. */
+  onHand: string;
   /** Early or late: the right note at the wrong moment (P1-24). */
   timing: string;
   loopBand: string;
   loopEdge: string;
+  /** Octave labels on the white keys: the black keys' colour, softened. */
+  keyLabel: string;
+  /** A note tile's outline, and the lit strip along its leading edge. */
+  edge: string;
+  shine: string;
+  /** The soft halo behind the notes to play now, per hand. */
+  rightGlow: string;
+  leftGlow: string;
+  /** The wash above the now-line, the shadow under the keyboard's top edge, the black keys' gloss. */
+  nowGlow: string;
+  keybed: string;
+  blackShine: string;
+  /** Hit bloom colours as plain channels, so the opacity can change every frame. */
+  bloom: { correct: Rgb; wrong: Rgb; timing: Rgb };
+  dark: boolean;
 }
 
 export function readPalette(el: Element): Palette {
   const css = getComputedStyle(el);
   const v = (name: string, fallback: string) => css.getPropertyValue(name).trim() || fallback;
+  const channels = (value: string, fallback: Rgb): Rgb => parseColour(value)?.rgb ?? fallback;
+  const background = v('--canvas-bg', '#eef2f0');
+  const right = v('--hand-right', '#2b78b8');
+  const left = v('--hand-left', '#b45a1c');
+  const correct = v('--ok', '#1d7a44');
+  const wrong = v('--bad', '#bd3426');
+  const timing = v('--warn', '#8f5509');
+  const dark = isDark(channels(background, [238, 242, 240]));
   return {
-    background: v('--canvas-bg', '#f6f5f1'),
-    grid: v('--canvas-grid', 'rgba(0,0,0,0.08)'),
-    right: v('--hand-right', '#2f80c0'),
-    rightSoft: v('--hand-right-soft', 'rgba(47,128,192,0.35)'),
-    left: v('--hand-left', '#d07a2a'),
-    leftSoft: v('--hand-left-soft', 'rgba(208,122,42,0.35)'),
-    correct: v('--ok', '#2f9e5b'),
-    wrong: v('--bad', '#d64545'),
-    missed: v('--muted', '#9a9a9a'),
-    done: v('--done', 'rgba(47,158,91,0.45)'),
+    background,
+    grid: v('--canvas-grid', 'rgba(19,26,24,0.07)'),
+    right,
+    rightSoft: v('--hand-right-soft', 'rgba(43,120,184,0.3)'),
+    left,
+    leftSoft: v('--hand-left-soft', 'rgba(180,90,28,0.3)'),
+    correct,
+    wrong,
+    missed: v('--muted', '#54615d'),
+    done: v('--done', 'rgba(29,122,68,0.45)'),
     white: v('--key-white', '#ffffff'),
-    whiteEdge: v('--key-edge', '#c8c6c0'),
-    black: v('--key-black', '#222222'),
-    nowLine: v('--now-line', 'rgba(0,0,0,0.35)'),
-    text: v('--text', '#222'),
-    timing: v('--warn', '#b7791f'),
-    loopBand: v('--loop-band', 'rgba(31,111,92,0.10)'),
+    whiteEdge: v('--key-edge', '#c9d1ce'),
+    black: v('--key-black', '#1c2321'),
+    nowLine: v('--now-line', 'rgba(19,26,24,0.55)'),
+    text: v('--text', '#131a18'),
+    accent: v('--accent', '#1f6f5c'),
+    onHand: v('--on-hand', '#ffffff'),
+    timing,
+    loopBand: v('--loop-band', 'rgba(31,111,92,0.1)'),
     loopEdge: v('--accent', '#1f6f5c'),
+    keyLabel: rgba(channels(v('--key-black', '#1c2321'), [28, 35, 33]), 0.7),
+    edge: dark ? 'rgba(255, 255, 255, 0.22)' : 'rgba(0, 0, 0, 0.22)',
+    shine: dark ? 'rgba(255, 255, 255, 0.34)' : 'rgba(255, 255, 255, 0.4)',
+    rightGlow: rgba(channels(right, [43, 120, 184]), 0.3),
+    leftGlow: rgba(channels(left, [180, 90, 28]), 0.3),
+    nowGlow: dark ? 'rgba(255, 255, 255, 0.07)' : 'rgba(0, 0, 0, 0.05)',
+    keybed: dark ? 'rgba(0, 0, 0, 0.6)' : 'rgba(0, 0, 0, 0.3)',
+    blackShine: 'rgba(255, 255, 255, 0.1)',
+    bloom: {
+      correct: channels(correct, [29, 122, 68]),
+      wrong: channels(wrong, [189, 52, 38]),
+      timing: channels(timing, [143, 85, 9]),
+    },
+    dark,
   };
 }
 
@@ -66,6 +131,18 @@ export class PracticeRenderer {
   private height = 0;
   private dpr = 1;
   palette: Palette;
+  /** Built once per size, not per frame. */
+  private glow: CanvasGradient | null = null;
+  private glowTop = 0;
+  private keybed: CanvasGradient | null = null;
+  /** Read once per frame: Large print scales labels, Reduce motion switches the bloom off. */
+  private scale = 1;
+  /** Per frame: show note names, and spell black keys as flats in a flat key. */
+  private noteNames = true;
+  private flats = false;
+  private calm = false;
+  /** The font last set on the context; resizing the canvas resets it. */
+  private font = '';
 
   constructor(
     private readonly canvas: HTMLCanvasElement,
@@ -95,7 +172,9 @@ export class PracticeRenderer {
   setRange(range: { low: number; high: number }): void {
     if (range.low === this.range.low && range.high === this.range.high) return;
     this.range = range;
-    this.layout = layoutKeyboard(range.low, range.high, this.width);
+    const wide = widenRange(range, this.width);
+    this.layout = layoutKeyboard(wide.low, wide.high, this.width, MAX_WHITE_WIDTH);
+    this.buildGradients();
   }
 
   resize(width: number, height: number, dpr = window.devicePixelRatio || 1): void {
@@ -104,16 +183,41 @@ export class PracticeRenderer {
     this.dpr = dpr;
     this.canvas.width = Math.round(width * dpr);
     this.canvas.height = Math.round(height * dpr);
+    this.font = '';
     this.canvas.style.width = `${width}px`;
     this.canvas.style.height = `${height}px`;
-    this.layout = layoutKeyboard(this.range.low, this.range.high, width);
+    const wide = widenRange(this.range, width);
+    this.layout = layoutKeyboard(wide.low, wide.high, width, MAX_WHITE_WIDTH);
     this.palette = readPalette(this.canvas);
+    this.buildGradients();
+  }
+
+  /** The glow above the now-line and the shadow below the keyboard's top edge. */
+  private buildGradients(): void {
+    const ctx = this.canvas.getContext('2d');
+    if (!ctx || this.width === 0) return;
+    const p = this.palette;
+    const top = this.keyboardTop;
+    const glowHeight = Math.min(top * 0.35, 140);
+    this.glowTop = top - glowHeight;
+    const glow = ctx.createLinearGradient(0, this.glowTop, 0, top);
+    glow.addColorStop(0, 'rgba(0, 0, 0, 0)');
+    glow.addColorStop(1, p.nowGlow);
+    this.glow = glow;
+    const keybed = ctx.createLinearGradient(0, top, 0, top + 9);
+    keybed.addColorStop(0, p.keybed);
+    keybed.addColorStop(1, 'rgba(0, 0, 0, 0)');
+    this.keybed = keybed;
   }
 
   draw(session: PracticeSession, now: number): void {
     const ctx = this.canvas.getContext('2d');
     if (!ctx || this.width === 0) return;
     const p = this.palette;
+    this.scale = labelScale();
+    this.calm = effectiveSettings().reducedMotion;
+    this.noteNames = appSettings().noteNames;
+    this.flats = (session.song.keySignatures[0]?.fifths ?? 0) < 0;
     ctx.setTransform(this.dpr, 0, 0, this.dpr, 0, 0);
     ctx.fillStyle = p.background;
     ctx.fillRect(0, 0, this.width, this.height);
@@ -124,6 +228,10 @@ export class PracticeRenderer {
     const yOf = (b: number) => top - (b - beat) * pxPerBeat;
 
     this.drawGrid(ctx, session.song, yOf, top);
+    if (this.glow) {
+      ctx.fillStyle = this.glow;
+      ctx.fillRect(0, this.glowTop, this.width, top - this.glowTop);
+    }
     const loop = session.loopSpan;
     if (loop) this.drawBand(ctx, yOf(loop.fromBeat), yOf(loop.toBeat), top, false);
     if (this.preview) {
@@ -142,7 +250,28 @@ export class PracticeRenderer {
     ctx.fillStyle = p.nowLine;
     ctx.fillRect(0, top - 2, this.width, 2);
     this.drawKeyboard(ctx, session, now, top);
+    this.drawBlooms(ctx, session, now, top);
     this.drawLabels(ctx, session, now, top);
+    this.drawProgress(ctx, session);
+  }
+
+  /** Sets the font only when it differs from the last one; sizes snap to half pixels. */
+  private setFont(ctx: CanvasRenderingContext2D, weight: number, size: number): void {
+    const next = `${weight} ${Math.round(size * 2) / 2}px ${FONT}`;
+    if (next === this.font) return;
+    ctx.font = next;
+    this.font = next;
+  }
+
+  /** How far through the piece the now-line is: a hairline along the top of the canvas. */
+  private drawProgress(ctx: CanvasRenderingContext2D, session: PracticeSession): void {
+    const length = session.song.lengthBeats;
+    if (length <= 0) return;
+    const p = this.palette;
+    ctx.fillStyle = p.grid;
+    ctx.fillRect(0, 0, this.width, 2);
+    ctx.fillStyle = p.accent;
+    ctx.fillRect(0, 0, this.width * Math.min(1, Math.max(0, session.beat / length)), 2);
   }
 
   /** The looped bars: a tinted band with solid edges (dashed while still being dragged). */
@@ -181,23 +310,23 @@ export class PracticeRenderer {
   ): void {
     if (session.labels.length === 0) return;
     const p = this.palette;
-    ctx.font = '600 12px system-ui, sans-serif';
+    this.setFont(ctx, 600, 12 * this.scale);
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
     for (const l of session.labels) {
       const key = keyAt(this.layout, l.pitch);
       if (!key || l.until <= now) continue;
-      const text = LABEL_TEXT[l.kind];
-      const w = ctx.measureText(text).width + 10;
+      const text = labelText(l.kind);
+      const w = ctx.measureText(text).width + 12;
       const cx = Math.min(this.width - w / 2, Math.max(w / 2, key.x + key.width / 2));
       // Early labels sit a little higher than late ones, so the direction reads at a glance;
       // hold feedback sits above both.
-      const cy = top - (l.kind === 'early' ? 30 : l.kind === 'late' ? 16 : 44);
+      const cy = top - (l.kind === 'early' ? 32 : l.kind === 'late' ? 17 : 47) * this.scale;
       ctx.globalAlpha = Math.min(1, (l.until - now) / 0.3);
       ctx.fillStyle = p.timing;
-      roundRect(ctx, cx - w / 2, cy - 8, w, 16, 8);
+      roundRect(ctx, cx - w / 2, cy - 9 * this.scale, w, 18 * this.scale, 9 * this.scale);
       ctx.fill();
-      ctx.fillStyle = '#fff';
+      ctx.fillStyle = p.onHand;
       ctx.fillText(text, cx, cy + 0.5);
       ctx.globalAlpha = 1;
     }
@@ -252,17 +381,34 @@ export class PracticeRenderer {
     yOf: (b: number) => number,
     top: number,
   ): void {
-    ctx.fillStyle = this.palette.grid;
-    for (const m of song.measures) {
-      const y = yOf(m.startBeat);
-      if (y < 0 || y > top) continue;
-      ctx.fillRect(0, y, this.width, 1);
-    }
-    // Faint lanes at every C and F to help find keys.
+    const p = this.palette;
+    // The lanes of the black keys, shaded, so the keyboard's shape runs up the screen.
+    ctx.fillStyle = p.grid;
+    ctx.globalAlpha = 0.4;
+    for (const k of this.layout.keys) if (k.black) ctx.fillRect(k.x, 0, k.width, top);
+    ctx.globalAlpha = 1;
+    // A faint guide at every C and F to help find keys.
     for (const k of this.layout.keys) {
       if (k.black || (k.pitch % 12 !== 0 && k.pitch % 12 !== 5)) continue;
       ctx.fillRect(k.x, 0, 1, top);
     }
+    // Bar lines, each with its number on the left edge.
+    this.setFont(ctx, 600, 11 * this.scale);
+    ctx.textAlign = 'left';
+    ctx.textBaseline = 'top';
+    for (const m of song.measures) {
+      const y = yOf(m.startBeat);
+      if (y < 0 || y > top) continue;
+      ctx.fillStyle = p.grid;
+      ctx.fillRect(0, y, this.width, 1);
+      if (y > 14 && y < top - 4 * this.scale) {
+        ctx.globalAlpha = 0.8;
+        ctx.fillStyle = p.missed;
+        ctx.fillText(m.number, 6, y + 3);
+        ctx.globalAlpha = 1;
+      }
+    }
+    ctx.textBaseline = 'alphabetic';
   }
 
   private drawNote(
@@ -280,26 +426,79 @@ export class PracticeRenderer {
     const pad = Math.max(1, key.width * 0.08);
     const x = key.x + pad;
     const w = key.width - pad * 2;
+    const y = yTop + 1;
     const h = Math.max(4, yBottom - yTop - 2);
+    const radius = Math.min(7, w * 0.3, h / 2);
+    const isDone = session.done.has(n.id);
     let fill = n.hand === 'right' ? p.right : p.left;
     if (!practised) fill = n.hand === 'right' ? p.rightSoft : p.leftSoft;
     const judgement = session.judged.get(n.id);
-    if (judgement === 'early' || judgement === 'late') fill = p.timing;
-    else if (judgement === 'missed') fill = p.missed;
-    else if (session.done.has(n.id)) fill = p.done;
+    // An early or late note keeps its hand colour (a played right-hand note stays blue); only a
+    // thin edge in the timing colour says it was off the beat. Filling it amber turned nearly
+    // every played note orange.
+    const offBeat = judgement === 'early' || judgement === 'late';
+    if (judgement === 'missed') fill = p.missed;
+    else if (isDone) fill = p.done;
+    // The notes to play now glow, so the eye finds them among the ones still falling.
+    if (isCurrent && !isDone) {
+      ctx.fillStyle = n.hand === 'right' ? p.rightGlow : p.leftGlow;
+      roundRect(ctx, x - 3, y - 3, w + 6, h + 6, radius + 3);
+      ctx.fill();
+    }
     ctx.fillStyle = fill;
-    roundRect(ctx, x, yTop + 1, w, h, Math.min(6, w / 3));
+    roundRect(ctx, x, y, w, h, radius);
     ctx.fill();
-    if (isCurrent && !session.done.has(n.id)) {
-      ctx.strokeStyle = p.text;
+    if (practised && !isDone) {
+      ctx.lineWidth = 1;
+      ctx.strokeStyle = p.edge;
+      ctx.stroke();
+      // The leading edge, which reaches the keys first, is lit.
+      if (h > 12 && w > 6) {
+        ctx.fillStyle = p.shine;
+        roundRect(ctx, x + 1.5, y + h - 5, w - 3, 3.5, 1.75);
+        ctx.fill();
+      }
+    }
+    if (offBeat && !isDone) {
+      ctx.strokeStyle = p.timing;
       ctx.lineWidth = 2;
+      roundRect(ctx, x, y, w, h, radius);
       ctx.stroke();
     }
-    if (n.fingering && w > 12) {
-      ctx.fillStyle = '#fff';
-      ctx.font = `600 ${Math.min(14 * labelScale(), w * 0.8)}px system-ui, sans-serif`;
-      ctx.textAlign = 'center';
-      ctx.fillText(String(n.fingering), x + w / 2, yTop + h - 4);
+    if (isCurrent && !isDone) {
+      ctx.strokeStyle = p.text;
+      ctx.lineWidth = 2;
+      roundRect(ctx, x, y, w, h, radius);
+      ctx.stroke();
+    }
+    if (practised && !isDone && w >= 13 && this.noteNames) {
+      // The name sits at the top (the far edge), the finger at the bottom; both only when the tile
+      // is tall enough that they do not touch.
+      const size = Math.min(Math.max(w * 0.42, 10), 17) * this.scale;
+      const fingerRoom = n.fingering ? Math.min(Math.max(w * 0.5, 11), 22) * this.scale + 6 : 0;
+      if (h >= size + 8 + fingerRoom) {
+        ctx.fillStyle = p.onHand;
+        this.setFont(ctx, 600, Math.min(size, w * 0.62));
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(
+          pitchClassName(n.pitch, this.flats, language() === 'de'),
+          x + w / 2,
+          y + size * 0.5 + 5,
+        );
+        ctx.textBaseline = 'alphabetic';
+      }
+    }
+    if (n.fingering && practised && !isDone && w >= 13) {
+      const size = Math.min(Math.max(w * 0.5, 11), 22) * this.scale;
+      if (h >= size + 4) {
+        ctx.fillStyle = p.onHand;
+        this.setFont(ctx, 700, Math.min(size, w * 0.85));
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(String(n.fingering), x + w / 2, y + h - Math.min(h / 2, size * 0.5 + 6));
+        ctx.textBaseline = 'alphabetic';
+      }
     }
   }
 
@@ -349,44 +548,99 @@ export class PracticeRenderer {
       ctx.fillRect(k.x + k.width - 1, top, 1, height);
       this.drawHold(ctx, k, session, now, top, height);
       if (k.pitch % 12 === 0) {
-        ctx.fillStyle = p.missed;
+        ctx.fillStyle = p.keyLabel;
         // Large print (P2-15) makes the octave labels bigger, as far as the key allows.
-        const scale = labelScale();
-        ctx.font = `${scale > 1 ? 600 : 400} ${Math.max(9, Math.min(12 * scale, k.width * 0.45 * scale))}px system-ui, sans-serif`;
+        const scale = this.scale;
+        this.setFont(
+          ctx,
+          scale > 1 ? 600 : 500,
+          Math.max(9, Math.min(12 * scale, k.width * 0.45 * scale)),
+        );
         ctx.textAlign = 'center';
         ctx.fillText(`C${Math.floor(k.pitch / 12) - 1}`, k.x + k.width / 2, top + height - 6);
       }
     }
+    // The shadow the keybed's top edge casts on the keys.
+    if (this.keybed) {
+      ctx.fillStyle = this.keybed;
+      ctx.fillRect(0, top, this.width, 9);
+    }
     const bh = height * BLACK_HEIGHT;
     for (const k of this.layout.keys) {
       if (!k.black) continue;
-      ctx.fillStyle = colourFor(k.pitch, p.black);
-      roundRect(ctx, k.x, top, k.width, bh, 2);
+      const colour = colourFor(k.pitch, p.black);
+      ctx.fillStyle = colour;
+      roundRect(ctx, k.x, top, k.width, bh, 3);
       ctx.fill();
+      if (colour === p.black && k.width > 6) {
+        // The glossy face of an unplayed black key.
+        ctx.fillStyle = p.blackShine;
+        roundRect(ctx, k.x + 2, top + 1, k.width - 4, bh - 7, 2);
+        ctx.fill();
+      }
       this.drawHold(ctx, k, session, now, top, bh);
     }
     if (fingerOf.size === 0) return;
-    ctx.fillStyle = '#fff';
+    ctx.fillStyle = p.onHand;
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
     for (const k of this.layout.keys) {
       const finger = fingerOf.get(k.pitch);
       if (finger === undefined || k.width < 8) continue;
-      ctx.font = `700 ${Math.min(16 * labelScale(), k.width * 0.75)}px system-ui, sans-serif`;
+      const size = Math.min(Math.max(k.width * 0.55, 12), 24) * this.scale;
+      this.setFont(ctx, 700, Math.min(size, k.width * 0.85));
       // White keys: in the part below the black keys; black keys: near their front edge.
       const y = k.black ? top + bh * 0.72 : top + bh + (height - bh) * 0.4;
       ctx.fillText(String(finger), k.x + k.width / 2, y);
     }
     ctx.textBaseline = 'alphabetic';
   }
+
+  /** A played key blooms for a moment, so a hit is felt as well as seen. Off under Reduce motion. */
+  private drawBlooms(
+    ctx: CanvasRenderingContext2D,
+    session: PracticeSession,
+    now: number,
+    top: number,
+  ): void {
+    if (this.calm) return;
+    for (const f of session.flashes) {
+      if (f.kind === 'missed') continue;
+      const life = (f.until - now) / BLOOM_SECONDS;
+      if (life <= 0 || life > 1) continue;
+      const key = keyAt(this.layout, f.pitch);
+      if (!key) continue;
+      const channels =
+        f.kind === 'correct'
+          ? this.palette.bloom.correct
+          : f.kind === 'wrong'
+            ? this.palette.bloom.wrong
+            : this.palette.bloom.timing;
+      const cx = key.x + key.width / 2;
+      // It spreads as it fades.
+      const radius = Math.max(28, key.width * 2) * (1.7 - 0.7 * life);
+      const g = ctx.createRadialGradient(cx, top, 0, cx, top, radius);
+      g.addColorStop(0, rgba(channels, 0.55 * life));
+      g.addColorStop(1, rgba(channels, 0));
+      ctx.fillStyle = g;
+      // Only above the keys: the keyboard keeps its own colours.
+      ctx.fillRect(cx - radius, top - radius, radius * 2, radius);
+    }
+  }
 }
 
-const LABEL_TEXT: Record<'early' | 'late' | 'short' | 'long', string> = {
-  early: 'early',
-  late: 'late',
-  short: 'hold longer',
-  long: 'let go',
-};
+function labelText(kind: 'early' | 'late' | 'short' | 'long'): string {
+  switch (kind) {
+    case 'early':
+      return t('early');
+    case 'late':
+      return t('late');
+    case 'short':
+      return t('hold longer');
+    default:
+      return t('let go');
+  }
+}
 
 function roundRect(
   ctx: CanvasRenderingContext2D,

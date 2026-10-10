@@ -1,0 +1,13 @@
+# Melody-only level: the right hand of the two-hand arrangement, the left hand resting.
+# Prelude in C major, BWV 846, from The Well-Tempered Clavier, Book I (1722), by Johann Sebastian Bach: the first four bars.
+# Original simplified arrangement for OpenTiles, released under CC0 1.0.
+title: Prelude in C (opening)
+composer: Johann Sebastian Bach
+key: 0
+time: 4/4
+tempo: 66
+RH: re G4s@1 C5s E5s G4s C5s E5s re G4s C5s E5s G4s C5s E5s
+RH: | re A4s D5s F5s A4s D5s F5s re A4s D5s F5s A4s D5s F5s
+RH: | re G4s D5s F5s G4s D5s F5s re G4s D5s F5s G4s D5s F5s
+RH: | re G4s C5s E5s G4s C5s E5s re G4s C5s E5s G4s C5s E5s
+LH: rw | rw | rw | rw

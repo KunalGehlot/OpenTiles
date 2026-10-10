@@ -297,3 +297,109 @@ describe('hold teaching and recording (P4-09)', () => {
     expect(session.expectedNotes().map((n) => n.id)).toEqual(['n0']);
   });
 });
+
+describe('steady clock', () => {
+  it('moves evenly although the audio clock moves in steps', async () => {
+    const { steadyClock } = await import('../src/views/session');
+    let perf = 0;
+    let audio = 0;
+    const clock = steadyClock(
+      () => audio,
+      () => perf,
+    );
+    const seen: number[] = [];
+    for (let frame = 0; frame < 120; frame++) {
+      perf += 1 / 60;
+      // The audio clock only advances in 12 ms buffers.
+      audio = Math.floor(perf / 0.012) * 0.012;
+      seen.push(clock());
+    }
+    const steps = seen.slice(1).map((t, i) => t - (seen[i] ?? 0));
+    for (const step of steps) expect(step).toBeGreaterThanOrEqual(0);
+    expect(Math.max(...steps) - Math.min(...steps)).toBeLessThan(0.004);
+    // It stays within one buffer of the audio clock.
+    expect(Math.abs((seen.at(-1) ?? 0) - audio)).toBeLessThan(0.02);
+  });
+
+  it('jumps to the audio clock when it moves far (a pause, or the clock being swapped)', async () => {
+    const { steadyClock } = await import('../src/views/session');
+    let perf = 0;
+    let audio = 0;
+    const clock = steadyClock(
+      () => audio,
+      () => perf,
+    );
+    clock();
+    perf = 1;
+    audio = 5;
+    expect(clock()).toBe(5);
+  });
+});
+
+describe('scrubbing (P4-18)', () => {
+  it('moves wait mode to the step at the new place and holds the drag position', () => {
+    const { session, run, press } = setup();
+    press(60);
+    run(0.2);
+    session.scrubbing = true;
+    session.seek(5.5);
+    run(0.5);
+    // While dragging, the position is exactly where the learner put it.
+    expect(session.beat).toBeCloseTo(5.5, 6);
+    expect(session.wait.current?.beat).toBe(6);
+    session.scrubbing = false;
+    // Let go: the step to play is the one at the new place (the display eases to it in real time).
+    expect(session.expected()).toEqual([64]);
+    // Notes from there on are not marked done; the first one played still is.
+    expect(session.done.has('n6')).toBe(false);
+    expect(session.done.has('n0')).toBe(true);
+  });
+
+  it('stops a playing run and starts again from the new place', () => {
+    const { session, run } = setup();
+    session.setMode('listen');
+    session.start();
+    run(3);
+    expect(session.playing).toBe(true);
+    session.seek(8);
+    expect(session.playing).toBe(false);
+    expect(session.beat).toBe(8);
+    session.start();
+    run(1.5); // the lead-in
+    expect(session.beat).toBeGreaterThanOrEqual(8);
+    expect(session.beat).toBeLessThan(9);
+  });
+
+  it('keeps the position inside the piece', () => {
+    const { session } = setup();
+    session.seek(-3);
+    expect(session.beat).toBe(0);
+    session.seek(1000);
+    expect(session.beat).toBe(16);
+    // Past the last step, wait mode waits on the last note instead of finishing the run.
+    expect(session.wait.finished).toBe(false);
+  });
+});
+
+describe('MIDI keys on this device', () => {
+  it('echoes MIDI notes on this device when asked, and stops them on release', () => {
+    const { session, clock } = setup();
+    const log: string[] = [];
+    session.midiEcho = {
+      volume: 1,
+      noteOn: (p) => {
+        log.push(`on ${p}`);
+        return { stop: () => log.push(`off ${p}`) };
+      },
+      play: () => ({ stop: () => {} }),
+      click: () => {},
+    };
+    session.input({ pitch: 60, time: clock.t, confidence: 1, source: 'midi' });
+    session.input({ pitch: 64, time: clock.t, confidence: 1, source: 'touch' });
+    session.release(60);
+    expect(log).toEqual(['on 60', 'off 60']);
+    session.midiEcho = null;
+    session.input({ pitch: 62, time: clock.t, confidence: 1, source: 'midi' });
+    expect(log).toHaveLength(2);
+  });
+});

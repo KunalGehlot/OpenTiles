@@ -1,0 +1,24 @@
+# Minuet in G minor (BWV Anh. 115) by Christian Petzold: simplified one-voice-per-hand arrangement for OpenTiles, released under CC0 1.0.
+# Notes converted from the public-domain Mutopia Project typesetting by Allen Garvin (https://www.mutopiaproject.org/cgibin/piece-info.cgi?id=76).
+# Made with tools/pipeline/midi_arrange.py: held notes are cut at the next onset, long notes at barlines, and rhythms are on a sixteenth grid.
+title: Minuet in G minor (BWV Anh. 115)
+composer: Christian Petzold
+key: -2
+time: 3/4
+tempo: 112
+RH: Bb5q A5q G5q | A5q D5q D5q | G5q G4e A4e Bb4e C5e | D5h.
+RH: Eb5q F5e Eb5e D5e C5e | D5q Eb5e D5e C5e Bb4e | C5q D5e C5e Bb4e C5e | A4h.
+RH: Bb5q A5q G5q | A5q D5q D5q | G5q G4e A4e Bb4e C5e | D5h.
+RH: F5q G5e F5e Eb5e D5e | Eb5q F5e Eb5e D5e C5e | D5q G5q C5q | [D4 F4 Bb4]h.
+RH: D5q Bb4e C5e D5e E5e | F5q G5q A5q | Bb5q G5e A5e Bb5e G5e | A5q G5e A5e F5q
+RH: F4e G4e A4e Bb4e C5e D5e | Eb5q D5q C5q | F5q Bb4q A4q | Bb4h.
+RH: G4q D5e C5e D5q | G4q Eb5e D5e Eb5q | G4e D5e Gb4e C5e G4e Bb4e | A4h rq
+RH: D4e E4e F#4e G4e A4e Bb4e | C5q Bb4q A4q | Bb4e C5s D5s G4q Gb4q | [Bb3 D4 G4]h.
+LH: G3h. | F3h. | Eb3h. | D3q D4e C4e Bb3e A3e
+LH: [G3 Bb3]h A3q | Bb3h G3q | A3q F#3q G3q | D3q D4e C4e Bb3e A3e
+LH: G3h. | F3h. | Eb3h. | D3q D4e C4e B3e A3e
+LH: [B3 D4]h G3q | C4q A3q F3q | Bb3q Eb3q [F3 A3]q | Bb3q Bb2h
+LH: Bb3h. | A3q G3q F3q | G3q E3q C3q | F3h rq
+LH: A3q G3q F3q | G3q F3q Eb3q | D3q Eb3q F3q | Bb2q D4q C4q
+LH: [B3 D4]h. | C4h. | Bb3q A3q G3q | D4q A3e G3e Gb3e E3e
+LH: D3h rq | Eb3q D3q C3q | Bb2q C3q D3q | G3q G2h

@@ -67,7 +67,7 @@ test('practice works offline after the first visit', async ({ page, context, bro
     'Offline emulation of service-worker traffic is verified on Chromium only so far',
   );
   await page.goto('./');
-  await expect(page.locator('.card h3', { hasText: 'Ode to Joy' })).toBeVisible();
+  await expect(page.locator('.card h3', { hasText: 'Ode to Joy (theme)' })).toBeVisible();
   await serviceWorkerReady(page);
 
   await context.setOffline(true);
@@ -83,7 +83,7 @@ test('practice works offline after the first visit', async ({ page, context, bro
 
     await page.reload();
     await expect(page.getByRole('heading', { name: 'Free piano practice' })).toBeVisible();
-    await page.locator('.card', { hasText: 'Ode to Joy' }).click();
+    await page.locator('.card', { hasText: 'Ode to Joy (theme)' }).click();
     await expect(page.locator('canvas')).toBeVisible();
     await page.getByRole('button', { name: 'Right', exact: true }).click();
     const stats = page.locator('.stats');

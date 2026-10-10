@@ -1,0 +1,516 @@
+/*
+ * Base styles: the reset, type, links and every native form control (P4-10, ADR 0011).
+ *
+ * Controls stay real <button>, <select>, <input> elements, so keyboards, screen readers, iPad pickers
+ * and Playwright all keep working; only their look is replaced. Sizes are in rem (Large print).
+ */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+  color: var(--text);
+  background: var(--bg);
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-sans);
+  font-size: var(--text-md);
+  line-height: var(--leading);
+  -webkit-font-smoothing: antialiased;
+  /* Long words and URLs must not widen the page at ⅓ iPad width (P1-27). */
+  overflow-wrap: break-word;
+}
+
+/* ---- Type ---- */
+
+h1,
+h2,
+h3 {
+  margin: 0;
+  color: var(--text);
+  line-height: var(--leading-tight);
+  text-wrap: balance;
+}
+
+h1 {
+  font-size: var(--text-3xl);
+  font-weight: 700;
+  letter-spacing: -0.022em;
+}
+
+h2 {
+  margin-top: var(--space-6);
+  margin-bottom: var(--space-3);
+  font-size: var(--text-xl);
+  font-weight: 650;
+  letter-spacing: -0.014em;
+}
+
+h3 {
+  margin-top: var(--space-4);
+  font-size: var(--text-lg);
+  font-weight: 600;
+  letter-spacing: -0.008em;
+}
+
+p {
+  margin: 0 0 var(--space-3);
+}
+
+ul,
+ol {
+  margin: 0 0 var(--space-3);
+  padding-left: 1.25rem;
+}
+
+li + li {
+  margin-top: var(--space-1);
+}
+
+a {
+  color: var(--accent);
+  text-decoration-thickness: 0.075em;
+  text-underline-offset: 0.2em;
+  transition: color var(--dur-1) var(--ease);
+}
+
+a:hover {
+  color: var(--accent-hover);
+}
+
+strong {
+  font-weight: 650;
+}
+
+code,
+kbd {
+  font-family: var(--font-mono);
+  font-size: 0.875em;
+}
+
+code {
+  padding: 0.1em 0.35em;
+  border-radius: 0.3rem;
+  background: var(--sunken);
+}
+
+kbd {
+  padding: 0.1rem 0.4rem;
+  border: 1px solid var(--line-strong);
+  border-bottom-width: 2px;
+  border-radius: 0.35rem;
+  background: var(--surface);
+}
+
+hr {
+  height: 1px;
+  margin: var(--space-5) 0;
+  border: 0;
+  background: var(--line);
+}
+
+table {
+  border-collapse: collapse;
+}
+
+:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+}
+
+::selection {
+  background: var(--accent-soft);
+  color: var(--accent-ink);
+}
+
+/* ---- Buttons ---- */
+
+button,
+.button {
+  --btn-bg: var(--surface);
+  --btn-fg: var(--text);
+  --btn-border: var(--line-strong);
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  min-height: var(--tap);
+  padding: 0.45rem 0.95rem;
+  border: 1px solid var(--btn-border);
+  border-radius: var(--radius-sm);
+  background: var(--btn-bg);
+  color: var(--btn-fg);
+  box-shadow: var(--shadow-1);
+  font: inherit;
+  font-weight: 500;
+  line-height: 1.2;
+  text-decoration: none;
+  white-space: nowrap;
+  cursor: pointer;
+  /* No double-tap zoom on iPad: taps register at once. */
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  transition:
+    background-color var(--dur-1) var(--ease),
+    border-color var(--dur-1) var(--ease),
+    color var(--dur-1) var(--ease),
+    box-shadow var(--dur-1) var(--ease),
+    transform var(--dur-1) var(--ease);
+}
+
+button:hover:not(:disabled),
+a.button:hover {
+  --btn-bg: var(--surface-2);
+  --btn-border: var(--control);
+  color: var(--btn-fg);
+}
+
+button:active:not(:disabled),
+a.button:active {
+  transform: translateY(1px);
+  box-shadow: none;
+}
+
+button:disabled {
+  opacity: 0.45;
+  cursor: default;
+  box-shadow: none;
+}
+
+button.primary,
+.button.primary {
+  --btn-bg: var(--accent);
+  --btn-fg: var(--accent-text);
+  --btn-border: var(--accent);
+}
+
+button.primary:hover:not(:disabled),
+a.button.primary:hover {
+  --btn-bg: var(--accent-hover);
+  --btn-border: var(--accent-hover);
+}
+
+/* A quiet button: text on the page, for the third and fourth action on a screen. */
+button.quiet,
+.button.quiet {
+  --btn-bg: transparent;
+  --btn-fg: var(--accent);
+  --btn-border: transparent;
+  box-shadow: none;
+}
+
+button.quiet:hover:not(:disabled),
+a.button.quiet:hover {
+  --btn-bg: var(--accent-soft);
+  --btn-fg: var(--accent-ink);
+  --btn-border: transparent;
+}
+
+button.danger,
+button.danger.quiet {
+  --btn-fg: var(--bad);
+}
+
+button.danger:hover:not(:disabled),
+button.danger.quiet:hover:not(:disabled) {
+  --btn-bg: var(--bad-soft);
+  --btn-fg: var(--bad);
+  --btn-border: var(--bad);
+}
+
+/* A switched-on toggle is tinted, not filled: the screen should not shout about its settings. */
+button[aria-pressed='true'],
+button[aria-expanded='true'] {
+  --btn-bg: var(--accent-soft);
+  --btn-fg: var(--accent-ink);
+  --btn-border: var(--accent-line);
+}
+
+button[aria-pressed='true']:hover:not(:disabled),
+button[aria-expanded='true']:hover:not(:disabled) {
+  --btn-bg: var(--accent-soft);
+  --btn-border: var(--accent);
+}
+
+/* ---- Fields ---- */
+
+label {
+  display: inline-flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  max-width: 100%;
+}
+
+input,
+select,
+textarea {
+  max-width: 100%;
+}
+
+input[type='text'],
+input[type='search'],
+input[type='number'],
+input[type='email'],
+input[type='password'],
+select,
+textarea {
+  min-height: var(--tap);
+  padding: 0.4rem 0.7rem;
+  border: 1px solid var(--control);
+  border-radius: var(--radius-sm);
+  background-color: var(--surface);
+  color: var(--text);
+  font: inherit;
+  transition:
+    border-color var(--dur-1) var(--ease),
+    box-shadow var(--dur-1) var(--ease);
+}
+
+input[type='password'],
+input[type='email'] {
+  width: min(28ch, 100%);
+}
+
+input::placeholder,
+textarea::placeholder {
+  color: var(--muted);
+  opacity: 1;
+}
+
+input[type='text']:focus-visible,
+input[type='number']:focus-visible,
+input[type='email']:focus-visible,
+input[type='password']:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+  outline: none;
+  border-color: var(--focus);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--focus) 30%, transparent);
+}
+
+input[aria-invalid='true'] {
+  border-color: var(--bad);
+}
+
+input:disabled,
+select:disabled {
+  opacity: 0.55;
+}
+
+/* Select: the platform's own picker, drawn with our own arrow. */
+select {
+  -webkit-appearance: none;
+  appearance: none;
+  padding-right: 2.1rem;
+  background-image:
+    linear-gradient(45deg, transparent 50%, var(--muted) 50%),
+    linear-gradient(135deg, var(--muted) 50%, transparent 50%);
+  background-position:
+    calc(100% - 1.05rem) 52%,
+    calc(100% - 0.75rem) 52%;
+  background-size: 0.3rem 0.3rem;
+  background-repeat: no-repeat;
+  cursor: pointer;
+}
+
+/* Checkbox. Where it is a setting rather than a choice it becomes a switch (components.css). */
+input[type='checkbox'] {
+  -webkit-appearance: none;
+  appearance: none;
+  display: inline-grid;
+  place-content: center;
+  flex: none;
+  inline-size: 1.2rem;
+  block-size: 1.2rem;
+  margin: 0;
+  border: 1.5px solid var(--control);
+  border-radius: 0.3rem;
+  background: var(--surface);
+  cursor: pointer;
+  transition:
+    background-color var(--dur-1) var(--ease),
+    border-color var(--dur-1) var(--ease);
+}
+
+input[type='checkbox']::before {
+  content: '';
+  inline-size: 0.7rem;
+  block-size: 0.7rem;
+  background: var(--accent-text);
+  clip-path: polygon(14% 44%, 0 65%, 50% 100%, 100% 16%, 80% 0%, 43% 62%);
+  transform: scale(0);
+  transition: transform var(--dur-1) var(--ease);
+}
+
+input[type='checkbox']:checked {
+  border-color: var(--accent);
+  background: var(--accent);
+}
+
+input[type='checkbox']:checked::before {
+  transform: scale(1);
+}
+
+/* Slider: a thin track and a round handle big enough for a finger. */
+input[type='range'] {
+  -webkit-appearance: none;
+  appearance: none;
+  /* A plain width: a percentage inside a label would collapse in the label's own sizing. */
+  width: 10rem;
+  height: 1.75rem;
+  margin: 0;
+  background: transparent;
+  accent-color: var(--accent);
+  cursor: pointer;
+}
+
+input[type='range']::-webkit-slider-runnable-track {
+  height: 4px;
+  border-radius: 999px;
+  background: var(--control);
+}
+
+input[type='range']::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 1.25rem;
+  height: 1.25rem;
+  margin-top: calc((4px - 1.25rem) / 2);
+  border: 2px solid var(--accent);
+  border-radius: 50%;
+  background: var(--surface);
+  box-shadow: var(--shadow-1);
+  transition: transform var(--dur-1) var(--ease);
+}
+
+input[type='range']:active::-webkit-slider-thumb {
+  transform: scale(1.12);
+}
+
+input[type='range']::-moz-range-track {
+  height: 4px;
+  border-radius: 999px;
+  background: var(--control);
+}
+
+input[type='range']::-moz-range-progress {
+  height: 4px;
+  border-radius: 999px;
+  background: var(--accent);
+}
+
+input[type='range']::-moz-range-thumb {
+  width: 1.05rem;
+  height: 1.05rem;
+  border: 2px solid var(--accent);
+  border-radius: 50%;
+  background: var(--surface);
+  box-shadow: var(--shadow-1);
+}
+
+input[type='range']:focus-visible {
+  outline: none;
+}
+
+input[type='range']:focus-visible::-webkit-slider-thumb {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+}
+
+input[type='range']:focus-visible::-moz-range-thumb {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+}
+
+input[type='file'] {
+  max-width: 100%;
+  font: inherit;
+}
+
+progress {
+  -webkit-appearance: none;
+  appearance: none;
+  width: min(20rem, 100%);
+  height: 0.5rem;
+  border: 0;
+  border-radius: 999px;
+  background: var(--line);
+  overflow: hidden;
+  accent-color: var(--accent);
+}
+
+progress::-webkit-progress-bar {
+  border-radius: 999px;
+  background: var(--line);
+}
+
+progress::-webkit-progress-value {
+  border-radius: 999px;
+  background: var(--accent);
+  transition: width var(--dur-2) var(--ease);
+}
+
+progress::-moz-progress-bar {
+  border-radius: 999px;
+  background: var(--accent);
+}
+
+html[data-high-contrast] progress,
+html[data-high-contrast] progress::-webkit-progress-bar {
+  background: var(--sunken);
+}
+
+html[data-high-contrast] progress {
+  outline: 1px solid var(--line-strong);
+}
+
+/* Reduced motion. The settings store sets the attribute from Settings, or from the system's
+   preference while Settings says "same as this device"; a media query here would override a person
+   who switched it off on purpose. */
+html[data-reduced-motion] *,
+html[data-reduced-motion] *::before,
+html[data-reduced-motion] *::after {
+  animation-duration: 0.01ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.01ms !important;
+  scroll-behavior: auto !important;
+}
+
+html[data-high-contrast] a {
+  text-decoration-thickness: 2px;
+}
+
+html[data-high-contrast] :focus-visible {
+  outline-width: 3px;
+}
+
+/* In a narrow window (⅓ of an iPad, large print, longer German labels) a button may wrap rather than
+   push the page wider than the screen. */
+@media (max-width: 480px) {
+  button,
+  .button {
+    max-width: 100%;
+    white-space: normal;
+  }
+
+  h1,
+  h2,
+  h3,
+  p,
+  li,
+  label {
+    hyphens: auto;
+    overflow-wrap: break-word;
+  }
+}

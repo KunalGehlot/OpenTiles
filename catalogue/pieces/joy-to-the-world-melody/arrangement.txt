@@ -1,0 +1,10 @@
+# Melody-only level: the right hand of the two-hand arrangement, the left hand resting.
+# Joy to the World: the opening of the hymn tune Antioch, arranged by Lowell Mason (1792–1872) in 1836.
+# Original simplified arrangement for OpenTiles, released under CC0 1.0.
+title: Joy to the World (opening)
+composer: Lowell Mason
+key: 0
+time: 2/4
+tempo: 96
+RH: C5q@5 B4e.@4 A4s@3 | G4q.@2 F4e@1 | E4q@3 D4q@2 | C4q.@1 G4e@2 | A4q.@3 A4e | B4q.@4 B4e | C5h@5
+LH: rh | rh | rh | rh | rh | rh | rh

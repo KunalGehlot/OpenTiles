@@ -12,7 +12,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 import arrange  # noqa: E402
-from catalogue_lib import Piece, validate_piece  # noqa: E402
+from catalogue_lib import Piece, index_entry, validate_piece, validate_songs  # noqa: E402
 from eu_term import is_free, latest_free_death_year  # noqa: E402
 
 GOOD = {
@@ -63,6 +63,15 @@ class ArrangeTest(unittest.TestCase):
     def test_rejects_wrong_bar_lengths(self):
         with self.assertRaises(arrange.ArrangementError):
             arrange.to_musicxml(arrange.parse("time: 4/4\nRH: C4q\nLH: C3w\n"))
+
+    def test_thirty_seconds_and_triplets(self):
+        text = ARRANGEMENT.replace("RH: C4q E4q | [C4 E4 G4]h", "RH: C4t D4t E4t F4t G4e3 A4e3 B4e3 C5e | [C4 E4 G4]h")
+        xml = arrange.to_musicxml(arrange.parse(text))
+        self.assertIn("<divisions>24</divisions>", xml)
+        self.assertIn("<type>32nd</type>", xml)
+        self.assertEqual(xml.count("<time-modification>"), 3)
+        # Pieces without thirty-seconds keep 12 divisions, so their scores do not change.
+        self.assertIn("<divisions>12</divisions>", arrange.to_musicxml(arrange.parse(ARRANGEMENT)))
 
     def test_sharps_are_not_comments(self):
         bars = arrange.parse("RH: F#4q G4q # a comment\nLH: rh\n").rh
@@ -133,6 +142,19 @@ class ValidateTest(unittest.TestCase):
         r["single_hand"] = "both"
         self.assertTrue(any("single_hand" in e for e in self.check(r)))
 
+    def test_print_source_must_name_an_old_print(self):
+        r = copy.deepcopy(GOOD)
+        r.update(print_source="Collection Litolff, 19th Century")
+        self.assertEqual(self.check(r), [])
+        r.update(print_source="Breitkopf & Härtel, 1888", print_year=1888)
+        self.assertEqual(self.check(r), [])
+        # The print is recorded for the reviewer; an undated or recent one is refused.
+        r.update(print_source="Edition Peters")
+        r.pop("print_year")
+        self.assertTrue(any("no year or century" in e for e in self.check(r)))
+        r.update(print_source="Dover, 1989", print_year=1989)
+        self.assertTrue(any("not before 1930" in e for e in self.check(r)))
+
     def test_edition_evidence(self):
         r = copy.deepcopy(GOOD)
         r["edition_note"] = "A nice score."
@@ -177,3 +199,30 @@ class ValidateTest(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class SongLevelsTest(unittest.TestCase):
+    def piece(self, slug, **extra):
+        record = {**copy.deepcopy(GOOD), **extra}
+        return Piece(slug, Path("."), record)
+
+    def test_levels_of_one_song_must_agree_on_the_rights(self):
+        a = self.piece("a", song="s", variant="Melody")
+        b = self.piece("b", song="s", variant="Full", composer_death_year=1900)
+        errors = validate_songs([a, b])
+        self.assertEqual(len(errors), 1)
+        self.assertIn("composer_death_year", errors[0])
+
+    def test_variant_labels_are_unique_within_a_song(self):
+        a = self.piece("a", song="s", variant="Melody")
+        b = self.piece("b", song="s", variant="melody")
+        self.assertIn("same variant label", " ".join(validate_songs([a, b])))
+
+    def test_song_and_variant_go_together(self):
+        errors = validate_piece(self.piece("a", song="s"), 2026)
+        self.assertTrue(any("go together" in e for e in errors))
+
+    def test_the_index_carries_song_and_variant(self):
+        entry = index_entry(self.piece("a", song="s", variant="Melody"))
+        self.assertEqual((entry["song"], entry["variant"]), ("s", "Melody"))
+        self.assertNotIn("song", index_entry(self.piece("b")))

@@ -1,8 +1,11 @@
 // Metronome toggle and click volume for the practice bar (PLAN.md P1-13).
 import { useState } from 'react';
+import { Metronome } from 'lucide-react';
 import { unlockAudio } from '../audio/context';
 import { clickTrackFor } from '../audio/click-track';
 import type { PracticeSession } from '../views/session';
+import { savePracticePrefs } from './prefs';
+import { t } from '../i18n';
 
 /** Routes the session's clicks through the metronome's own volume. Call from a user gesture. */
 export async function connectClickTrack(session: PracticeSession, volume?: number) {
@@ -12,34 +15,45 @@ export async function connectClickTrack(session: PracticeSession, volume?: numbe
   return track;
 }
 
-export function MetronomeControl({ session, on }: { session: PracticeSession; on: boolean }) {
-  const [volume, setVolume] = useState(0.5);
+export function MetronomeControl({
+  session,
+  on,
+  volume: initialVolume = 0.5,
+}: {
+  session: PracticeSession;
+  on: boolean;
+  volume?: number;
+}) {
+  const [volume, setVolume] = useState(initialVolume);
 
-  const toggle = async () => {
-    // Audio may only start from a gesture (Safari); this click is one.
-    await connectClickTrack(session, volume);
+  const toggle = () => {
+    // The choice applies and is remembered at once; the click sound joins as soon as the browser
+    // starts audio, which may only happen from a gesture (Safari): this click is one.
     session.setMetronome(!on);
+    savePracticePrefs({ metronome: !on });
+    connectClickTrack(session, volume).catch(() => {});
   };
 
   return (
-    <span className="metronome-control row">
+    <span className="metronome-control">
       <button
         aria-pressed={on}
         title={
           on
-            ? 'Metronome on: clicks on every beat, accented on the first beat of the bar'
-            : 'Metronome off'
+            ? t('Metronome on: clicks on every beat, accented on the first beat of the bar')
+            : t('Metronome off')
         }
-        onClick={() => void toggle()}
+        onClick={toggle}
       >
-        Metronome
+        <Metronome />
+        <span className="btn-label">{t('Metronome')}</span>
       </button>
       {on && (
         <input
           type="range"
           className="metronome-volume"
-          aria-label="Click volume"
-          title="Click volume"
+          aria-label={t('Click volume')}
+          title={t('Click volume')}
           min={0}
           max={100}
           step={5}
@@ -47,6 +61,7 @@ export function MetronomeControl({ session, on }: { session: PracticeSession; on
           onChange={(e) => {
             const v = Number(e.target.value) / 100;
             setVolume(v);
+            savePracticePrefs({ clickVolume: v });
             void connectClickTrack(session, v);
           }}
         />

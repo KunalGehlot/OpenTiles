@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { isAppleTouchDevice, isStandalone } from '../storage/persist';
+import { t } from '../i18n';
 import { deviceName, dismissHint, isHintDismissed, shouldShowHomeScreenHint } from './install-hint';
 
 /**
@@ -18,12 +19,13 @@ export function HomeScreenHint() {
   if (!visible) return null;
   const device = deviceName(navigator.userAgent);
   return (
-    <aside className="notice home-screen-hint" aria-label="Add OpenTiles to your Home Screen">
+    <aside className="notice home-screen-hint" aria-label={t('Add OpenTiles to your Home Screen')}>
       <p>
-        <strong>Add OpenTiles to your Home Screen.</strong> Tap the Share button, then{' '}
-        <strong>Add to Home Screen</strong>, and open OpenTiles from its icon. It then opens full
-        screen, works offline and keeps your library and progress safe on this {device}. In a normal
-        browser tab, Safari may delete them after seven days without a visit.
+        <strong>{t('Add OpenTiles to your Home Screen.')}</strong>{' '}
+        {t(
+          'Tap the Share button, then Add to Home Screen, and open OpenTiles from its icon. It then opens full screen, works offline and keeps your library and progress safe on this {device}. In a normal browser tab, Safari may delete them after seven days without a visit.',
+          { device },
+        )}
       </p>
       <button
         onClick={() => {
@@ -31,7 +33,7 @@ export function HomeScreenHint() {
           setVisible(false);
         }}
       >
-        Got it
+        {t('Got it')}
       </button>
     </aside>
   );

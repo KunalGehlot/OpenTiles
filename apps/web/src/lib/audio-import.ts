@@ -2,6 +2,7 @@
 // Pitch model, about 2 MB) loads only when someone imports an audio file, never with the app.
 // Everything runs on the device: the recording is decoded and transcribed locally, and the model
 // is served from the app's own origin (hard rules 3 and 5).
+import { t } from '../i18n';
 import type { Song } from '@opentiles/song-model';
 
 export const AUDIO_EXTENSIONS = [
@@ -40,7 +41,7 @@ export interface AudioImportOptions {
 }
 
 function titleFromFileName(name: string): string {
-  return name.replace(/^.*[\\/]/, '').replace(/\.[^.]+$/, '') || 'Untitled recording';
+  return name.replace(/^.*[\\/]/, '').replace(/\.[^.]+$/, '') || t('Untitled recording');
 }
 
 export async function importAudioFile(

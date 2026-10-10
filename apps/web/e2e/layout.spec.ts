@@ -43,11 +43,15 @@ function expectedKeyPoint(page: Page): Promise<{ x: number; y: number } | null> 
     const scale = canvas.width / rect.width;
     const row = Math.round(canvas.height - 3 * scale);
     const data = ctx.getImageData(0, row, canvas.width, 1).data;
-    // --hand-right, #2f80c0.
+    // The right-hand colour, read from the design token so a new palette needs no change here
+    // (tokens.css keeps it a plain #rrggbb, which is also what the canvas can use).
+    const token = getComputedStyle(document.documentElement).getPropertyValue('--hand-right');
+    const rgb = parseInt(token.trim().slice(1), 16);
+    const [red, green, blue] = [(rgb >> 16) & 255, (rgb >> 8) & 255, rgb & 255];
     const isRight = (i: number) =>
-      Math.abs((data[i] ?? 0) - 0x2f) < 12 &&
-      Math.abs((data[i + 1] ?? 0) - 0x80) < 12 &&
-      Math.abs((data[i + 2] ?? 0) - 0xc0) < 12;
+      Math.abs((data[i] ?? 0) - red) < 12 &&
+      Math.abs((data[i + 1] ?? 0) - green) < 12 &&
+      Math.abs((data[i + 2] ?? 0) - blue) < 12;
     let first = -1;
     let last = -1;
     for (let x = 0; x < canvas.width; x++) {
@@ -107,11 +111,28 @@ test('practice is usable at ⅓ iPad width', async ({ page }) => {
   const layout = await measure(page);
   expect(layout.pageWidth).toBeLessThanOrEqual(layout.viewportWidth);
   expect(layout.canvasHeight).toBeGreaterThan(layout.viewportHeight * 0.5);
-  // Every control is still on screen.
-  for (const name of ['Wait', 'Listen', 'Play along', 'Left', 'Both', 'Right', 'Restart']) {
+  // Every control is still on screen. The secondary ones show only their icon at this width, but
+  // keep their names (P4-10), so they are found the same way. Browsers without Web MIDI show a
+  // note instead of the MIDI button.
+  const hasMidi = await page.evaluate(() => typeof navigator.requestMIDIAccess === 'function');
+  for (const name of [
+    'Wait',
+    'Listen',
+    'Play along',
+    'Left',
+    'Both',
+    'Right',
+    'Restart',
+    'Metronome',
+    'Loop',
+    'Use microphone',
+    'Options',
+    ...(hasMidi ? ['Connect MIDI keyboard'] : []),
+  ]) {
     const box = await page.getByRole('button', { name, exact: true }).boundingBox();
     expect(box, name).not.toBeNull();
     expect((box?.x ?? 0) + (box?.width ?? 0), name).toBeLessThanOrEqual(layout.viewportWidth);
+    expect(box?.x ?? -1, name).toBeGreaterThanOrEqual(0);
   }
   await expect(page.getByRole('slider')).toBeVisible();
   await tapExpectedKey(page);
@@ -140,4 +161,17 @@ test('practice survives rotation and resizing', async ({ page }) => {
     expect(layout.canvasHeight, label).toBeGreaterThan(size.height * 0.4);
     await tapExpectedKey(page);
   }
+});
+
+test('the Options panel fits a short window and scrolls to its last item', async ({ page }) => {
+  await page.setViewportSize({ width: 820, height: 375 });
+  await openPractice(page);
+  await page.getByRole('button', { name: 'Options' }).click();
+  const panel = page.getByRole('group', { name: 'Options' });
+  await expect(panel).toBeVisible();
+  const box = await panel.boundingBox();
+  expect((box?.y ?? 0) + (box?.height ?? 0)).toBeLessThanOrEqual(375);
+  const last = panel.getByRole('link', { name: 'All settings' });
+  await last.scrollIntoViewIfNeeded();
+  await expect(last).toBeInViewport();
 });

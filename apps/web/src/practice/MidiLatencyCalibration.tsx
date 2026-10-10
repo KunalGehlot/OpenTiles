@@ -5,6 +5,7 @@ import { clickTrain, latencyFromAnswers } from '@opentiles/practice';
 import { now, unlockAudio } from '../audio/context';
 import { clickTrackFor } from '../audio/click-track';
 import type { MidiKeyboardInput } from '../input/midi-input';
+import { t } from '../i18n';
 import { setMidiCalibration } from '../storage/calibration';
 
 const CLICKS = 8;
@@ -59,9 +60,9 @@ export function MidiLatencyCalibration({
     setHeard(0);
     setPhase({ kind: 'running', clicks });
     timer.current = window.setInterval(() => {
-      const t = now();
-      setBeat(clicks.filter((c) => c <= t).length - 1);
-      if (t > (clicks[clicks.length - 1] ?? 0) + 0.6) {
+      const time = now();
+      setBeat(clicks.filter((c) => c <= time).length - 1);
+      if (time > (clicks[clicks.length - 1] ?? 0) + 0.6) {
         window.clearInterval(timer.current);
         restore.current?.();
         const r = latencyFromAnswers(clicks, answers);
@@ -76,27 +77,28 @@ export function MidiLatencyCalibration({
   };
 
   return (
-    <div className="overlay calibration" role="dialog" aria-label="MIDI latency">
+    <div className="overlay calibration" role="dialog" aria-label={t('MIDI latency')}>
       <div className="panel stack">
-        <h2 style={{ marginTop: 0 }}>Keyboard timing</h2>
+        <h2 style={{ marginTop: 0 }}>{t('Keyboard timing')}</h2>
         {phase.kind === 'intro' && (
           <>
             <p>
-              The app plays {CLICKS} clicks. Press any key on your keyboard exactly on each click.
-              This measures the delay between your keyboard and this device, so play-along can judge
-              your timing fairly.
+              {t(
+                'The app plays {n} clicks. Press any key on your keyboard exactly on each click. This measures the delay between your keyboard and this device, so play-along can judge your timing fairly.',
+                { n: CLICKS },
+              )}
             </p>
             <div className="row">
               <button className="primary" onClick={() => void start()}>
-                Start
+                {t('Start')}
               </button>
-              <button onClick={() => onClose(null)}>Cancel</button>
+              <button onClick={() => onClose(null)}>{t('Cancel')}</button>
             </div>
           </>
         )}
         {phase.kind === 'running' && (
           <>
-            <p>Press any key on each click.</p>
+            <p>{t('Press any key on each click.')}</p>
             <p aria-hidden="true" className="click-dots">
               {phase.clicks.map((_, i) => (
                 <span key={i} className={i <= beat ? 'on' : undefined}>
@@ -105,7 +107,7 @@ export function MidiLatencyCalibration({
               ))}
             </p>
             <p className="muted" aria-live="polite">
-              {heard} key presses
+              {t('{n} key presses', { n: heard })}
             </p>
           </>
         )}
@@ -113,24 +115,27 @@ export function MidiLatencyCalibration({
           <>
             {phase.latency === null ? (
               <p>
-                Only {phase.matched} of {CLICKS} clicks were answered. Try again and press a key on
-                each click.
+                {t(
+                  'Only {matched} of {n} clicks were answered. Try again and press a key on each click.',
+                  { matched: phase.matched, n: CLICKS },
+                )}
               </p>
             ) : (
               <p>
-                Your keyboard is about <strong>{Math.round(phase.latency * 1000)} ms</strong> behind
-                the clicks ({phase.matched} of {CLICKS} clicks). Play-along will allow for this on
-                this keyboard.
+                {t(
+                  'Your keyboard is about {ms} ms behind the clicks ({matched} of {n} clicks). Play-along will allow for this on this keyboard.',
+                  { ms: Math.round(phase.latency * 1000), matched: phase.matched, n: CLICKS },
+                )}
               </p>
             )}
             <div className="row">
               {phase.latency !== null && (
                 <button className="primary" onClick={() => void save(phase.latency ?? 0)}>
-                  Save
+                  {t('Save')}
                 </button>
               )}
-              <button onClick={() => setPhase({ kind: 'intro' })}>Try again</button>
-              <button onClick={() => onClose(null)}>Cancel</button>
+              <button onClick={() => setPhase({ kind: 'intro' })}>{t('Try again')}</button>
+              <button onClick={() => onClose(null)}>{t('Cancel')}</button>
             </div>
           </>
         )}

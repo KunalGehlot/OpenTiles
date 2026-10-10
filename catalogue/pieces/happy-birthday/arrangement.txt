@@ -1,0 +1,14 @@
+# The birthday tune: "Good Morning to All" by Mildred J. Hill (1859-1916), published 1893. Melody only, no words.
+# Original simplified arrangement for OpenTiles, released under CC0 1.0.
+title: Happy Birthday to You
+composer: Mildred J. Hill
+key: 0
+time: 3/4
+tempo: 100
+pickup: yes
+RH: G4e.@1 G4s
+RH: | A4q@2 G4q@1 C5q@5 | B4h@4 G4e. G4s | A4q G4q D5q | C5h@5 G4e. G4s
+RH: | G5q@5 E5q@3 C5q@1 | B4q A4q F5e.@4 F5s | E5q@3 C5q D5q | C5h.@1
+LH: re. rs
+LH: | C3h. | G2h. | G2h. | C3h.
+LH: | C3h. | G2h. | G2h. | C3h.

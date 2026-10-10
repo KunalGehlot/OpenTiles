@@ -5,6 +5,7 @@ import { splitPhrases, StepPractice } from '@opentiles/practice';
 import type { LoopRange, PhraseRunOutcome } from '@opentiles/practice';
 import type { Song } from '@opentiles/song-model';
 import type { LoopRunReport, PracticeSession, SessionStatus } from '../views/session';
+import { t } from '../i18n';
 
 const pct = (x: number) => `${Math.round(x * 100)} %`;
 
@@ -87,11 +88,11 @@ export function SectionBar({
   const bars = song.measures.map((_, i) => i);
 
   return (
-    <div className="practice-bar section-bar" role="group" aria-label="Loop a section">
+    <div className="bar section-bar" role="group" aria-label={t('Loop a section')}>
       <label>
-        Loop bars
+        {t('Loop bars')}
         <select
-          aria-label="From bar"
+          aria-label={t('From bar')}
           value={from}
           onChange={(e) => setRange(Number(e.target.value), Math.max(Number(e.target.value), to))}
         >
@@ -103,9 +104,9 @@ export function SectionBar({
         </select>
       </label>
       <label>
-        to
+        {t('to')}
         <select
-          aria-label="To bar"
+          aria-label={t('To bar')}
           value={to}
           onChange={(e) => setRange(Math.min(from, Number(e.target.value)), Number(e.target.value))}
         >
@@ -123,10 +124,12 @@ export function SectionBar({
             session.setLoop(null);
           }}
         >
-          Whole piece
+          {t('Whole piece')}
         </button>
       )}
-      <label title="After every run with no wrong or missed notes, play 5 % faster, up to 100 %">
+      <label
+        title={t('After every run with no wrong or missed notes, play 5 % faster, up to 100 %')}
+      >
         <input
           type="checkbox"
           checked={autoTempo}
@@ -135,25 +138,25 @@ export function SectionBar({
             session.autoTempo = e.target.checked;
           }}
         />
-        Speed up after clean runs
+        {t('Speed up after clean runs')}
       </label>
       <button aria-pressed={steps !== null} onClick={togglePhrases}>
-        Phrase by phrase
+        {t('Phrase by phrase')}
       </button>
       {steps && (
-        <span className="row" role="group" aria-label="Phrase">
+        <span className="row" role="group" aria-label={t('Phrase')}>
           <button
-            aria-label="Previous phrase"
+            aria-label={t('Previous phrase')}
             disabled={phraseIndex === 0}
             onClick={() => goToPhrase(steps, phraseIndex - 1)}
           >
             ‹
           </button>
           <span>
-            Phrase {phraseIndex + 1} of {steps.phrases.length}
+            {t('Phrase {n} of {count}', { n: phraseIndex + 1, count: steps.phrases.length })}
           </span>
           <button
-            aria-label="Next phrase"
+            aria-label={t('Next phrase')}
             disabled={!steps.hasNext}
             onClick={() => goToPhrase(steps, phraseIndex + 1)}
           >
@@ -164,25 +167,31 @@ export function SectionBar({
       <span className="loop-status" aria-live="polite">
         {loop && !lastRun && (
           <span className="muted">
-            Looping bars {label(loop.fromMeasure)}–{label(loop.toMeasure)}
+            {t('Looping bars {from}–{to}', {
+              from: label(loop.fromMeasure),
+              to: label(loop.toMeasure),
+            })}
           </span>
         )}
         {lastRun && lastRun.run > 0 && (
           <span>
-            Run {lastRun.run}: {lastRun.clean ? 'clean' : `${pct(lastRun.accuracy)}`}
-            {lastRun.raised && <> · tempo up to {pct(lastRun.tempo)}</>}
+            {t('Run {n}: {result}', {
+              n: lastRun.run,
+              result: lastRun.clean ? t('clean') : pct(lastRun.accuracy),
+            })}
+            {lastRun.raised && <> · {t('tempo up to {tempo}', { tempo: pct(lastRun.tempo) })}</>}
           </span>
         )}
         {advice?.suggestNext && steps && (
           <>
             {' '}
-            <span>That phrase is secure.</span>{' '}
+            <span>{t('That phrase is secure.')}</span>{' '}
             <button className="primary" onClick={() => goToPhrase(steps, phraseIndex + 1)}>
-              Next phrase
+              {t('Next phrase')}
             </button>
           </>
         )}
-        {advice?.pieceDone && <span> Every phrase is secure. Try the whole piece!</span>}
+        {advice?.pieceDone && <span> {t('Every phrase is secure. Try the whole piece!')}</span>}
       </span>
     </div>
   );

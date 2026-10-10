@@ -142,3 +142,159 @@ test('MIDI imports offer the falling-notes view only, and say why', async ({ pag
   await expect(view.getByRole('button', { name: 'Score' })).toBeDisabled();
   await expect(page.getByText('MIDI files have no printed score')).toBeVisible();
 });
+
+test('the scrolling score keeps the play bar in the middle, shows no scroll bar and can be dragged', async ({
+  page,
+}) => {
+  await page.goto('./#/practice/catalogue/ode-to-joy');
+  await page.getByRole('button', { name: 'Right', exact: true }).click();
+  await page.getByRole('group', { name: 'View' }).getByRole('button', { name: 'Score' }).click();
+  await expect(page.locator('[data-testid="score-strip"] > svg')).toBeVisible({ timeout: 20_000 });
+  const host = page.locator('.ot-score-host');
+  // Nothing to scroll with a bar: the score is moved by transform.
+  expect(await host.evaluate((el) => getComputedStyle(el).overflowX)).toBe('hidden');
+  expect(
+    await host.evaluate((el) => (el as HTMLElement).offsetHeight - el.clientHeight),
+  ).toBeLessThanOrEqual(0);
+
+  const barOffset = () =>
+    page.evaluate(() => {
+      const h = document.querySelector('.ot-score-host')?.getBoundingClientRect();
+      const c = document.querySelector('[data-testid="score-cursor"]')?.getBoundingClientRect();
+      return h && c ? c.left - (h.left + h.width / 2) : NaN;
+    });
+  for (let i = 0; i < 4; i++) await page.keyboard.press('KeyD'); // E4 E4 F4 G4 need other keys; any press
+  await expect.poll(async () => Math.abs(await barOffset())).toBeLessThan(3);
+
+  // A drag scrubs: the score moves under the play bar, which stays in the middle (P4-18).
+  const box = await host.boundingBox();
+  if (!box) throw new Error('no score box');
+  const before = await page.evaluate(
+    () => document.querySelector('.ot-score-mover')?.getAttribute('style') ?? '',
+  );
+  await page.mouse.move(box.x + box.width * 0.7, box.y + box.height / 2);
+  await page.mouse.down();
+  await page.mouse.move(box.x + box.width * 0.4, box.y + box.height / 2, { steps: 6 });
+  expect(Math.abs(await barOffset())).toBeLessThan(3);
+  await page.mouse.up();
+  const after = await page.evaluate(
+    () => document.querySelector('.ot-score-mover')?.getAttribute('style') ?? '',
+  );
+  expect(after).not.toEqual(before);
+  await expect.poll(async () => Math.abs(await barOffset())).toBeLessThan(3);
+});
+
+test('dragging the score scrubs through the piece, back and forth, and Play starts there', async ({
+  page,
+}) => {
+  await page.goto('./#/practice/catalogue/silent-night');
+  await page.getByRole('group', { name: 'View' }).getByRole('button', { name: 'Score' }).click();
+  await expect(page.locator('[data-testid="score-strip"] > svg')).toBeVisible({ timeout: 20_000 });
+  const host = page.locator('.ot-score-host');
+  const box = await host.boundingBox();
+  if (!box) throw new Error('no score box');
+  const barOffset = () =>
+    page.evaluate(() => {
+      const h = document.querySelector('.ot-score-host')?.getBoundingClientRect();
+      const c = document.querySelector('[data-testid="score-cursor"]')?.getBoundingClientRect();
+      return h && c ? c.left - (h.left + h.width / 2) : NaN;
+    });
+  const step = async () =>
+    Number(/Step (\d+)\//.exec((await page.locator('.stats').textContent()) ?? '')?.[1]);
+  const y = box.y + box.height / 2;
+  const drag = async (from: number, to: number) => {
+    await page.mouse.move(box.x + box.width * from, y);
+    await page.mouse.down();
+    await page.mouse.move(box.x + box.width * to, y, { steps: 10 });
+    // Hold still before letting go, so it does not coast.
+    await page.waitForTimeout(150);
+    await page.mouse.up();
+  };
+
+  expect(await step()).toBe(1);
+  // Forward: drag the score to the left.
+  await drag(0.8, 0.2);
+  await expect.poll(step).toBeGreaterThan(3);
+  const forward = await step();
+  expect(Math.abs(await barOffset())).toBeLessThan(3);
+  // Back: drag it to the right again, a little less far.
+  await drag(0.3, 0.6);
+  await expect.poll(step).toBeLessThan(forward);
+  expect(await step()).toBeGreaterThan(1);
+  expect(Math.abs(await barOffset())).toBeLessThan(3);
+
+  // Listen starts from the scrubbed place, not from the beginning.
+  const offset = () =>
+    page.evaluate(() => {
+      const mover = document.querySelector('.ot-score-mover') as HTMLElement | null;
+      const m = /translate3d\((-?[\d.]+)px/.exec(mover?.style.transform ?? '');
+      return m ? -Number(m[1]) : 0;
+    });
+  const scrubbed = await offset();
+  expect(scrubbed).toBeGreaterThan(40);
+  await page.getByRole('button', { name: 'Listen', exact: true }).click();
+  // Changing mode rebuilds the run; scrub again, then play.
+  await drag(0.8, 0.5);
+  const from = await offset();
+  expect(from).toBeGreaterThan(40);
+  await page.getByRole('button', { name: 'Play', exact: true }).click();
+  await page.waitForTimeout(2500);
+  expect(await offset()).toBeGreaterThanOrEqual(from - 2);
+  expect(Math.abs(await barOffset())).toBeLessThan(3);
+});
+
+/** Horizontal offset of the scrolling score, in CSS pixels (0 = at the start). */
+function scoreOffset(page: Page): Promise<number> {
+  return page.evaluate(() => {
+    const mover = document.querySelector('.ot-score-mover') as HTMLElement | null;
+    const m = /translate3d\((-?[\d.]+)px/.exec(mover?.style.transform ?? '');
+    return m ? -Number(m[1]) : 0;
+  });
+}
+
+test('the scrolling score returns to its start after a listen run', async ({ page }) => {
+  await page.goto('./#/practice/catalogue/joy-to-the-world');
+  await page.getByRole('group', { name: 'View' }).getByRole('button', { name: 'Score' }).click();
+  await expect(page.locator('[data-testid="score-strip"] > svg')).toBeVisible({ timeout: 20_000 });
+  const startX = await cursorX(page);
+  await page.getByRole('button', { name: 'Listen', exact: true }).click();
+  await page.getByRole('button', { name: 'Play', exact: true }).click();
+  // The score moves past the play bar while the piece plays ...
+  await expect.poll(() => scoreOffset(page), { timeout: 15_000 }).toBeGreaterThan(40);
+  // ... and is back at the start a moment after the last note.
+  await expect.poll(() => scoreOffset(page), { timeout: 20_000 }).toBeLessThan(1);
+  // The play bar is back on the first note too, not left on the last one.
+  await expect.poll(() => cursorX(page), { timeout: 10_000 }).toBeCloseTo(startX, -1);
+});
+
+test('the scrolling score returns to its start after a wait-mode run', async ({ page }) => {
+  await page.goto('./#/practice/catalogue/joy-to-the-world-melody');
+  await page.getByRole('group', { name: 'View' }).getByRole('button', { name: 'Score' }).click();
+  await expect(page.locator('[data-testid="score-strip"] > svg')).toBeVisible({ timeout: 20_000 });
+  const startX = await cursorX(page);
+  // C5 B4 A4 G4 F4 E4 D4 C4 G4 A4 A4 B4 B4 C5 on the computer keys.
+  const keys = ['K', 'J', 'H', 'G', 'F', 'D', 'S', 'A', 'G', 'H', 'H', 'J', 'J', 'K'];
+  for (const [i, key] of keys.entries()) {
+    await page.keyboard.press(`Key${key}`);
+    if (i === 8) expect(await scoreOffset(page)).toBeGreaterThan(20);
+    await page.waitForTimeout(250);
+  }
+  await expect(page.locator('.stats')).toContainText('✓ 14', { timeout: 10_000 });
+  await expect.poll(() => scoreOffset(page), { timeout: 20_000 }).toBeLessThan(1);
+  await expect.poll(() => cursorX(page), { timeout: 10_000 }).toBeCloseTo(startX, -1);
+});
+
+test('the page view goes back to the first page after a run', async ({ page }) => {
+  await page.setViewportSize({ width: 700, height: 600 });
+  await page.goto('./#/practice/catalogue/minuet-in-g-melody');
+  await page.getByRole('group', { name: 'View' }).getByRole('button', { name: 'Page' }).click();
+  await expect(page.locator('[data-testid="score-strip"] > svg')).toBeVisible({ timeout: 20_000 });
+  const pager = page.locator('.ot-score-pager');
+  await expect(pager).toContainText(/Page 1 of \d+/);
+  await page.getByRole('button', { name: 'Listen', exact: true }).click();
+  await page.getByRole('button', { name: 'Play', exact: true }).click();
+  await page.waitForTimeout(3000);
+  await expect
+    .poll(async () => (await pager.textContent()) ?? '', { timeout: 60_000 })
+    .toMatch(/Page 1 of/);
+});

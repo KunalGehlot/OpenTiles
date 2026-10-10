@@ -36,6 +36,7 @@ import type {
 import { TempoMap } from '@opentiles/song-model';
 import type { Hand, Song, SongNote } from '@opentiles/song-model';
 import type { PianoSynth } from '../audio/synth';
+import type { Instrument, Voice } from '../audio/instrument';
 
 export type PracticeMode = 'wait' | 'listen' | 'play-along';
 
@@ -106,6 +107,42 @@ export interface LoopRunReport extends LoopRunOutcome {
   seconds: number;
 }
 
+/**
+ * A clock for drawing. `AudioContext.currentTime` advances in steps of a whole audio buffer (several
+ * milliseconds, more on Bluetooth and Safari), so a frame that reads it sees uneven jumps and the
+ * falling notes judder. This one runs on the display's own timer and is nudged toward the audio
+ * clock, so it never drifts from the sound but never steps either.
+ */
+export function steadyClock(
+  real: () => number,
+  perf: () => number = () => performance.now() / 1000,
+): () => number {
+  let anchorReal = 0;
+  let anchorPerf = 0;
+  let last = -Infinity;
+  let ready = false;
+  return () => {
+    const r = real();
+    const p = perf();
+    if (!ready) {
+      anchorReal = r;
+      anchorPerf = p;
+      ready = true;
+    }
+    const predicted = anchorReal + (p - anchorPerf);
+    const error = r - predicted;
+    if (Math.abs(error) > 0.08) {
+      anchorReal = r;
+      anchorPerf = p;
+      last = r;
+      return r;
+    }
+    anchorReal += error * 0.04;
+    last = Math.max(last, anchorReal + (p - anchorPerf));
+    return last;
+  };
+}
+
 /** Plays a metronome click at `when` on the audio clock. */
 export type ClickOutput = (when: number, accent: boolean) => void;
 
@@ -130,6 +167,9 @@ const LEAD_IN = 1.5;
 const SCHEDULE_AHEAD = 0.3;
 /** Pause between the end of a looped section and its next run in wait mode (seconds). */
 const LOOP_PAUSE = 0.6;
+/** Seconds after a run ends before the display goes back to the start. */
+const HOME_AFTER_SECONDS = 2.2;
+
 /** How long a judged hold bar stays on screen after it ends (seconds). */
 const HOLD_FADE = 0.4;
 
@@ -142,6 +182,12 @@ export class PracticeSession {
   accompany = true;
   /** Play a sound for notes from inputs that make none themselves (touch). */
   soundForTouch = true;
+  /**
+   * Plays the notes of a MIDI keyboard on this device too (Settings → MIDI keyboard), for keyboards
+   * with no speakers or for headphones on the computer. Null: the keyboard's own sound only.
+   */
+  midiEcho: Instrument | null = null;
+  private echoVoices = new Map<number, Voice>();
 
   steps: Step[] = [];
   wait: WaitMode;
@@ -180,6 +226,13 @@ export class PracticeSession {
   private scheduled = 0;
   private startedAt = 0;
   private finishedAt = 0;
+  /** After a run the display went back to the start (the notes, cursor and score all follow `beat`). */
+  private homed = false;
+  /**
+   * True while the learner drags the score (P4-18): the position follows the drag exactly, and wait
+   * mode does not pull it to its step until the drag ends.
+   */
+  scrubbing = false;
   private summary: RunSummary | null = null;
   private lastStatus = '';
   private endBeat = 0;
@@ -200,12 +253,16 @@ export class PracticeSession {
   /** Called when the session changes the tempo itself (automatic loop speed-up). */
   onTempo: (factor: number) => void = () => {};
 
+  private lastFramePerf = 0;
+  private readonly display: () => number;
+
   constructor(
     song: Song,
     private readonly clock: () => number,
     private synth: PianoSynth | null = null,
   ) {
     this.songValue = song;
+    this.display = steadyClock(clock);
     this.tempoMap = new TempoMap(song.tempos);
     this.wait = new WaitMode([]);
     this.rebuild();
@@ -224,6 +281,11 @@ export class PracticeSession {
     if (song === this.songValue) return;
     this.songValue = song;
     this.rebuild();
+  }
+
+  /** What the session plays through: this device, the MIDI keyboard or both (Settings). */
+  get instrument(): Instrument | null {
+    return this.synth;
   }
 
   setSynth(s: PianoSynth | null): void {
@@ -246,6 +308,11 @@ export class PracticeSession {
   private click(when: number, accent: boolean): void {
     if (this.clickOut) this.clickOut(when, accent);
     else this.synth?.click(when, accent);
+  }
+
+  /** True from the moment a run finishes until the next one starts or the piece is rebuilt. */
+  get runEnded(): boolean {
+    return this.finishedAt > 0;
   }
 
   get playing(): boolean {
@@ -301,6 +368,7 @@ export class PracticeSession {
     this.summary = null;
     this.startedAt = 0;
     this.finishedAt = 0;
+    this.homed = false;
     this.runStartedAt = 0;
     this.loopRestartAt = 0;
     this.waitClick = null;
@@ -416,6 +484,10 @@ export class PracticeSession {
     if (e.source === 'touch' && this.soundForTouch && this.synth) {
       this.synth.play(e.pitch, t, 0.6, e.velocity ?? 90);
     }
+    if ((e.source === 'midi' || e.source === 'native-midi') && this.midiEcho) {
+      this.echoVoices.get(e.pitch)?.stop(t);
+      this.echoVoices.set(e.pitch, this.midiEcho.noteOn(e.pitch, e.velocity ?? 90, t));
+    }
     if (!this.startedAt) this.startedAt = t;
     if (!this.runStartedAt) this.runStartedAt = t;
     this.keys.set(e.pitch, 'held');
@@ -477,6 +549,8 @@ export class PracticeSession {
   release(pitch: number, time = this.clock()): void {
     this.keys.delete(pitch);
     this.recorder.noteOff(pitch, time);
+    this.echoVoices.get(pitch)?.stop();
+    this.echoVoices.delete(pitch);
     const hold = this.holds.get(pitch);
     if (!hold || hold.end !== undefined) return;
     hold.end = Math.max(hold.start, time);
@@ -683,6 +757,7 @@ export class PracticeSession {
     this.marks.clear();
     this.resetRun();
     this.finishedAt = 0;
+    this.homed = false;
     const tl = this.timeline;
     const audible = this.song.notes.filter(
       (n) =>
@@ -715,6 +790,32 @@ export class PracticeSession {
     this.scorer = null;
     this.schedule = [];
     this.clicks = [];
+    // Notes already sent ahead to a MIDI keyboard would otherwise keep sounding.
+    this.synth?.silence?.();
+    this.emitStatus();
+  }
+
+  /**
+   * Moves the position to `beat`, as dragging the score does (P4-18): the score, the cursor and the
+   * falling notes all follow. A playing run stops, and Play starts again from here; wait mode moves
+   * to the step at or after `beat`. Marks already made stay on the notes before it.
+   */
+  seek(beat: number): void {
+    const from = this.loopSpan?.fromBeat ?? 0;
+    const to = this.loopSpan?.toBeat ?? this.song.lengthBeats;
+    const target = Math.min(Math.max(beat, from), to);
+    if (this.timeline) this.stop();
+    this.finishedAt = 0;
+    this.homed = false;
+    this.summary = null;
+    this.beat = target;
+    if (this.mode === 'wait' && this.steps.length > 0) {
+      const at = this.steps.findIndex((s) => s.beat >= target - 1e-6);
+      // Past the last step, wait on the last one rather than finishing the run.
+      const index = at < 0 ? this.steps.length - 1 : at;
+      for (const s of this.steps.slice(index)) for (const n of s.notes) this.done.delete(n.id);
+      if (index !== this.wait.index) this.wait.seek(index);
+    }
     this.emitStatus();
   }
 
@@ -727,7 +828,16 @@ export class PracticeSession {
 
   frame(): void {
     const t = this.clock();
+    const perf = performance.now() / 1000;
+    const dt = this.lastFramePerf ? Math.min(0.1, perf - this.lastFramePerf) : 0;
+    this.lastFramePerf = perf;
     this.flashes = this.flashes.filter((f) => f.until > t);
+    // A little after a run ends, the display returns to the start of the piece, keeping the marks.
+    // The score view has by then scrolled back (score-controller.ts, watchEnd).
+    if (this.finishedAt > 0 && !this.homed && t - this.finishedAt > HOME_AFTER_SECONDS) {
+      this.homed = true;
+      this.beat = this.loopSpan?.fromBeat ?? this.steps[0]?.beat ?? 0;
+    }
     if (this.holds.size > 0) this.runHolds(t);
     if (this.labels.length > 0) this.labels = this.labels.filter((l) => l.until > t);
     for (const [pitch, state] of this.keys) {
@@ -743,11 +853,16 @@ export class PracticeSession {
         this.wait.reset();
       }
       this.runWaitClick(t);
-      const target = this.wait.current?.beat ?? this.loopSpan?.toBeat ?? this.song.lengthBeats;
-      this.beat += (target - this.beat) * 0.18;
+      const target =
+        this.homed || this.scrubbing
+          ? this.beat
+          : (this.wait.current?.beat ?? this.loopSpan?.toBeat ?? this.song.lengthBeats);
+      // Time-based easing: the same glide at 60 and 120 Hz (a per-frame factor ran twice as fast).
+      this.beat += (target - this.beat) * (1 - Math.exp(-dt * 11));
       if (Math.abs(target - this.beat) < 1e-3) this.beat = target;
     } else if (this.timeline) {
-      this.beat = this.timeline.beatAt(t);
+      // The picture follows a steady clock; judging and scheduling use the audio clock itself.
+      this.beat = this.timeline.beatAt(this.display());
       this.runSchedule(t);
       if (this.scorer) {
         for (const r of this.scorer.update(t)) {

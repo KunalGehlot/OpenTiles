@@ -1,6 +1,7 @@
 // The public-domain catalogue: a static index plus score files served next to the app.
 import { importScore } from '@opentiles/song-model';
 import type { Song } from '@opentiles/song-model';
+import { t } from '../i18n';
 
 export interface CataloguePiece {
   slug: string;
@@ -11,6 +12,20 @@ export interface CataloguePiece {
   verified: boolean;
   score: string;
   attribution?: string;
+  /** Pieces that are levels of one song share this (ADR 0012); `variant` names the level. */
+  song?: string;
+  variant?: string;
+}
+
+/** The other levels of a piece's song, easiest first. */
+export function siblingsOf(
+  piece: CataloguePiece,
+  all: readonly CataloguePiece[],
+): CataloguePiece[] {
+  if (!piece.song) return [];
+  return all
+    .filter((p) => p.song === piece.song && p.slug !== piece.slug)
+    .sort((a, b) => a.difficulty - b.difficulty || a.title.localeCompare(b.title));
 }
 
 const base = new URL('catalogue/', document.baseURI);
@@ -19,7 +34,8 @@ let indexPromise: Promise<CataloguePiece[]> | null = null;
 export function loadCatalogue(): Promise<CataloguePiece[]> {
   indexPromise ??= fetch(new URL('index.json', base))
     .then((r) => {
-      if (!r.ok) throw new Error(`Could not load the catalogue (${r.status}).`);
+      if (!r.ok)
+        throw new Error(t('Could not load the catalogue ({status}).', { status: r.status }));
       return r.json() as Promise<{ pieces: CataloguePiece[] }>;
     })
     .then((i) => i.pieces)
@@ -35,20 +51,43 @@ export async function loadCatalogueSong(
 ): Promise<{ piece: CataloguePiece; song: Song; bytes: Uint8Array }> {
   const pieces = await loadCatalogue();
   const piece = pieces.find((p) => p.slug === slug);
-  if (!piece) throw new Error('This piece is not in the catalogue.');
+  if (!piece) throw new Error(t('This piece is not in the catalogue.'));
   const res = await fetch(new URL(piece.score, base));
-  if (!res.ok) throw new Error(`Could not load the score (${res.status}).`);
+  if (!res.ok) throw new Error(t('Could not load the score ({status}).', { status: res.status }));
   // The bytes are kept for the score views, which draw the original file (P1-15).
   const bytes = new Uint8Array(await res.arrayBuffer());
   const song = importScore(piece.score, bytes);
   return { piece, song, bytes };
 }
 
-export const DIFFICULTY_LABELS = [
-  '',
-  'First steps',
-  'Beginner',
-  'Elementary',
-  'Intermediate',
-  'Advanced',
-];
+/** The name of a difficulty level (1–5) in the current language. */
+export function difficultyLabel(level: number): string {
+  switch (level) {
+    case 1:
+      return t('First steps');
+    case 2:
+      return t('Beginner');
+    case 3:
+      return t('Elementary');
+    case 4:
+      return t('Intermediate');
+    default:
+      return t('Advanced');
+  }
+}
+
+/** A level's label ("Melody", "Two hands"…) in the current language; unknown labels as written. */
+export function variantLabel(variant: string): string {
+  switch (variant) {
+    case 'Melody':
+      return t('Melody');
+    case 'Two hands':
+      return t('Two hands');
+    case 'Full':
+      return t('Full');
+    case 'Right hand':
+      return t('Right hand');
+    default:
+      return variant;
+  }
+}

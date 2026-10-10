@@ -1,0 +1,23 @@
+# Musette in D major (BWV Anh. 126) by Johann Sebastian Bach: simplified one-voice-per-hand arrangement for OpenTiles, released under CC0 1.0.
+# Notes converted from the public-domain Mutopia Project typesetting by Allen Garvin (https://www.mutopiaproject.org/cgibin/piece-info.cgi?id=79).
+# Made with tools/pipeline/midi_arrange.py: held notes are cut at the next onset, long notes at barlines, and rhythms are on a sixteenth grid.
+# The first part is played again after the second (da capo), ending at its fermata on D.
+title: Musette in D major (BWV Anh. 126)
+composer: Johann Sebastian Bach
+key: 2
+time: 2/4
+tempo: 100
+RH: A5q G5s F#5s E5s D5s | A5q G5s F#5s E5s D5s | F#4s G4s A4e G4e F#4e | E4e A4e F#4e D4e
+RH: A5q G5s F#5s E5s D5s | A5q G5s F#5s E5s D5s | F#4s G4s A4e G4e F#4e | E4e A4e D4q
+RH: C#5s D5s E5e C#5s D5s E5e | A5e E5e E5q | A5e E5e A5e E5e | D5s C#5s B4s A4s B4e E4e
+RH: E5e D#5e E4e D5e | re C#5e A5e G#5e | E5e D#5e E4e D5e | re C#5e A5e G#5e
+RH: E5s D#5s C#5s D#5s E5s D#5s C#5s D#5s | E5e G#4e A4e D5e | C#5s D5s E5e A4e D4e | C#4s D4s E4e A3q
+RH: A5q G5s F#5s E5s D5s | A5q G5s F#5s E5s D5s | F#4s G4s A4e G4e F#4e | E4e A4e F#4e D4e
+RH: A5q G5s F#5s E5s D5s | A5q G5s F#5s E5s D5s | F#4s G4s A4e G4e F#4e | E4e A4e D4q
+LH: D2e D3e D2e D3e | D2e D3e D2e D3e | F#3s G3s A3e G3e F#3e | E3e A3e F#3e D3e
+LH: D2e D3e D2e D3e | D2e D3e D2e D3e | F#3s G3s A3e G3e F#3e | E3e A3e D3q
+LH: A2e A3e A2e A3e | A2e A3e A2e A3e | A2e A3e A2e A3e | A2e A3e E2e E3e
+LH: E2e E3e E2e E3e | E2e E3e E2e E3e | E2e E3e E2e E3e | E2e E3e E2e E3e
+LH: E2e E3e E2e E3e | E2e D3e C#3e D3e | E3q A2e D3e | C#3s D3s E3e A2q
+LH: D2e D3e D2e D3e | D2e D3e D2e D3e | F#3s G3s A3e G3e F#3e | E3e A3e F#3e D3e
+LH: D2e D3e D2e D3e | D2e D3e D2e D3e | F#3s G3s A3e G3e F#3e | E3e A3e D3q

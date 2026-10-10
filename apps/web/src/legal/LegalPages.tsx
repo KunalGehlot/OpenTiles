@@ -35,7 +35,7 @@ function LangSwitch({ page, lang }: { page: 'privacy' | 'impressum'; lang: Legal
 
 function Page({ lang, children }: { lang: LegalLang; children: ReactNode }) {
   return (
-    <article className="stack legal" lang={lang} style={{ maxWidth: '72ch' }}>
+    <article className="stack prose legal" lang={lang}>
       {children}
     </article>
   );
@@ -83,8 +83,10 @@ function PrivacyEn({ sync }: { sync: boolean }) {
           when you last played it and time practised, plus minutes practised per day.
         </li>
         <li>
-          <strong>Settings</strong> (IndexedDB): language, accessibility options, foot-pedal keys,
-          whether crash reports are on, and that you confirmed the import terms.
+          <strong>Settings</strong> (IndexedDB, with a small copy in local storage): language,
+          accessibility options, foot-pedal keys, keyboard and fingering choices, whether note names
+          are shown, whether crash reports are on, that you confirmed the import terms, and what you
+          last chose on the practice screen (mode, hands, tempo, metronome).
         </li>
         <li>
           <strong>A note in local storage</strong> that you closed the “Add to Home Screen” hint.
@@ -194,8 +196,11 @@ function PrivacyDe({ sync }: { sync: boolean }) {
           Durchgänge, wann du es zuletzt gespielt hast und die Übezeit, dazu die Übeminuten je Tag.
         </li>
         <li>
-          <strong>Einstellungen</strong> (IndexedDB): Sprache, Barrierefreiheit, Fußpedal-Tasten, ob
-          Absturzberichte eingeschaltet sind und dass du den Importbedingungen zugestimmt hast.
+          <strong>Einstellungen</strong> (IndexedDB, mit einer kleinen Kopie im Local Storage):
+          Sprache, Barrierefreiheit, Fußpedal-Tasten, Tastatur- und Fingersatzwahl, ob Notennamen
+          angezeigt werden, ob Absturzberichte eingeschaltet sind, dass du den Importbedingungen
+          zugestimmt hast und was du zuletzt im Übungsbildschirm gewählt hast (Modus, Hände, Tempo,
+          Metronom).
         </li>
         <li>
           <strong>Ein Vermerk im Local Storage</strong>, dass du den Hinweis „Zum Home-Bildschirm“

@@ -5,8 +5,12 @@
 See the music, play it, get instant feedback. Practise in wait mode, play along at your own tempo,
 loop the hard bars, and track your progress. No account, no install, no payment. Ever.
 
-> **Status: Phase 0 (feasibility).** We are proving that microphone note recognition works on an
-> iPad before building the full app. Nothing here is ready for learners yet. See [PLAN.md](PLAN.md).
+> **Status (October 2026): working app, not yet released.** Practice in wait, listen and play-along
+> modes with a MIDI keyboard (Chrome, Edge, Firefox), the microphone or the on-screen keys; falling
+> notes and score views; a catalogue of 81 reviewed public-domain pieces; your own MusicXML, MuseScore,
+> ABC and MIDI files; English and German. Before a public release: the microphone test on real pianos
+> and iPads, a legal review, the deployment, and the iPad app (for MIDI keyboards on iPad) on a device.
+> See [PLAN.md](PLAN.md).
 
 ## Why
 
@@ -73,6 +77,18 @@ python3 tools/pipeline/validate_catalogue.py
 Contributions are welcome — code, catalogue reviews, recordings for the detector test set,
 translations. Start with [CONTRIBUTING.md](CONTRIBUTING.md) and the
 [development guide](docs/development.md). All participants follow the [Code of Conduct](CODE_OF_CONDUCT.md).
+
+## How OpenTiles was made, and what came first
+
+OpenTiles was written with a large language model (LLM) working under the maintainer's direction.
+The maintainer reviews the work and is responsible for what ships.
+
+Such models learn from public code, so this one may have seen similar projects. OpenTiles looks
+and works a lot like [Sightread](https://github.com/sightread/sightread) (GPL-3.0, by samouri and
+contributors, first published in 2021), which came first. On 2026-10-09 we compared the source of
+both projects and found no shared code, assets or songs; what they share is the idea (falling notes
+over a keyboard, coloured hands, a mode that waits for the right note), which many piano-learning
+apps have. Sightread is a good project: please have a look at it. See [CREDITS.md](CREDITS.md).
 
 ## Licences
 

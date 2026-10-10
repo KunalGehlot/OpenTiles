@@ -1,0 +1,22 @@
+# Invention No. 2 in C minor by Johann Sebastian Bach: simplified one-voice-per-hand arrangement for OpenTiles, released under CC0 1.0.
+# Notes converted from the public-domain Mutopia Project typesetting by Allen Garvin (https://www.mutopiaproject.org/cgibin/piece-info.cgi?id=58).
+# Made with tools/pipeline/midi_arrange.py: held notes are cut at the next onset, long notes at barlines, and rhythms are on a sixteenth grid.
+title: Invention No. 2 in C minor
+composer: Johann Sebastian Bach
+key: -3
+time: 4/4
+tempo: 84
+RH: re C5s B4s C5s D5s Eb5s G4s Ab4s Bb4s Ab4s F4s F5s Eb5s D5s C5s | B4s Ab5s G5s F5s Eb5s D5s C5s B4s C5s D5s C5s D5s D5e. C5s | Eb5s D5s C5s D5s Eb5s F5s G5e G5e F5e re F5e | F5e Eb5e re D5e Eb5e Ab4e. F4s Bb4s F4s
+RH: G4e Eb5e. D5s Eb5s Bb4s C5s Eb5s Ab5s G5s F5s Eb5s D5s C5s | Bb4s D5s G5s F5s Eb5s D5s C5s Bb4s Ab4s C5s F5s C5s D5e. D5s | Eb5s Bb4s C5s Bb4s G5q rs Bb4s C5s Bb4s Ab5q | rs Bb4s Eb5s D5s G5s F5s Ab5s G5s C6s Bb5s Ab5s G5s F5s Bb5s Ab5s Bb5s
+RH: G5s Bb5s Ab5s Bb5s Eb5s G5s F5s G5s C5s D5s Eb5s F5s D5s Eb5s F5s G5s | Eb5s F5s G5s Ab5s Bb5s Ab5s C6s Bb5s Ab5s G5s F5s Ab5s D5q | rs D5s G5s D5s Eb5s C5s D5s Bb4s C5q rs G5s Gb5s A5s | C5s Bb4s C5e. Gb5s E5s D5s Bb5e. E5s F#5e. G5s
+RH: G5e G4s F#4s G4s A4s Bb4s D4s Eb4s F4s Eb4s C4s C5s Bb4s A4s G4s | Gb4s Eb5s D5s C5s Bb4s A4s G4s F#4s G4s A4s G4s A4s A4e. G4s | Bb4s A4s G4s A4s Bb4s C5s D5e D5e C5e re C5e | C5e Bb4e re A4e Bb4e Eb4e. C4s F4s C4s
+RH: D4e Bb4e. A4s Bb4s F4s G4s Bb4s Eb5s D5s C5s Bb4s A4s G4s | F4s A4s D5s C5s Bb4s A4s G4s F4s Eb4s G4s C5s G4s A4e. A4s | Bb4s F4s G4s F4s D5q rs F4s G4s F4s Eb5q | rs F4s Bb4s A4s D5s C5s Eb5s D5s G5s F5s Eb5s D5s C5s F5s Eb5s F5s
+RH: D5s C5s Bb4s A4s D5s C5s Eb5s D5s C5s Bb4s A4s C5s F5q | rs G4s C5s B4s Eb5s D5s F5s Eb5s Ab5s G5s F5s Eb5s D5s G5s F5s G5s | Eb5s D5s C5s B4s C5s D5s Eb5s G4s Ab4s Bb4s Ab4s F4s F5s Eb5s D5s C5s | B4s Ab5s G5s F5s Eb5s D5s C5s B4s C5s D5s C5s D5s D5e. C5s
+RH: Eb5s D5s C5s D5s Eb5s F5s G5e G5e F5e re F5e | F5e Eb5s D5s G5s F5s Ab5s G5s G5e. Ab5s D5e. C5s | C5w
+LH: rw | rw | re C4s B3s C4s D4s Eb4s G3s Ab3s Bb3s Ab3s F3s F4s Eb4s D4s C4s | B3s Ab4s G4s F4s Eb4s D4s C4s B3s C4s D4s C4s D4s D4e. C4s
+LH: Eb4s D4s C4s D4s Eb4s F4s G4e G4e F4e re F4e | F4e Eb4e re D4e Eb4e Ab3e. F3s Bb3s F3s | G3e Eb4e. D4s Eb4s Bb3s C4s Eb4s Ab4s G4s F4s Eb4s D4s C4s | Bb3s D4s G4s F4s Eb4s D4s C4s Bb3s Ab3s C4s F4s C4s D4e. D4s
+LH: Eb4s Bb3s C4s Bb3s G4q rs Bb3s C4s Bb3s Ab4q | rs Bb3s Eb4s D4s G4s F4s Ab4s G4s C5s Bb4s Ab4s G4s F4s Bb4s Ab4s Bb4s | G4e Eb3s F3s G3s A3s Bb3s D3s Eb3s F3s Eb3s C3s C4s Bb3s A3s G3s | Gb3s Eb4s D4s C4s Bb3s A3s G3s F#3s G3s A3s G3s A3s A3e. G3s
+LH: Bb3s A3s G3s A3s Bb3s C4s D4e D4e C4e re C4e | C4e Bb3e re A3e Bb3e Eb3e. C3s F3s C3s | D3e Bb3e. A3s Bb3s F3s G3s Bb3s Eb4s D4s C4s Bb3s A3s G3s | F3s A3s D4s C4s Bb3s A3s G3s F3s Eb3s G3s C4s G3s A3e. A3s
+LH: Bb3s F3s G3s F3s D4q rs F3s G3s F3s Eb4q | rs F3s Bb3s A3s D4s C4s Eb4s D4s G4s F4s Eb4s D4s C4s F4s Eb4s F4s | D4s F4s Eb4s F4s Bb3s D4s C4s D4s G3s A3s Bb3s C4s A3s Bb3s C4s D4s | Bb3s C4s D4s Eb4s F4s Eb4s G4s F4s Eb4s D4s C4s Eb4s A3q
+LH: rs D3s G3s Gb3s Bb3s A3s C4s Bb3s Eb4s D4s C4s Bb3s A3s D4s C4s D4s | B3s F4s Eb4s D4s C4s Bb3s Ab3s G3s F3s Eb3s D3s C3s G3e G2e | C3e. D3s Eb3s F3s G3e G3e F3e re F3e | F3e Eb3e. F3s Eb3s D3s C3s Bb2s Ab2s G2s F2s Eb2s F2s G2s
+LH: C2e C3s B2s C3s D3s Eb3s G2s Ab2s Bb2s Ab2s F2s F3s Eb3s D3s C3s | B2s Ab3s G3s F3s Eb3s D3s C3s B2s C3s G2s Ab2s F2s G2e G2e | C2w

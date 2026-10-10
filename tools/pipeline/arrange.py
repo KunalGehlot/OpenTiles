@@ -16,8 +16,9 @@ Format (one header per line, then one line per bar for each hand):
     LH: C3w | G2w
 
 Notes are <pitch><value>: pitch like C4, F#4, Bb3, a chord in brackets like [C4 E4 G4], or r
-for a rest; value is w h q e s (whole … sixteenth), optionally dotted with '.', and optionally
-a fingering like @3. Bars are separated by '|'. RH and LH may span several lines; they are
+for a rest; value is w h q e s t (whole … thirty-second), optionally a triplet with '3' (e3 is
+one note of an eighth-note triplet, s3 of a sixteenth-note triplet), optionally dotted with '.',
+and optionally a fingering like @3. Bars are separated by '|'. RH and LH may span several lines; they are
 joined in order.
 
 Usage: arrange.py arrangement.txt > score.musicxml
@@ -31,11 +32,18 @@ from dataclasses import dataclass, field
 from fractions import Fraction
 from xml.sax.saxutils import escape
 
-DIVISIONS = 12  # per quarter: allows sixteenths, triplets and dots
-VALUES = {"w": Fraction(4), "h": Fraction(2), "q": Fraction(1), "e": Fraction(1, 2), "s": Fraction(1, 4)}
-TYPES = {"w": "whole", "h": "half", "q": "quarter", "e": "eighth", "s": "16th"}
+DIVISIONS = 12  # per quarter: sixteenths, triplets and dots; thirty-seconds raise it to 24
+VALUES = {
+    "w": Fraction(4),
+    "h": Fraction(2),
+    "q": Fraction(1),
+    "e": Fraction(1, 2),
+    "s": Fraction(1, 4),
+    "t": Fraction(1, 8),
+}
+TYPES = {"w": "whole", "h": "half", "q": "quarter", "e": "eighth", "s": "16th", "t": "32nd"}
 STEPS = "CDEFGAB"
-TOKEN = re.compile(r"^(?P<pitch>\[[^\]]+\]|r|[A-Ga-g](?:#|b)?-?\d)(?P<value>[whqes])(?P<dot>\.?)(?:@(?P<finger>[1-5]))?$")
+TOKEN = re.compile(r"^(?P<pitch>\[[^\]]+\]|r|[A-Ga-g](?:#|b)?-?\d)(?P<value>[whqest])(?P<triplet>3?)(?P<dot>\.?)(?:@(?P<finger>[1-5]))?$")
 PITCH = re.compile(r"^([A-Ga-g])(#|b)?(-?\d)$")
 
 
@@ -45,11 +53,14 @@ class Event:
     value: str
     dotted: bool
     finger: int | None = None
+    triplet: bool = False
 
     @property
     def beats(self) -> Fraction:
         base = VALUES[self.value]
-        return base * Fraction(3, 2) if self.dotted else base
+        if self.dotted:
+            base *= Fraction(3, 2)
+        return base * Fraction(2, 3) if self.triplet else base
 
 
 @dataclass
@@ -87,7 +98,9 @@ def parse_bar(text: str) -> list[Event]:
         else:
             pitches = [parse_pitch(raw)]
         finger = int(m.group("finger")) if m.group("finger") else None
-        events.append(Event(pitches, m.group("value"), m.group("dot") == ".", finger))
+        events.append(
+            Event(pitches, m.group("value"), m.group("dot") == ".", finger, m.group("triplet") == "3")
+        )
     return events
 
 
@@ -117,10 +130,25 @@ def bar_length(arr: Arrangement) -> Fraction:
     return Fraction(num * 4, den)
 
 
-def note_xml(ev: Event, staff: int, voice: int) -> str:
-    dur = int(ev.beats * DIVISIONS)
+def divisions_for(arr: Arrangement) -> int:
+    """Divisions per quarter: 12, or a multiple of it when a note needs finer steps (thirty-seconds)."""
+    d = DIVISIONS
+    for bar in arr.rh + arr.lh:
+        for ev in bar:
+            while (ev.beats * d).denominator != 1:
+                d *= 2
+    return d
+
+
+def note_xml(ev: Event, staff: int, voice: int, divisions: int = DIVISIONS) -> str:
+    dur = int(ev.beats * divisions)
     dot = "<dot/>" if ev.dotted else ""
-    kind = f"<type>{TYPES[ev.value]}</type>{dot}"
+    tuplet = (
+        "<time-modification><actual-notes>3</actual-notes><normal-notes>2</normal-notes></time-modification>"
+        if ev.triplet
+        else ""
+    )
+    kind = f"<type>{TYPES[ev.value]}</type>{dot}{tuplet}"
     tail = f"<voice>{voice}</voice>{kind}<staff>{staff}</staff>"
     if not ev.pitches:
         return f"<note><rest/><duration>{dur}</duration>{tail}</note>"
@@ -145,6 +173,7 @@ def to_musicxml(arr: Arrangement) -> str:
     full = bar_length(arr)
     pickup = h.get("pickup", "no").lower() in ("yes", "true", "1")
     num, den = h.get("time", "4/4").split("/")
+    divisions = divisions_for(arr)
     measures = []
     for i, (rh, lh) in enumerate(zip(arr.rh, arr.lh)):
         rh_len = sum((e.beats for e in rh), Fraction(0))
@@ -159,7 +188,7 @@ def to_musicxml(arr: Arrangement) -> str:
         parts = []
         if i == 0:
             parts.append(
-                f"<attributes><divisions>{DIVISIONS}</divisions>"
+                f"<attributes><divisions>{divisions}</divisions>"
                 f"<key><fifths>{int(h.get('key', '0'))}</fifths><mode>major</mode></key>"
                 f"<time><beats>{num}</beats><beat-type>{den}</beat-type></time><staves>2</staves>"
                 "<clef number=\"1\"><sign>G</sign><line>2</line></clef>"
@@ -172,9 +201,9 @@ def to_musicxml(arr: Arrangement) -> str:
                     f"<per-minute>{int(bpm)}</per-minute></metronome></direction-type>"
                     f"<sound tempo=\"{int(bpm)}\"/></direction>"
                 )
-        parts.extend(note_xml(e, 1, 1) for e in rh)
-        parts.append(f"<backup><duration>{int(rh_len * DIVISIONS)}</duration></backup>")
-        parts.extend(note_xml(e, 2, 5) for e in lh)
+        parts.extend(note_xml(e, 1, 1, divisions) for e in rh)
+        parts.append(f"<backup><duration>{int(rh_len * divisions)}</duration></backup>")
+        parts.extend(note_xml(e, 2, 5, divisions) for e in lh)
         implicit = ' implicit="yes"' if is_pickup else ""
         measures.append(f'<measure number="{number}"{implicit}>{"".join(parts)}</measure>')
     if measures:

@@ -1,0 +1,11 @@
+# Melody-only level: the right hand of the two-hand arrangement, the left hand resting.
+# Largo from Symphony No. 9 'From the New World' (1893) by Antonín Dvořák: the cor anglais theme, in C.
+# Original simplified arrangement for OpenTiles, released under CC0 1.0.
+title: Largo from the New World Symphony (theme)
+composer: Antonín Dvořák
+key: 0
+time: 4/4
+tempo: 60
+RH: E4q.@3 G4e@5 G4h | E4q. D4e C4h@1 | D4q.@2 E4e G4q. E4e | D4w
+RH: E4q. G4e G4h | E4q. D4e C4h | D4q E4q D4q. C4e | C4w
+LH: rw | rw | rw | rw | rw | rw | rw | rw

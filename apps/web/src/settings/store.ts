@@ -3,6 +3,8 @@
 // `useAppSettings`; code outside React (canvas renderers, crash reporting) reads `appSettings()`.
 import { useSyncExternalStore } from 'react';
 import { getSetting, setSetting } from '../storage/db';
+import { requestPersistence } from '../storage/persist';
+import { browserLanguage, setLanguage } from '../i18n';
 import {
   DEFAULT_APP_SETTINGS,
   canvasLabelScale,
@@ -31,6 +33,7 @@ function mediaPreferences(): MediaPreferences {
 }
 
 function apply(): void {
+  setLanguage(current.language);
   effective = effectiveAccessibility(current, mediaPreferences());
   if (typeof document !== 'undefined') {
     const root = document.documentElement;
@@ -46,12 +49,18 @@ function apply(): void {
 export function loadAppSettings(): Promise<AppSettings> {
   loaded ??= getSetting<unknown>(APP_SETTINGS_KEY, null)
     .then((stored) => {
-      current = normaliseSettings(stored);
+      // A first visit follows the browser's language; after that, the saved choice.
+      current =
+        stored === null || stored === undefined
+          ? { ...normaliseSettings(null), language: browserLanguage() }
+          : normaliseSettings(stored);
+      ready = true;
       apply();
       return current;
     })
     .catch(() => {
       // Storage can be unavailable (private browsing); defaults still work.
+      ready = true;
       apply();
       return current;
     });
@@ -77,10 +86,26 @@ export function labelScale(): number {
   return canvasLabelScale(effective);
 }
 
+// Saves go one after the other, so two quick changes cannot land out of order.
+let saving: Promise<void> = Promise.resolve();
+let ready = false;
+
+/** Applies a change at once and saves it. Never rejects: a failed save leaves the change in memory. */
 export async function updateAppSettings(patch: Partial<AppSettings>): Promise<void> {
+  // A change made before the stored settings were read must not be overwritten by them.
+  if (!ready) {
+    await loadAppSettings();
+    ready = true;
+  }
   current = normaliseSettings({ ...current, ...patch });
   apply();
-  await setSetting(APP_SETTINGS_KEY, current);
+  const snapshot = current;
+  saving = saving
+    .catch(() => {})
+    .then(() => setSetting(APP_SETTINGS_KEY, snapshot))
+    .catch(() => {});
+  void requestPersistence();
+  await saving;
 }
 
 function subscribe(listener: () => void): () => void {

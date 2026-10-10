@@ -6,6 +6,7 @@ import { noteName } from '@opentiles/song-model';
 import { synthFor } from '../audio/synth';
 import { parseNoteNames } from '../lib/notes';
 import { encodeWav } from '../lib/wav';
+import { t } from '../i18n';
 
 interface LoggedEvent extends DetectorEvent {
   receivedAt: number;
@@ -51,7 +52,7 @@ export function DetectorLab() {
   useEffect(
     () => () => {
       running?.detector.dispose();
-      for (const t of running?.stream.getTracks() ?? []) t.stop();
+      for (const track of running?.stream.getTracks() ?? []) track.stop();
     },
     [running],
   );
@@ -99,7 +100,7 @@ export function DetectorLab() {
       if (expected) setGeneration(r.detector.setExpected(expected));
       setRunning(r);
     } catch (e) {
-      setError(e instanceof Error ? e.message : String(e));
+      setError(e instanceof Error ? t(e.message) : String(e));
     } finally {
       setStarting(false);
     }
@@ -118,7 +119,7 @@ export function DetectorLab() {
   };
 
   const changeThreshold = (name: ThresholdName, value: number) => {
-    setThresholds((t) => ({ ...t, [name]: value }));
+    setThresholds((prev) => ({ ...prev, [name]: value }));
     running?.detector.setThreshold(name, value);
   };
 
@@ -145,7 +146,7 @@ export function DetectorLab() {
       synth.click(when, true);
       clickTimes.current.push(when);
     }
-    setLatency('Listening for 8 clicks… keep the room quiet.');
+    setLatency(t('Listening for 8 clicks… keep the room quiet.'));
     setTimeout(() => {
       const offsets: number[] = [];
       for (const c of clickTimes.current) {
@@ -154,8 +155,11 @@ export function DetectorLab() {
       }
       setLatency(
         offsets.length === 0
-          ? 'No clicks were heard. Turn the volume up and try again.'
-          : `Speaker → microphone → detector onset: median ${(median(offsets) * 1000).toFixed(0)} ms over ${offsets.length}/8 clicks (output + input latency).`,
+          ? t('No clicks were heard. Turn the volume up and try again.')
+          : t(
+              'Speaker → microphone → detector onset: median {ms} ms over {n}/8 clicks (output + input latency).',
+              { ms: (median(offsets) * 1000).toFixed(0), n: offsets.length },
+            ),
       );
     }, 6000);
   };
@@ -182,7 +186,7 @@ export function DetectorLab() {
   };
 
   const runBenchmark = async () => {
-    setBenchmark('Running…');
+    setBenchmark(t('Running…'));
     try {
       const { loadEngine } = await import('../input/mic-input');
       const { EngineDetector } = await import('@opentiles/engine');
@@ -195,14 +199,14 @@ export function DetectorLab() {
       let seed = 7;
       for (let i = 0; i < samples.length; i++) {
         seed = (seed * 1664525 + 1013904223) >>> 0;
-        const t = i / sr;
-        const beat = t % 0.5;
+        const time = i / sr;
+        const beat = time % 0.5;
         const env = Math.exp(-beat * 4);
         samples[i] =
           0.002 * (seed / 2 ** 32 - 0.5) +
           0.05 *
             env *
-            (Math.sin(2 * Math.PI * 261.63 * t) + 0.5 * Math.sin(2 * Math.PI * 329.63 * t));
+            (Math.sin(2 * Math.PI * 261.63 * time) + 0.5 * Math.sin(2 * Math.PI * 329.63 * time));
       }
       const t0 = performance.now();
       const events = d.process(samples);
@@ -210,7 +214,15 @@ export function DetectorLab() {
       d.dispose();
       const hops = (sr * seconds) / 256;
       setBenchmark(
-        `${(ms / hops).toFixed(3)} ms per 5.3 ms hop on average (${ms.toFixed(0)} ms for ${seconds} s of audio, ${events.length} events). Target ≤ 2 ms on an older iPad.`,
+        t(
+          '{perHop} ms per 5.3 ms hop on average ({ms} ms for {seconds} s of audio, {events} events). Target ≤ 2 ms on an older iPad.',
+          {
+            perHop: (ms / hops).toFixed(3),
+            ms: ms.toFixed(0),
+            seconds,
+            events: events.length,
+          },
+        ),
       );
     } catch (e) {
       setBenchmark(e instanceof Error ? e.message : String(e));
@@ -223,45 +235,47 @@ export function DetectorLab() {
 
   return (
     <div className="stack">
-      <h1>Detector Lab</h1>
+      <h1>{t('Detector Lab')}</h1>
       <p className="lead">
-        Try microphone note recognition on a real piano. Tell the detector which notes you are about
-        to play, play them (or something else) and watch its decisions. This is the Phase 0 test
-        bench; everything runs on this device.
+        {t(
+          'Try microphone note recognition on a real piano. Tell the detector which notes you are about to play, play them (or something else) and watch its decisions. This is the Phase 0 test bench; everything runs on this device.',
+        )}
       </p>
 
       <div className="panel stack">
         <div className="row">
           {running ? (
-            <button onClick={stop}>Stop microphone</button>
+            <button onClick={stop}>{t('Stop microphone')}</button>
           ) : (
             <button className="primary" disabled={starting} onClick={() => void start()}>
-              {starting ? 'Starting…' : 'Start microphone'}
+              {starting ? t('Starting…') : t('Start microphone')}
             </button>
           )}
-          <div className="segmented" role="group" aria-label="Mode">
+          <div className="segmented" role="group" aria-label={t('Mode')}>
             <button aria-pressed={mode === 'wait'} onClick={() => changeMode('wait')}>
-              Wait mode
+              {t('Wait mode')}
             </button>
             <button aria-pressed={mode === 'play-along'} onClick={() => changeMode('play-along')}>
-              Play-along
+              {t('Play along')}
             </button>
           </div>
           {running && (
             <span className="row">
-              <span className="meter" aria-label="Input level">
+              <span className="meter" aria-label={t('Input level')}>
                 <div style={{ width: `${Math.min(100, level * 100)}%` }} />
               </span>
               <span className="muted">
-                {running.context.sampleRate} Hz · base latency{' '}
-                {((running.context.baseLatency ?? 0) * 1000).toFixed(0)} ms
+                {t('{rate} Hz · base latency {ms} ms', {
+                  rate: running.context.sampleRate,
+                  ms: ((running.context.baseLatency ?? 0) * 1000).toFixed(0),
+                })}
               </span>
             </span>
           )}
         </div>
         {error && <p className="error">{error}</p>}
         <label>
-          Expected notes
+          {t('Expected notes')}
           <input
             type="text"
             value={expectedText}
@@ -271,28 +285,28 @@ export function DetectorLab() {
             style={{ width: '14em' }}
           />
           <button disabled={!running || expected === null} onClick={() => applyExpected(expected)}>
-            Set
+            {t('Set')}
           </button>
-          <span className="muted">generation {generation}</span>
+          <span className="muted">{t('generation {n}', { n: generation })}</span>
         </label>
         <div className="row">
-          {['C4', 'A4', 'C4 E4 G4', 'C3 G3', 'C2', 'C6 E6', 'F#3 A3 D4'].map((t) => (
+          {['C4', 'A4', 'C4 E4 G4', 'C3 G3', 'C2', 'C6 E6', 'F#3 A3 D4'].map((notes) => (
             <button
-              key={t}
+              key={notes}
               disabled={!running}
               onClick={() => {
-                setExpectedText(t);
-                applyExpected(parseNoteNames(t));
+                setExpectedText(notes);
+                applyExpected(parseNoteNames(notes));
               }}
             >
-              {t}
+              {notes}
             </button>
           ))}
         </div>
       </div>
 
       <div className="panel stack">
-        <strong>Thresholds</strong>
+        <strong>{t('Thresholds')}</strong>
         <div className="row">
           {(Object.keys(thresholds) as ThresholdName[]).map((name) => (
             <label key={name}>
@@ -311,32 +325,46 @@ export function DetectorLab() {
         </div>
         <div className="row">
           <button disabled={!running} onClick={() => void calibrate()}>
-            Measure room noise (2 s)
+            {t('Measure room noise (2 s)')}
           </button>
-          {noiseDb !== null && <span className="muted">noise {noiseDb.toFixed(1)} dB per bin</span>}
+          {noiseDb !== null && (
+            <span className="muted">{t('noise {db} dB per bin', { db: noiseDb.toFixed(1) })}</span>
+          )}
           <button disabled={!running} onClick={() => void readTuning()}>
-            Estimate tuning
+            {t('Estimate tuning')}
           </button>
           {tuning !== null && (
             <>
-              <span className="muted">{tuning.toFixed(1)} cents from A = 440 Hz</span>
-              <button onClick={() => running?.detector.setTuning(tuning)}>Apply</button>
+              <span className="muted">
+                {t('{cents} cents from A = 440 Hz', { cents: tuning.toFixed(1) })}
+              </span>
+              <button onClick={() => running?.detector.setTuning(tuning)}>{t('Apply')}</button>
             </>
           )}
         </div>
       </div>
 
       <div className="panel stack">
-        <strong>Decisions</strong>
+        <strong>{t('Decisions')}</strong>
         <p className="muted">
-          {counts.expected} accepted · {counts.rejected} rejected · {counts.wrong} wrong notes ·{' '}
-          {counts.onset} onsets
+          {t('{accepted} accepted · {rejected} rejected · {wrong} wrong notes · {onsets} onsets', {
+            accepted: counts.expected,
+            rejected: counts.rejected,
+            wrong: counts.wrong,
+            onsets: counts.onset,
+          })}
           {delays.length > 0 && (
-            <> · decision {(median(delays) * 1000).toFixed(0)} ms after onset (median)</>
+            <>
+              {' '}
+              ·{' '}
+              {t('decision {ms} ms after onset (median)', {
+                ms: (median(delays) * 1000).toFixed(0),
+              })}
+            </>
           )}
         </p>
         <div className="log" role="log" aria-live="polite">
-          {log.length === 0 && <span className="muted">Nothing yet.</span>}
+          {log.length === 0 && <span className="muted">{t('Nothing yet.')}</span>}
           {log.map((e, i) => (
             <div
               key={i}
@@ -352,29 +380,30 @@ export function DetectorLab() {
           ))}
         </div>
         <div className="row">
-          <button onClick={() => setLog([])}>Clear</button>
+          <button onClick={() => setLog([])}>{t('Clear')}</button>
         </div>
       </div>
 
       <div className="panel stack">
-        <strong>Test-set recorder and latency</strong>
+        <strong>{t('Test-set recorder and latency')}</strong>
         <p className="muted">
-          Records exactly what the detector hears, as a WAV file saved to this device, for the Phase
-          0 test set. Only record public-domain or your own music.
+          {t(
+            'Records exactly what the detector hears, as a WAV file saved to this device, for the Phase 0 test set. Only record public-domain or your own music.',
+          )}
         </p>
         <div className="row">
           <button disabled={!running} onClick={toggleRecording} aria-pressed={recording}>
-            {recording ? 'Stop recording' : 'Record'}
+            {recording ? t('Stop recording') : t('Record')}
           </button>
           {download && (
             <a className="button" href={download.url} download={download.name}>
-              Save {download.name}
+              {t('Save {name}', { name: download.name })}
             </a>
           )}
           <button disabled={!running} onClick={latencyTest}>
-            Latency test (speaker clicks)
+            {t('Latency test (speaker clicks)')}
           </button>
-          <button onClick={() => void runBenchmark()}>Benchmark detector speed</button>
+          <button onClick={() => void runBenchmark()}>{t('Benchmark detector speed')}</button>
         </div>
         {latency && <p>{latency}</p>}
         {benchmark && <p>{benchmark}</p>}

@@ -3,6 +3,7 @@
 // short or common passphrase is still guessable from a stolen backup file, so we nudge towards
 // several random words.
 import { MIN_PASSPHRASE_LENGTH } from '@opentiles/vault';
+import { t } from '../i18n';
 
 export type StrengthLevel = 0 | 1 | 2 | 3;
 
@@ -49,16 +50,18 @@ export function passphraseStrength(passphrase: string): PassphraseStrength {
   if (length < MIN_PASSPHRASE_LENGTH) {
     return {
       level: 0,
-      label: 'Too short',
-      hint: `Use at least ${MIN_PASSPHRASE_LENGTH} characters. Four or five random words work well.`,
+      label: t('Too short'),
+      hint: t('Use at least {n} characters. Four or five random words work well.', {
+        n: MIN_PASSPHRASE_LENGTH,
+      }),
     };
   }
   const lower = passphrase.toLowerCase();
   if (COMMON.some((w) => lower.includes(w)) && length < 16) {
     return {
       level: 1,
-      label: 'Weak',
-      hint: 'This contains a very common word or pattern. Add a few unrelated words.',
+      label: t('Weak'),
+      hint: t('This contains a very common word or pattern. Add a few unrelated words.'),
     };
   }
   const words = passphrase
@@ -67,14 +70,18 @@ export function passphraseStrength(passphrase: string): PassphraseStrength {
     .filter((w) => w.length >= 3).length;
   const bits = estimateBits(passphrase);
   if (bits >= 70 || (words >= 4 && length >= 20)) {
-    return { level: 3, label: 'Strong', hint: 'Good. Keep it somewhere safe.' };
+    return { level: 3, label: t('Strong'), hint: t('Good. Keep it somewhere safe.') };
   }
   if (bits >= 50 || (words >= 3 && length >= 15)) {
-    return { level: 2, label: 'Fair', hint: 'Fair. One or two more words would make it strong.' };
+    return {
+      level: 2,
+      label: t('Fair'),
+      hint: t('Fair. One or two more words would make it strong.'),
+    };
   }
   return {
     level: 1,
-    label: 'Weak',
-    hint: 'Easy to guess. Make it longer, for example four or five random words.',
+    label: t('Weak'),
+    hint: t('Easy to guess. Make it longer, for example four or five random words.'),
   };
 }

@@ -1,0 +1,24 @@
+# Minuet in G major (BWV Anh. 114, complete) by Christian Petzold: simplified one-voice-per-hand arrangement for OpenTiles, released under CC0 1.0.
+# Notes converted from the public-domain Mutopia Project typesetting by Allen Garvin (https://www.mutopiaproject.org/cgibin/piece-info.cgi?id=75).
+# Made with tools/pipeline/midi_arrange.py: held notes are cut at the next onset, long notes at barlines, and rhythms are on a sixteenth grid.
+title: Minuet in G major (BWV Anh. 114, complete)
+composer: Christian Petzold
+key: 1
+time: 3/4
+tempo: 112
+RH: D5q G4e A4e B4e C5e | D5q G4q G4q | E5q C5e D5e E5e F#5e | G5q G4q G4q
+RH: C5q D5e C5e B4e A4e | B4q C5e B4e A4e G4e | F#4q G4e A4e B4e G4e | A4h.
+RH: D5q G4e A4e B4e C5e | D5q G4q G4q | E5q C5e D5e E5e F#5e | G5q G4q G4q
+RH: C5q D5e C5e B4e A4e | B4q C5e B4e A4e G4e | A4q B4e A4e G4e F#4e | G4h.
+RH: B5q G5e A5e B5e G5e | A5q D5e E5e F#5e D5e | G5q E5e F#5e G5e D5e | C#5q B4e C#5e A4q
+RH: A4e B4e C#5e D5e E5e F#5e | G5q F#5q E5q | F#5q A4q C#5q | D5h.
+RH: D5q G4e F#4e G4q | E5q G4e F#4e G4q | D5q C5q B4q | A4e G4e F#4e G4e A4q
+RH: D4e E4e F#4e G4e A4e B4e | C5q B4q A4q | B4e D5e G4q F#4q | [B3 D4 G4]h.
+LH: [G3 B3 D4]h A3q | B3h. | C4h. | B3h.
+LH: A3h. | G3h. | D4q B3q G3q | D4q D3e C4e B3e A3e
+LH: B3h A3q | G3q B3q G3q | C4h. | B3q C4e B3e A3e G3e
+LH: A3h F#3q | G3h B3q | C4q D4q D3q | G3h G2q
+LH: G3h. | F#3h. | E3q G3q E3q | A3h A2q
+LH: A3h. | B3q D4q C#4q | D4q F#3q A3q | D4q D3q C4q
+LH: B3q D4q B3q | C4q E4q C4q | B3q A3q G3q | D4h rq
+LH: D3h F#3q | E3q G3q F#3q | G3q B2q D3q | G3q D3q G2q

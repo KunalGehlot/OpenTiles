@@ -1,0 +1,427 @@
+/*
+ * Shared components (P4-10, ADR 0011): layout helpers, cards, panels, notices, badges, segmented
+ * controls, switches, tables and the update toast. Page-specific rules live in pages.css and
+ * practice.css.
+ */
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+/* ---- Text and layout helpers ---- */
+
+.muted {
+  color: var(--muted);
+}
+
+.lead {
+  max-width: var(--measure);
+  margin: var(--space-3) 0 var(--space-4);
+  color: var(--muted);
+  font-size: var(--text-lg);
+  line-height: 1.5;
+}
+
+.error {
+  color: var(--bad);
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+}
+
+.stack {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+/* Spacing inside a stack comes from its gap, not from each child's own margin. */
+.stack > * {
+  margin-top: 0;
+  margin-bottom: 0;
+}
+
+.stack > h2 {
+  margin-top: var(--space-4);
+}
+
+.stack > h3 {
+  margin-top: var(--space-2);
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(15rem, 100%), 1fr));
+  gap: var(--space-3);
+}
+
+.grid--wide {
+  grid-template-columns: repeat(auto-fill, minmax(min(19rem, 100%), 1fr));
+}
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin: var(--space-2) 0 var(--space-4);
+}
+
+/* ---- Cards, panels, notices ---- */
+
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  padding: var(--space-4);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--surface);
+  box-shadow: var(--shadow-1);
+  color: var(--text);
+  text-decoration: none;
+  transition:
+    border-color var(--dur-2) var(--ease),
+    box-shadow var(--dur-2) var(--ease),
+    transform var(--dur-2) var(--ease);
+}
+
+.card h3 {
+  margin: 0;
+  font-size: var(--text-md);
+  font-weight: 600;
+  line-height: 1.3;
+  letter-spacing: -0.005em;
+}
+
+a.card:hover,
+a.card:focus-visible {
+  border-color: var(--accent-line);
+  box-shadow: var(--shadow-2);
+  color: var(--text);
+  transform: translateY(-1px);
+}
+
+.panel {
+  margin: var(--space-3) 0;
+  padding: var(--space-5);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--surface);
+  box-shadow: var(--shadow-1);
+}
+
+.panel > :first-child {
+  margin-top: 0;
+}
+
+.panel > :last-child {
+  margin-bottom: 0;
+}
+
+.notice {
+  margin: var(--space-3) 0;
+  padding: var(--space-3) var(--space-4);
+  border: 1px solid var(--accent-line);
+  border-radius: var(--radius-sm);
+  background: var(--accent-soft);
+  color: var(--text);
+}
+
+.notice > :last-child {
+  margin-bottom: 0;
+}
+
+.notice--warn {
+  border-color: color-mix(in srgb, var(--warn) 45%, transparent);
+  background: var(--warn-soft);
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.1rem 0.5rem;
+  border-radius: 0.375rem;
+  background: var(--sunken);
+  color: var(--muted);
+  font-size: var(--text-xs);
+  font-weight: 550;
+  line-height: 1.5;
+  white-space: nowrap;
+}
+
+.badge--warn {
+  background: var(--warn-soft);
+  color: var(--warn);
+}
+
+.badge--ok {
+  background: var(--ok-soft);
+  color: var(--ok);
+}
+
+.badge .icon {
+  width: 0.9em;
+  height: 0.9em;
+  margin-right: 0.25rem;
+}
+
+/* Icons (lucide-react) are drawn at the size of their text and never squash in a flex row. */
+.icon {
+  flex: none;
+  width: 1.15em;
+  height: 1.15em;
+}
+
+/* ---- Segmented control: one choice of a few, the chosen one raised ---- */
+
+.segmented {
+  display: inline-flex;
+  gap: 2px;
+  padding: 3px;
+  border: 1px solid var(--line);
+  border-radius: calc(var(--radius-sm) + 3px);
+  background: var(--sunken);
+}
+
+.segmented button {
+  min-height: calc(var(--tap) - 8px);
+  padding: 0.25rem 0.85rem;
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  box-shadow: none;
+  color: var(--muted);
+  font-weight: 500;
+}
+
+.segmented button:hover:not(:disabled) {
+  --btn-bg: transparent;
+  --btn-border: transparent;
+  color: var(--text);
+}
+
+.segmented button[aria-pressed='true'] {
+  border-color: var(--line);
+  background: var(--surface);
+  box-shadow: var(--shadow-1);
+  color: var(--text);
+  font-weight: 600;
+}
+
+html[data-high-contrast] .segmented button[aria-pressed='true'] {
+  border-color: var(--line-strong);
+  background: var(--accent);
+  color: var(--accent-text);
+}
+
+/* ---- Switch: a checkbox that is a setting; its row layout is .setting (pages.css) ---- */
+
+label.toggle input[type='checkbox'] {
+  place-content: center start;
+  inline-size: 2.6rem;
+  block-size: 1.5rem;
+  padding: 0 0.2rem;
+  border: 0;
+  border-radius: 999px;
+  background: var(--control);
+}
+
+label.toggle input[type='checkbox']::before {
+  inline-size: 1.1rem;
+  block-size: 1.1rem;
+  border-radius: 50%;
+  background: var(--switch-thumb);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+  clip-path: none;
+  transform: none;
+  transition: transform var(--dur-2) var(--ease);
+}
+
+label.toggle input[type='checkbox']:checked {
+  background: var(--accent);
+}
+
+label.toggle input[type='checkbox']:checked::before {
+  transform: translateX(1.1rem);
+}
+
+/* ---- Tables and keys ---- */
+
+table.shortcuts {
+  width: 100%;
+  font-size: var(--text-sm);
+}
+
+table.shortcuts th,
+table.shortcuts td {
+  padding: var(--space-2) var(--space-3) var(--space-2) 0;
+  text-align: left;
+  vertical-align: top;
+  /* Long German compounds ("Bedienelementen") must break in a narrow window. */
+  hyphens: auto;
+  overflow-wrap: anywhere;
+}
+
+table.shortcuts th {
+  border-bottom: 1px solid var(--line-strong);
+  color: var(--muted);
+  font-size: var(--text-xs);
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+table.shortcuts td {
+  border-bottom: 1px solid var(--line);
+}
+
+table.facts td {
+  padding: 0.2rem 0.8rem 0.2rem 0;
+}
+
+/* ---- Meters, logs and small status marks ---- */
+
+.meter {
+  width: 12.5rem;
+  max-width: 100%;
+  height: 0.5rem;
+  border-radius: 999px;
+  background: var(--sunken);
+  overflow: hidden;
+}
+
+.meter > div {
+  height: 100%;
+  border-radius: inherit;
+  background: var(--accent);
+}
+
+.log {
+  max-height: 17.5rem;
+  padding: var(--space-3);
+  overflow: auto;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  background: var(--sunken);
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+}
+
+.log .ok {
+  color: var(--ok);
+}
+
+.log .bad {
+  color: var(--bad);
+}
+
+.strength {
+  margin: 0;
+  padding-left: var(--space-3);
+  border-left: 4px solid var(--line-strong);
+}
+
+.strength--0,
+.strength--1 {
+  border-left-color: var(--bad);
+}
+
+.strength--2 {
+  border-left-color: var(--warn);
+}
+
+.strength--3 {
+  border-left-color: var(--ok);
+}
+
+.recovery-code {
+  padding: var(--space-3);
+  border: 2px dashed var(--warn);
+  border-radius: var(--radius-sm);
+  background: var(--warn-soft);
+  font-family: var(--font-mono);
+  font-size: var(--text-lg);
+  letter-spacing: 0.05em;
+  word-break: break-all;
+  user-select: all;
+}
+
+.click-dots {
+  display: flex;
+  gap: var(--space-2);
+  margin: 0;
+  color: var(--line-strong);
+  font-size: var(--text-lg);
+}
+
+.click-dots .on {
+  color: var(--accent);
+}
+
+/* ---- Add to Home Screen hint (src/pwa/HomeScreenHint.tsx) ---- */
+
+.home-screen-hint {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2) var(--space-4);
+  max-width: 70ch;
+}
+
+.home-screen-hint p {
+  flex: 1 1 24ch;
+  margin: 0;
+  line-height: 1.45;
+}
+
+/* ---- Update toast (src/pwa/UpdateBar.tsx): fixed at the top so it never covers the keyboard ---- */
+
+.update-bar {
+  position: fixed;
+  z-index: 20;
+  top: calc(env(safe-area-inset-top) + var(--space-2));
+  left: 50%;
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  max-width: calc(100vw - 1rem);
+  padding: var(--space-1) var(--space-1) var(--space-1) var(--space-4);
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius);
+  background: var(--surface);
+  box-shadow: var(--shadow-3);
+  color: var(--text);
+  font-size: var(--text-sm);
+  white-space: nowrap;
+  transform: translateX(-50%);
+  animation: toast-in var(--dur-3) var(--ease) backwards;
+}
+
+.update-bar button {
+  min-height: var(--tap-sm);
+  padding: 0.25rem 0.8rem;
+}
+
+.update-bar .update-bar__close {
+  --btn-bg: transparent;
+  --btn-border: transparent;
+  box-shadow: none;
+  font-size: var(--text-lg);
+  padding: 0.25rem 0.6rem;
+}
+
+@keyframes toast-in {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -0.5rem);
+  }
+}

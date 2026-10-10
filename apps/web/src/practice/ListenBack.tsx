@@ -5,6 +5,7 @@ import { now, unlockAudio } from '../audio/context';
 import { fileSafe, playNotes, renderWav, saveFile } from '../audio/performance-audio';
 import type { Playback } from '../audio/performance-audio';
 import { synthFor } from '../audio/synth';
+import { t } from '../i18n';
 import type { PracticeSession } from '../views/session';
 
 type Version = 'played' | 'polished';
@@ -41,7 +42,8 @@ export function ListenBack({ session, title, allowSave }: Props) {
     }
     try {
       const ctx = await unlockAudio();
-      const p = playNotes(synthFor(ctx), notes(version), now);
+      // The same place as the app's other notes: this device, the MIDI keyboard or both.
+      const p = playNotes(session.instrument ?? synthFor(ctx), notes(version), now);
       playback.current = p;
       setPlaying(true);
       await p.ended;
@@ -58,11 +60,13 @@ export function ListenBack({ session, title, allowSave }: Props) {
     setSaving(true);
     try {
       const blob = await renderWav(notes(version));
-      const suffix = version === 'played' ? 'as played' : 'polished';
+      const suffix = version === 'played' ? t('as played') : t('polished');
       saveFile(blob, `${fileSafe(title)} (${suffix}).wav`);
     } catch (e) {
       setError(
-        e instanceof Error ? `Could not make the file: ${e.message}` : 'Could not make the file.',
+        e instanceof Error
+          ? t('Could not make the file: {message}', { message: e.message })
+          : t('Could not make the file.'),
       );
     } finally {
       setSaving(false);
@@ -70,14 +74,14 @@ export function ListenBack({ session, title, allowSave }: Props) {
   };
 
   return (
-    <div className="stack listen-back" role="group" aria-label="Listen to your performance">
+    <div className="stack listen-back" role="group" aria-label={t('Listen to your performance')}>
       <div className="row">
-        <span>Listen to your performance:</span>
-        <div className="segmented" role="group" aria-label="Version">
+        <span>{t('Listen to your performance:')}</span>
+        <div className="segmented" role="group" aria-label={t('Version')}>
           {(
             [
-              ['played', 'As played'],
-              ['polished', 'Polished'],
+              ['played', t('As played')],
+              ['polished', t('Polished')],
             ] as const
           ).map(([v, label]) => (
             <button
@@ -87,8 +91,8 @@ export function ListenBack({ session, title, allowSave }: Props) {
               onClick={() => setVersion(v)}
               title={
                 v === 'played'
-                  ? 'Exactly what you played, wrong notes and all'
-                  : 'Your notes and dynamics, exactly in time and held for their full length'
+                  ? t('Exactly what you played, wrong notes and all')
+                  : t('Your notes and dynamics, exactly in time and held for their full length')
               }
             >
               {label}
@@ -97,10 +101,10 @@ export function ListenBack({ session, title, allowSave }: Props) {
         </div>
       </div>
       <div className="row">
-        <button onClick={() => void listen()}>{playing ? 'Stop' : 'Listen'}</button>
+        <button onClick={() => void listen()}>{playing ? t('Stop') : t('Listen')}</button>
         {allowSave && (
           <button disabled={saving} onClick={() => void save()}>
-            {saving ? 'Making the file…' : 'Save as WAV'}
+            {saving ? t('Making the file…') : t('Save as WAV')}
           </button>
         )}
       </div>

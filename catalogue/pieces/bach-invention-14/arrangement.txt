@@ -1,0 +1,18 @@
+# Invention No. 14 in B-flat major by Johann Sebastian Bach: simplified one-voice-per-hand arrangement for OpenTiles, released under CC0 1.0.
+# Notes converted from the public-domain Mutopia Project typesetting by Allen Garvin (https://www.mutopiaproject.org/cgibin/piece-info.cgi?id=72).
+# Made with tools/pipeline/midi_arrange.py: held notes are cut at the next onset, long notes at barlines, and rhythms are on a grid of 1/24 beat (thirty-seconds and triplets).
+title: Invention No. 14 in B-flat major
+composer: Johann Sebastian Bach
+key: -2
+time: 4/4
+tempo: 84
+RH: rs Bb4t C5t D5t C5t Bb4s F5s D5s Bb5s F5s D5s F5t Eb5t D5t Eb5t F5s Bb4s D5s F4s Ab4s | G4s Eb4t F4t G4t F4t Eb4s Bb4s G4s Eb5s Bb4s G4s Bb4t Ab4t G4t G#4t Bb4s Eb4s G4s C4s Eb4s | A3s C4t D4t Eb4t D4t C4s A4s F4s C5s A4s Eb5s F4t G4t A4t G4t F4s C5s A4s F5s C5s | D5e re. G5t F5t Eb5t F5t G5s C5e re. F5t Eb5t D5t Eb5t F5s
+RH: Bb4e re. Eb5t D5t C5t D5t Eb5s A4s C5t Bb4t A4t Bb4t C5s F4e re | F5e F4e A4e C5e F5q rq | re F4e Bb4e D5e F5q rq | re G4e Bb4e C5e E5q rq
+RH: rs F4t G4t A4t G4t F4s C5s A4s F5s C5s A5s Eb5t D5t C5t D5t Eb5s A4s C5s F#4s A4s | Bb4e D5e Bb4e G4e G#4e F5e Ab4e F4e | G4s C4t D4t Eb4t D4t C4s G4s Eb4s C5s G4s D5s Ab4t G4t F4t G4t Ab4s D4s F4s B3s G4s | Eb4e re. C4t D4t Eb4t D4t C4s C5e. Bb4s A4s F4t G4t A4t G4t F4s
+RH: F5e. Eb5s D5s Bb4t C5t D5t C5t Bb4s Bb5e. Ab5s G5s Bb5t Ab5t G5t G#5t Bb5s | Eb5s G5t F5t Eb5t F5t G5s C5s Eb5t D5t C5t D5t Eb5s A4s C5t D5t Eb5t D5t C5s F5s Ab4t G4t F4t G4t Ab4s | G4s Bb4t C5t D5t C5t Bb4s Eb5s G4t F4t Eb4t F4t G4s F4s A4t Bb4t C5t Bb4t A4s D5s F4t Eb4t D4t Eb4t F4s | Eb4s G4t A4t Bb4t A4t G4s C5s Eb4t D4t C4t D4t Eb4s D4q rs Bb4t C5t D5t C5t Bb4s
+RH: F5s D5s Bb5s F5s D5s F5t Eb5t D5t Eb5t F5s Bb4s Eb5s Bb4s Eb5s G4s Eb4t F4t G4t F4t Eb4s | Bb4s G4s Eb5s Bb4s G4s Bb4t Ab4t G4t G#4t Bb4s Eb4e Eb5e. Eb5t D5t C5t D5t Eb5s | F4e Eb5e. C5t D5t Eb5t D5t C5s F5s D5t C5t Bb4t C5t D5s F4s Bb4s C5s A4s | Bb4w
+LH: Bb3e Bb2e D3e F3e Bb3q rq | re Bb2e Eb3e G3e Bb3q rq | re Bb2e C3e Eb3e A3q rq | rs Bb3t C4t D4t C4t Bb3s Eb4e re. A3t Bb3t C4t Bb3t A3s D4e re
+LH: rs G3t A3t Bb3t A3t G3s C4s C3t D3t Eb3t D3t C3s F3e F2e rs C4s A3s F3s | rs F3t G3t A3t G3t F3s C4s A3s F4s C4s A3s C4t Bb3t A3t Bb3t C4s F3s A3s C3s Eb3s | D3s Bb2t C3t D3t C3t Bb2s F3s D3s Bb3s F3s D3s F3t Eb3t D3t Eb3t F3s Bb2s D3s G2s Bb2s | E2s G2t A2t Bb2t A2t G2s E3s C3s G3s E3s Bb3s C3t D3t E3t D3t C3s G3s E3s C4s G3s
+LH: A3e C4e A3e F3e F#3e A3e Gb3e D3e | G3s G2t A2t Bb2t A2t G2s D3s Bb2s G3s D3s Bb3s Ab3t G3t F3t G3t Ab3s D3s F3s Bb2s D3s | Eb3e G3e Eb3e C3e B2e D3e B2e G2e | C3s C2t D2t Eb2t D2t C2s C3e. Bb2s A2s F2t G2t A2t G2t F2s F3e. Eb3s
+LH: D3s Bb2t C3t D3t C3t Bb2s Bb3e. Ab3s G3s Eb3t F3t G3t F3t Eb3s Eb4e. D4s | C4s Eb4t D4t C4t D4t Eb4s A3s C4t Bb3t A3t Bb3t C4s F3s A3t Bb3t C4t Bb3t A3s D4s F3t Eb3t D3t Eb3t F3s | Eb3s G3t A3t Bb3t A3t G3s C4s Eb3t D3t C3t D3t Eb3s D3s F3t G3t A3t G3t F3s Bb3s D3t C3t Bb2t C3t D3s | C3s Eb3t F3t G3t F3t Eb3s A3s C3t Bb2t A2t Bb2t C3s Bb2s Bb3t C4t D4t C4t Bb3s F4s D4s Bb4s F4s
+LH: D4s F4t Eb4t D4t Eb4t F4s Bb3s D4s F3s Ab3s G3s Eb3t F3t G3t F3t Eb3s Bb3s G3s Eb4s Bb3s | G3s Bb3t Ab3t G3t G#3t Bb3s Eb3s G3s Bb2s D3s C3s F2t G2t A2t G2t F2s C3s A2s Eb3s C3s | A2s C3t Bb2t A2t Bb2t C3s F2s A2s C2s Eb2s D2s Bb2t C3t D3t C3t Bb2s F3e F2e | Bb2w

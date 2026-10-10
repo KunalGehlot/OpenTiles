@@ -3,7 +3,7 @@ import { expect, test } from '@playwright/test';
 test('the catalogue lists public-domain pieces', async ({ page }) => {
   await page.goto('./');
   await expect(page.getByRole('heading', { name: 'Free piano practice' })).toBeVisible();
-  await expect(page.locator('.card h3', { hasText: 'Ode to Joy' })).toBeVisible();
+  await expect(page.locator('.card h3', { hasText: 'Ode to Joy (theme)' })).toBeVisible();
 });
 
 test('wait mode advances on correct notes and counts wrong ones', async ({ page }) => {

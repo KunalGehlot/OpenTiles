@@ -7,6 +7,7 @@ import type { NotationSource } from './notation';
 import { ScoreController } from './score-controller';
 import type { PageInfo, ScoreLayout } from './score-controller';
 import { createToolkit } from './verovio';
+import { t } from '../../i18n';
 import './score.css';
 
 export type PracticeView = 'falling' | ScoreLayout;
@@ -78,7 +79,9 @@ export function ScoreView({ session, song, suggested, notation, layout, hardest 
       .catch(() => {
         if (cancelled) return;
         setState({
-          error: 'The score could not be drawn on this device. The falling-notes view still works.',
+          error: t(
+            'The score could not be drawn on this device. The falling-notes view still works.',
+          ),
         });
       });
     return () => {
@@ -120,36 +123,39 @@ export function ScoreView({ session, song, suggested, notation, layout, hardest 
   return (
     <section
       className={`ot-score-panel ${layout}`}
-      aria-label={layout === 'page' ? 'Score, page view' : 'Score, scrolling'}
+      aria-label={layout === 'page' ? t('Score, page view') : t('Score, scrolling')}
     >
-      {state === 'loading' && <p className="ot-score-status muted">Drawing the score…</p>}
+      {state === 'loading' && <p className="ot-score-status muted">{t('Drawing the score…')}</p>}
       {typeof state === 'object' && <p className="ot-score-status error">{state.error}</p>}
       {state === 'ready' && unlinked > 0 && unlinked === song.notes.length && (
         <p className="ot-score-status muted">
-          The score is shown, but its notes could not be matched to the music, so they are not
-          coloured.
+          {t(
+            'The score is shown, but its notes could not be matched to the music, so they are not coloured.',
+          )}
         </p>
       )}
       <div ref={hostRef} className="ot-score-host" hidden={typeof state === 'object'}>
-        <div ref={stripRef} className="ot-score-strip" data-testid="score-strip" />
-        <div ref={cursorRef} className="ot-score-cursor" data-testid="score-cursor" hidden />
+        <div className="ot-score-mover">
+          <div ref={stripRef} className="ot-score-strip" data-testid="score-strip" />
+          <div ref={cursorRef} className="ot-score-cursor" data-testid="score-cursor" hidden />
+        </div>
       </div>
       {layout === 'page' && state === 'ready' && (
         <div className="ot-score-pager">
           <button
             disabled={page.page <= 1}
             onClick={() => controllerRef.current?.turn(-1)}
-            aria-label="Previous page"
+            aria-label={t('Previous page')}
           >
             ‹
           </button>
           <span aria-live="polite">
-            Page {page.page} of {page.pageCount}
+            {t('Page {n} of {count}', { n: page.page, count: page.pageCount })}
           </span>
           <button
             disabled={page.page >= page.pageCount}
             onClick={() => controllerRef.current?.turn(1)}
-            aria-label="Next page"
+            aria-label={t('Next page')}
           >
             ›
           </button>

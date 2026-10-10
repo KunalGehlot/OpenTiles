@@ -25,6 +25,7 @@
     "@opentiles/vault": "workspace:*",
     "dexie": "^4.4.0",
     "dexie-react-hooks": "^4.2.0",
+    "lucide-react": "^1.53.0",
     "react": "^19.3.0",
     "react-dom": "^19.3.0",
     "verovio": "^6.3.0",

@@ -1,0 +1,27 @@
+# Old French Song (Album for the Young, Op. 39 No. 16) by Pyotr Ilyich Tchaikovsky: simplified one-voice-per-hand arrangement for OpenTiles, released under CC0 1.0.
+# Notes converted from the public-domain Mutopia Project typesetting by David McNamara (https://www.mutopiaproject.org/cgibin/piece-info.cgi?id=2080).
+# Made with tools/pipeline/midi_arrange.py: held notes are cut at the next onset, long notes at barlines, and rhythms are on a sixteenth grid.
+title: Old French Song (Album for the Young, Op. 39 No. 16)
+composer: Pyotr Ilyich Tchaikovsky
+key: -2
+time: 2/4
+tempo: 88
+pickup: yes
+RH: D4e | G4e A4e Bb4e C5e | D5q. D5e | C5e D5e Eb5e C5e
+RH: D5q. D5e | C5e D5e Eb5e C5e | D5e Eb5s D5s C5e Bb4e | A4q. rs G4s
+RH: G4q. D4e | G4e A4e Bb4e C5e | D5q. D5e | C5e D5e Eb5e C5e
+RH: D5q. D5e | C5e D5e Eb5e C5e | D5e Eb5s D5s C5e Bb4e | A4q. rs G4s
+RH: G4h | G4q G4e A4e | Bb4q. Bb4e | C5q C5q
+RH: A4q. A4e | D5q. D5e | Eb5e F5s Eb5s D5e C5e | Bb4q A4e G4e
+RH: [Gb4 A4]q. D4e | G4e A4e Bb4e C5e | D5q. D5e | C5e D5e Eb5e C5e
+RH: D5q. D5e | C5e D5e Eb5e C5e | D5e Eb5s D5s C5e Bb4e | [Eb4 A4]q D4e. G4s
+RH: [Bb3 G4]h
+LH: re | [G3 Bb3]e C4e D4e C4e | Bb3q G3q | Eb4q C4q
+LH: Bb3q G3q | Eb4q C4q | Bb3q G3q | [Gb3 C4]q D3q
+LH: [G3 Bb3]q G2q | [G3 Bb3]e C4e D4e C4e | Bb3q G3q | Eb4q C4q
+LH: Bb3q G3q | Eb4q C4q | Bb3q G3q | [Gb3 C4]q D3q
+LH: [G3 Bb3]h | C3e G3e C4e Eb4e | G2e G3e C4e Eb4e | C3e G3e C4e Eb4e
+LH: D3e A3e C4e Gb4e | [G3 Bb3]e D4e G4e re | [C4 Eb4 G4]h | [D4 G4]q rq
+LH: D4q D3q | [G3 Bb3]e C4e D4e C4e | Bb3q G3q | Eb4q C4q
+LH: Bb3q G3q | Eb4q C4q | Bb3q G3q | [C3 G3]q [D3 Gb3]q
+LH: [G2 D3]h

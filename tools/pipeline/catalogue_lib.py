@@ -46,7 +46,12 @@ OPTIONAL = {
     "lyricist_wikidata": str,
     "single_hand": str,
     "reviewed_on": str,
+    "song": str,
+    "variant": str,
+    "print_source": str,
+    "print_year": int,
 }
+PRINT_BEFORE = 1930
 QID = re.compile(r"^Q[1-9][0-9]*$")
 DATE = re.compile(r"^\d{4}-\d{2}-\d{2}$")
 
@@ -133,6 +138,12 @@ def validate_piece(piece: Piece, release_year: int) -> list[str]:
     for key in ("composer_wikidata", "lyricist_wikidata"):
         if key in r and not QID.match(r[key]):
             errors.append(f"{key} must be a Wikidata item ID like Q7294")
+    if ("song" in r) != ("variant" in r):
+        errors.append("'song' and 'variant' go together: a piece that is one level of a song needs both")
+    if "song" in r and not SLUG.match(r["song"]):
+        errors.append("song must be lowercase words separated by hyphens")
+    if "variant" in r and not r["variant"].strip():
+        errors.append("variant is empty")
     if "single_hand" in r and r["single_hand"] not in ("right", "left"):
         errors.append("single_hand must be 'right' or 'left'")
 
@@ -147,6 +158,13 @@ def validate_piece(piece: Piece, release_year: int) -> list[str]:
     # Spec §9 step 3: only the transcriber's own work, never a copy of a protected edition.
     edition_errors, _ = editions.check_provenance(r)
     errors += edition_errors
+
+    # A score typeset from an older print: the print must be old (nothing of a recent edition is free).
+    year = r.get("print_year")
+    if year is not None and year >= PRINT_BEFORE:
+        errors.append(f"print_year {year} is not before {PRINT_BEFORE}: a recent print may be protected")
+    if r.get("print_source") and not _print_is_dated(r):
+        errors.append("print_source names a print with no year or century: say when it was printed")
 
     # Spec §9 step 4: the file must parse and make musical sense.
     score = piece.path / r["score_file"]
@@ -163,6 +181,13 @@ def validate_piece(piece: Piece, release_year: int) -> list[str]:
             else:
                 errors += [f"score: {e}" for e in check_score(root, r.get("single_hand"))]
     return errors
+
+
+def _print_is_dated(r: dict) -> bool:
+    """True when print_year is set or the source names a year or an earlier century."""
+    if r.get("print_year") is not None:
+        return True
+    return bool(re.search(r"\b1[5-9]\d\d|\b(?:17|18|19)th[ -]century", str(r.get("print_source", "")), re.I))
 
 
 def review_notes(piece: Piece) -> list[str]:
@@ -186,4 +211,30 @@ def index_entry(piece: Piece) -> dict:
     }
     if r.get("attribution"):
         entry["attribution"] = r["attribution"]
+    if r.get("song"):
+        entry["song"] = r["song"]
+        entry["variant"] = r["variant"]
     return entry
+
+
+def validate_songs(pieces: list[Piece]) -> list[str]:
+    """Problems across the levels of one song (ADR 0012): the rights and the labels must agree."""
+    errors: list[str] = []
+    by_song: dict[str, list[Piece]] = {}
+    for p in pieces:
+        if p.record.get("song"):
+            by_song.setdefault(p.record["song"], []).append(p)
+    same = ("composer", "composer_death_year", "traditional", "composer_wikidata", "lyricist", "lyricist_death_year")
+    for song, group in sorted(by_song.items()):
+        first = group[0]
+        for other in group[1:]:
+            for key in same:
+                if first.record.get(key) != other.record.get(key):
+                    errors.append(
+                        f"song '{song}': {first.slug} and {other.slug} disagree on {key} "
+                        f"({first.record.get(key)!r} against {other.record.get(key)!r})"
+                    )
+        labels = [g.record.get("variant", "").strip().lower() for g in group]
+        if len(set(labels)) != len(labels):
+            errors.append(f"song '{song}': two levels have the same variant label")
+    return errors

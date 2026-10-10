@@ -17,7 +17,7 @@ export type {
 } from './builder';
 export { parseAbc, looksLikeAbc } from './abc';
 export type { AbcOptions } from './abc';
-export { unzipMxl, decodeXml, isZip } from './mxl';
+export { unzipMxl, unzipLimited, ZIP_LIMITS, decodeXml, isZip } from './mxl';
 export { parseMidiFile, midiToSong, measuresFromTimeSignatures, measureIndexAt } from './midi';
 export type { MidiFile, MidiImportOptions, MidiNoteRaw } from './midi';
 export { quantise, GRIDS } from './quantise';

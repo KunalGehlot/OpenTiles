@@ -1,0 +1,22 @@
+# Consolation (Op. 100 No. 13) by Johann Friedrich Burgmüller: simplified one-voice-per-hand arrangement for OpenTiles, released under CC0 1.0.
+# Notes converted from the public-domain Mutopia Project typesetting by Bas Wassink (https://www.mutopiaproject.org/cgibin/piece-info.cgi?id=224).
+# Made with tools/pipeline/midi_arrange.py: held notes are cut at the next onset, long notes at barlines, and rhythms are on a sixteenth grid.
+title: Consolation (Op. 100 No. 13)
+composer: Johann Friedrich Burgmüller
+key: 0
+time: 4/4
+tempo: 72
+RH: G4e D5e E5e D5e E5e D5e E5e D5e | G4e C5e D5e C5e D5e C5e D5e C5e | B4e F5e G5e F5e G5e F5e G5e F5e | C5e E5e F5e E5e F5e E5e F5e E5e
+RH: A4e E5e F5e E5e D#5e E5e F5e E5e | E5e D5e C#5e D5e B5e A5e F5e D5e | C5e G4e B4e C5e E5e G4e D5e G4e | re G4e C5e G4e D5e G4e E5e G4e
+RH: E5e G4e D5e G4e C#5e G4e D5e G4e | C5e G4e B4e G4e A4e G4e B4e G4e | D5e G4e C5e G4e A4e G4e F#4e G4e | A4e G4e C5e G4e D5e G4e E5e G4e
+RH: E5e G4e B4e G4e C5e G4e B4e G4e | B4e A#4e B4e C5e B4e A5e G5e F#5e | E5e B4e G5e B4e E5q rq | D5q C#5q D5q B4q
+RH: C5q B4q C5q A4q | B4q C5q C#5q D5q | C5q D5q D#5q E5q | D5e G5e C#5e G5e D5e G5e B4e G5e
+RH: C5e G5e B4e G5e C5e G5e A4e G5e | B4e C5e D5e E5e F5e D5e A4e B4e | C5e G4e E5e G4e C5q rq | C5e G4e E5e G4e D5e A4e B4e G4e
+RH: C5e G4e E5e G4e D5e A4e B4e G4e | C5e B4e C5e E5e G5e D#5e E5e G5e | C6q rh.
+LH: [G3 F4]w | [G3 E4]w | [G3 D4]w | [G3 C4]w
+LH: [G3 A3 C#4]w | [F3 A3 D4]w | [G3 C4 E4]h [G3 B3 F4]h | [C4 E4]w
+LH: [B3 F4]w | [G3 F4]w | [C4 E4]w | [C4 E4]w
+LH: [B3 E4]w | [B3 D#4]h re F#4e B4e A4e | [E4 G4]h. rq | F4e G4e E4e G4e F4e G4e D4e G4e
+LH: E4e G4e D4e G4e E4e G4e C4e G4e | D4e G4e E4e G4e E4e G4e F4e G4e | E4e G4e B3e G4e B3e G4e C4e G4e | F4q E4q F4q D4q
+LH: E4q D4q E4q C4q | D4h G3h | [C4 E4]h. rq | [C4 E4]h [G3 F4]h
+LH: [C4 E4]h [G3 F4]h | [C4 E4]h rh | C3q rh.

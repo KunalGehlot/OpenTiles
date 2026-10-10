@@ -126,6 +126,16 @@ Full list in [docs/architecture.md](architecture.md#safari-and-ipad-rules).
 - Call `navigator.storage.persist()` on first import; nudge iPad users to Add to Home Screen.
 - The layout must stay usable at ⅓ of an iPad screen and survive rotation.
 
+## Using AI tools
+
+OpenTiles was itself written with an LLM (see [CREDITS.md](../CREDITS.md)), and contributors may use
+such tools too. The rules do not change: you sign off your commits (DCO) and are responsible for
+every line, however it was produced. Do not paste in code, assets, songs or text from another
+project unless its licence allows it and you keep its notices. When a feature is inspired by
+another app, work from a description of what it does, not from its source, and credit it in
+CREDITS.md. Commits carry no AI author, co-author or session trailer; the disclosure lives in the
+docs and on the About page.
+
 ## Definition of done
 
 - The behaviour in the task is implemented and covered by tests.

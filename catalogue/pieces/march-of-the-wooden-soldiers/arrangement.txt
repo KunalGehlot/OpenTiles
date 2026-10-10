@@ -1,0 +1,32 @@
+# March of the Wooden Soldiers (Op. 39 No. 5) by Pyotr Ilyich Tchaikovsky: simplified one-voice-per-hand arrangement for OpenTiles, released under CC0 1.0.
+# Notes converted from the public-domain Mutopia Project typesetting by Anonymous (https://www.mutopiaproject.org/cgibin/piece-info.cgi?id=1806).
+# Made with tools/pipeline/midi_arrange.py: held notes are cut at the next onset, long notes at barlines, and rhythms are on a sixteenth grid.
+title: March of the Wooden Soldiers (Op. 39 No. 5)
+composer: Pyotr Ilyich Tchaikovsky
+key: 2
+time: 2/4
+tempo: 104
+RH: [A4 D5]e re D5e re | B4e. A#4s B4e rs C#5s | [A4 D5]e re D5e re | B4e. A#4s B4e rs C#5s
+RH: [A4 D5]e re [C#5 E5]e re | F#5e re [D5 F#5]e re | [E5 G5]e rs [D5 F#5]s [C#5 E5]e rs [B4 D5]s | [C#5 E5]e rq.
+RH: [A4 D5]e re D5e re | B4e. A#4s B4e rs C#5s | [A4 D5]e re D5e re | B4e. A#4s B4e rs C#5s
+RH: [A4 D5]e re [C#5 E5]e re | F#5e re [D5 F#5]e re | [C#5 E5]e rs [B4 D5]s [A4 C#5]e rs [G#4 B4]s | A4e rq.
+RH: [E4 A4]e re A4e re | Bb4e. A4s Bb4e rs G#4s | A4e re A4e re | Bb4e. A4s Bb4e rs G#4s
+RH: A4e re B4e re | [G#4 C#5]e re [A4 C#5]e re | [B4 D5]e rs C#5s B4e rs A4s | G#4e rq.
+RH: [E4 A4]e re A4e re | Bb4e. A4s Bb4e rs G#4s | A4e re A4e re | Bb4e. A4s Bb4e rs G#4s
+RH: A4e re B4e re | [G#4 C#5]e re [A4 C#5]e re | [B4 D5]e rs C#5s B4e rs C#5s | A4e rq.
+RH: [A4 D5]e re D5e re | B4e. A#4s B4e rs C#5s | [A4 D5]e re D5e re | B4e. A#4s B4e rs C#5s
+RH: [A4 D5]e re [C#5 E5]e re | F#5e re [D5 F#5]e re | [E5 G5]e rs [D5 F#5]s [C#5 E5]e rs [B4 D5]s | [C#5 E5]e rq.
+RH: [A4 D5]e re D5e re | B4e. A#4s B4e rs C#5s | D5e re D5e re | B4e. A#4s B4e rs C#5s
+RH: [A4 D5]e re [C#5 E5]e re | F#5e re [D5 F#5]e re | E5e rs D#5s E5e rs F#5s | D5e rq.
+LH: [D4 F#4]e rq. | [D4 G4]e. F#4s G4e rs E4s | [D4 F#4]e rq. | [D4 G4]e. F#4s G4e rs E4s
+LH: [D4 F#4]e re A4e re | D5e rq. | [D4 A4]e rq. | A4e A4s A4s A4e A4e
+LH: [D4 F#4]e rq. | [D4 G4]e. F#4s G4e rs E4s | [D4 F#4]e rq. | [D4 G4]e. F#4s G4e rs E4s
+LH: [D4 F#4]e re A4e re | D5e re D4e re | E4h | A3e A3s A3s A3e A3e
+LH: [A3 C#4]e rq. | [A3 D4 F4]h | [A3 C#4 E4]e rq. | [A3 D4 F4]h
+LH: [A3 C#4 E4]e re [E4 G#4]e re | [C#4 F4]e re F#4e re | [B3 F#4]e rq. | E4e rs D4s C#4e rs B3s
+LH: [A3 C#4]e rq. | [A3 D4 F4]h | [A3 C#4 E4]e rq. | [A3 D4 F4]h
+LH: [A3 C#4 E4]e re [E4 G#4]e re | [C#4 F4]e re F#4e re | [B3 F#4]e re [E4 G#4]e re | A3e rs A3s B3e rs C#4s
+LH: [D4 F#4]e rq. | [D4 G4]e. F#4s G4e rs E4s | [D4 F#4]e rq. | [D4 G4]e. F#4s G4e rs E4s
+LH: [D4 F#4]e re A4e re | D5e rq. | [D4 A4]e rq. | A4e A4s A4s A4e A4e
+LH: [D4 F#4]e rq. | [D4 G4]e. F#4s G4e rs E4s | [D4 F#4]e rq. | [D4 G4]e. F#4s G4e rs E4s
+LH: [D4 F#4]e re A4e re | D5e re B4e re | [G4 B4]e re [A4 C#5]e re | D4e rq.

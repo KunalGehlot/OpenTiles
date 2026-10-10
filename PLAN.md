@@ -15,11 +15,21 @@ file says **in which order**, **who picks up what**, and **what is done**.
 
 ## Current focus
 
-**Phase 0 — prove microphone recognition on an iPad.** The detector, its synthetic test harness,
-the evaluation CLI and the Detector Lab are built; what is left is human work on real pianos:
-record the test set (P0-04), measure latency on iPads (P0-11), tune on real recordings and write
-the gate report (P0-13). A first version of the core practice loop (Phase 1) exists alongside, so
-the microphone can be tried in real practice.
+**Release preparation (October 2026).** The code covers most of Phases 1 to 4: practice modes, falling
+notes and score views with scrubbing, MIDI in and out (Chrome, Edge, Firefox; the iPad app builds), the
+microphone detector, imports, an 81-piece verified catalogue, English and German, encrypted backup and
+sync, and release hardening. What is left is mostly human work and gates:
+
+- **G0, the microphone gate:** record the test set on real pianos (P0-04), measure latency on iPads
+  (P0-11), tune and write the gate report (P0-13).
+- **Legal and publishing:** the legal consultation (P2-18), the postal address in the Impressum, the
+  deployment (docs/deploying.md), domain and trademark.
+- **iPad app:** install on an iPad and test with a keyboard (P3-01); App Store (P3-02).
+- **Code still open:** MIDI out and Bluetooth MIDI pairing in the iPad app, the sustain pedal, frame time
+  on an older iPad, a native speaker's read-through of the German, more catalogue pieces (P3-05).
+
+The task list for this round is [Phase 5 — Release polish](#phase-5--release-polish-from-2026-10-09),
+starting with P5-00 (push the branch, open the pull request, CI).
 
 ## Phases and gates
 
@@ -185,13 +195,17 @@ engines.
 ### Storage, accessibility, legal (STORE, APP, GOV)
 
 - [x] **P2-13** One-tap encrypted backup file (`.zip`) and restore.
-- [ ] **P2-14** Translations: English and German.
+- [x] **P2-14** Translations: English and German. Done 2026-10-09 (ADR 0014): every screen, canvas
+      label and import message in German (about 430 strings), a first visit follows the browser's
+      language, German note names on the falling notes; a unit test fails on any untranslated string.
+      Left: a native speaker's read-through.
 - [~] **P2-15** Accessibility: large print, high contrast, left-handed layout, keyboard shortcuts,
   Bluetooth foot-pedal page turn. Done: settings for large print, high contrast, left-handed controls, reduced motion, shortcuts list, pedal key. Left: practice view reading the left-handed flag beyond CSS; pedal hook wired to the page score.
 - [x] **P2-16** Licence scanner for third-party dependencies in CI.
 - [~] **P2-17** Privacy policy, Impressum with notice-and-takedown address, records of processing. Done: privacy policy and Impressum (EN/DE), records of processing. Left: real postal address; lawyer review (P2-18).
 - [ ] **P2-18** (human) Legal consultation with a German copyright lawyer (timing is an open
-      decision).
+      decision). Also ask: Bella Ciao (P4-14), the LLM disclosure and the Sightread credit wording
+      (P5-01), and whether MIDI export of a user's own free-play recording breaks guardrail 1 (P5-06).
 
 **G2 criteria:** 150 verified pieces across 5 levels; every item in
 [docs/legal-guardrails.md](docs/legal-guardrails.md) checked; device lab passes on every row of the
@@ -200,7 +214,9 @@ compatibility matrix (spec §5).
 ## Phase 3 — v1.0 (Jul – Aug 2027)
 
 - [~] **P3-01** Capacitor iPad shell with a Swift CoreMIDI plugin (`NativeMidiInput`), in
-  `apps/ios-shell`. Done: Capacitor 8 shell, Swift CoreMIDI plugin, NativeMidiInput. Left: build and test on macOS/Xcode and a real iPad.
+  `apps/ios-shell`. Done: Capacitor 8 shell, Swift CoreMIDI plugin, NativeMidiInput; the app
+  builds with Xcode 27 (2026-10-09). Left: install on an iPad and test with a keyboard (the
+  first-build checklist in the app's README), the plugin tests on a simulator.
 - [ ] **P3-02** (human) Apple Developer Program, free App Store release.
 - [~] **P3-03** Encrypted sync: passkeys / email link, Argon2id-wrapped library key, AES-GCM blobs,
   EU object storage, 250 MB quota, one-step account deletion. (Open decision: v1.0 or right
@@ -234,12 +250,133 @@ compatibility matrix (spec §5).
   drain over the note's length, "hold longer" / "let go" labels and a hold count in the summary
   (MIDI and on-screen keys; the microphone cannot see key release); every run is recorded and
   can be heard back as played or polished; WAV rendered offline, for catalogue pieces only
-  (ADR 0010). Left: the maintainer's decision on WAV files for library pieces (ADR 0010 is
-  proposed), and a manual check on an iPad.
-- [ ] **P4-10** UI redesign: a proper visual system (type, spacing, colour, icons), refined
-      practice screen and canvas, better Home and Library.
+  (ADR 0010, accepted 2026-10-09: WAV files for catalogue pieces only). Left: a manual check on
+  an iPad.
+- [~] **P4-10** UI redesign: a proper visual system (type, spacing, colour, icons), refined
+  practice screen and canvas, better Home and Library. Done: design tokens in light, dark and high
+  contrast with a contrast test (`apps/web/src/styles/`, ADR 0011); system fonts,
+  restyled native controls, `lucide-react` icons; a new Home (hero, "continue" card, path),
+  Library, Settings and About; a slim practice header with an Options panel, quiet control rows and
+  icon-only secondary buttons at ⅓ width; a new canvas (tiles, bar numbers, shaded black-key lanes,
+  key bloom, larger finger numbers) and end-of-run ring; several review rounds with the maintainer
+  (2026-10-08 and 09). Left: the next polish round is P5-09 (manual light/dark switch, logo,
+  Detector Lab, 44 px touch targets); an iPad check including frame time on an older iPad (P5-10).
+- [x] **P4-11** Smooth motion and a sensible falling-notes layout on wide windows. Done: a steady
+      drawing clock nudged toward the audio clock, time-based wait-mode easing, white keys capped at
+      64 px with more octaves shown on wide windows (ADR 0012). Left: frame time on an older
+      iPad (not measured).
+- [x] **P4-12** Score views (the maintainer's feedback of 2026-10-08). Done: the cursor glides over bar lines
+      (test), the score returns to its start a second after a run (page view: page 1), the scrolling
+      score has no scroll bar and can be dragged or swiped with coasting, the play bar stays in the
+      middle (ADR 0009 decision 5 superseded by ADR 0012), the page view is a centred page, not
+      stretched, and the score is larger on big windows. Left: a check on an iPad (WebKit is covered by
+      the Playwright runs).
+- [~] **P4-13** Several levels per song and more pieces (ADR 0012).
+  Done: optional `song` and `variant` fields in schema, validator and index; Home links the other
+  levels under a card; 19 melody levels, "Ode to Joy (full tune)" and "Happy Birthday to You",
+  verified after the music review (P4-13c). Left: longer pieces and more songs (PDMX pipeline or
+  exact hand transcriptions), a third level for more songs.
+- [~] **P4-13b** Famous public-domain pieces at scale (2026-10-09). Done: `tools/pipeline/midi_arrange.py`
+  turns a public-domain Mutopia Project typesetting (MIDI) into an `arrange.py` arrangement with one
+  voice per hand; 27 pieces added (Bach inventions, minuets and Musette; Für Elise, The
+  Entertainer, Maple Leaf Rag, Tchaikovsky and Schumann children's pieces, Burgmüller, a Chopin
+  prelude and waltz, two Beethoven minuets), 79 in all, each with its print and year recorded
+  (`print_source`, refused when undated or from 1930 on); pieces whose source page gave no date
+  (the Gymnopédies, Rondo alla Turca, three Chopin preludes, Mozart K. 331, Schubert's Marche
+  militaire, Prelude in C) were left out until a dated source is found; difficulty from the
+  estimator; verified after the music review (P4-13c). Left: a third level for more songs, the
+  undated pieces above, pieces whose ornaments matter (the converter leaves grace notes out and
+  refuses rubato; thirty-seconds and triplets work with `--fine` since P4-13c).
+- [x] **P4-14** Bella Ciao (maintainer's request). Added 2026-10-09 at two levels (melody, two hands):
+      an own CC0 arrangement of the melody as set CC0 by Peter Gerloff on Wikimedia Commons. The origin of
+      the tune is disputed (linked to a 1919 recording by Mishka Ziganoff, who died in 1967), which the
+      provenance says plainly. The maintainer accepted it as traditional and verified it on 2026-10-09;
+      revisit after the legal consultation (P2-18).
+- [x] **P4-13c** Music review of the whole catalogue (2026-10-09,
+      `catalogue/reviews/2026-10-09-music-review.md`): an automated review against public-domain scores and
+      the Mutopia MIDI; 18 pieces corrected (wrong notes in Amazing Grace, rhythms in Brahms' Lullaby and
+      the Largo, an invented left hand in Mountain King, titles of Consolation and WoO 82, …). Thirty-seconds
+      and triplets added to arrange.py and the converter, so Invention 14 and Für Elise are complete;
+      da capos written out for WoO 82 and the Musette. All 81 pieces verified by the maintainer
+      (KunalGehlot, 2026-10-09) on the basis of this review.
+- [x] **P4-19** MIDI keyboard settings (2026-10-09): play the keys pressed on a MIDI keyboard on this
+      device too (for keyboards without speakers or for headphones), and play the app's notes
+      (listen mode, the other hand, listening back) on this device, the keyboard's own sound or both,
+      through MIDI out; a choice of output when there are several; a live keyboard test in Settings.
+      Firefox messages now cover its two real limits (no hot-plugging; the site permission add-on
+      off localhost). Confirmed working in Firefox by the maintainer (2026-10-09). Left: MIDI out from
+      the iPad app (CoreMIDI send), the sustain pedal, a choice of audio output device.
+- [x] **P4-18** Scrubbing in the scrolling score (2026-10-09): the play bar stays in the middle and a
+      drag (or a sideways trackpad scroll) moves the whole piece under it, back and forth; the
+      score, cursor and falling notes follow, a playing run pauses and Play starts from there, wait
+      mode moves to the step at that place. Tests: unit (inverse cursor map, session seek) and
+      Playwright in Chromium and WebKit.
+- [x] **P4-15** Release hardening (2026-10-09, ADR 0013). Done: Content-Security-Policy (meta tag in
+      the build and `public/_headers`), SVG sanitiser for engraved scores, zip and file size limits,
+      an error boundary, storage that survives a blocked IndexedDB (localStorage copy), ordered saves,
+      persistent storage requested on a settings change, `uuid` audit finding fixed, build warning
+      removed. Left: a real deployment (docs/deploying.md), a pen test, a check on WebKit and an iPad.
+- [x] **P4-17** "Find sheet music" page (2026-10-09): where to get free (public-domain, openly
+      licensed) and licensed sheet music in formats OpenTiles opens, with plain outside links only.
+      Downloaders that get round a paywall and collections of unlicensed arrangements are left out
+      on purpose (legal guardrails).
+- [x] **P4-16** Learner features (2026-10-09). Done: search in the piece list and the library
+      (accents ignored); note names on the falling notes (setting, default on); practice choices
+      (mode, hands, tempo, accompany, metronome and volume) remembered on this device; played notes keep
+      their hand colour (an early or late note gets an amber edge, not an amber fill). Tests: unit and
+      Playwright (`e2e/release.spec.ts`, two scroll-back tests in `e2e/score.spec.ts`).
 - [ ] **P4-06** If the rule-based detector stalls below target: small onset model via ONNX Runtime
       Web.
+
+## Phase 5 — Release polish (from 2026-10-09)
+
+Goal: the final round before release. Smoother and richer practice, credit where it is due, and the
+human items that block going public. Planned with the maintainer on 2026-10-09 after comparing
+OpenTiles with [Sightread](https://github.com/sightread/sightread) (GPL-3.0). Rule for every task
+here: build from a description of what a feature does, never from another project's code, songs,
+images, sounds or fonts, and credit the inspiration in [CREDITS.md](CREDITS.md).
+
+- [x] **P5-01** (GOV) Credit and disclosure. Done: README section, About page (English and German),
+      `CREDITS.md`, a short "Using AI tools" section in `docs/development.md`. The comparison found no
+      shared code (0 matching four-line windows in `apps/web` and the TypeScript packages; only
+      `#000000` as a shared colour). Sightread is GPL-3.0 (GitHub and its LICENSE file; no "or later"
+      notice), OpenTiles is AGPL-3.0-or-later; GPLv3 §13 / AGPLv3 §13 allow combining, and nothing has
+      been taken. Wording uses "an LLM" and names no vendor. Left: ask in P2-18.
+- [~] **P5-00** (GOV) Housekeeping that blocks release: push `P4-10-ui-redesign` and open the PR; fix
+  the Firefox and iPad-profile Playwright failures in CI; delete and recreate the GitHub
+  repository before it is made public (see STATE.md). Done: the branch is pushed with PR #1;
+  WebKit and the iPad profile pass in CI. The Firefox failures had two causes in the app, both
+  fixed: the first import waited for Firefox's storage-permission prompt, and a sound device
+  that never starts (as on the Linux runner) froze the metronome, runs and the falling notes.
+  Left: recreate the repository before it goes public.
+- [ ] **P5-02** (APP) Keep the screen awake while practising (Screen Wake Lock API, requested from a
+      user gesture, released on pause, hidden tab or leaving the page; no error where it is missing).
+- [ ] **P5-03** (APP) Note labels: letters, German names (H instead of B), Fixed-Do; one setting that
+      the falling notes, the keyboard and the score fingerings share.
+- [ ] **P5-04** (APP, SONG) Shift the piece by semitones during practice and choose sharps or flats for
+      the labels. Today transposing exists only at import. The score views re-engrave, fingering is
+      recomputed.
+- [ ] **P5-05** (APP, PRAC) Sight-reading drills (the "Speed" and "Infinite" ideas): random notes or
+      generated phrases on a staff, with clef, key signature, letters on/off and a speed readout. Works
+      with MIDI, microphone and the on-screen keyboard through the usual `NoteEvent` stream. Material is
+      generated in code, so it is CC0 by construction. Needs an ADR for the generator and the scoring.
+- [ ] **P5-06** (APP) Free play with recording and listen-back, using the existing sampler and the
+      performance recorder. Saving the recording as a MIDI file for the user's own device needs an
+      ADR first (guardrail 1: the only export is the encrypted backup; ADR 0010 limits WAV files to
+      catalogue pieces) and a question to the lawyer in P2-18.
+- [ ] **P5-07** (APP) A slim live stats strip (perfect, good, missed, streak; off by default) and an
+      overview strip of the whole piece with loop handles and the hardest bars. Check first what
+      `SectionBar` and `loop-drag` already cover.
+- [ ] **P5-08** (APP) Library preview before opening and collections. Not selected for this round.
+- [ ] **P5-09** (APP) Smoothness pass, reviewed together in the maintainer's dark-mode Chrome: home to
+      playing in two clicks, one transport bar, route and panel transitions, 44 px touch targets on
+      coarse pointers, a manual light/dark switch, a refreshed logo, Detector Lab polish.
+- [ ] **P5-10** (human) Release gate: frame time on an older iPad, a MIDI keyboard on an iPad through
+      the iPad app (Safari has no Web MIDI; Firefox confirmed working 2026-10-09), postal address in the Impressum, legal consultation (P2-18), domain and trademark, a
+      native German read-through, README screenshots from CC0 pieces only.
+
+Left out on purpose: 128 General MIDI instruments (a piano trainer, and extra sample licences and
+size), Sightread's song library and assets, and any analytics.
 
 ## Cross-cutting checklists
 
@@ -265,6 +402,29 @@ Record the outcome as an ADR in `docs/adr/` and tick it here.
 - [x] Engine exposes a plain C ABI instead of wasm-bindgen glue — ADR 0002.
 
 ## Changelog
+
+- **2026-10-09** — MIDI keyboard settings (keys on this device, the app's notes on the keyboard),
+  Firefox MIDI confirmed working, the iPad app builds with Xcode, status brought up to date.
+
+- **2026-10-09** — Phase 5 (release polish) planned. P5-01 done: the README, About page and
+  CREDITS.md say that an LLM was used and credit Sightread; the comparison found no shared code.
+  Features picked: P5-02…P5-07 (not P5-08).
+- **2026-10-09** — Maintainer approval: all 81 catalogue pieces verified, ADRs 0010–0014 accepted,
+  Bella Ciao accepted as traditional. Score scrubbing (P4-18), MIDI help for Firefox and Safari,
+  engine build that finds rustup's toolchain.
+
+- **2026-10-09** — Release pass: 27 more famous public-domain pieces (79 in the catalogue), search,
+  note names, remembered practice choices, hand-coloured played notes, security hardening (CSP, SVG
+  sanitiser, archive limits, error boundary), install and build warnings fixed, failing catalogue
+  tests fixed (P4-13b, P4-15, P4-16).
+
+- **2026-10-08** — Second review round of the redesign: smoother falling notes, a keyboard that
+  fills wide windows sensibly, score view fixes (bar-line glide, scroll back, drag, centred play
+  bar, page view), several levels per song and a first batch of new levels (P4-11…P4-13, ADR 0012).
+
+- **2026-10-08** — P4-10 started: the visual system (tokens, contrast test, system fonts, icons),
+  new Home, Library, Settings, practice header and canvas. ADR 0011 (proposed). Keyboard size and
+  fingers moved into the practice screen's Options panel.
 
 - **2026-10-08** — Phase 4 in the UI: keyboard size (P4-07), fingering display (P4-08) and the
   timing teacher with playback and WAV files (P4-09). WAV files only for catalogue pieces until the

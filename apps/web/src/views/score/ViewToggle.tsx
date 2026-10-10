@@ -2,6 +2,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { getSetting, setSetting } from '../../storage/db';
 import type { NotationSource } from './notation';
+import { t } from '../../i18n';
 import type { PracticeView } from './ScoreView';
 
 const SETTING = 'practiceView';
@@ -42,12 +43,12 @@ export function ViewToggle({
   const noScore = notation.kind === 'none' ? notation.reason : null;
   return (
     <>
-      <div className="segmented" role="group" aria-label="View">
+      <div className="segmented" role="group" aria-label={t('View')}>
         {(
           [
-            ['falling', 'Falling notes'],
-            ['scroll', 'Score'],
-            ['page', 'Page'],
+            ['falling', t('Falling notes')],
+            ['scroll', t('Score')],
+            ['page', t('Page')],
           ] as const
         ).map(([v, label]) => (
           <button

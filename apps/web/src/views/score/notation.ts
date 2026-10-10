@@ -2,6 +2,7 @@
 // the reason shown next to the view switch). Pure; nothing leaves the device.
 import { decodeXml, isZip, looksLikeAbc, unzipMxl } from '@opentiles/song-model';
 import type { SongFormat } from '@opentiles/song-model';
+import { t } from '../../i18n';
 
 export type NotationSource =
   | {
@@ -12,11 +13,23 @@ export type NotationSource =
     }
   | { kind: 'none'; reason: string };
 
-const NO_SCORE: Partial<Record<SongFormat, string>> = {
-  midi: 'MIDI files have no printed score, so this piece is shown as falling notes.',
-  audio: 'Pieces made from a recording have no printed score, so they are shown as falling notes.',
-  mscz: 'The score view cannot draw MuseScore files yet, so this piece is shown as falling notes.',
-};
+/** Why a format has no score view, or null when it has one. */
+function noScoreReason(format: SongFormat): string | null {
+  switch (format) {
+    case 'midi':
+      return t('MIDI files have no printed score, so this piece is shown as falling notes.');
+    case 'audio':
+      return t(
+        'Pieces made from a recording have no printed score, so they are shown as falling notes.',
+      );
+    case 'mscz':
+      return t(
+        'The score view cannot draw MuseScore files yet, so this piece is shown as falling notes.',
+      );
+    default:
+      return null;
+  }
+}
 
 /** The notation for a piece from its original file bytes. */
 export function notationFor(
@@ -24,12 +37,12 @@ export function notationFor(
   bytes: Uint8Array | undefined,
   transpose = 0,
 ): NotationSource {
-  const reason = NO_SCORE[format];
+  const reason = noScoreReason(format);
   if (reason) return { kind: 'none', reason };
   if (!bytes || bytes.length === 0) {
     return {
       kind: 'none',
-      reason: 'The original score file is missing, so only falling notes are shown.',
+      reason: t('The original score file is missing, so only falling notes are shown.'),
     };
   }
   try {
@@ -43,7 +56,7 @@ export function notationFor(
     if (looksLikeAbc(text)) return { kind: 'abc', text, transpose };
     return { kind: 'musicxml', text, transpose };
   } catch {
-    return { kind: 'none', reason: 'This score file could not be read for the score view.' };
+    return { kind: 'none', reason: t('This score file could not be read for the score view.') };
   }
 }
 

@@ -1,0 +1,12 @@
+# Melody-only level: the right hand of the two-hand arrangement, the left hand resting.
+# Minuet in G major, BWV Anh. 114, from the Notebook for Anna Magdalena Bach (1725), now
+# attributed to Christian Petzold (1677–1733). First eight bars with a simplified left hand.
+# Original arrangement for OpenTiles, released under CC0 1.0.
+title: Minuet in G (opening)
+composer: Christian Petzold
+key: 1
+time: 3/4
+tempo: 112
+RH: D5q@5 G4e@1 A4e B4e C5e | D5q G4q G4q | E5q C5e D5e E5e F#5e | G5q G4q G4q
+RH: C5q D5e C5e B4e A4e | B4q C5e B4e A4e G4e | F#4q G4e A4e B4e G4e | A4h.
+LH: rh. | rh. | rh. | rh. | rh. | rh. | rh. | rh.
