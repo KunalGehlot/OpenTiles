@@ -252,18 +252,54 @@ function scoreOffset(page: Page): Promise<number> {
   });
 }
 
-test('the scrolling score returns to its start after a listen run', async ({ page }) => {
+/** The play bar's distance from the middle of the scrolling view, in CSS pixels. */
+function barOffset(page: Page): Promise<number> {
+  return page.evaluate(() => {
+    const h = document.querySelector('.ot-score-host')?.getBoundingClientRect();
+    const c = document.querySelector('[data-testid="score-cursor"]')?.getBoundingClientRect();
+    return h && c ? c.left - (h.left + h.width / 2) : NaN;
+  });
+}
+
+test('the scrolling score glides back to its start after a listen run, like a drag', async ({
+  page,
+}) => {
   await page.goto('./#/practice/catalogue/joy-to-the-world');
   await page.getByRole('group', { name: 'View' }).getByRole('button', { name: 'Score' }).click();
   await expect(page.locator('[data-testid="score-strip"] > svg')).toBeVisible({ timeout: 20_000 });
+  // The first note waits under the play bar, where Play puts it, so starting does not jump.
+  await expect.poll(() => barOffset(page).then(Math.abs)).toBeLessThan(3);
   const startX = await cursorX(page);
+  const startOffset = await scoreOffset(page);
   await page.getByRole('button', { name: 'Listen', exact: true }).click();
   await page.getByRole('button', { name: 'Play', exact: true }).click();
   // The score moves past the play bar while the piece plays ...
-  await expect.poll(() => scoreOffset(page), { timeout: 15_000 }).toBeGreaterThan(40);
-  // ... and is back at the start a moment after the last note.
-  await expect.poll(() => scoreOffset(page), { timeout: 20_000 }).toBeLessThan(1);
-  // The play bar is back on the first note too, not left on the last one.
+  await expect.poll(() => scoreOffset(page), { timeout: 15_000 }).toBeGreaterThan(startOffset + 40);
+  // ... and on the way back the play bar stays in the middle, every frame, as in a drag.
+  await page.evaluate(() => {
+    const w = window as unknown as { returnSamples: { offset: number; bar: number }[] };
+    w.returnSamples = [];
+    const sample = () => {
+      const mover = document.querySelector('.ot-score-mover') as HTMLElement | null;
+      const m = /translate3d\((-?[\d.]+)px/.exec(mover?.style.transform ?? '');
+      const h = document.querySelector('.ot-score-host')?.getBoundingClientRect();
+      const c = document.querySelector('[data-testid="score-cursor"]') as HTMLElement | null;
+      const r = c?.getBoundingClientRect();
+      if (m && h && r && !c?.hidden) {
+        w.returnSamples.push({ offset: -Number(m[1]), bar: r.left - (h.left + h.width / 2) });
+      }
+      requestAnimationFrame(sample);
+    };
+    requestAnimationFrame(sample);
+  });
+  await expect.poll(() => scoreOffset(page), { timeout: 30_000 }).toBeCloseTo(startOffset, 0);
+  const samples = await page.evaluate(
+    () => (window as unknown as { returnSamples: { offset: number; bar: number }[] }).returnSamples,
+  );
+  const moving = samples.filter((s, i) => i > 0 && s.offset < (samples[i - 1]?.offset ?? 0) - 1);
+  expect(moving.length).toBeGreaterThan(5);
+  for (const s of moving) expect(Math.abs(s.bar)).toBeLessThan(3);
+  // The play bar is back on the first note, not left on the last one.
   await expect.poll(() => cursorX(page), { timeout: 10_000 }).toBeCloseTo(startX, -1);
 });
 
@@ -271,16 +307,18 @@ test('the scrolling score returns to its start after a wait-mode run', async ({ 
   await page.goto('./#/practice/catalogue/joy-to-the-world-melody');
   await page.getByRole('group', { name: 'View' }).getByRole('button', { name: 'Score' }).click();
   await expect(page.locator('[data-testid="score-strip"] > svg')).toBeVisible({ timeout: 20_000 });
+  await expect.poll(() => barOffset(page).then(Math.abs)).toBeLessThan(3);
   const startX = await cursorX(page);
+  const startOffset = await scoreOffset(page);
   // C5 B4 A4 G4 F4 E4 D4 C4 G4 A4 A4 B4 B4 C5 on the computer keys.
   const keys = ['K', 'J', 'H', 'G', 'F', 'D', 'S', 'A', 'G', 'H', 'H', 'J', 'J', 'K'];
   for (const [i, key] of keys.entries()) {
     await page.keyboard.press(`Key${key}`);
-    if (i === 8) expect(await scoreOffset(page)).toBeGreaterThan(20);
+    if (i === 8) expect(await scoreOffset(page)).toBeGreaterThan(startOffset + 20);
     await page.waitForTimeout(250);
   }
   await expect(page.locator('.stats')).toContainText('✓ 14', { timeout: 10_000 });
-  await expect.poll(() => scoreOffset(page), { timeout: 20_000 }).toBeLessThan(1);
+  await expect.poll(() => scoreOffset(page), { timeout: 20_000 }).toBeCloseTo(startOffset, 0);
   await expect.poll(() => cursorX(page), { timeout: 10_000 }).toBeCloseTo(startX, -1);
 });
 

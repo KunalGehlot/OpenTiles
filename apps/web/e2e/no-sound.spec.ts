@@ -52,7 +52,10 @@ test('a listen run plays through without sound', async ({ page }) => {
   await page.goto('./#/practice/catalogue/ode-to-joy');
   await page.getByRole('group', { name: 'View' }).getByRole('button', { name: 'Score' }).click();
   await expect(page.locator('[data-testid="score-strip"] > svg')).toBeVisible({ timeout: 20_000 });
+  // The first note starts under the play bar, so the score is already moved a little.
+  await expect.poll(() => scoreOffset(page)).toBeGreaterThan(0);
+  const start = await scoreOffset(page);
   await page.getByRole('button', { name: 'Listen', exact: true }).click();
   await page.getByRole('button', { name: 'Play', exact: true }).click();
-  await expect.poll(() => scoreOffset(page), { timeout: 15_000 }).toBeGreaterThan(40);
+  await expect.poll(() => scoreOffset(page), { timeout: 15_000 }).toBeGreaterThan(start + 40);
 });

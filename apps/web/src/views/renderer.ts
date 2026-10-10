@@ -28,6 +28,8 @@ import type { Spelling } from '../lib/notes';
 const FONT = "system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif";
 /** How long a played key blooms (seconds); the session keeps its flashes this long. */
 const BLOOM_SECONDS = 0.35;
+/** How long a struck key takes to come back up (seconds): long enough to see, short enough for trills. */
+const STRIKE_SECONDS = 0.16;
 
 export interface Palette {
   background: string;
@@ -407,6 +409,39 @@ export class PracticeRenderer {
     ctx.globalAlpha = 1;
   }
 
+  /**
+   * A struck key dips: it darkens and the keybed's shadow falls deeper across its top, then it comes
+   * back up. So a repeated note reads as a new press even while the key stays lit. Nothing moves,
+   * so it stays on under Reduce motion.
+   */
+  private drawStrike(
+    ctx: CanvasRenderingContext2D,
+    key: KeyRect,
+    session: PracticeSession,
+    now: number,
+    top: number,
+    height: number,
+  ): void {
+    const at = session.strikes.get(key.pitch);
+    if (at === undefined) return;
+    const k = (now - at) / STRIKE_SECONDS;
+    if (k < 0 || k >= 1) return;
+    // Down at once, back up gently.
+    const depth = (1 - k) * (1 - k);
+    const width = key.black ? key.width : key.width - 1;
+    ctx.fillStyle = `rgba(0, 0, 0, ${(0.24 * depth).toFixed(3)})`;
+    if (key.black) {
+      roundRect(ctx, key.x, top, width, height, 3);
+      ctx.fill();
+    } else ctx.fillRect(key.x, top, width, height);
+    const shade = Math.min(height * 0.3, 18);
+    const g = ctx.createLinearGradient(0, top, 0, top + shade);
+    g.addColorStop(0, `rgba(0, 0, 0, ${(0.4 * depth).toFixed(3)})`);
+    g.addColorStop(1, 'rgba(0, 0, 0, 0)');
+    ctx.fillStyle = g;
+    ctx.fillRect(key.x, top, width, shade);
+  }
+
   private drawGrid(
     ctx: CanvasRenderingContext2D,
     song: Song,
@@ -576,6 +611,7 @@ export class PracticeRenderer {
       ctx.fillStyle = p.whiteEdge;
       ctx.fillRect(k.x + k.width - 1, top, 1, height);
       this.drawHold(ctx, k, session, now, top, height);
+      this.drawStrike(ctx, k, session, now, top, height);
       const baseline = top + height - 6;
       ctx.textAlign = 'center';
       if (this.noteNames && expected.has(k.pitch)) {
@@ -617,6 +653,7 @@ export class PracticeRenderer {
         ctx.fill();
       }
       this.drawHold(ctx, k, session, now, top, bh);
+      this.drawStrike(ctx, k, session, now, top, bh);
       if (this.noteNames && expected.has(k.pitch)) {
         // Above the finger, which sits near the front edge; only where the name fits the key.
         const name = pitchClassName(k.pitch, this.spelling);
