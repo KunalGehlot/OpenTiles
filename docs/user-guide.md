@@ -68,8 +68,8 @@ Tips for good results:
 - Put the device near the piano, but not on it, and keep the room quiet.
 - Run **Set up microphone** once for each room and device. It listens to the room and sets the
   sensitivity.
-- Turn the app's own sound off (**Listen** mode is not for this) so the microphone does not hear
-  the app instead of the piano.
+- Avoid **Listen** mode and **Play other hand** while the microphone is on: the app's own sound
+  would reach the microphone along with the piano.
 - Tell us how it goes with the [microphone report form](https://github.com/KunalGehlot/OpenTiles/issues/new?template=microphone.yml).
   The detector is being tuned on real pianos and your reports help.
 
