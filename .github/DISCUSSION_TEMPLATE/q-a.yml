@@ -1,0 +1,27 @@
+title: '[Question] '
+labels: [question]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for asking. Please check the [FAQ](https://github.com/KunalGehlot/OpenTiles/blob/main/docs/faq.md) and the [user guide](https://github.com/KunalGehlot/OpenTiles/blob/main/docs/user-guide.md) first. Do not attach copyrighted scores or recordings.
+  - type: textarea
+    id: question
+    attributes:
+      label: What would you like to know?
+    validations:
+      required: true
+  - type: textarea
+    id: tried
+    attributes:
+      label: What have you tried?
+  - type: input
+    id: setup
+    attributes:
+      label: Device, OS and browser
+      placeholder: iPad (9th gen), iPadOS 26.1, Safari
+  - type: dropdown
+    id: input
+    attributes:
+      label: How do you play?
+      options: [Microphone, MIDI keyboard, On-screen keyboard, Not relevant]

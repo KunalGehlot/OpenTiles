@@ -5,6 +5,10 @@ a pull request, and the few rules that keep the project legally safe.
 
 ## Ways to help
 
+Not sure where to start, or want to talk first? Ask in
+[Discussions](https://github.com/KunalGehlot/OpenTiles/discussions). Bugs and requests go in
+[issues](https://github.com/KunalGehlot/OpenTiles/issues/new/choose).
+
 - **Code** — pick an open task in [PLAN.md](PLAN.md) or an issue labelled `good first issue`.
 - **Recordings for the detector test set** — see [docs/phase-0/test-set.md](docs/phase-0/test-set.md).
   Recordings must be of public-domain or self-written music.

@@ -1,0 +1,60 @@
+name: Microphone or note-detection report
+description: Notes missed, notes heard that were not played, or the microphone will not start
+labels: [detector, bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        The microphone detector is tuned on real pianos, so reports from your own setup are very useful. **Please do not attach recordings or scores of copyrighted music.** Use a piece from the public-domain catalogue, or play scales and your own music.
+  - type: input
+    id: piece
+    attributes:
+      label: Which piece, mode and hand were you practising?
+      placeholder: Ode to Joy (theme), Wait mode, both hands
+    validations:
+      required: true
+  - type: dropdown
+    id: problem
+    attributes:
+      label: What went wrong?
+      options:
+        - A note I played was not recognised
+        - A note I did not play was recognised
+        - Recognition is slow or late
+        - The microphone does not start
+        - Something else
+    validations:
+      required: true
+  - type: textarea
+    id: details
+    attributes:
+      label: Describe it
+      description: Which notes or bars? Does it happen every time? Does it happen in the Detector Lab too?
+    validations:
+      required: true
+  - type: input
+    id: instrument
+    attributes:
+      label: Instrument
+      placeholder: Upright piano, about 30 years old, slightly out of tune
+    validations:
+      required: true
+  - type: input
+    id: device
+    attributes:
+      label: Device, OS and browser
+      placeholder: iPad (9th gen), iPadOS 26.1, Safari — Home Screen app
+    validations:
+      required: true
+  - type: textarea
+    id: room
+    attributes:
+      label: Room and microphone placement
+      description: How far is the device from the piano? Is the room noisy? Did you run "Set up microphone"?
+  - type: checkboxes
+    id: guardrails
+    attributes:
+      label: Guardrails
+      options:
+        - label: I am not attaching copyrighted scores, MIDI files or recordings (docs/legal-guardrails.md)
+          required: true

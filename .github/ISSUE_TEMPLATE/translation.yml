@@ -1,0 +1,44 @@
+name: Translation or wording
+description: Fix a translation, improve wording, or offer a new language
+labels: [translation]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        OpenTiles is available in English and German. Translations are keyed by the English text (see [ADR 0014](https://github.com/KunalGehlot/OpenTiles/blob/main/docs/adr/0014-translations-keyed-by-english.md)). A pull request is the quickest route, but an issue is fine too.
+  - type: dropdown
+    id: kind
+    attributes:
+      label: What is this about?
+      options:
+        - A translation is wrong or reads badly
+        - A text is not translated
+        - The English wording is unclear
+        - I would like to add a new language
+    validations:
+      required: true
+  - type: input
+    id: language
+    attributes:
+      label: Language
+      placeholder: German
+    validations:
+      required: true
+  - type: textarea
+    id: where
+    attributes:
+      label: Where does it appear, and what does it say now?
+      description: The page or screen and the exact text.
+    validations:
+      required: true
+  - type: textarea
+    id: suggestion
+    attributes:
+      label: Your suggestion
+  - type: checkboxes
+    id: help
+    attributes:
+      label: Can you help?
+      options:
+        - label: I am a native or fluent speaker and can review other translations in this language
+        - label: I would like to send a pull request
