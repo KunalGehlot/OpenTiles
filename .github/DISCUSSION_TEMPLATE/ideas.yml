@@ -1,0 +1,22 @@
+title: '[Idea] '
+labels: [enhancement]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Ideas are welcome. Settled and firm: OpenTiles never shares library items between people, never imports from other websites, and never tracks users ([guardrails](https://github.com/KunalGehlot/OpenTiles/blob/main/docs/legal-guardrails.md)).
+  - type: textarea
+    id: problem
+    attributes:
+      label: What problem would this solve for a learner?
+    validations:
+      required: true
+  - type: textarea
+    id: idea
+    attributes:
+      label: What is your idea?
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Have you seen this done well elsewhere?
+      description: Describe how it works. Please do not paste copyrighted material.

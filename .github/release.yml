@@ -1,0 +1,18 @@
+changelog:
+  exclude:
+    labels: [dependencies, github-actions, duplicate, invalid, wontfix]
+  categories:
+    - title: New for learners
+      labels: [enhancement]
+    - title: Catalogue
+      labels: [catalogue]
+    - title: Microphone and MIDI
+      labels: [detector, midi]
+    - title: Translations
+      labels: [translation]
+    - title: Fixes
+      labels: [bug]
+    - title: Documentation
+      labels: [documentation]
+    - title: Other changes
+      labels: ['*']
