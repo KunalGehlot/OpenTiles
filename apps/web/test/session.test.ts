@@ -403,3 +403,44 @@ describe('MIDI keys on this device', () => {
     expect(log).toHaveLength(2);
   });
 });
+
+describe('live stats (P5-07)', () => {
+  it('count wait-mode notes: right at the first try is perfect, after a wrong key good', () => {
+    const { session, press } = setup();
+    press(60);
+    press(63); // wrong: D expected
+    press(62);
+    press(64);
+    expect(session.status().live).toEqual({
+      perfect: 2,
+      good: 1,
+      missed: 0,
+      wrong: 1,
+      streak: 2,
+      bestStreak: 2,
+    });
+    session.rebuild();
+    expect(session.status().live.perfect).toBe(0);
+  });
+
+  it('count play-along notes: on time is perfect, early or late good, and misses', () => {
+    const { session, run, press, clock } = setup();
+    session.setMode('play-along');
+    session.start();
+    run(1.5 - clock.t);
+    press(60); // on time
+    run(2 + 0.12 - clock.t);
+    press(62); // late
+    run(1); // the third note goes by
+    expect(session.status().live).toMatchObject({
+      perfect: 1,
+      good: 1,
+      missed: expect.any(Number),
+      streak: 0,
+      bestStreak: 2,
+    });
+    expect(session.status().live.missed).toBeGreaterThanOrEqual(1);
+    session.start();
+    expect(session.status().live.bestStreak).toBe(0);
+  });
+});

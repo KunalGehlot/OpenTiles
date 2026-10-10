@@ -275,6 +275,136 @@ label.check {
   font-weight: 600;
 }
 
+/* Live stats (P5-07): perfect, good, missed, wrong and the streak, off unless chosen. */
+.live-stats {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0 var(--space-3);
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.live-stats b {
+  color: var(--text);
+  font-weight: 650;
+}
+
+.live-stats__item--perfect b {
+  color: var(--ok);
+}
+
+.live-stats__item--good b {
+  color: var(--warn);
+}
+
+.live-stats__item--wrong b {
+  color: var(--bad);
+}
+
+/* The overview strip (P5-07): the whole piece, the position, the loop and the hardest bars. */
+.overview {
+  position: relative;
+  flex: none;
+  height: 1.75rem;
+  margin: var(--space-1) var(--space-3);
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  background: var(--canvas-bg);
+  cursor: pointer;
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.overview__notes {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0.8;
+  pointer-events: none;
+}
+
+.overview__note--left {
+  fill: var(--hand-left);
+}
+
+.overview__note--right {
+  fill: var(--hand-right);
+}
+
+.overview__hard {
+  position: absolute;
+  bottom: 0;
+  height: 4px;
+  background: var(--bad);
+}
+
+.overview__loop {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  border: 2px solid var(--accent);
+  border-radius: var(--radius-sm);
+  background: var(--loop-band);
+}
+
+.overview__loop--preview {
+  border-style: dashed;
+}
+
+/* A wide grip on each end of the loop; the visible bar is narrow. */
+.overview__handle {
+  position: absolute;
+  top: -2px;
+  bottom: -2px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.25rem;
+  cursor: ew-resize;
+  touch-action: none;
+}
+
+.overview__handle::before {
+  width: 4px;
+  height: 70%;
+  border-radius: 2px;
+  background: var(--accent);
+  content: '';
+}
+
+.overview__handle--from {
+  left: -0.625rem;
+}
+
+.overview__handle--to {
+  right: -0.625rem;
+}
+
+.overview__handle:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: -2px;
+}
+
+.overview__track {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  will-change: transform;
+}
+
+.overview__now {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: -1px;
+  width: 2px;
+  background: var(--text);
+}
+
 /* "Moved up an octave to fit your keyboard" (P4-07). */
 .practice-note {
   margin: 0;
@@ -432,6 +562,11 @@ html[data-left-handed] .session-status__view {
  * that wrap, icon-only secondary buttons, and the canvas takes whatever height is left.
  */
 @media (max-width: 640px), (max-height: 520px) {
+  .overview {
+    height: 1.25rem;
+    margin: 0.2rem 0.5rem;
+  }
+
   .bar {
     gap: 0.3rem 0.4rem;
     padding: 0.3rem max(0.5rem, env(safe-area-inset-right)) 0.3rem
@@ -515,6 +650,11 @@ html[data-left-handed] .session-status__view {
 @media (max-height: 520px) {
   .practice-canvas-wrap {
     min-height: 150px;
+  }
+
+  /* A short landscape window keeps its height for the notes. */
+  .overview {
+    display: none;
   }
 
   .ring {

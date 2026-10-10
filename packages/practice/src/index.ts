@@ -67,3 +67,5 @@ export type {
   RenderNote,
   TimedNoteWithLength,
 } from './performance';
+export { LiveTally, NO_LIVE_STATS } from './live-stats';
+export type { LiveStats } from './live-stats';

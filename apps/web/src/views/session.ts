@@ -6,6 +6,7 @@ import {
   buildSteps,
   holdOverdueAfter,
   judgeHold,
+  LiveTally,
   LoopTrainer,
   loopBeats,
   metronomeClicks,
@@ -23,6 +24,7 @@ import type {
   HoldJudgement,
   InputSource,
   Judgement,
+  LiveStats,
   LoopRange,
   LoopRunOutcome,
   NoteEvent,
@@ -161,6 +163,8 @@ export interface SessionStatus {
   holds: HoldStats;
   /** True once a finished run has something to play back. */
   recorded: boolean;
+  /** Perfect, good, missed and wrong notes and the streak, for the live stats strip (P5-07). */
+  live: LiveStats;
 }
 
 const LEAD_IN = 1.5;
@@ -219,6 +223,9 @@ export class PracticeSession {
   readonly recorder = new PerformanceRecorder();
   /** The last finished run, for playback; null until one finishes. */
   recording: RunRecording | null = null;
+  private readonly tally = new LiveTally();
+  /** A wrong key was played while the current wait-mode step was expected. */
+  private stepHadWrong = false;
 
   private timeline: Timeline | null = null;
   private scorer: PlayAlongScorer | null = null;
@@ -340,6 +347,7 @@ export class PracticeSession {
       metronome: this.metronome,
       holds: { ...this.holdStats },
       recorded: this.recording !== null && this.recorder.notes.length > 0,
+      live: { ...this.tally.stats },
     };
   }
 
@@ -365,6 +373,8 @@ export class PracticeSession {
     this.marks.clear();
     this.flashes = [];
     this.resetRun();
+    this.tally.reset();
+    this.stepHadWrong = false;
     this.summary = null;
     this.startedAt = 0;
     this.finishedAt = 0;
@@ -500,6 +510,8 @@ export class PracticeSession {
       if (out.kind === 'correct') {
         this.keys.set(e.pitch, 'correct');
         this.flash(e.pitch, 'correct', t);
+        this.tally.right(this.stepHadWrong ? 'good' : 'perfect');
+        if (out.completed) this.stepHadWrong = false;
         for (const n of before?.notes ?? []) {
           if (n.pitch !== e.pitch) continue;
           if (!this.done.has(n.id)) this.startHold(n, e);
@@ -510,6 +522,8 @@ export class PracticeSession {
       } else if (out.kind === 'wrong') {
         this.keys.set(e.pitch, 'wrong');
         this.flash(e.pitch, 'wrong', t);
+        this.tally.wrong();
+        this.stepHadWrong = true;
         for (const n of before?.notes ?? [])
           if (!this.done.has(n.id)) this.marks.set(n.id, 'wrong');
       }
@@ -522,6 +536,7 @@ export class PracticeSession {
         if (written) this.startHold(written, e);
         this.marks.set(note.id, 'correct');
         this.done.add(note.id);
+        this.tally.right(judgement === 'hit' ? 'perfect' : 'good');
         if (judgement === 'early' || judgement === 'late') {
           // The right note at the wrong moment: a timing colour and a label, not the red of a
           // wrong note (P1-24).
@@ -540,6 +555,7 @@ export class PracticeSession {
       } else {
         this.keys.set(e.pitch, 'wrong');
         this.flash(e.pitch, 'wrong', t);
+        this.tally.wrong();
       }
     }
     this.emitStatus();
@@ -756,6 +772,7 @@ export class PracticeSession {
     this.runStartedAt = t + LEAD_IN;
     this.marks.clear();
     this.resetRun();
+    this.tally.reset();
     this.finishedAt = 0;
     this.homed = false;
     const tl = this.timeline;
@@ -869,6 +886,7 @@ export class PracticeSession {
           this.judged.set(r.note.id, 'missed');
           this.flash(r.note.pitch, 'missed', t);
           this.marks.set(r.note.id, 'wrong');
+          this.tally.missed();
         }
         if (this.mode === 'play-along') {
           this.onExpected(this.upcomingPitches(t));

@@ -724,4 +724,17 @@ export const de: Readonly<Record<string, string>> = {
   'none yet — play a key': 'noch keine – spiel eine Taste',
   'Play the app’s notes on': 'Noten der App spielen auf',
   'The connected keyboard': 'Dem verbundenen Keyboard',
+  'Overview of the piece': 'Überblick über das Stück',
+  'Live stats': 'Live-Statistik',
+  perfect: 'perfekt',
+  good: 'gut',
+  missed: 'verpasst',
+  wrong: 'falsch',
+  streak: 'Serie',
+  'best {n}': 'beste {n}',
+  'Tap a bar to go there; drag along the strip to loop bars.':
+    'Tippe auf einen Takt, um dorthin zu springen; ziehe über den Streifen, um Takte zu wiederholen.',
+  'Bar {bar}: {n} mistakes': 'Takt {bar}: {n} Fehler',
+  'Loop starts at bar': 'Wiederholung beginnt bei Takt',
+  'Loop ends at bar': 'Wiederholung endet bei Takt',
 };

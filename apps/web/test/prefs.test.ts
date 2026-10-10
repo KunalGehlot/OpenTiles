@@ -9,6 +9,12 @@ describe('practice preferences', () => {
     expect(
       normalisePracticePrefs({ mode: 'fast', hands: 3, tempo: 'x', accompany: 1, metronome: null }),
     ).toEqual(DEFAULT_PRACTICE_PREFS);
+    // The live stats strip is off and the overview on until the learner says otherwise (P5-07).
+    expect(DEFAULT_PRACTICE_PREFS).toMatchObject({ liveStats: false, overview: true });
+    expect(normalisePracticePrefs({ liveStats: 'yes', overview: 0 })).toMatchObject({
+      liveStats: false,
+      overview: true,
+    });
   });
 
   it('keep valid choices and clamp the numbers', () => {
@@ -19,6 +25,8 @@ describe('practice preferences', () => {
       accompany: false,
       metronome: true,
       clickVolume: 7,
+      liveStats: true,
+      overview: false,
     });
     expect(p).toEqual({
       mode: 'play-along',
@@ -27,6 +35,8 @@ describe('practice preferences', () => {
       accompany: false,
       metronome: true,
       clickVolume: 1,
+      liveStats: true,
+      overview: false,
     });
     expect(normalisePracticePrefs({ tempo: 99 }).tempo).toBe(1.5);
     expect(normalisePracticePrefs({ tempo: -1 }).tempo).toBe(0.25);

@@ -17,6 +17,10 @@ export interface PracticePrefs {
   metronome: boolean;
   /** Metronome click volume, 0 to 1. */
   clickVolume: number;
+  /** The live stats strip: perfect, good, missed, wrong, streak (P5-07). Off unless chosen. */
+  liveStats: boolean;
+  /** The overview strip of the whole piece (P5-07). */
+  overview: boolean;
 }
 
 export const DEFAULT_PRACTICE_PREFS: Readonly<PracticePrefs> = Object.freeze({
@@ -26,6 +30,8 @@ export const DEFAULT_PRACTICE_PREFS: Readonly<PracticePrefs> = Object.freeze({
   accompany: true,
   metronome: false,
   clickVolume: 0.5,
+  liveStats: false,
+  overview: true,
 });
 
 export const PRACTICE_PREFS_KEY = 'practicePrefs';
@@ -47,6 +53,8 @@ export function normalisePracticePrefs(value: unknown): PracticePrefs {
     accompany: typeof v.accompany === 'boolean' ? v.accompany : d.accompany,
     metronome: typeof v.metronome === 'boolean' ? v.metronome : d.metronome,
     clickVolume: Math.round(clamp(v.clickVolume, 0, 1, d.clickVolume) * 20) / 20,
+    liveStats: typeof v.liveStats === 'boolean' ? v.liveStats : d.liveStats,
+    overview: typeof v.overview === 'boolean' ? v.overview : d.overview,
   };
 }
 
