@@ -777,4 +777,6 @@ export const de: Readonly<Record<string, string>> = {
   'Next drill': 'Nächste Übung',
   'Change the drill': 'Übung ändern',
   'The next drill starts in a moment.': 'Die nächste Übung beginnt gleich.',
+  // Sheet-music PDFs kept with a piece (P5-15, ADR 0018).
+  'sheet music added to {n} of them': 'bei {n} davon das Notenblatt ergänzt',
 };

@@ -10,9 +10,10 @@ import {
   type BackupData,
   type VaultSecret,
 } from '@opentiles/vault';
+import type { SheetMap } from '@opentiles/sheet';
 import type { Song } from '@opentiles/song-model';
 import { db } from '../storage/db';
-import type { DayStat, LibraryItem, Progress, Setting } from '../storage/db';
+import type { DayStat, LibraryItem, Progress, Setting, SheetAttachment } from '../storage/db';
 
 export { backupFileName };
 
@@ -82,6 +83,8 @@ export interface RestoreSummary {
   added: number;
   /** Items already on this device. */
   skipped: number;
+  /** Items already on this device that had no sheet music and got it from the backup. */
+  sheets: number;
   progress: number;
   days: number;
   settings: number;
@@ -102,12 +105,63 @@ function isRecord(v: unknown): v is Record<string, unknown> {
   return typeof v === 'object' && v !== null && !Array.isArray(v);
 }
 
+const isFiniteNumber = (x: unknown): x is number => typeof x === 'number' && Number.isFinite(x);
+
+function isRect(v: unknown): boolean {
+  return isRecord(v) && [v.x, v.y, v.width, v.height].every(isFiniteNumber);
+}
+
+/** A bar map as the sheet view wrote it, or undefined when it is damaged: the view makes a new one. */
+function asSheetMap(v: unknown): SheetMap | undefined {
+  if (!isRecord(v) || !isRecord(v.layout)) return undefined;
+  const { pages, bars, source } = v.layout;
+  const pagesOk =
+    Array.isArray(pages) &&
+    pages.every((p) => isRecord(p) && isFiniteNumber(p.width) && isFiniteNumber(p.height));
+  const barsOk =
+    Array.isArray(bars) &&
+    bars.every(
+      (b) =>
+        isRecord(b) &&
+        Number.isInteger(b.page) &&
+        Number.isInteger(b.system) &&
+        isRect(b.box) &&
+        typeof b.start === 'string' &&
+        typeof b.end === 'string',
+    );
+  const barCount = Array.isArray(bars) ? bars.length : 0;
+  const linksOk =
+    Array.isArray(v.barOfMeasure) &&
+    v.barOfMeasure.every(
+      (b) => b === null || (Number.isInteger(b) && (b as number) >= 0 && (b as number) < barCount),
+    );
+  if (!pagesOk || !barsOk || !linksOk || typeof source !== 'string') return undefined;
+  if (typeof v.edited !== 'boolean' || !isFiniteNumber(v.analyser)) return undefined;
+  return v as unknown as SheetMap;
+}
+
+/** A piece's sheet music (ADR 0018); a damaged map is left out, keeping the PDF. */
+function asSheet(v: unknown): SheetAttachment | undefined {
+  if (!isRecord(v) || typeof v.fileName !== 'string' || !(v.bytes instanceof Uint8Array)) {
+    return undefined;
+  }
+  const map = asSheetMap(v.map);
+  return {
+    fileName: v.fileName,
+    bytes: v.bytes,
+    addedAt: isFiniteNumber(v.addedAt) ? v.addedAt : 0,
+    ...(map ? { map } : {}),
+  };
+}
+
 function asLibraryItem(v: unknown): BackupLibraryItem | null {
   if (!isRecord(v)) return null;
   if (typeof v.title !== 'string' || typeof v.fileName !== 'string') return null;
   if (!(v.bytes instanceof Uint8Array) || !isRecord(v.song)) return null;
   if (!Array.isArray((v.song as { notes?: unknown }).notes)) return null;
   if (typeof v.format !== 'string' || typeof v.addedAt !== 'number') return null;
+  // Backups made before sheet music existed have no `sheet`; a damaged one keeps the piece.
+  const sheet = asSheet(v.sheet);
   return {
     title: v.title,
     fileName: v.fileName,
@@ -120,6 +174,7 @@ function asLibraryItem(v: unknown): BackupLibraryItem | null {
     tags: Array.isArray(v.tags) ? v.tags.filter((t): t is string => typeof t === 'string') : [],
     addedAt: v.addedAt,
     originalId: typeof v.originalId === 'number' ? v.originalId : null,
+    ...(sheet ? { sheet } : {}),
   };
 }
 
@@ -142,11 +197,19 @@ function asDay(v: unknown): DayStat | null {
 
 /**
  * Merges restored data into this device. Nothing local is deleted or overwritten with less:
- * library items already present are skipped, progress keeps the better of both, and settings
- * from the backup fill only keys this device has not set.
+ * library items already present are skipped (but get the backup's sheet music if they have none),
+ * progress keeps the better of both, and settings from the backup fill only keys this device has
+ * not set.
  */
 export async function mergeBackupData(data: BackupData): Promise<RestoreSummary> {
-  const summary: RestoreSummary = { added: 0, skipped: 0, progress: 0, days: 0, settings: 0 };
+  const summary: RestoreSummary = {
+    added: 0,
+    skipped: 0,
+    sheets: 0,
+    progress: 0,
+    days: 0,
+    settings: 0,
+  };
   const items = data.library.map(asLibraryItem).filter((i): i is BackupLibraryItem => i !== null);
   const p = isRecord(data.progress) ? data.progress : {};
   const progress = (Array.isArray(p.progress) ? p.progress : [])
@@ -161,6 +224,7 @@ export async function mergeBackupData(data: BackupData): Promise<RestoreSummary>
 
   // Hash outside the transaction: IndexedDB transactions close while awaiting other promises.
   const local = await db.library.toArray();
+  const withoutSheet = new Set(local.filter((i) => !i.sheet).map((i) => i.id));
   const known = new Map<string, number>();
   for (const item of local) {
     if (item.id !== undefined) known.set(await fingerprint(item), item.id);
@@ -181,6 +245,12 @@ export async function mergeBackupData(data: BackupData): Promise<RestoreSummary>
         summary.added += 1;
       } else {
         summary.skipped += 1;
+        // The piece got its sheet music on another device after this one restored it.
+        if (item.sheet && withoutSheet.has(id)) {
+          await db.library.update(id, { sheet: item.sheet });
+          withoutSheet.delete(id);
+          summary.sheets += 1;
+        }
       }
       if (item.originalId !== null) idMap.set(item.originalId, id);
     }
