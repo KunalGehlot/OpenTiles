@@ -3,6 +3,7 @@
 import Dexie from 'dexie';
 import type { Table } from 'dexie';
 import type { Song, SongFormat } from '@opentiles/song-model';
+import type { SheetMap } from '@opentiles/sheet';
 
 export interface ImportSettings {
   transpose: number;
@@ -11,6 +12,20 @@ export interface ImportSettings {
   splitPoint?: number;
   /** Base tempo override (quarter notes per minute). */
   baseBpm?: number;
+}
+
+/**
+ * A sheet-music PDF kept with a piece (ADR 0018). It is only drawn, as the learner's own sheet with
+ * the cursor on it; the notes come from the item's song. Like the rest of the library it stays on
+ * this device and goes into the encrypted backup only.
+ */
+export interface SheetAttachment {
+  /** The PDF's file name as imported. */
+  fileName: string;
+  bytes: Uint8Array;
+  addedAt: number;
+  /** Where the song's measures are on the pages; absent until the PDF has been analysed. */
+  map?: SheetMap;
 }
 
 export interface LibraryItem {
@@ -25,6 +40,8 @@ export interface LibraryItem {
   settings: ImportSettings;
   tags: string[];
   addedAt: number;
+  /** The sheet-music PDF for this piece, when the learner added one. */
+  sheet?: SheetAttachment;
 }
 
 export interface Progress {

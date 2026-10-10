@@ -110,6 +110,9 @@ importers:
       '@opentiles/practice':
         specifier: workspace:*
         version: link:../../packages/practice
+      '@opentiles/sheet':
+        specifier: workspace:*
+        version: link:../../packages/sheet
       '@opentiles/song-model':
         specifier: workspace:*
         version: link:../../packages/song-model
@@ -252,6 +255,18 @@ importers:
       '@xmldom/xmldom':
         specifier: ^0.9.8
         version: 0.9.12
+      typescript:
+        specifier: ~6.0.3
+        version: 6.0.3
+      vitest:
+        specifier: ^5.0.3
+        version: 5.0.3(@types/node@22.20.5)(vite@8.3.3(@types/node@22.20.5)(terser@5.51.2))
+
+  packages/sheet:
+    devDependencies:
+      '@types/node':
+        specifier: ^22.0.0
+        version: 22.20.5
       typescript:
         specifier: ~6.0.3
         version: 6.0.3
