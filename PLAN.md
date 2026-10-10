@@ -28,8 +28,10 @@ sync, and release hardening. What is left is mostly human work and gates:
 - **Code still open:** MIDI out and Bluetooth MIDI pairing in the iPad app, the sustain pedal, frame time
   on an older iPad, a native speaker's read-through of the German, more catalogue pieces (P3-05).
 
-The task list for this round is [Phase 5 — Release polish](#phase-5--release-polish-from-2026-10-09),
-starting with P5-00 (push the branch, open the pull request, CI).
+The task list for this round is [Phase 5 — Release polish](#phase-5--release-polish-from-2026-10-09).
+P5-01 to P5-05 and P5-07 are in `main` (merged 2026-10-10); left are P5-06 (free play), P5-09 (the
+smoothness pass with the maintainer), P5-10 (the human release gate) and recreating the repository
+before it goes public (P5-00).
 
 ## Phases and gates
 
@@ -344,7 +346,8 @@ images, sounds or fonts, and credit the inspiration in [CREDITS.md](CREDITS.md).
       been taken. Wording uses "an LLM" and names no vendor. Left: ask in P2-18.
 - [~] **P5-00** (GOV) Housekeeping that blocks release: push `P4-10-ui-redesign` and open the PR; fix
   the Firefox and iPad-profile Playwright failures in CI; delete and recreate the GitHub
-  repository before it is made public (see STATE.md). Done: the branch is pushed with PR #1;
+  repository before it is made public (see STATE.md). Done: the branch went in through PR #1,
+  merged into `main` on 2026-10-10 together with the Phase 5 pull requests (#2 to #6);
   WebKit and the iPad profile pass in CI. The Firefox failures had two causes in the app, both
   fixed: the first import waited for Firefox's storage-permission prompt, and a sound device
   that never starts (as on the Linux runner) froze the metronome, runs and the falling notes.
@@ -423,6 +426,11 @@ Record the outcome as an ADR in `docs/adr/` and tick it here.
 - [x] Engine exposes a plain C ABI instead of wasm-bindgen glue — ADR 0002.
 
 ## Changelog
+
+- **2026-10-10** — The UI redesign and release pass (PR #1, P4-10…P4-19) and the Phase 5 work so
+  far (P5-02 wake lock, P5-03 note names, P5-04 transpose, P5-07 live stats and overview, P5-05
+  sight-reading drills) merged into `main`. Firefox end-to-end tests pass in CI. ADR 0015 (drills)
+  stays proposed until the maintainer decides.
 
 - **2026-10-09** — MIDI keyboard settings (keys on this device, the app's notes on the keyboard),
   Firefox MIDI confirmed working, the iPad app builds with Xcode, status brought up to date.
