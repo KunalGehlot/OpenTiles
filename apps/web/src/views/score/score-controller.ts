@@ -6,7 +6,13 @@ import type { Song, SongNote } from '@opentiles/song-model';
 import type { PracticeSession } from '../session';
 import { beatAt, buildAnchors, positionAt } from './cursor-map';
 import type { Anchor, MeasureBox } from './cursor-map';
-import { glyphsFromTimemap, linkNotes, measureOrderFromSvg } from './glyph-map';
+import {
+  glyphsFromTimemap,
+  linkByRefs,
+  linkNotes,
+  measureOrderFromSvg,
+  noteIdsFromSvg,
+} from './glyph-map';
 import type { ScoreLinks, TimemapEntry } from './glyph-map';
 import { fingersToAdd, glyphStates, nearestByBeat, noteStates } from './note-states';
 import type { NoteState } from './note-states';
@@ -91,6 +97,8 @@ export class ScoreController {
     private readonly cursor: HTMLElement,
     /** Ids of notes whose finger was suggested rather than written (P4-08). */
     private readonly suggested: ReadonlySet<string> = new Set(),
+    /** The score was written from the song, whose refs are the glyph ids (P5-13). */
+    generated = false,
   ) {
     this.startOf = new Map(song.notes.map((n) => [n.id, n.startBeat]));
     this.noteById = new Map(song.notes.map((n) => [n.id, n]));
@@ -102,13 +110,17 @@ export class ScoreController {
     this.detach = layout === 'scroll' ? this.listen() : () => {};
     this.padStrip();
     this.layoutPages();
-    const timemap = tk.renderToTimemap({ includeMeasures: true, includeRests: false });
-    const glyphs = glyphsFromTimemap(
-      Array.isArray(timemap) ? (timemap as TimemapEntry[]) : [],
-      this.measureIds,
-      (id) => tk.getMIDIValuesForElement(id)?.pitch,
-    );
-    this.links = linkNotes(song, glyphs);
+    if (generated) {
+      this.links = linkByRefs(song, noteIdsFromSvg(this.pages));
+    } else {
+      const timemap = tk.renderToTimemap({ includeMeasures: true, includeRests: false });
+      const glyphs = glyphsFromTimemap(
+        Array.isArray(timemap) ? (timemap as TimemapEntry[]) : [],
+        this.measureIds,
+        (id) => tk.getMIDIValuesForElement(id)?.pitch,
+      );
+      this.links = linkNotes(song, glyphs);
+    }
     this.showPage(1);
   }
 

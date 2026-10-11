@@ -11,8 +11,10 @@ import type { MeasureBox } from '../src/views/score/cursor-map';
 import {
   baseId,
   glyphsFromTimemap,
+  linkByRefs,
   linkNotes,
   measureOrderFromSvg,
+  noteIdsFromSvg,
 } from '../src/views/score/glyph-map';
 import type { Glyph, TimemapEntry } from '../src/views/score/glyph-map';
 import { formatOfPath, scoreFor } from '../src/views/score/notation';
@@ -233,6 +235,25 @@ describe('glyph matching', () => {
     expect(linkNotes(song, renumbered).glyphsOf.get(g4?.id ?? '')).toEqual(['g4b']);
   });
 
+  it('links a written score by refs, and reports a note whose glyph is missing', () => {
+    const song = parse(fixture());
+    const drawn = new Set(song.notes.flatMap((n) => n.sourceRefs));
+    expect(linkByRefs(song, drawn).unmatched).toEqual([]);
+    const tied = song.notes.find((n) => n.sourceRefs.length === 2);
+    expect(linkByRefs(song, drawn).glyphsOf.get(tied?.id ?? '')).toEqual(tied?.sourceRefs);
+    // Both passes of the repeat are drawn by the first note's glyph.
+    const removed = song.notes[0]?.sourceRefs[0] ?? '';
+    drawn.delete(removed);
+    expect(linkByRefs(song, drawn).unmatched).toEqual(
+      song.notes.filter((n) => n.sourceRefs[0] === removed).map((n) => n.id),
+    );
+    expect(
+      noteIdsFromSvg([
+        '<g id="a" class="note"><g id="b" class="notehead"/></g><g id="c" class="note ot-correct">',
+      ]),
+    ).toEqual(new Set(['a', 'c']));
+  });
+
   it('reports notes it cannot place', () => {
     const song = parse(fixture());
     const links = linkNotes(song, []);
@@ -286,12 +307,17 @@ describe('Verovio in Node', () => {
     for (const shift of [0, 3]) {
       // As in practice: the song is shifted and Verovio transposes the score by the same amount.
       const song = transpose(written.song, shift);
-      const { glyphs, links } = await linkWithVerovio(
+      const { svg, glyphs, links } = await linkWithVerovio(
         written.notation.text,
         song,
         shift ? { transpose: String(shift) } : {},
       );
       expect(links.unmatched, `shift ${shift}`).toEqual([]);
+      // Verovio keeps the refs as glyph ids, so linking by ref (what the app does for a written
+      // score) gives the very glyphs the timemap matching finds.
+      const byRefs = linkByRefs(song, noteIdsFromSvg([svg]));
+      expect(byRefs.unmatched).toEqual([]);
+      expect(byRefs.glyphsOf).toEqual(links.glyphsOf);
       const pitchOf = new Map(glyphs.map((g) => [g.id, g.pitch]));
       for (const n of song.notes) {
         const ids = links.glyphsOf.get(n.id) ?? [];

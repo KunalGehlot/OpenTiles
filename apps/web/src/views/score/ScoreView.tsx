@@ -73,7 +73,17 @@ export function ScoreView({
           tk.destroy();
           return;
         }
-        controller = new ScoreController(tk, song, session, layout, host, strip, cursor, suggested);
+        controller = new ScoreController(
+          tk,
+          song,
+          session,
+          layout,
+          host,
+          strip,
+          cursor,
+          suggested,
+          notation.generated,
+        );
         controllerRef.current = controller;
         controller.onPage = setPage;
         setPage({ page: controller.page, pageCount: controller.pageCount });

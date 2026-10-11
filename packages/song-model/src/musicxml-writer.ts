@@ -12,8 +12,9 @@ export interface WrittenScore {
   xml: string;
   /**
    * The song with each note's `sourceRefs` naming the glyphs written for it, the head first and
-   * then its tie continuations, as `parseMusicXml` would name them. The score views use them to
-   * colour tied notes; ids, order and everything else are unchanged.
+   * then its tie continuations, as `parseMusicXml` would name them. Each written note also has its
+   * ref as its `id`, which Verovio keeps as the glyph's id, so the score views can link notes to
+   * glyphs by ref. Note ids, order and everything else are unchanged.
    */
   song: Song;
 }
@@ -782,18 +783,12 @@ export function songToMusicXml(song: Song): WrittenScore {
               written.push(`<sound tempo="${round(t.bpm)}"/>`);
             }
           }
-          const xml = pieceXml(
-            p,
-            voice,
-            staff,
-            stems ? (v === 0 ? 'up' : 'down') : undefined,
-            spelled,
-          );
-          for (const [i, s] of p.segments.entries()) {
-            refs[s.note]?.push(`p0-m${b}-n${noteIndex + i}`);
-          }
+          const ids = p.segments.map((_, i) => `p0-m${b}-n${noteIndex + i}`);
+          p.segments.forEach((s, i) => refs[s.note]?.push(ids[i] as string));
           noteIndex += Math.max(1, p.segments.length);
-          written.push(xml);
+          written.push(
+            pieceXml(p, ids, voice, staff, stems ? (v === 0 ? 'up' : 'down') : undefined, spelled),
+          );
         }
       });
     }
@@ -851,8 +846,10 @@ function markAccidentals(voices: Piece[][], spelled: readonly Spelling[], fifths
   }
 }
 
+/** A note, chord or rest; each note carries its ref as its id, which Verovio keeps as the glyph's. */
 function pieceXml(
   p: Piece,
+  ids: readonly string[],
   voice: number,
   staff: number,
   stem: 'up' | 'down' | undefined,
@@ -886,7 +883,7 @@ function pieceXml(
       const notations =
         tied || (k === 0 && tuplet) ? `<notations>${tied}${k === 0 ? tuplet : ''}</notations>` : '';
       return (
-        `<note>${k > 0 ? '<chord/>' : ''}<pitch><step>${sp.step}</step>${sp.alter ? `<alter>${sp.alter}</alter>` : ''}<octave>${sp.octave}</octave></pitch>` +
+        `<note id="${ids[k]}">${k > 0 ? '<chord/>' : ''}<pitch><step>${sp.step}</step>${sp.alter ? `<alter>${sp.alter}</alter>` : ''}<octave>${sp.octave}</octave></pitch>` +
         `<duration>${p.divs}</duration>${ties}<voice>${voice}</voice>${typeXml(p.value)}` +
         `${accidental ? `<accidental>${accidental}</accidental>` : ''}${triplet}` +
         `${stem ? `<stem>${stem}</stem>` : ''}<staff>${staff}</staff>${beams}${notations}</note>`

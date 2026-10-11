@@ -147,6 +147,10 @@ describe('song → MusicXML', () => {
     expect(back.title).toBe('Round <trip> & back');
     // The refs the writer reports are the ones the parser gives the same notes.
     expect(linked.notes.map((n) => n.sourceRefs)).toEqual(back.notes.map((n) => n.sourceRefs));
+    // Each written note carries its ref as its id, for the score views to link by.
+    for (const ref of linked.notes.flatMap((n) => n.sourceRefs)) {
+      expect(xml).toContain(`<note id="${ref}">`);
+    }
     // Tied notes own every glyph they are drawn with.
     const tied = linked.notes.find((n) => n.pitch === 77 && n.startBeat === 3);
     expect(tied?.sourceRefs).toHaveLength(2);
