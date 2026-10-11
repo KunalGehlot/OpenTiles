@@ -10,7 +10,11 @@ import { createToolkit } from './verovio';
 import { t } from '../../i18n';
 import './score.css';
 
-/** 'sheet': the learner's own PDF beside the piece (views/sheet, ADR 0018). */
+/**
+ * What the practice screen shows. 'sheet': the learner's own PDF beside the piece (views/sheet,
+ * ADR 0018); 'page': the engraved pages, which the Sheet tab shows for a piece without a PDF
+ * (P5-17) and drills show always.
+ */
 export type PracticeView = 'falling' | ScoreLayout | 'sheet';
 
 interface Props {

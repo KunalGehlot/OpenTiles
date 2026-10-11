@@ -435,7 +435,6 @@ export const de: Readonly<Record<string, string>> = {
   View: 'Ansicht',
   'Falling notes': 'Fallende Noten',
   Score: 'Noten',
-  Page: 'Seite',
   'The score could not be drawn on this device. The falling-notes view still works.':
     'Die Noten konnten auf diesem Gerät nicht gezeichnet werden. Die Ansicht mit fallenden Noten funktioniert weiterhin.',
   'Score, page view': 'Noten, Seitenansicht',

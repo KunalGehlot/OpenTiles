@@ -43,7 +43,9 @@ all processing stays on the device; library items have no way out except the enc
    replacing the PDF always drops it. A PDF must have a PDF header and be at most 60 MB.
 
 3. **Drawing.** pdf.js (`pdfjs-dist` 6.4.299, Apache-2.0) renders the pages
-   (`apps/web/src/views/sheet/`).
+   (`apps/web/src/views/sheet/`) in the practice screen's Sheet tab. A piece without a PDF shows
+   Verovio's engraved pages (ADR 0009) under the same tab (P5-17), so the switch is Falling notes |
+   Score | Sheet on every piece.
    - **Legacy build.** The modern build calls `Map.prototype.getOrInsertComputed`,
      `Math.sumPrecise`, `Promise.try` and `URL.parse` without polyfills, which Safari 16.4 lacks;
      the legacy build brings core-js polyfills for them (checked by reading both builds, not on an

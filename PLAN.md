@@ -472,6 +472,11 @@ images, sounds or fonts, and credit the inspiration in [CREDITS.md](CREDITS.md).
   their keys) that fail without the fix. Checked in the maintainer's Chrome at 2,560 px: every
   preset draws exactly its keys. Left: a real iPad.
 
+- [x] **P5-17** (APP) One "Sheet" tab instead of "Page" and "Sheet" (maintainer, 2026-10-11: "why
+      do I have a page tab and a sheet tab?"). The tabs are Falling notes | Score | Sheet: Sheet shows
+      the learner's PDF when the piece has one, otherwise the engraved pages. A saved "Page" choice
+      opens Sheet. A piece with both notation and a PDF can no longer show the engraved pages.
+
 Left out on purpose: 128 General MIDI instruments (a piano trainer, and extra sample licences and
 size), Sightread's song library and assets, and any analytics.
 
