@@ -70,7 +70,7 @@ import { LoopDrag } from '../views/loop-drag';
 import { PracticeRenderer } from '../views/renderer';
 import { PracticeSession } from '../views/session';
 import type { PracticeMode, SessionStatus } from '../views/session';
-import { formatOfPath, notationFor } from '../views/score/notation';
+import { formatOfPath, scoreFor } from '../views/score/notation';
 import type { NotationSource } from '../views/score/notation';
 import { ScoreView } from '../views/score/ScoreView';
 import { usePracticeView, ViewToggle } from '../views/score/ViewToggle';
@@ -134,21 +134,21 @@ export function Practice({
         const { piece, song, bytes } = await loadCatalogueSong(id);
         return {
           source,
-          song,
+          ...scoreFor(formatOfPath(piece.score), bytes, song),
           title: piece.title,
           subtitle: piece.composer,
           progressKey: `catalogue:${id}`,
-          notation: notationFor(formatOfPath(piece.score), bytes),
         };
       }
       const item = await db.library.get(Number(id));
       if (!item) throw new Error(t('This piece is not in your library on this device.'));
       return {
         source,
-        song: item.song,
+        // A MIDI file's score is written from the song (P5-13), which comes back with the refs of
+        // its glyphs.
+        ...scoreFor(item.format, item.bytes, item.song, item.settings.transpose),
         title: item.title,
         progressKey: `library:${id}`,
-        notation: notationFor(item.format, item.bytes, item.settings.transpose),
       };
     };
     load()

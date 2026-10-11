@@ -164,3 +164,57 @@ export const program = (tick: number, prog: number, ch = 0): MidiEvent => ({
   tick,
   data: [0xc0 | ch, prog],
 });
+export const timeSignatureEvent = (tick: number, numerator: number, denominator: number) => ({
+  tick,
+  data: [0xff, 0x58, 4, numerator, Math.log2(denominator), 24, 8],
+});
+export const keySignatureEvent = (tick: number, fifths: number, minor = false) => ({
+  tick,
+  data: [0xff, 0x59, 2, fifths & 0xff, minor ? 1 : 0],
+});
+
+/** A note as written in a score: beats from the start, and its written value in beats. */
+export interface WrittenNote {
+  pitch: number;
+  start: number;
+  value: number;
+  /** 0: upper staff, 1: lower staff. */
+  track?: number;
+}
+
+/**
+ * A MIDI file as notation software exports one (self-made, CC0): one track per staff, onsets on
+ * the beat grid, each note sounding for 95 % of its written value, many tempo events. `rolled`
+ * notes start a few ticks late and end with their chord, as a rolled chord is played.
+ */
+export function notatedMidi(
+  notes: readonly (WrittenNote & { rollTicks?: number })[],
+  opts: {
+    ppq?: number;
+    tempos?: [beat: number, bpm: number][];
+    times?: [beat: number, numerator: number, denominator: number][];
+    keys?: [beat: number, fifths: number][];
+    gate?: number;
+  } = {},
+): Uint8Array {
+  const ppq = opts.ppq ?? 480;
+  const gate = opts.gate ?? 0.95;
+  const tick = (beat: number) => Math.round(beat * ppq);
+  const meta = [
+    ...(opts.tempos ?? [[0, 100]]).map(([b, bpm]) => tempoEvent(tick(b), bpm)),
+    ...(opts.times ?? [[0, 4, 4]]).map(([b, n, d]) => timeSignatureEvent(tick(b), n, d)),
+  ];
+  const keys = (opts.keys ?? [[0, 0]]).map(([b, f]) => keySignatureEvent(tick(b), f));
+  const tracks = [0, 1].map((t) => {
+    const own = notes.filter((n) => (n.track ?? 0) === t);
+    const events: MidiEvent[] = [...keys, ...(t === 0 ? meta : [])];
+    for (const n of own) {
+      const on = tick(n.start) + (n.rollTicks ?? 0);
+      const off = tick(n.start) + Math.round(n.value * ppq * gate);
+      events.push(noteOn(on, n.pitch), noteOff(off, n.pitch));
+    }
+    // Note-offs before note-ons at the same tick, so repeated notes stay apart.
+    return midiTrack(events.sort((a, b) => a.tick - b.tick || (a.data[0] ?? 0) - (b.data[0] ?? 0)));
+  });
+  return midiFile(tracks, ppq);
+}

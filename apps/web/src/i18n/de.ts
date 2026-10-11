@@ -424,8 +424,6 @@ export const de: Readonly<Record<string, string>> = {
   Save: 'Speichern',
   'Try again': 'Noch einmal',
   // Score views
-  'MIDI files have no printed score, so this piece is shown as falling notes.':
-    'MIDI-Dateien haben keine gedruckten Noten, daher wird dieses Stück als fallende Noten gezeigt.',
   'Pieces made from a recording have no printed score, so they are shown as falling notes.':
     'Aus einer Aufnahme erstellte Stücke haben keine gedruckten Noten, daher werden sie als fallende Noten gezeigt.',
   'The score view cannot draw MuseScore files yet, so this piece is shown as falling notes.':
@@ -446,6 +444,8 @@ export const de: Readonly<Record<string, string>> = {
   'The score is shown, but its notes could not be matched to the music, so they are not coloured.':
     'Die Noten werden angezeigt, konnten aber nicht der Musik zugeordnet werden, daher sind sie nicht eingefärbt.',
   'Page {n} of {count}': 'Seite {n} von {count}',
+  'This score was made from the MIDI file and may differ from the printed music.':
+    'Diese Noten wurden aus der MIDI-Datei erstellt und können von der gedruckten Ausgabe abweichen.',
   // Canvas, app notices and errors
   early: 'zu früh',
   late: 'zu spät',
