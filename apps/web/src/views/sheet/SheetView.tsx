@@ -48,6 +48,9 @@ export function SheetView({ session, song, itemId, sheet }: Props) {
   const [mapState, setMapState] = useState<MapState>('waiting');
   const [adjusting, setAdjusting] = useState(false);
   const [analysisMs, setAnalysisMs] = useState<number | null>(null);
+  /** Where the learner tapped in a bar while adjusting: a barline can be added there. */
+  const [mark, setMark] = useState<SheetPoint | null>(null);
+  const [history, setHistory] = useState<SheetMap[]>([]);
   const controller = open?.controller ?? null;
 
   // The map: the stored one, matched again if the song changed, or found now.
@@ -89,10 +92,22 @@ export function SheetView({ session, song, itemId, sheet }: Props) {
     controller?.setMap(map);
   }, [controller, map]);
 
-  /** Saves a corrected map and shows it. */
+  /** Saves a corrected map and shows it; Undo goes back through the corrections of this visit. */
   const correct = (next: SheetMap) => {
+    if (map) setHistory((h) => [...h, map]);
     setMap(next);
+    setMark(null);
     void saveSheetMap(itemId, sheet, next);
+  };
+
+  const undo = () => {
+    const previous = history.at(-1);
+    if (!previous) return;
+    setHistory((h) => h.slice(0, -1));
+    setMap(previous);
+    setMark(null);
+    // The map from before is saved as corrected too: undoing is a correction of its own.
+    void saveSheetMap(itemId, sheet, { ...previous, edited: true });
   };
 
   useEffect(() => {
@@ -100,7 +115,8 @@ export function SheetView({ session, song, itemId, sheet }: Props) {
     controller.setAdjusting(adjusting);
     controller.onAdjustTap = (point: SheetPoint) => {
       if (!map) return;
-      // About a finger's width either side of a barline removes it.
+      // A tap on a barline (about a finger's width either side) removes it; anywhere else in a
+      // bar goes there and marks the place for "Add a barline here".
       const tolerance = 14 / Math.max(0.1, controller.scaleNow);
       const before = barlineAt(map, point.page, point.x, point.y, tolerance);
       if (before >= 0) {
@@ -108,16 +124,28 @@ export function SheetView({ session, song, itemId, sheet }: Props) {
         return;
       }
       const bar = barAt(map, point.page, point.x, point.y);
-      if (bar >= 0) correct(addBarline(map, song, bar, point.x));
+      if (bar < 0) return;
+      controller.goToBar(bar);
+      setMark(point);
     };
     // correct() only closes over values listed here.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [controller, adjusting, map, song]);
 
+  useEffect(() => {
+    controller?.setMark(adjusting ? mark : null);
+  }, [controller, adjusting, mark]);
+
   const shift = (delta: number) => {
     if (!map) return;
     const measure = Math.max(0, measureIndexAt(song.measures, session.beat));
     correct(shiftFrom(map, measure, delta));
+  };
+
+  const addHere = () => {
+    if (!map || !mark) return;
+    const bar = barAt(map, mark.page, mark.x, mark.y);
+    if (bar >= 0) correct(addBarline(map, song, bar, mark.x));
   };
 
   const findAgain = async () => {
@@ -127,6 +155,7 @@ export function SheetView({ session, song, itemId, sheet }: Props) {
     try {
       const result = await analyseSheet(open.pdfjs, open.doc, song);
       await saveSheetMap(itemId, sheet, result.map);
+      if (map) setHistory((h) => [...h, map]);
       setMap(result.map);
       setMapState(result.map.layout.bars.length > 0 ? 'ready' : 'none-found');
     } catch {
@@ -169,7 +198,7 @@ export function SheetView({ session, song, itemId, sheet }: Props) {
 
   return (
     <section
-      className="ot-sheet-panel"
+      className={`ot-sheet-panel${adjusting ? ' ot-sheet-panel--adjusting' : ''}`}
       aria-label={t('Your sheet music')}
       data-map={mapState === 'ready' ? 'ready' : 'pending'}
       data-analysis-ms={analysisMs ?? undefined}
@@ -187,7 +216,7 @@ export function SheetView({ session, song, itemId, sheet }: Props) {
         <div className="ot-sheet-adjust" role="group" aria-label={t('Adjust bars')}>
           <p className="ot-sheet-adjust__hint muted">
             {t(
-              'Go to the bar where the highlight goes wrong, then say which way it is off. Tap between two barlines to add one, or on a barline to remove it.',
+              'Tap a bar to go to it. Tap a wrong barline to remove it. For a missing barline, tap where it belongs, then Add a barline here.',
             )}
           </p>
           <div className="ot-sheet-adjust__row">
@@ -198,8 +227,20 @@ export function SheetView({ session, song, itemId, sheet }: Props) {
             <button onClick={() => shift(1)}>{t('a bar behind')}</button>
           </div>
           <div className="ot-sheet-adjust__row">
+            <button disabled={!mark} onClick={addHere}>
+              {t('Add a barline here')}
+            </button>
+            <button disabled={history.length === 0} onClick={undo}>
+              {t('Undo')}
+            </button>
             <button onClick={() => void findAgain()}>{t('Find the bars again')}</button>
-            <button className="primary" onClick={() => setAdjusting(false)}>
+            <button
+              className="primary"
+              onClick={() => {
+                setAdjusting(false);
+                setMark(null);
+              }}
+            >
               {t('Done')}
             </button>
           </div>

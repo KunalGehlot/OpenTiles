@@ -462,8 +462,10 @@ export const de: Readonly<Record<string, string>> = {
     'Auf diesem Notenblatt wurden keine Takte gefunden, daher kann die Markierung der Musik nicht folgen. Die Seiten lassen sich trotzdem lesen.',
   'Adjust bars': 'Takte anpassen',
   'Fix where the highlight goes': 'Korrigieren, wo die Markierung steht',
-  'Go to the bar where the highlight goes wrong, then say which way it is off. Tap between two barlines to add one, or on a barline to remove it.':
-    'Geh zu dem Takt, ab dem die Markierung falsch liegt, und sag, in welche Richtung sie abweicht. Tippe zwischen zwei Taktstriche, um einen hinzuzufügen, oder auf einen Taktstrich, um ihn zu entfernen.',
+  'Tap a bar to go to it. Tap a wrong barline to remove it. For a missing barline, tap where it belongs, then Add a barline here.':
+    'Tippe auf einen Takt, um dorthin zu gehen. Tippe auf einen falschen Taktstrich, um ihn zu entfernen. Für einen fehlenden Taktstrich tippe an die Stelle, an die er gehört, dann auf „Taktstrich hier einfügen“.',
+  'Add a barline here': 'Taktstrich hier einfügen',
+  Undo: 'Rückgängig',
   'From this bar on, the highlight is': 'Ab diesem Takt ist die Markierung',
   'a bar ahead': 'einen Takt voraus',
   'a bar behind': 'einen Takt zurück',

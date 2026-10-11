@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   ChevronLeft,
   Gauge,
@@ -72,8 +72,6 @@ import { formatOfPath, notationFor } from '../views/score/notation';
 import type { NotationSource } from '../views/score/notation';
 import { ScoreView } from '../views/score/ScoreView';
 import { usePracticeView, ViewToggle } from '../views/score/ViewToggle';
-import { SheetReader } from '../views/sheet/SheetReader';
-import { SheetView } from '../views/sheet/SheetView';
 import { Popover } from '../ui/Popover';
 import { t } from '../i18n';
 
@@ -91,6 +89,14 @@ interface Loaded {
   /** A sheet without notes yet (format 'pdf'): it can be read, not practised. */
   sheetOnly?: boolean;
 }
+
+// The learner's own sheet music (ADR 0018) is loaded only for pieces that have one.
+const SheetView = lazy(() =>
+  import('../views/sheet/SheetView').then((m) => ({ default: m.SheetView })),
+);
+const SheetReader = lazy(() =>
+  import('../views/sheet/SheetReader').then((m) => ({ default: m.SheetReader })),
+);
 
 const NO_BARS: readonly number[] = [];
 /** How long an endless drill's result stays before the next drill starts. */
@@ -183,11 +189,13 @@ export function Practice({
     // The slot for P5-15's button, once both branches are merged:
     // addNotes={(onSaved) => <AddNotesButton itemId={Number(id)} onSaved={onSaved} />}
     return (
-      <SheetReader
-        title={loaded.title}
-        bytes={loaded.sheet.attachment.bytes}
-        onNotesAdded={() => setReload((n) => n + 1)}
-      />
+      <Suspense fallback={<p className="session-message muted">{t('Loading…')}</p>}>
+        <SheetReader
+          title={loaded.title}
+          bytes={loaded.sheet.attachment.bytes}
+          onNotesAdded={() => setReload((n) => n + 1)}
+        />
+      </Suspense>
     );
   }
   return <PracticeView key={loaded.progressKey} {...loaded} prefs={prefs} />;
@@ -930,7 +938,9 @@ function PracticeView({
         />
       )}
       {view === 'sheet' && sheet && (
-        <SheetView session={session} song={song} itemId={sheet.itemId} sheet={sheet.attachment} />
+        <Suspense fallback={null}>
+          <SheetView session={session} song={song} itemId={sheet.itemId} sheet={sheet.attachment} />
+        </Suspense>
       )}
       <div
         ref={wrapRef}

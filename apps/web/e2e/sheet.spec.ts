@@ -186,6 +186,19 @@ test('the Sheet view draws the learner’s PDF and the highlight follows the mus
   const seen = await page.evaluate(() => (window as unknown as { shownBars: number[] }).shownBars);
   // Bars 3 to 5 twice, then on to the end.
   expect(seen.slice(0, PLAYED.length)).toEqual(PLAYED);
+  // Narrow (a third of an iPad) and turned: no sideways scrolling, and the highlight stays.
+  for (const size of [
+    { width: 320, height: 768 },
+    { width: 820, height: 1180 },
+    { width: 1180, height: 820 },
+  ]) {
+    await page.setViewportSize(size);
+    await expect(highlight).toBeVisible();
+    await expect(panel.locator('canvas.ot-sheet-canvas')).toHaveCount(1);
+    expect(
+      await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth),
+    ).toBe(true);
+  }
   expect(problems).toEqual([]);
 });
 
@@ -206,10 +219,19 @@ test('bars can be adjusted, and the corrections are kept', async ({ page }) => {
   // The highlight runs a bar behind from the first bar on.
   await panel.getByRole('button', { name: 'a bar behind' }).click();
   await expect(page.getByTestId('sheet-highlight')).toHaveAttribute('data-bar', '1');
-  // A tap in the middle of the first bar adds a barline there.
+  // A tap in the first bar goes there and marks the place; the barline is added on request.
   const box = await panel.locator('.ot-sheet-outline').first().boundingBox();
   if (!box) throw new Error('No outline for the first bar');
-  await page.mouse.click(box.x + box.width * 0.6, box.y + box.height / 2);
+  const tapFirstBar = () => page.mouse.click(box.x + box.width * 0.6, box.y + box.height / 2);
+  await tapFirstBar();
+  await expect(panel.locator('.ot-sheet-mark')).toBeVisible();
+  await expect(panel.locator('.ot-sheet-outline')).toHaveCount(8);
+  await panel.getByRole('button', { name: 'Add a barline here' }).click();
+  await expect(panel.locator('.ot-sheet-outline')).toHaveCount(9);
+  await panel.getByRole('button', { name: 'Undo' }).click();
+  await expect(panel.locator('.ot-sheet-outline')).toHaveCount(8);
+  await tapFirstBar();
+  await panel.getByRole('button', { name: 'Add a barline here' }).click();
   await expect(panel.locator('.ot-sheet-outline')).toHaveCount(9);
   await panel.getByRole('button', { name: 'Done' }).click();
   await expect(panel.locator('.ot-sheet-outline')).toHaveCount(0);

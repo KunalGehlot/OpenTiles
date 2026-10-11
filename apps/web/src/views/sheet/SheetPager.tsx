@@ -54,6 +54,7 @@ export function SheetPager({
           <ZoomOut />
         </button>
         <button
+          className="ot-sheet-pager__fit"
           disabled={!controller || Math.abs(zoom - 1) < 1e-3}
           onClick={() => zoomTo(1)}
           title={t('Fit the page to the width')}

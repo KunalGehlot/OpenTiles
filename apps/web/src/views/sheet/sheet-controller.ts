@@ -54,6 +54,8 @@ export class SheetController {
   private readonly cursor: HTMLDivElement;
   private readonly label: HTMLSpanElement;
   private readonly outlines: HTMLDivElement;
+  private readonly mark: HTMLDivElement;
+  private markPoint: SheetPoint | null = null;
   private map: SheetMap | null = null;
   private zoom = 1;
   private scale = 1;
@@ -90,6 +92,9 @@ export class SheetController {
     this.cursor = document.createElement('div');
     this.cursor.className = 'ot-sheet-cursor';
     this.cursor.hidden = true;
+    this.mark = document.createElement('div');
+    this.mark.className = 'ot-sheet-mark';
+    this.mark.hidden = true;
     this.outlines = document.createElement('div');
     this.outlines.className = 'ot-sheet-outlines';
     for (const proxy of proxies) {
@@ -109,7 +114,7 @@ export class SheetController {
         left: 0,
       });
     }
-    this.sheet.append(this.outlines, this.highlight, this.cursor);
+    this.sheet.append(this.outlines, this.highlight, this.cursor, this.mark);
     host.appendChild(this.sheet);
     this.detach = this.listen();
     this.layout();
@@ -149,6 +154,7 @@ export class SheetController {
 
   setAdjusting(on: boolean): void {
     this.adjusting = on;
+    if (!on) this.setMark(null);
     this.host.classList.toggle('adjusting', on);
     this.shownBar = -2;
     this.drawOutlines();
@@ -203,6 +209,7 @@ export class SheetController {
     this.sheet.style.width = `${Math.max(contentWidth, this.host.clientWidth).toFixed(0)}px`;
     this.shownBar = -2;
     this.drawOutlines();
+    this.setMark(this.markPoint);
     this.schedule();
   }
 
@@ -467,9 +474,41 @@ export class SheetController {
     for (let i = 0; i < map.barOfMeasure.length; i++) {
       if (map.barOfMeasure[i] !== bar) continue;
       if (first < 0) first = i;
-      if (i > now) return i;
+      if (i >= now) return i;
     }
     return first;
+  }
+
+  /** The bar at a point, with a little room above and below its staves, or -1. */
+  barAt(point: SheetPoint): number {
+    return (
+      this.map?.layout.bars.findIndex(
+        (b) =>
+          b.page === point.page &&
+          point.x >= b.box.x &&
+          point.x <= b.box.x + b.box.width &&
+          point.y >= b.box.y - b.box.height * 0.25 &&
+          point.y <= b.box.y + b.box.height * 1.25,
+      ) ?? -1
+    );
+  }
+
+  /** Moves the session to a bar, as dragging the score does. */
+  goToBar(bar: number): void {
+    const measure = this.song?.measures[this.measureForBar(bar)];
+    if (bar >= 0 && measure) this.session?.seek(measure.startBeat);
+  }
+
+  /** Marks where a barline would be added (a dashed line across the bar), or clears the mark. */
+  setMark(point: SheetPoint | null): void {
+    this.markPoint = point;
+    const bar = point ? this.map?.layout.bars[this.barAt(point)] : undefined;
+    const rect = bar ? this.rectOf(bar) : null;
+    const slot = point ? this.slots[point.page] : undefined;
+    this.mark.hidden = !rect || !slot || !point;
+    if (!rect || !slot || !point) return;
+    this.mark.style.transform = `translate(${(slot.left + point.x * this.scale).toFixed(1)}px, ${rect.top.toFixed(1)}px)`;
+    this.mark.style.height = `${rect.height.toFixed(1)}px`;
   }
 
   private onTap(clientX: number, clientY: number): void {
@@ -479,21 +518,8 @@ export class SheetController {
       this.onAdjustTap(point);
       return;
     }
-    // Outside the adjusting a tap goes to that bar, as dragging the score does; not mid-run.
-    const map = this.map;
-    const session = this.session;
-    const song = this.song;
-    if (!map || !session || !song || session.playing) return;
-    const bar = map.layout.bars.findIndex(
-      (b) =>
-        b.page === point.page &&
-        point.x >= b.box.x &&
-        point.x <= b.box.x + b.box.width &&
-        point.y >= b.box.y - b.box.height * 0.25 &&
-        point.y <= b.box.y + b.box.height * 1.25,
-    );
-    const measure = song.measures[this.measureForBar(bar)];
-    if (bar >= 0 && measure) session.seek(measure.startBeat);
+    // A tap goes to that bar, as dragging the score does; not in the middle of a run.
+    if (!this.session?.playing) this.goToBar(this.barAt(point));
   }
 
   private listen(): () => void {
