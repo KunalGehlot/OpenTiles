@@ -39,8 +39,9 @@ all processing stays on the device; library items have no way out except the enc
      `Math.sumPrecise`, `Promise.try` and `URL.parse` without polyfills, which Safari 16.4 lacks;
      the legacy build brings core-js polyfills for them (checked by reading both builds, not on an
      old Safari).
-   - **Loading.** It is imported only when a piece with a sheet opens, as are the Sheet view and the
-     reader themselves (`React.lazy`); a piece without a sheet requests none of it (e2e test).
+   - **Loading.** The Sheet view and the reader are a chunk loaded with a piece that has a sheet
+     (not `React.lazy`, whose first reveal React holds back about 300 ms), and pdf.js is imported
+     when they open; a piece without a sheet requests none of it (e2e test).
      Vite bundles the worker (`?worker`), so it is a file of the app's own origin, and the service
      worker precaches the chunks for offline use.
    - **Network.** No fonts or character maps are served or fetched: a missing standard font falls
@@ -119,8 +120,8 @@ all processing stays on the device; library items have no way out except the enc
 - A learner with a PDF and a MIDI file practises from their own sheet with the cursor on it, and
   gets the falling notes and feedback from the MIDI.
 - pdf.js adds lazy chunks to the offline cache: 476 KiB of library and 1.2 MiB of worker
-  (143 KiB and 369 KiB gzipped), 346 KiB of image decoders, and 42 KiB for the Sheet view and the
-  reader; the precache grows from 15.6 to 17.6 MiB. The first load grows by about 4 KiB. Pieces
+  (143 KiB and 369 KiB gzipped), 346 KiB of image decoders, and 41 KiB for the Sheet view and the
+  reader; the precache grows from 15.6 to 17.6 MiB. The first load grows by about 3 KiB. Pieces
   without a sheet load none of it.
 - The bar map is only as good as the detection and alignment. Measured on one real 7-page
   MuseScore export (the maintainer's, kept off the repository): every system and every one of its

@@ -1,4 +1,4 @@
-import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   ChevronLeft,
   Gauge,
@@ -75,6 +75,8 @@ import { usePracticeView, ViewToggle } from '../views/score/ViewToggle';
 import { Popover } from '../ui/Popover';
 import { t } from '../i18n';
 
+type SheetViews = typeof import('../views/sheet');
+
 interface Loaded {
   source: 'catalogue' | 'library' | 'drill';
   song: Song;
@@ -84,19 +86,14 @@ interface Loaded {
   notation: NotationSource;
   /** A sight-reading drill (P5-05): what it hides, and the choices for the next one. */
   drill?: { guide: 'keys' | 'none'; prefs: DrillPrefs };
-  /** The learner's sheet music for a library piece (ADR 0018). */
-  sheet?: { itemId: number; attachment: SheetAttachment };
+  /**
+   * The learner's sheet music for a library piece (ADR 0018), with its views: loaded with the
+   * piece rather than lazily on first render, which React would hold back for a moment.
+   */
+  sheet?: { itemId: number; attachment: SheetAttachment; views: SheetViews };
   /** A sheet without notes yet (format 'pdf'): it can be read, not practised. */
   sheetOnly?: boolean;
 }
-
-// The learner's own sheet music (ADR 0018) is loaded only for pieces that have one.
-const SheetView = lazy(() =>
-  import('../views/sheet/SheetView').then((m) => ({ default: m.SheetView })),
-);
-const SheetReader = lazy(() =>
-  import('../views/sheet/SheetReader').then((m) => ({ default: m.SheetReader })),
-);
 
 const NO_BARS: readonly number[] = [];
 /** How long an endless drill's result stays before the next drill starts. */
@@ -155,13 +152,15 @@ export function Practice({
       }
       const item = await db.library.get(Number(id));
       if (!item) throw new Error(t('This piece is not in your library on this device.'));
+      const views = item.sheet ? await import('../views/sheet') : null;
       return {
         source,
         song: item.song,
         title: item.title,
         progressKey: `library:${id}`,
         notation: notationFor(item.format, item.bytes, item.settings.transpose),
-        sheet: item.sheet ? { itemId: Number(id), attachment: item.sheet } : undefined,
+        sheet:
+          item.sheet && views ? { itemId: Number(id), attachment: item.sheet, views } : undefined,
         sheetOnly:
           item.sheet !== undefined && (item.format === 'pdf' || item.song.notes.length === 0),
       };
@@ -188,14 +187,13 @@ export function Practice({
   if (loaded.sheetOnly && loaded.sheet) {
     // The slot for P5-15's button, once both branches are merged:
     // addNotes={(onSaved) => <AddNotesButton itemId={Number(id)} onSaved={onSaved} />}
+    const { SheetReader } = loaded.sheet.views;
     return (
-      <Suspense fallback={<p className="session-message muted">{t('Loading…')}</p>}>
-        <SheetReader
-          title={loaded.title}
-          bytes={loaded.sheet.attachment.bytes}
-          onNotesAdded={() => setReload((n) => n + 1)}
-        />
-      </Suspense>
+      <SheetReader
+        title={loaded.title}
+        bytes={loaded.sheet.attachment.bytes}
+        onNotesAdded={() => setReload((n) => n + 1)}
+      />
     );
   }
   return <PracticeView key={loaded.progressKey} {...loaded} prefs={prefs} />;
@@ -938,9 +936,12 @@ function PracticeView({
         />
       )}
       {view === 'sheet' && sheet && (
-        <Suspense fallback={null}>
-          <SheetView session={session} song={song} itemId={sheet.itemId} sheet={sheet.attachment} />
-        </Suspense>
+        <sheet.views.SheetView
+          session={session}
+          song={song}
+          itemId={sheet.itemId}
+          sheet={sheet.attachment}
+        />
       )}
       <div
         ref={wrapRef}
