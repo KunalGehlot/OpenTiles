@@ -119,28 +119,87 @@ test('the hardest bars are marked on the score after a run', async ({ page }) =>
   await expect(page.locator('[data-testid="score-strip"] .ot-hardest')).toHaveCount(1);
 });
 
-test('MIDI imports offer the falling-notes view only, and say why', async ({ page }) => {
+/**
+ * A two-track MIDI file as notation software exports one (self-made, CC0): right hand C4 D4 E4 F4
+ * then G4, left hand C3 then G2, 480 ticks a beat, each note sounding for 95 % of its value.
+ */
+function twoBarMidi(): Buffer {
+  const varlen = (v: number) => {
+    const out = [v & 0x7f];
+    while ((v >>= 7) > 0) out.unshift((v & 0x7f) | 0x80);
+    return out;
+  };
+  const track = (notes: [beat: number, pitch: number, beats: number][]) => {
+    const events: [number, number[]][] = [];
+    for (const [beat, pitch, beats] of notes) {
+      events.push(
+        [beat * 480, [0x90, pitch, 80]],
+        [Math.round((beat + beats * 0.95) * 480), [0x80, pitch, 0]],
+      );
+    }
+    events.sort((a, b) => a[0] - b[0] || (a[1][0] ?? 0) - (b[1][0] ?? 0));
+    const bytes: number[] = [];
+    let last = 0;
+    for (const [tick, data] of events) {
+      bytes.push(...varlen(tick - last), ...data);
+      last = tick;
+    }
+    bytes.push(0, 0xff, 0x2f, 0);
+    return [0x4d, 0x54, 0x72, 0x6b, 0, 0, bytes.length >> 8, bytes.length & 0xff, ...bytes];
+  };
+  return Buffer.from([
+    ...[0x4d, 0x54, 0x68, 0x64, 0, 0, 0, 6, 0, 1, 0, 2, 0x01, 0xe0],
+    ...track([
+      [0, 60, 1],
+      [1, 62, 1],
+      [2, 64, 1],
+      [3, 65, 1],
+      [4, 67, 4],
+    ]),
+    ...track([
+      [0, 48, 4],
+      [4, 43, 4],
+    ]),
+  ]);
+}
+
+test('a MIDI import gets a score written from its notes, with a cursor and note colours', async ({
+  page,
+}) => {
   await page.goto('./#/library');
   await page.getByRole('button', { name: 'Import a file…' }).click();
   await page.getByRole('checkbox').check();
   const chooser = page.waitForEvent('filechooser');
   await page.getByRole('button', { name: 'Continue' }).click();
-  // C4 D4 as quarter notes in a one-track MIDI file.
-  const events = [
-    0, 0x90, 60, 80, 0x83, 0x60, 0x80, 60, 0, 0, 0x90, 62, 80, 0x83, 0x60, 0x80, 62, 0,
-  ];
-  events.push(0, 0xff, 0x2f, 0);
-  const midi = Buffer.from([
-    ...[0x4d, 0x54, 0x68, 0x64, 0, 0, 0, 6, 0, 0, 0, 1, 0x01, 0xe0],
-    ...[0x4d, 0x54, 0x72, 0x6b, 0, 0, 0, events.length],
-    ...events,
-  ]);
-  await (await chooser).setFiles({ name: 'two.mid', mimeType: 'audio/midi', buffer: midi });
+  await (
+    await chooser
+  ).setFiles({ name: 'two-bars.mid', mimeType: 'audio/midi', buffer: twoBarMidi() });
   await page.getByRole('button', { name: 'Save to my library' }).click();
   await expect(page).toHaveURL(/#\/practice\/library\//);
+  await page.getByRole('button', { name: 'Right', exact: true }).click();
   const view = page.getByRole('group', { name: 'View' });
-  await expect(view.getByRole('button', { name: 'Score' })).toBeDisabled();
-  await expect(page.getByText('MIDI files have no printed score')).toBeVisible();
+  await expect(view.getByRole('button', { name: 'Score' })).toBeEnabled();
+  await view.getByRole('button', { name: 'Score' }).click();
+  await expect(page.locator('[data-testid="score-strip"] > svg')).toBeVisible({ timeout: 20_000 });
+  await expect(page.getByText('This score was made from the MIDI file')).toBeVisible();
+  // Both staves: seven notes, no note left unlinked.
+  await expect(page.locator('[data-testid="score-strip"] g.note')).toHaveCount(7);
+  await expect(page.getByText('could not be matched')).toHaveCount(0);
+  await expect(page.locator('[data-testid="score-cursor"]')).toBeVisible();
+  await expect(page.locator('g.note.ot-expected')).toHaveCount(1);
+  const start = await cursorX(page);
+  expect(start).toBeGreaterThan(0);
+
+  const stats = page.locator('.stats');
+  await page.keyboard.press('KeyA'); // C4
+  await expect(stats).toContainText('Step 2/');
+  await page.keyboard.press('KeyS'); // D4
+  await expect(stats).toContainText('Step 3/');
+  await expect(page.locator('g.note.ot-correct')).toHaveCount(2);
+  await expect.poll(() => cursorX(page)).toBeGreaterThan(start + 10);
+  // A wrong key turns the expected E4 red.
+  await page.keyboard.press('KeyG'); // G4
+  await expect(page.locator('g.note.ot-wrong')).toHaveCount(1);
 });
 
 test('the scrolling score keeps the play bar in the middle, shows no scroll bar and can be dragged', async ({

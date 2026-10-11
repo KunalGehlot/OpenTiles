@@ -150,6 +150,11 @@ export function ScoreView({
           <div ref={cursorRef} className="ot-score-cursor" data-testid="score-cursor" hidden />
         </div>
       </div>
+      {notation.generated && state === 'ready' && (
+        <p className="ot-score-note muted">
+          {t('This score was made from the MIDI file and may differ from the printed music.')}
+        </p>
+      )}
       {layout === 'page' && state === 'ready' && (
         <div className="ot-score-pager">
           <button
