@@ -183,8 +183,12 @@ note is linked to its glyph by source measure, onset and pitch (`glyph-map.ts`),
 a repeat share a glyph. `ScoreController` colours glyphs from `PracticeSession.marks` (expected,
 correct, wrong, passed), moves the cursor from per-bar anchors (`cursor-map.ts`), turns pages and
 marks the hardest bars after a run, all from `requestAnimationFrame`. Fingers the score does not draw itself
-(ABC, and suggested ones) are added next to the note heads, suggested ones lighter. MIDI, audio and MuseScore
-pieces have no notation to draw and keep the falling-notes view. In the scrolling layout the play bar
+(ABC, and suggested ones) are added next to the note heads, suggested ones lighter. A MIDI piece has no
+notation of its own, so its score is written from its song when the piece opens (`songToMusicXml` in
+song-model, ADR 0017): every note in its own bar at its own onset and pitch, each written note carrying its
+`sourceRefs` entry as its id, so the controller links that score by ref (`linkByRefs`) rather than by the
+timemap. MIDI files from notation software are quantised in ticks so their triplets and short values survive
+(`quantiseNotated`). Audio and MuseScore pieces keep the falling-notes view. In the scrolling layout the play bar
 stays in the middle and the score moves past it by a transform (no scroll bar). Dragging it (or a sideways
 trackpad scroll) scrubs: the beat drawn under the play bar (`beatAt`, the inverse of the cursor map)
 becomes the position through `PracticeSession.seek`, so the score, cursor and falling notes move together;
