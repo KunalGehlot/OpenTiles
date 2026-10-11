@@ -3,6 +3,8 @@ export { TempoMap, beatToSeconds, secondsToBeat, DEFAULT_BPM } from './tempo';
 export { stepToMidi, noteName, isBlackKey, MIDDLE_C, PIANO_LOW, PIANO_HIGH } from './pitch';
 export { ImportError } from './errors';
 export { parseMusicXml, playbackOrder } from './musicxml';
+export { songToMusicXml, spellPitch } from './musicxml-writer';
+export type { WrittenScore } from './musicxml-writer';
 export type { MusicXmlOptions } from './musicxml';
 export { parseXmlDocument, xmlChild, xmlChildren, xmlNumber, xmlPath, xmlText } from './xml';
 export type { DomParserLike } from './xml';
