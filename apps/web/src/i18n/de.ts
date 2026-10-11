@@ -435,7 +435,6 @@ export const de: Readonly<Record<string, string>> = {
   View: 'Ansicht',
   'Falling notes': 'Fallende Noten',
   Score: 'Noten',
-  Page: 'Seite',
   'The score could not be drawn on this device. The falling-notes view still works.':
     'Die Noten konnten auf diesem Gerät nicht gezeichnet werden. Die Ansicht mit fallenden Noten funktioniert weiterhin.',
   'Score, page view': 'Noten, Seitenansicht',
@@ -713,8 +712,13 @@ export const de: Readonly<Record<string, string>> = {
     'MIDI-Keyboards funktionieren nur auf einer sicheren Seite. Öffne OpenTiles über https oder als localhost auf diesem Computer.',
   'This browser cannot connect to MIDI keyboards. Use Chrome, Edge or Firefox, or the microphone.':
     'Dieser Browser kann sich nicht mit MIDI-Keyboards verbinden. Nutze Chrome, Edge oder Firefox oder das Mikrofon.',
-  'The browser did not allow MIDI for this page. Allow MIDI devices for this site in the browser settings, then try again.':
-    'Der Browser hat MIDI für diese Seite nicht erlaubt. Erlaube MIDI-Geräte für diese Seite in den Browser-Einstellungen und versuch es noch einmal.',
+  'The browser did not allow MIDI for this site. Click the icon at the left of the address bar, allow MIDI devices (Chrome lists them under Site settings), then press Connect again.':
+    'Der Browser hat MIDI für diese Website nicht erlaubt. Klick auf das Symbol links in der Adressleiste, erlaube MIDI-Geräte (Chrome führt sie unter Website-Einstellungen) und tippe dann noch einmal auf Verbinden.',
+  'Your browser is asking whether this site may use MIDI devices. Choose Allow in the box by the address bar. If you closed it, press Connect again, or click the icon at the left of the address bar and allow MIDI devices.':
+    'Dein Browser fragt, ob diese Website MIDI-Geräte nutzen darf. Wähle „Zulassen“ im Fenster an der Adressleiste. Wenn du es geschlossen hast, tippe noch einmal auf Verbinden oder klick auf das Symbol links in der Adressleiste und erlaube MIDI-Geräte.',
+  'Firefox is asking whether this site may use MIDI devices (on a website it offers a small “site permission” add-on). Accept it in the box by the address bar. If you don’t see the box, click the icon at the left of the address bar.':
+    'Firefox fragt, ob diese Website MIDI-Geräte nutzen darf (auf einer Website bietet es dafür ein kleines „Website-Berechtigungs“-Add-on an). Nimm es im Fenster an der Adressleiste an. Wenn du das Fenster nicht siehst, klick auf das Symbol links in der Adressleiste.',
+  'Waiting for the browser…': 'Warte auf den Browser …',
   'MIDI keyboard': 'MIDI-Keyboard',
   'Plug in your keyboard and switch it on; it appears here by itself.':
     'Steck dein Keyboard an und schalte es ein; es erscheint hier von selbst.',

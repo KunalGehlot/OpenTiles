@@ -63,7 +63,9 @@ hardest bars after a run. Constraints:
   DOM.
 - Scores whose bars Verovio and the song model count differently fall back to the unrolled onset;
   notes that still do not match are simply not coloured.
-- The view choice is stored per device (`settings.practiceView`).
+- The view choice is stored per device (`settings.practiceView`). (Since P5-17 the page view has no
+  tab of its own: it is the Sheet tab of a piece without a PDF, ADR 0018, and a stored `page` is
+  read as `sheet`.)
 
 ## Alternatives considered
 

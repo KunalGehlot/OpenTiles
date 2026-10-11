@@ -20,8 +20,19 @@ const BLACK_OFFSET: Record<number, number> = { 1: -0.1, 3: 0.1, 6: -0.12, 8: 0, 
 export const BLACK_WIDTH = 0.6;
 export const BLACK_HEIGHT = 0.62;
 
-/** The widest a white key is drawn (CSS px); on a wide window the keyboard grows, then centres. */
+/** The widest a white key is drawn (CSS px); a keyboard narrower than the window is centred. */
 export const MAX_WHITE_WIDTH = 64;
+
+/** The keys the practice view draws. */
+export interface KeysToDraw {
+  low: number;
+  high: number;
+  /**
+   * The learner's own keyboard (P4-07): drawn with exactly these keys. Otherwise these are the keys
+   * a piece needs, and a wide window adds octaves around them.
+   */
+  fixed: boolean;
+}
 
 function whiteCount(lo: number, hi: number): number {
   let n = 0;
@@ -78,6 +89,15 @@ export function layoutKeyboard(
     }
   }
   return { low: lo, high: hi, whiteWidth, keys };
+}
+
+/**
+ * The practice keyboard at `width`. Only the keys a piece needs grow by octaves: widening a chosen
+ * keyboard too made 49, 37 and 25 keys all look like 61 on a wide window (P5-16).
+ */
+export function practiceLayout(keys: KeysToDraw, width: number): KeyboardLayout {
+  const { low, high } = keys.fixed ? keys : widenRange(keys, width);
+  return layoutKeyboard(low, high, width, MAX_WHITE_WIDTH);
 }
 
 /** The pitch under a point; `y` is measured from the top of the keyboard, `height` its height. */

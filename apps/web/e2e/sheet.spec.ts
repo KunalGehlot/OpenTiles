@@ -7,6 +7,21 @@ import type { Page } from '@playwright/test';
 import { scanPdf, scorePdf } from '../../../packages/sheet/test/fixtures';
 import type { FixtureBar } from '../../../packages/sheet/test/fixtures';
 
+/** The elements that reach past the right edge of the window, for a failure message. */
+function sticksOut(page: Page): Promise<string> {
+  return page.evaluate(() =>
+    [...document.querySelectorAll('body *')]
+      .map((e) => ({ e, r: e.getBoundingClientRect() }))
+      .filter(({ r }) => r.width > 0 && r.right > window.innerWidth + 0.5)
+      .slice(0, 12)
+      .map(
+        ({ e, r }) =>
+          `${e.tagName.toLowerCase()}.${String(e.className)} right=${r.right.toFixed(1)}`,
+      )
+      .join('; '),
+  );
+}
+
 // Eight written bars, with a repeat of bars 3 to 5: played 1 2 3 4 5 3 4 5 6 7 8.
 const HEADS = [3, 5, 6, 4, 7, 2, 5, 6];
 const PLAYED = [0, 1, 2, 3, 4, 2, 3, 4, 5, 6, 7];
@@ -208,9 +223,12 @@ test('the Sheet view draws the learner’s PDF and the highlight follows the mus
     await page.setViewportSize(size);
     await expect(highlight).toBeVisible();
     await expect(panel.locator('canvas.ot-sheet-canvas')).toHaveCount(1);
-    // Polled: right after a resize WebKit can report the old width for a moment.
+    // Polled: right after a resize WebKit can report the old width for a moment. On failure the
+    // message names what sticks out, since it can depend on the fonts of the machine.
     await expect
-      .poll(() => page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth))
+      .poll(() => page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth), {
+        message: `sideways scroll at ${size.width}px: ${await sticksOut(page)}`,
+      })
       .toBeLessThanOrEqual(0);
   }
   expect(problems).toEqual([]);
@@ -234,7 +252,11 @@ test('bars can be adjusted, and the corrections are kept', async ({ page }) => {
   await panel.getByRole('button', { name: 'a bar behind' }).click();
   await expect(page.getByTestId('sheet-highlight')).toHaveAttribute('data-bar', '1');
   // A tap in the first bar goes there and marks the place; the barline is added on request.
-  const box = await panel.locator('.ot-sheet-outline').first().boundingBox();
+  // The outlines are placed on the next animation frame, which a slow machine may not have drawn.
+  const first = panel.locator('.ot-sheet-outline').first();
+  await expect(first).toBeVisible();
+  await expect.poll(async () => (await first.boundingBox())?.width ?? 0).toBeGreaterThan(0);
+  const box = await first.boundingBox();
   if (!box) throw new Error('No outline for the first bar');
   const tapFirstBar = () => page.mouse.click(box.x + box.width * 0.6, box.y + box.height / 2);
   await tapFirstBar();
@@ -266,9 +288,11 @@ test('a sheet-only piece opens as a reader, and pieces without a sheet never loa
   const plain = await addPiece(page, { title: 'No sheet', format: 'midi', song: songOf([0, 1]) });
   await page.goto(`./#/practice/library/${plain}`);
   await expect(page.getByRole('button', { name: 'Listen', exact: true })).toBeVisible();
-  await expect(
-    page.getByRole('group', { name: 'View' }).getByRole('button', { name: 'Sheet' }),
-  ).toHaveCount(0);
+  // Its Sheet tab shows the score written from its notes, in pages (P5-17).
+  await page.getByRole('group', { name: 'View' }).getByRole('button', { name: 'Sheet' }).click();
+  await expect(page.locator('[data-testid="score-strip"] > svg')).toBeVisible({ timeout: 20_000 });
+  await expect(page.locator('.ot-score-pager')).toContainText('Page 1 of 1');
+  await expect(page.getByRole('region', { name: 'Your sheet music' })).toHaveCount(0);
   await page.waitForTimeout(500);
   expect(requests.filter((u) => /pdf/i.test(u))).toEqual([]);
 
@@ -310,4 +334,45 @@ test('a scanned sheet is read from its page image', async ({ page }) => {
   expect(map?.layout.source).toBe('raster');
   expect(map?.layout.bars).toHaveLength(8);
   expect(map?.barOfMeasure).toEqual(written);
+});
+
+test('a remembered Page view opens the Sheet tab: engraved pages, or the learner’s PDF', async ({
+  page,
+}) => {
+  test.setTimeout(90_000);
+  const id = await addPiece(page, {
+    title: 'Remembered view',
+    format: 'midi',
+    song: songOf(PLAYED),
+    pdf: sheetPdf(),
+  });
+  // Stored as the app stored it while Page was a tab of its own, before P5-17.
+  await page.evaluate(
+    () =>
+      new Promise<void>((resolve, reject) => {
+        const request = indexedDB.open('opentiles');
+        request.onerror = () => reject(request.error);
+        request.onsuccess = () => {
+          const tx = request.result.transaction('settings', 'readwrite');
+          tx.objectStore('settings').put({ key: 'practiceView', value: 'page' });
+          tx.oncomplete = () => {
+            request.result.close();
+            resolve();
+          };
+          tx.onerror = () => reject(tx.error);
+        };
+      }),
+  );
+  const view = page.getByRole('group', { name: 'View' });
+  await page.goto('./#/practice/catalogue/minuet-in-g');
+  await expect(view.getByRole('button')).toHaveText(['Falling notes', 'Score', 'Sheet']);
+  await expect(view.getByRole('button', { name: 'Sheet' })).toHaveAttribute('aria-pressed', 'true');
+  await expect(page.locator('[data-testid="score-strip"] > svg')).toBeVisible({ timeout: 20_000 });
+  await expect(page.locator('.ot-score-pager')).toContainText(/Page 1 of \d+/);
+
+  await page.goto(`./#/practice/library/${id}`);
+  await expect(view.getByRole('button', { name: 'Sheet' })).toHaveAttribute('aria-pressed', 'true');
+  const panel = page.getByRole('region', { name: 'Your sheet music' });
+  await expect(panel).toHaveAttribute('data-map', 'ready', { timeout: 30_000 });
+  await expect(page.locator('[data-testid="score-strip"]')).toHaveCount(0);
 });
