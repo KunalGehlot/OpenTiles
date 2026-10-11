@@ -2,7 +2,9 @@
 // endings, note heads with stems, and the kind of clutter that trips a detector (dotted notes
 // before a barline, tuplet brackets, pedal lines). They are written as a PDF the way an engraver's
 // export draws them, so tests run pdf.js and the detector exactly as the app does, or painted into
-// a bitmap for the scan reader. Only plain TypeScript, so the e2e tests can use it too.
+// a bitmap for the scan reader, or a scanned PDF of that bitmap. Node only (zlib), for the unit
+// tests and the e2e tests alike.
+import { deflateSync } from 'node:zlib';
 
 export interface FixtureBar {
   /** Width in points. */
@@ -281,7 +283,7 @@ function contentStream(primitives: readonly Primitive[], scale: number): string 
 /** A minimal PDF: one content stream per page, no fonts, no compression. */
 export function pdfDocument(
   pages: readonly string[],
-  extra: (page: number) => { resources: string; objects: string[] } = () => ({
+  extra: (page: number) => { resources: string; objects: (string | Uint8Array)[] } = () => ({
     resources: '',
     objects: [],
   }),
@@ -435,4 +437,26 @@ export function scanBitmap(
     }
   }
   return { width, height, data, channels: 1 };
+}
+
+/** A scanned PDF: each page one grey image of the drawing, slightly tilted, as a scanner makes. */
+export function scanPdf(pages: readonly FixturePage[], dpi = 100): Uint8Array {
+  const bitmaps = pages.map((p) => scanBitmap(p, { dpi, tilt: 2 }));
+  const encoder = new TextEncoder();
+  return pdfDocument(
+    bitmaps.map(() => `q ${fmt(PAGE.width)} 0 0 ${fmt(PAGE.height)} 0 0 cm /Im0 Do Q`),
+    (i) => {
+      const b = bitmaps[i] as (typeof bitmaps)[number];
+      const data = deflateSync(b.data);
+      const head = encoder.encode(
+        `<< /Type /XObject /Subtype /Image /Width ${b.width} /Height ${b.height} /ColorSpace /DeviceGray /BitsPerComponent 8 /Filter /FlateDecode /Length ${data.length} >>\nstream\n`,
+      );
+      const tail = encoder.encode('\nendstream');
+      const stream = new Uint8Array(head.length + data.length + tail.length);
+      stream.set(head, 0);
+      stream.set(data, head.length);
+      stream.set(tail, head.length + data.length);
+      return { resources: '/XObject << /Im0 {0} 0 R >>', objects: [stream] };
+    },
+  );
 }

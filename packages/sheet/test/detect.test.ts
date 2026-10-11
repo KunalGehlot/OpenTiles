@@ -2,7 +2,7 @@
 import { describe, expect, it } from 'vitest';
 import { detectLayout, detectPage, drawingFromBitmap } from '../src';
 import type { SheetBar } from '../src';
-import { PAGE, plainPages, scanBitmap, scorePdf, truthOf } from './fixtures';
+import { PAGE, plainPages, scanBitmap, scanPdf, scorePdf, truthOf } from './fixtures';
 import type { FixturePage } from './fixtures';
 import { drawingsOf } from './pdf';
 
@@ -223,6 +223,12 @@ describe('scanned pages', () => {
       expect(result.systems).toHaveLength(4);
       expect(perSystem(result.bars)).toEqual([4, 4, 4, 4]);
     }
+  });
+
+  it('knows a scanned PDF page for one the drawing reader cannot see into', async () => {
+    const [drawing] = await drawingsOf(scanPdf(plainPages(8, { perSystem: 4, systems: 2 })));
+    expect(drawing?.scanned).toBe(true);
+    expect(detectPage(drawing!, 0).bars).toEqual([]);
   });
 
   it('reads an RGBA canvas image as well as grey', () => {

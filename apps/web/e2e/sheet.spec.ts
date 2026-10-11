@@ -4,20 +4,22 @@
 // pages drawn in code (packages/sheet/test/fixtures.ts) and a song with the same bars.
 import { expect, test } from '@playwright/test';
 import type { Page } from '@playwright/test';
-import { scorePdf } from '../../../packages/sheet/test/fixtures';
+import { scanPdf, scorePdf } from '../../../packages/sheet/test/fixtures';
 import type { FixtureBar } from '../../../packages/sheet/test/fixtures';
 
 // Eight written bars, with a repeat of bars 3 to 5: played 1 2 3 4 5 3 4 5 6 7 8.
 const HEADS = [3, 5, 6, 4, 7, 2, 5, 6];
 const PLAYED = [0, 1, 2, 3, 4, 2, 3, 4, 5, 6, 7];
 
-function sheetPdf(): Uint8Array {
+function sheetPage() {
   const bars: FixtureBar[] = HEADS.map((heads) => ({ width: 120, heads }));
   bars[2] = { ...bars[2]!, start: 'repeat-start' };
   bars[4] = { ...bars[4]!, end: 'repeat-end' };
   bars[7] = { ...bars[7]!, end: 'final' };
-  return scorePdf([{ systems: [{ bars: bars.slice(0, 4) }, { bars: bars.slice(4) }] }]);
+  return { systems: [{ bars: bars.slice(0, 4) }, { bars: bars.slice(4) }] };
 }
+
+const sheetPdf = () => scorePdf([sheetPage()]);
 
 /** A song in 4/4 at a brisk tempo with the bars played out, as a MIDI file would have them. */
 function songOf(played: readonly number[]) {
@@ -117,6 +119,31 @@ async function addPiece(
   );
 }
 
+/** The map stored on a piece. */
+function storedMap(page: Page, key: number) {
+  return page.evaluate(
+    (id) =>
+      new Promise<{ barOfMeasure: number[]; layout: { source: string; bars: unknown[] } } | null>(
+        (resolve) => {
+          const request = indexedDB.open('opentiles');
+          request.onsuccess = () => {
+            const get = request.result.transaction('library').objectStore('library').get(id);
+            get.onsuccess = () => {
+              const item = get.result as {
+                sheet?: {
+                  map?: { barOfMeasure: number[]; layout: { source: string; bars: unknown[] } };
+                };
+              };
+              resolve(item.sheet?.map ?? null);
+              request.result.close();
+            };
+          };
+        },
+      ),
+    key,
+  );
+}
+
 /** Records which bar the highlight is on, every frame. */
 async function recordBars(page: Page): Promise<void> {
   await page.evaluate(() => {
@@ -158,21 +185,7 @@ test('the Sheet view draws the learner’s PDF and the highlight follows the mus
   await expect(page.getByTestId('sheet-page')).toHaveText('Page 1 of 1');
 
   // The map is stored on the piece, so the bars are not looked for again next time.
-  const stored = await page.evaluate(
-    (key) =>
-      new Promise<number[] | null>((resolve) => {
-        const request = indexedDB.open('opentiles');
-        request.onsuccess = () => {
-          const get = request.result.transaction('library').objectStore('library').get(key);
-          get.onsuccess = () => {
-            const map = (get.result as { sheet?: { map?: { barOfMeasure: number[] } } }).sheet?.map;
-            resolve(map?.barOfMeasure ?? null);
-            request.result.close();
-          };
-        };
-      }),
-    id,
-  );
+  const stored = (await storedMap(page, id))?.barOfMeasure;
   expect(stored).toEqual(PLAYED);
 
   await recordBars(page);
@@ -276,4 +289,24 @@ test('a sheet-only piece opens as a reader, and pieces without a sheet never loa
   await page.getByRole('button', { name: 'Zoom in' }).click();
   await expect(page.getByRole('button', { name: 'Listen', exact: true })).toHaveCount(0);
   expect(requests.some((u) => /assets\/pdf/.test(u))).toBe(true);
+});
+
+test('a scanned sheet is read from its page image', async ({ page }) => {
+  test.setTimeout(90_000);
+  const written = HEADS.map((_, i) => i);
+  const id = await addPiece(page, {
+    title: 'Scan test',
+    format: 'midi',
+    song: songOf(written),
+    pdf: scanPdf([sheetPage()]),
+  });
+  await page.goto(`./#/practice/library/${id}`);
+  await page.getByRole('group', { name: 'View' }).getByRole('button', { name: 'Sheet' }).click();
+  const panel = page.getByRole('region', { name: 'Your sheet music' });
+  await expect(panel).toHaveAttribute('data-map', 'ready', { timeout: 30_000 });
+  await expect(page.getByTestId('sheet-highlight')).toHaveAttribute('data-bar', '0');
+  const map = await storedMap(page, id);
+  expect(map?.layout.source).toBe('raster');
+  expect(map?.layout.bars).toHaveLength(8);
+  expect(map?.barOfMeasure).toEqual(written);
 });
