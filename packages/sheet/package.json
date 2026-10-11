@@ -12,8 +12,12 @@
     "test": "vitest run",
     "typecheck": "tsc -p tsconfig.json"
   },
+  "dependencies": {
+    "@opentiles/song-model": "workspace:*"
+  },
   "devDependencies": {
     "@types/node": "^22.0.0",
+    "pdfjs-dist": "6.4.299",
     "typescript": "~6.0.3",
     "vitest": "^5.0.3"
   }

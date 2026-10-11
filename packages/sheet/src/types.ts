@@ -34,6 +34,16 @@ export interface SheetBar {
   end: SheetBarline;
   /** The volta number written over this bar ("1." or "2."), when one was found. */
   ending?: number;
+  /**
+   * Note heads found in the bar, across its staves. The alignment compares them with the notes of
+   * each measure; absent when the layout came from a scan or was drawn by hand.
+   */
+  heads?: number;
+  /**
+   * Where the bar's first note head starts. At the start of a system the bar's box also holds the
+   * clef and key signature, so a cursor moving through the bar starts here rather than at the box.
+   */
+  firstNoteX?: number;
 }
 
 /** Where the bars are on the pages, in reading order. */
