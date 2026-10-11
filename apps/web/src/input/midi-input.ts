@@ -142,6 +142,22 @@ export async function midiAccess(): Promise<MIDIAccess> {
 }
 
 /**
+ * True when a screen may connect the keyboard by itself, without a prompt: access was granted on
+ * this page already, or the browser says MIDI is allowed for this site. Browsers that cannot say
+ * (the query throws) get the Connect button until access is granted once on the page.
+ */
+export async function midiAllowed(): Promise<boolean> {
+  if (!webMidiSupported()) return false;
+  if (granted) return true;
+  try {
+    const status = await navigator.permissions.query({ name: 'midi' });
+    return status.state === 'granted';
+  } catch {
+    return false;
+  }
+}
+
+/**
  * Starts a MIDI input, and calls `onWaiting` if the browser has not answered after a moment: it is
  * then showing its permission prompt, and nothing happens until the learner answers it.
  */

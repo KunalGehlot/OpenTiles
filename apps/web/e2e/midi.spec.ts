@@ -4,13 +4,15 @@ import type { Page } from '@playwright/test';
 // MIDI keyboards through Web MIDI, with a stand-in keyboard: the page gets a fake
 // navigator.requestMIDIAccess with one input and one output called "Test Keyboard". Notes are
 // "played" with window.__midiPress, everything the app sends is kept in window.__midiSent, and
-// window.__midiRequests counts the requests for access.
+// window.__midiRequests counts the requests for access. window.__midiStateChange fires the
+// access's statechange, as browsers do when a port opens or a keyboard comes or goes.
 async function fakeKeyboard(page: Page, { firstRequestHangs = false } = {}) {
   await page.addInitScript((hangs: boolean) => {
     const w = window as unknown as {
       __midiSent: number[][];
       __midiPress: (pitch: number) => void;
       __midiRequests: number;
+      __midiStateChange: () => void;
     };
     w.__midiSent = [];
     w.__midiRequests = 0;
@@ -31,7 +33,11 @@ async function fakeKeyboard(page: Page, { firstRequestHangs = false } = {}) {
       name: 'Test Keyboard',
       state: 'connected',
       connection: 'open',
-      send: (data: number[]) => w.__midiSent.push([...data]),
+      send: (data: number[]) => {
+        w.__midiSent.push([...data]);
+        // Sending opens the port, and the browser says so.
+        w.__midiStateChange();
+      },
       clear: () => {},
       open: async () => output,
     };
@@ -39,16 +45,22 @@ async function fakeKeyboard(page: Page, { firstRequestHangs = false } = {}) {
       input.dispatchEvent(message([0x90, pitch, 100]));
       setTimeout(() => input.dispatchEvent(message([0x80, pitch, 0])), 100);
     };
+    const accesses: EventTarget[] = [];
+    w.__midiStateChange = () => {
+      for (const a of accesses) a.dispatchEvent(new Event('statechange'));
+    };
     Object.defineProperty(navigator, 'requestMIDIAccess', {
       configurable: true,
       value: async () => {
         w.__midiRequests += 1;
         // Like a permission prompt the learner never answers.
         if (hangs && w.__midiRequests === 1) await new Promise(() => {});
-        return Object.assign(new EventTarget(), {
+        const access = Object.assign(new EventTarget(), {
           inputs: new Map([['in', input]]),
           outputs: new Map([['out', output]]),
         });
+        accesses.push(access);
+        return access;
       },
     });
   }, firstRequestHangs);
@@ -122,10 +134,11 @@ test('one MIDI connection serves every screen, so the keyboard stays after movin
   await press(60);
   await expect(section.getByTestId('midi-test')).toContainText('Last note: C4 (100)');
 
+  // Access was granted in Settings, so every piece connects by itself.
   for (const piece of ['twinkle-twinkle', 'ode-to-joy']) {
     await go(`#/practice/catalogue/${piece}`);
-    await page.getByRole('button', { name: 'Connect MIDI keyboard' }).click();
     await expect(page.getByText('MIDI: Test Keyboard')).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Connect MIDI keyboard' })).toHaveCount(0);
   }
   // Ode to Joy's first step (E4 and C3), played on the keyboard, moves wait mode on.
   await press(64);
@@ -152,4 +165,42 @@ test('a MIDI request waiting on the browser says where to allow it, and Connect 
   await page.getByRole('button', { name: 'Waiting for the browser…' }).click();
   await expect(page.getByText('MIDI: Test Keyboard')).toBeVisible();
   await expect(page.getByTestId('midi-waiting')).toHaveCount(0);
+});
+
+// A port opening, a keyboard coming or going, or the app's first note out all fire statechange;
+// the practice screen used to take that for a new connection and stop the input it was using,
+// while still saying it was connected (maintainer's report, 2026-10-11).
+test('the keyboard keeps working after the browser reports a port change, and after playing on it', async ({
+  page,
+}) => {
+  await fakeKeyboard(page);
+  await page.goto('./#/settings');
+  await page.getByRole('combobox', { name: 'App’s notes play on' }).selectOption('keyboard');
+  await page.goto('./#/practice/catalogue/ode-to-joy');
+  await page.getByRole('button', { name: 'Connect MIDI keyboard' }).click();
+  await expect(page.getByText('MIDI: Test Keyboard')).toBeVisible();
+  await page.evaluate(() =>
+    (window as unknown as { __midiStateChange: () => void }).__midiStateChange(),
+  );
+  // Listen, play a little on the keyboard, stop, and practise again with the keys.
+  await page.getByRole('button', { name: 'Listen', exact: true }).click();
+  await page.getByRole('button', { name: 'Play', exact: true }).click();
+  await expect
+    .poll(async () => (await sent(page)).filter((m) => m[0] === 0x90).length, { timeout: 10_000 })
+    .toBeGreaterThan(2);
+  await page.getByRole('button', { name: 'Stop', exact: true }).click();
+  const before = (await sent(page)).filter((m) => m[0] === 0x90).length;
+  await page.getByRole('button', { name: 'Wait', exact: true }).click();
+  await page.evaluate(() => {
+    const press = (window as unknown as { __midiPress: (p: number) => void }).__midiPress;
+    press(64);
+    press(48);
+  });
+  await expect(page.locator('.stats')).toContainText('Step 2/');
+  // And the app's notes still go out: a second run plays on the keyboard again.
+  await page.getByRole('button', { name: 'Listen', exact: true }).click();
+  await page.getByRole('button', { name: 'Play', exact: true }).click();
+  await expect
+    .poll(async () => (await sent(page)).filter((m) => m[0] === 0x90).length, { timeout: 10_000 })
+    .toBeGreaterThan(before + 2);
 });
