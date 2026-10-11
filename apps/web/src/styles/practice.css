@@ -49,6 +49,9 @@
 
 .group {
   display: flex;
+  /* Wraps rather than push a narrow screen sideways: label widths depend on the system's fonts. */
+  flex-wrap: wrap;
+  min-width: 0;
   align-items: center;
   gap: var(--space-2);
 }
