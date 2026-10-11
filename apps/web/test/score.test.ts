@@ -81,9 +81,37 @@ function fixture(): string {
 
 const parse = (xml: string): Song => parseMusicXml(xml, { domParser });
 
+/** A format-1 MIDI file at 480 ticks a beat; each track's notes are [start tick, end tick, pitch]. */
+function smf(tracks: { notes: [number, number, number][]; meta?: number[][] }[]): Uint8Array {
+  const varlen = (v: number) => {
+    const out = [v & 0x7f];
+    while ((v >>= 7) > 0) out.unshift((v & 0x7f) | 0x80);
+    return out;
+  };
+  const track = ({ notes, meta = [] }: (typeof tracks)[number]) => {
+    const events: [number, number[]][] = meta.map((m) => [0, m]);
+    for (const [start, end, pitch] of notes) {
+      events.push([start, [0x90, pitch, 80]], [end, [0x80, pitch, 0]]);
+    }
+    events.sort((a, b) => a[0] - b[0] || (a[1][0] ?? 0) - (b[1][0] ?? 0));
+    const bytes: number[] = [];
+    let last = 0;
+    for (const [tick, data] of events) {
+      bytes.push(...varlen(tick - last), ...data);
+      last = tick;
+    }
+    bytes.push(0, 0xff, 0x2f, 0);
+    return [0x4d, 0x54, 0x72, 0x6b, 0, 0, bytes.length >> 8, bytes.length & 0xff, ...bytes];
+  };
+  return new Uint8Array([
+    ...[0x4d, 0x54, 0x68, 0x64, 0, 0, 0, 6, 0, 1, 0, tracks.length, 0x01, 0xe0],
+    ...tracks.flatMap(track),
+  ]);
+}
+
 /**
- * A two-track MIDI file as notation software writes one (self-made, CC0): B flat major, 480 ticks
- * a beat, notes sounding for 95 % of their value. Notes are [beat, pitch, value in beats].
+ * A two-track MIDI file as notation software writes one (self-made, CC0): B flat major, notes
+ * sounding for 95 % of their value. Notes are [beat, pitch, value in beats].
  */
 function midiFixture(): Uint8Array {
   const right: [number, number, number][] = [
@@ -105,34 +133,38 @@ function midiFixture(): Uint8Array {
     [2, 58, 2],
     [4, 43, 4],
   ];
-  const varlen = (v: number) => {
-    const out = [v & 0x7f];
-    while ((v >>= 7) > 0) out.unshift((v & 0x7f) | 0x80);
-    return out;
-  };
-  const track = (notes: [number, number, number][], meta: number[][]) => {
-    const events: [number, number[]][] = meta.map((m) => [0, m]);
-    for (const [beat, pitch, value] of notes) {
-      events.push([Math.round(beat * 480), [0x90, pitch, 80]]);
-      events.push([Math.round((beat + value * 0.95) * 480), [0x80, pitch, 0]]);
-    }
-    events.sort((a, b) => a[0] - b[0] || (a[1][0] ?? 0) - (b[1][0] ?? 0));
-    const bytes: number[] = [];
-    let last = 0;
-    for (const [tick, data] of events) {
-      bytes.push(...varlen(tick - last), ...data);
-      last = tick;
-    }
-    bytes.push(0, 0xff, 0x2f, 0);
-    return [0x4d, 0x54, 0x72, 0x6b, 0, 0, bytes.length >> 8, bytes.length & 0xff, ...bytes];
-  };
+  const ticks = (notes: [number, number, number][]) =>
+    notes.map(([beat, pitch, value]): [number, number, number] => [
+      Math.round(beat * 480),
+      Math.round((beat + value * 0.95) * 480),
+      pitch,
+    ]);
   const key = [0xff, 0x59, 2, 0xfe, 0];
   const tempo = [0xff, 0x51, 3, 0x09, 0x27, 0xc0]; // 100 bpm
-  return new Uint8Array([
-    ...[0x4d, 0x54, 0x68, 0x64, 0, 0, 0, 6, 0, 1, 0, 2, 0x01, 0xe0],
-    ...track(right, [tempo, key]),
-    ...track(left, [key]),
+  return smf([
+    { notes: ticks(right), meta: [tempo, key] },
+    { notes: ticks(left), meta: [key] },
   ]);
+}
+
+/**
+ * A played one-track MIDI file (self-made, CC0): loose timing, so it takes the seconds-based
+ * quantiser and the hand split, and six-note chords whose keys are let go one after another, so
+ * a staff needs more lines than it has voices.
+ */
+function playedFixture(): Uint8Array {
+  const notes: [number, number, number][] = [];
+  const jitter = (i: number) => ((i * 37) % 17) - 8;
+  for (let bar = 0; bar < 4; bar++) {
+    const at = bar * 1920;
+    [72, 74, 76, 79, 81, 84].forEach((pitch, k) => {
+      notes.push([at + jitter(k), at + 480 + k * 240 + jitter(k + 3), pitch]);
+    });
+    for (let q = 0; q < 4; q++) {
+      notes.push([at + q * 480 + jitter(q), at + q * 480 + 400, 43 + q]);
+    }
+  }
+  return smf([{ notes }]);
 }
 
 /** The glyphs Verovio would report for the fixture (ids are made up). */
@@ -327,6 +359,18 @@ describe('Verovio in Node', () => {
       }
       expect(song.notes.some((n) => n.sourceRefs.length === 2)).toBe(true);
     }
+  }, 30_000);
+
+  it('draws a played one-track MIDI file with crowded chords, bars intact and every note linked', async () => {
+    const imported = midiToSong(playedFixture());
+    const written = scoreFor('midi', undefined, imported);
+    if (written.notation.kind === 'none') throw new Error(written.notation.reason);
+    const back = parse(written.notation.text);
+    expect(back.measures.map((m) => [m.startBeat, m.lengthBeats])).toEqual(
+      imported.measures.map((m) => [m.startBeat, m.lengthBeats]),
+    );
+    const { svg } = await linkWithVerovio(written.notation.text, written.song);
+    expect(linkByRefs(written.song, noteIdsFromSvg([svg])).unmatched).toEqual([]);
   }, 30_000);
 
   it('links every note of the catalogue pieces', async () => {

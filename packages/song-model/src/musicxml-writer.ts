@@ -241,12 +241,24 @@ function voicesOf(segments: Segment[]): Chord[][] {
       }
     }
     if (!voice && voices.length >= MAX_VOICES) {
-      // Too many lines at once: the one that ends first is cut short in the drawing (only there;
-      // the song keeps the note's full length).
+      // Too many lines at once: the line that ends first is cut short in the drawing (only there;
+      // the song keeps every note's full length). If it starts (almost) with this chord, the two
+      // become one chord with the shorter end instead, so the voice never overlaps itself.
       voice = voices.reduce((a, b) => (a.free <= b.free ? a : b));
       const cut = voice.chords[voice.chords.length - 1];
+      if (cut && chord.start - cut.start < SHORTEST) {
+        cut.end = Math.min(cut.end, chord.end);
+        cut.segments.push(...chord.segments);
+        cut.segments.sort((a, b) => a.pitch - b.pitch);
+        for (const s of cut.segments) {
+          if (s.end > cut.end) s.tieStart = false;
+          s.end = cut.end;
+        }
+        voice.free = cut.end;
+        continue;
+      }
       if (cut && cut.end > chord.start) {
-        cut.end = Math.max(cut.start + SHORTEST, chord.start);
+        cut.end = chord.start;
         for (const s of cut.segments) {
           s.end = cut.end;
           s.tieStart = false;
