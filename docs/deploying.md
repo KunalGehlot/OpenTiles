@@ -11,8 +11,11 @@ The public site, <https://opentiles.site>, is served from GitHub Pages (ADR 0016
    pieces were verified by the maintainer on 2026-10-09. A piece added later stays hidden until a
    person who did not add it reviews it (`catalogue/REVIEWING.md`); `VITE_SHOW_UNVERIFIED=1` builds a
    preview that shows unverified pieces too, labelled "Awaiting review".
-2. The Impressum (`apps/web/src/legal/LegalPages.tsx`) links the maintainer's own Impressum at
-   gehlot.site for the postal address; a copy hosted by someone else needs its own operator details.
+2. The Impressum (`apps/web/src/legal/LegalPages.tsx`) gives the maintainer's name, email and
+   website (gehlot.site, a contact only; it has no Impressum). It has no postal address: the
+   maintainer keeps it out of this public repository, and whether that is enough under § 5 DDG is
+   a question for the legal consultation (P2-18). A copy hosted by someone else needs its own
+   operator details.
 3. Run the checks: `pnpm check`, `cargo test --workspace --release`,
    `python3 tools/pipeline/validate_catalogue.py`, `python3 -m unittest discover -s tools/pipeline/tests`,
    `pnpm --filter @opentiles/web e2e` and a manual pass on Safari and an iPad.
