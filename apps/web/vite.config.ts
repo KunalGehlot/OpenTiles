@@ -70,6 +70,45 @@ function catalogue(showUnverified: boolean): Plugin {
 }
 
 /**
+ * The image decoders pdf.js needs for scanned sheet music (JBIG2 and JPEG 2000 pages; ADR 0018),
+ * served from the app itself at pdfjs/wasm/ with their licences, and precached like the rest.
+ * pdf.js asks for them by name from the folder it is given (views/sheet/pdf.ts).
+ */
+function pdfjsWasm(): Plugin {
+  const dir = resolve(import.meta.dirname, 'node_modules/pdfjs-dist/wasm');
+  const decoders = ['jbig2.wasm', 'openjpeg.wasm'];
+  const licences = [
+    'LICENSE_JBIG2',
+    'LICENSE_OPENJPEG',
+    'LICENSE_PDFJS_JBIG2',
+    'LICENSE_PDFJS_OPENJPEG',
+  ];
+  return {
+    name: 'opentiles-pdfjs-wasm',
+    configureServer(server) {
+      server.middlewares.use('/pdfjs/wasm/', (req, res, next) => {
+        const name = (req.url ?? '').replace(/^\//, '').split('?')[0] ?? '';
+        if (!decoders.includes(name) && !licences.includes(name)) {
+          next();
+          return;
+        }
+        res.setHeader('Content-Type', name.endsWith('.wasm') ? 'application/wasm' : 'text/plain');
+        res.end(readFileSync(join(dir, name)));
+      });
+    },
+    generateBundle() {
+      for (const name of [...decoders, ...licences]) {
+        this.emitFile({
+          type: 'asset',
+          fileName: `pdfjs/wasm/${name}`,
+          source: readFileSync(join(dir, name)),
+        });
+      }
+    },
+  };
+}
+
+/**
  * The Content-Security-Policy of the production build, as a <meta> tag so any static host serves
  * it, GitHub Pages included, which sends no headers of ours (ADR 0016); public/_headers carries the
  * same policy plus the headers a tag cannot set, for hosts that read it. The app loads only its own
@@ -161,7 +200,9 @@ function pwa(): Plugin[] {
       globPatterns: ['**/*.{html,js,css,wasm,json,musicxml,mxl,xml,svg,png,mp3}'],
       // The main bundle and individual samples are well below this. The largest file is the
       // Verovio score engraver (~8 MB: WebAssembly embedded in one lazy-loaded chunk, P1-15); it is
-      // precached so the score views work offline even if they were never opened online.
+      // precached so the score views work offline even if they were never opened online. pdf.js
+      // and its worker (the learner's own sheet music, ADR 0018) are lazy chunks precached the same
+      // way, as are its two image decoders for scans.
       maximumFileSizeToCacheInBytes: 16 * 1024 * 1024,
       // Take control of the first page right after install, so a tab that goes offline without
       // a reload can still open catalogue pieces. Updates still wait for the user ('prompt').
@@ -178,6 +219,7 @@ export default defineConfig(({ mode }) => ({
     react(),
     securityMeta(contentSecurityPolicy(loadEnv(mode, import.meta.dirname, 'VITE_').VITE_SYNC_URL)),
     catalogue(mode === 'development' || process.env.VITE_SHOW_UNVERIFIED === '1'),
+    pdfjsWasm(),
     pwa(),
   ],
   define: {

@@ -53,12 +53,13 @@ Two seams keep the design simple:
 | `packages/practice`    | `NoteEvent`, practice steps, `WaitMode`, `PlayAlongScorer`, tempo scaling                                                           | `song-model`            |
 | `packages/engine`      | Rust detector compiled to `engine.wasm`; AudioWorklet processor and main-thread loader in `js/`                                     | —                       |
 | `packages/importers`   | `importAnyScore` entry point; lazy-loaded converters: MuseScore (ADR 0005)                                                          | `song-model`, `fflate`  |
+| `packages/sheet`       | Sheet-music PDFs: bars found from pdf.js's operator list or a page image, matched to a song's measures (ADR 0018)                   | `song-model`            |
 | `packages/vault`       | Library key, Argon2id and recovery-code wrapping, record encryption, encrypted backup file                                          | `hash-wasm`, `fflate`   |
 | `packages/sync-client` | Sync API client, key setup on the server, last-writer-wins sync engine                                                              | `vault`                 |
 | `apps/web`             | React UI, canvas views, Web Audio, Web MIDI, IndexedDB, service worker                                                              | all of the above        |
 | `apps/sync-api`        | Optional sync service (Node 22): sign-in, encrypted blobs, wrapped keys, crash reports                                              | —                       |
 
-`song-model`, `practice`, `vault` and `sync-client` are DOM-free (ADR 0004, ADR 0006) so they run
+`song-model`, `practice`, `sheet`, `vault` and `sync-client` are DOM-free (ADR 0004, ADR 0006) so they run
 in tests, web workers and the iOS shell unchanged.
 
 ## The `Song` model
@@ -236,6 +237,19 @@ notes match. Drills show the page view, not the falling notes.
 `PracticeSession.guide` (`full`, `keys`, `none`) decides what the canvas shows: drills hide the
 falling notes and the keys to press unless the learner asks for the keys. Drills add practice time
 (`recordPracticeTime`) but no progress record.
+
+## Sheet music PDFs (P5-14, ADR 0018)
+
+A library piece can keep the learner's own PDF (`LibraryItem.sheet`). The practice screen's Sheet
+view (`apps/web/src/views/sheet/`, lazy-loaded with pdf.js) draws its pages and highlights the bar
+being played. `packages/sheet` is pure: `drawingFromOperatorList` turns pdf.js's operator list into
+strokes and outlines, `detectLayout` finds staves, systems, barlines, repeats, endings and note
+heads per bar (a scanned page is read from its image instead, `drawingFromBitmap`), and
+`alignSong` maps each played measure to a written bar, unrolling repeats with the song model's
+`playbackOrder` and comparing notes per measure with heads per bar. The map is found once, in the
+background, and saved on the item; "Adjust bars" corrects it, and a corrected map is kept. A
+sheet-only piece (`format: 'pdf'`) opens as a reader. `SheetController` draws the pages lazily,
+moves the highlight and cursor from `requestAnimationFrame` and scrolls to keep the bar in view.
 
 ## Storage
 

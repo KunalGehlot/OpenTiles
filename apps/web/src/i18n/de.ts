@@ -444,6 +444,32 @@ export const de: Readonly<Record<string, string>> = {
   'The score is shown, but its notes could not be matched to the music, so they are not coloured.':
     'Die Noten werden angezeigt, konnten aber nicht der Musik zugeordnet werden, daher sind sie nicht eingefärbt.',
   'Page {n} of {count}': 'Seite {n} von {count}',
+  // The learner's own sheet music (ADR 0018)
+  Sheet: 'Notenblatt',
+  'Your sheet music': 'Deine Noten',
+  'Zoom out': 'Verkleinern',
+  'Zoom in': 'Vergrößern',
+  'Fit the page to the width': 'Seite an die Breite anpassen',
+  'Opening the sheet music…': 'Noten werden geöffnet …',
+  'The sheet music could not be opened on this device.':
+    'Die Noten konnten auf diesem Gerät nicht geöffnet werden.',
+  'Finding the bars…': 'Takte werden gesucht …',
+  'The bars of this sheet could not be found.':
+    'Die Takte dieser Noten konnten nicht gefunden werden.',
+  'No bars were found on this sheet, so the highlight cannot follow the music. The pages can still be read.':
+    'Auf diesem Notenblatt wurden keine Takte gefunden, daher kann die Markierung der Musik nicht folgen. Die Seiten lassen sich trotzdem lesen.',
+  'Adjust bars': 'Takte anpassen',
+  'Fix where the highlight goes': 'Korrigieren, wo die Markierung steht',
+  'Tap a bar to go to it. Tap a wrong barline to remove it. For a missing barline, tap where it belongs, then Add a barline here.':
+    'Tippe auf einen Takt, um dorthin zu gehen. Tippe auf einen falschen Taktstrich, um ihn zu entfernen. Für einen fehlenden Taktstrich tippe an die Stelle, an die er gehört, dann auf „Taktstrich hier einfügen“.',
+  'Add a barline here': 'Taktstrich hier einfügen',
+  Undo: 'Rückgängig',
+  'From this bar on, the highlight is': 'Ab diesem Takt ist die Markierung',
+  'a bar ahead': 'einen Takt voraus',
+  'a bar behind': 'einen Takt zurück',
+  'Find the bars again': 'Takte neu suchen',
+  'Add the MIDI file of this piece to practise it with falling notes and feedback.':
+    'Füge die MIDI-Datei dieses Stücks hinzu, um es mit fallenden Noten und Rückmeldung zu üben.',
   'This score was made from the MIDI file and may differ from the printed music.':
     'Diese Noten wurden aus der MIDI-Datei erstellt und können von der gedruckten Ausgabe abweichen.',
   // Canvas, app notices and errors
@@ -790,7 +816,6 @@ export const de: Readonly<Record<string, string>> = {
     'Die Namen sind verschieden: „{notes}“ und „{sheet}“.',
   'Yes, one piece': 'Ja, ein Stück',
   'No, two pieces': 'Nein, zwei Stücke',
-  Sheet: 'Notenblatt',
   'Sheet only — add the MIDI file to practise':
     'Nur Notenblatt – füge die MIDI-Datei hinzu, um zu üben',
   Open: 'Öffnen',
