@@ -88,6 +88,8 @@ export async function findLayout(
     }
     open = result.openEnding;
     pages.push({ drawing, result, source });
+    // The analysis's operator list is not needed again; drawing keeps its own.
+    page.cleanup();
     timing.push(performance.now() - pageStarted);
     await nextTask();
   }
