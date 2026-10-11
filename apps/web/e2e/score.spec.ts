@@ -41,12 +41,17 @@ test('the scrolling score draws a catalogue piece and its cursor follows the not
   await expect(page.locator('g.note.ot-wrong')).not.toHaveCount(0);
 });
 
-test('the page view fits a third of an iPad and turns pages with the keyboard', async ({
+test('the Sheet tab shows a catalogue piece in engraved pages, fits a third of an iPad and turns pages with the keyboard', async ({
   page,
 }) => {
   await page.setViewportSize({ width: 320, height: 768 });
   await page.goto('./#/practice/catalogue/minuet-in-g');
-  await page.getByRole('group', { name: 'View' }).getByRole('button', { name: 'Page' }).click();
+  // One Sheet tab for the engraved pages and the learner's PDF (P5-17).
+  const view = page.getByRole('group', { name: 'View' });
+  await expect(view.getByRole('button')).toHaveText(['Falling notes', 'Score', 'Sheet']);
+  await view.getByRole('button', { name: 'Sheet' }).click();
+  await expect(view.getByRole('button', { name: 'Sheet' })).toHaveAttribute('aria-pressed', 'true');
+  await expect(page.getByRole('region', { name: 'Score, page view' })).toBeVisible();
   await expect(page.locator('[data-testid="score-strip"] > svg')).toBeVisible({ timeout: 20_000 });
   const pager = page.locator('.ot-score-pager');
   await expect(pager).toContainText(/Page 1 of \d+/);
@@ -381,10 +386,10 @@ test('the scrolling score returns to its start after a wait-mode run', async ({ 
   await expect.poll(() => cursorX(page), { timeout: 10_000 }).toBeCloseTo(startX, -1);
 });
 
-test('the page view goes back to the first page after a run', async ({ page }) => {
+test('the engraved pages go back to the first page after a run', async ({ page }) => {
   await page.setViewportSize({ width: 700, height: 600 });
   await page.goto('./#/practice/catalogue/minuet-in-g-melody');
-  await page.getByRole('group', { name: 'View' }).getByRole('button', { name: 'Page' }).click();
+  await page.getByRole('group', { name: 'View' }).getByRole('button', { name: 'Sheet' }).click();
   await expect(page.locator('[data-testid="score-strip"] > svg')).toBeVisible({ timeout: 20_000 });
   const pager = page.locator('.ot-score-pager');
   await expect(pager).toContainText(/Page 1 of \d+/);
