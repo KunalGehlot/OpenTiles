@@ -21,6 +21,7 @@ Pick the section that fits what you want to do.
 | [Catalogue README](../catalogue/README.md)     | Adding a public-domain piece                                      |
 | [Reviewing a piece](../catalogue/REVIEWING.md) | The ten-minute catalogue review checklist                         |
 | [Detector test set](phase-0/test-set.md)       | Recording piano audio to tune the microphone detector             |
+| [Phase 6 plan: the Player](phase-6/player.md)  | The Player page and playing on your own keyboard (P6-00 to P6-14) |
 
 ## I want to understand how it works
 
