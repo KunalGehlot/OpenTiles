@@ -13,7 +13,7 @@ use the tools that make hard bars easier. For quick answers see the [FAQ](faq.md
 - [Ways to play](#ways-to-play)
 - [Practice modes](#practice-modes)
 - [Practice tools](#practice-tools)
-- [Falling notes, score and page views](#falling-notes-score-and-page-views)
+- [Falling notes, score and sheet views](#falling-notes-score-and-sheet-views)
 - [Sight-reading drills](#sight-reading-drills)
 - [Bringing your own music](#bringing-your-own-music)
 - [Settings](#settings)
@@ -116,15 +116,16 @@ All of these are on the practice screen or under **Options**.
 - **Keyboard size and fit.** Choose how many keys are shown, or let OpenTiles fit the keys to each
   piece.
 
-## Falling notes, score and page views
+## Falling notes, score and sheet views
 
 Switch the view with the buttons at the top right of the practice area.
 
 - **Falling notes** — bars fall toward the keys, like a rhythm game. Colours show the hand. The
   letter is the note name; the number is the finger.
 - **Score** — a scrolling line of engraved sheet music with a cursor.
-- **Page** — the score laid out in pages, which suits reading ahead. A Bluetooth page-turn foot
-  pedal works here (see [Settings](#settings)).
+- **Sheet** — the music in pages, which suits reading ahead: your own PDF if the piece has one
+  (see [Sheet music PDFs](#sheet-music-pdfs)), otherwise the engraved score. A Bluetooth page-turn
+  foot pedal works here (see [Settings](#settings)).
 
 ## Sight-reading drills
 

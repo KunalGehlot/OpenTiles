@@ -179,7 +179,8 @@ numbers come from a synthesiser, not a piano in a room; the G0 gate is judged on
 
 `apps/web/src/views/score/` draws the original MusicXML or ABC file with Verovio (LGPL-3.0,
 lazy-loaded WebAssembly, precached for offline use; ADR 0009) in two layouts: a scrolling score
-(one long system under a fixed cursor, P1-15) and a page view with page turns (P2-11). Each `Song`
+(one long system under a fixed cursor, P1-15) and a page view with page turns (P2-11), which is
+the Sheet tab of a piece without a PDF of its own (P5-17). Each `Song`
 note is linked to its glyph by source measure, onset and pitch (`glyph-map.ts`), so both passes of
 a repeat share a glyph. `ScoreController` colours glyphs from `PracticeSession.marks` (expected,
 correct, wrong, passed), moves the cursor from per-bar anchors (`cursor-map.ts`), turns pages and
@@ -242,8 +243,11 @@ falling notes and the keys to press unless the learner asks for the keys. Drills
 
 A library piece can keep the learner's own PDF (`LibraryItem.sheet`). The practice screen's Sheet
 view (`apps/web/src/views/sheet/`, lazy-loaded with pdf.js) draws its pages and highlights the bar
-being played. `packages/sheet` is pure: `drawingFromOperatorList` turns pdf.js's operator list into
-strokes and outlines, `detectLayout` finds staves, systems, barlines, repeats, endings and note
+being played. It sits under the Sheet tab, which shows the engraved page view for a piece without a
+PDF (P5-17), so the switch is Falling notes | Score | Sheet. The remembered choice
+(`settings.practiceView`) is one of those three; a stored `page` from before is read as `sheet`.
+`packages/sheet` is pure: `drawingFromOperatorList` turns pdf.js's operator list into strokes and
+outlines, `detectLayout` finds staves, systems, barlines, repeats, endings and note
 heads per bar (a scanned page is read from its image instead, `drawingFromBitmap`), and
 `alignSong` maps each played measure to a written bar, unrolling repeats with the song model's
 `playbackOrder` and comparing notes per measure with heads per bar. The map is found once, in the
