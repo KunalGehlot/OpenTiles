@@ -428,8 +428,14 @@ images, sounds or fonts, and credit the inspiration in [CREDITS.md](CREDITS.md).
   the shared request kept a waiting one, so Connect never showed the prompt again. Now Connect
   asks again until access is granted, says it is waiting and where to allow MIDI. Checked with a
   virtual CoreMIDI keyboard in real Chrome and in Playwright's Firefox (prompts auto-accepted):
-  notes reach Settings and wait mode on every screen. Left: the maintainer's check with a real
-  keyboard in their own Chrome and Firefox. Reloading or closing the tab still ends Firefox's MIDI
+  notes reach Settings and wait mode on every screen. Third report (2026-10-11): in Firefox
+  practice heard nothing, in Chrome the keys went dead after a while (after Listen and Play), and
+  the app's notes never reached the keyboard. Cause: the practice screen stopped its own input on
+  every port change (a port finishing to open, the first note sent out), while still saying it was
+  connected. Fixed, with an e2e test that fails without it; checked with a virtual keyboard and a
+  virtual MIDI destination in real Chrome and Playwright's Firefox (notes in before and after
+  Listen + Play, notes out during it). Each piece now connects by itself once MIDI is allowed.
+  Left: the maintainer's check with a real keyboard in their own Chrome and Firefox. Reloading or closing the tab still ends Firefox's MIDI
   service; the app cannot prevent that.
 
 Left out on purpose: 128 General MIDI instruments (a piano trainer, and extra sample licences and
