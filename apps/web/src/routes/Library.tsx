@@ -188,7 +188,8 @@ export function Library() {
   };
 
   const onFiles = (files: File[]) => {
-    if (files.length === 0) return;
+    // The picker is disabled while a recording is transcribed; a drop then waits its turn too.
+    if (files.length === 0 || audio) return;
     setErrors([]);
     setAsk(null);
     const plan = planImport(files);
