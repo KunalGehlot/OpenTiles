@@ -315,6 +315,26 @@ describe('song → MusicXML', () => {
     expect(back.measures.map((m) => m.lengthBeats)).toEqual([1]);
   });
 
+  it('writes a pickup bar as an implicit bar 0 and reads it back', () => {
+    const notes: WrittenNote[] = [{ pitch: 67, start: 0, value: 1 }];
+    for (let b = 1; b < 13; b += 4) notes.push({ pitch: 72, start: b, value: 4 });
+    const song = midiToSong(
+      notatedMidi(notes, {
+        keys: [
+          [0, 0],
+          [9, 1],
+        ],
+      }),
+    );
+    expect(song.measures[0]?.lengthBeats).toBe(1);
+    const { xml } = songToMusicXml(song);
+    expect(xml).toContain('<measure number="0" implicit="yes">');
+    const back = parse(xml);
+    expect(back.measures.map((m) => [m.number, m.startBeat, m.lengthBeats])).toEqual(
+      song.measures.map((m) => [m.number, m.startBeat, m.lengthBeats]),
+    );
+  });
+
   it('writes a 2,000-note piece quickly', () => {
     const notes: WrittenNote[] = [];
     for (let i = 0; i < 1000; i++) {

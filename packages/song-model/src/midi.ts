@@ -237,7 +237,8 @@ export function midiToSong(bytes: Uint8Array, options: MidiImportOptions = {}): 
 
   // A file written by notation software keeps its written rhythm; a played one is snapped to the
   // grid that fits the playing (spec §8).
-  const q = looksNotated(raw, ppq)
+  const notated = looksNotated(raw, ppq);
+  const q = notated
     ? { notes: quantiseNotated(raw, ppq) }
     : quantise(
         raw.map((n) => ({
@@ -291,7 +292,11 @@ export function midiToSong(bytes: Uint8Array, options: MidiImportOptions = {}): 
     })),
     (a, b) => a.fifths === b.fifths && a.mode === b.mode,
   );
-  const measures = measuresFromTimeSignatures(timeSignatures, lengthBeats);
+  const measures = measuresFromTimeSignatures(
+    timeSignatures,
+    lengthBeats,
+    notated ? pickupBeats(timeSignatures, keySignatures) : 0,
+  );
 
   const notes: SongNote[] = raw
     .map((n, i) => {
@@ -353,10 +358,39 @@ function dedupe(tempos: TempoEvent[]): TempoEvent[] {
   return out;
 }
 
-/** Bars laid out from the time signatures until `lengthBeats` is covered. */
+/**
+ * The pickup bar of a file from notation software, in beats, or 0. Such files say nothing of a
+ * short first bar: the time signature gives the full metre from the first note. But they write
+ * key and time changes on barlines, so when every key change in the first metre, and the first
+ * time change, falls the same part of a bar after the barlines counted from the start, the piece
+ * opens with a pickup that long. Without such a change a pickup cannot be told from the notes.
+ */
+export function pickupBeats(
+  timeSignatures: readonly TimeSignatureEvent[],
+  keySignatures: readonly KeySignatureEvent[],
+): number {
+  const first = timeSignatures[0];
+  if (!first) return 0;
+  const bar = (first.numerator * 4) / first.denominator;
+  const next = timeSignatures[1]?.beat;
+  const marks = keySignatures
+    .map((k) => k.beat)
+    .filter((b) => b > 1e-6 && (next === undefined || b < next - 1e-6));
+  if (next !== undefined) marks.push(next);
+  const offsets = marks.map((b) => b - Math.floor(b / bar + 1e-9) * bar);
+  const pickup = offsets[0];
+  if (pickup === undefined || pickup < 1e-6 || bar - pickup < 1e-6) return 0;
+  return offsets.every((o) => Math.abs(o - pickup) < 1e-6) ? pickup : 0;
+}
+
+/**
+ * Bars laid out from the time signatures until `lengthBeats` is covered, the first `pickup` beats
+ * long when the piece opens with a pickup (numbered 0, so the first full bar is bar 1).
+ */
 export function measuresFromTimeSignatures(
   timeSignatures: readonly TimeSignatureEvent[],
   lengthBeats: number,
+  pickup = 0,
 ): Measure[] {
   const measures: Measure[] = [];
   let beat = 0;
@@ -370,12 +404,13 @@ export function measuresFromTimeSignatures(
     }
     const ts = timeSignatures[sig] ?? { numerator: 4, denominator: 4 };
     let len = (ts.numerator * 4) / ts.denominator;
+    if (measures.length === 0 && pickup > 1e-6 && pickup < len) len = pickup;
     const next = timeSignatures[sig + 1];
     if (next && next.beat > beat && next.beat < beat + len) len = next.beat - beat;
     const index = measures.length;
     measures.push({
       index,
-      number: String(index + 1),
+      number: String(pickup > 1e-6 ? index : index + 1),
       sourceIndex: index,
       startBeat: beat,
       lengthBeats: len,

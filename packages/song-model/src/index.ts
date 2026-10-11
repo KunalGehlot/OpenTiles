@@ -20,7 +20,13 @@ export type {
 export { parseAbc, looksLikeAbc } from './abc';
 export type { AbcOptions } from './abc';
 export { unzipMxl, unzipLimited, ZIP_LIMITS, decodeXml, isZip } from './mxl';
-export { parseMidiFile, midiToSong, measuresFromTimeSignatures, measureIndexAt } from './midi';
+export {
+  parseMidiFile,
+  midiToSong,
+  measuresFromTimeSignatures,
+  measureIndexAt,
+  pickupBeats,
+} from './midi';
 export type { MidiFile, MidiImportOptions, MidiNoteRaw } from './midi';
 export { quantise, GRIDS, looksNotated, quantiseNotated } from './quantise';
 export type { QuantiseResult, TickNote, Timed } from './quantise';

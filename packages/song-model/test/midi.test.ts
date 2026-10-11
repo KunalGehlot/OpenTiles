@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { importScore } from '../src/import';
-import { midiToSong, parseMidiFile } from '../src/midi';
+import { midiToSong, parseMidiFile, pickupBeats } from '../src/midi';
 import { looksNotated } from '../src/quantise';
 import {
   midiFile,
@@ -196,5 +196,52 @@ describe('MIDI import', () => {
       [0, 4],
       [8, 3],
     ]);
+  });
+
+  it('finds a pickup bar from key and time changes on later barlines', () => {
+    // 4/4 with a one-beat pickup: a quarter, then bars of half notes, a key change on the barline
+    // of bar 3 (beat 1 + 8) and a change to 3/4 on bar 5 (beat 1 + 16).
+    const notes: WrittenNote[] = [{ pitch: 67, start: 0, value: 1 }];
+    for (let b = 1; b < 21; b += 2) notes.push({ pitch: 72, start: b, value: 2 });
+    for (let b = 1; b < 21; b += 4) notes.push({ pitch: 48, start: b, value: 4, track: 1 });
+    const song = midiToSong(
+      notatedMidi(notes, {
+        keys: [
+          [0, 0],
+          [9, 2],
+        ],
+        times: [
+          [0, 4, 4],
+          [17, 3, 4],
+        ],
+      }),
+    );
+    expect(song.measures.slice(0, 3).map((m) => [m.number, m.startBeat, m.lengthBeats])).toEqual([
+      ['0', 0, 1],
+      ['1', 1, 4],
+      ['2', 5, 4],
+    ]);
+    expect(song.measures.find((m) => m.startBeat === 17)?.lengthBeats).toBe(3);
+    // Without such a change, or with changes on barlines counted from the start, there is none.
+    expect(pickupBeats([{ beat: 0, numerator: 4, denominator: 4 }], [])).toBe(0);
+    expect(
+      pickupBeats(
+        [{ beat: 0, numerator: 4, denominator: 4 }],
+        [
+          { beat: 0, fifths: 0 },
+          { beat: 8, fifths: 2 },
+        ],
+      ),
+    ).toBe(0);
+    // Changes at different places in the bar are not a pickup either.
+    expect(
+      pickupBeats(
+        [
+          { beat: 0, numerator: 4, denominator: 4 },
+          { beat: 18, numerator: 3, denominator: 4 },
+        ],
+        [{ beat: 9, fifths: 2 }],
+      ),
+    ).toBe(0);
   });
 });
