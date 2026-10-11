@@ -416,6 +416,28 @@ images, sounds or fonts, and credit the inspiration in [CREDITS.md](CREDITS.md).
   with the domain `opentiles.site` set (2026-10-10). Left: the DNS at Cloudflare ("DNS only", no
   parking record) and the domain verification, the first deploy, HTTPS enforced and a header
   check of the live site, and the lawyer's view of hosting in the USA (P2-18).
+- [~] **P5-12** (APP) A MIDI keyboard in Firefox stays connected. Reason (maintainer's report,
+  2026-10-10): in Firefox the keyboard worked for a while, then fell silent after moving around the
+  site, and then "Firefox found no MIDI keyboard" until Firefox was restarted. Each screen asked for
+  its own MIDI access and dropped it on leaving; Firefox closes a device for the whole page when any
+  access's ports are garbage-collected, and once the last access is gone it stops its MIDI service,
+  whose CoreMIDI client on a Mac may not come back until Firefox restarts. Done: one MIDI access
+  for the page, shared by every screen with listeners, ports never closed. Second report
+  (2026-10-10, "doesn't connect in Chrome either"): Chrome and Firefox ask for permission per site
+  and port, and the request waits until the learner answers; the app showed nothing meanwhile, and
+  the shared request kept a waiting one, so Connect never showed the prompt again. Now Connect
+  asks again until access is granted, says it is waiting and where to allow MIDI. Checked with a
+  virtual CoreMIDI keyboard in real Chrome and in Playwright's Firefox (prompts auto-accepted):
+  notes reach Settings and wait mode on every screen. Third report (2026-10-11): in Firefox
+  practice heard nothing, in Chrome the keys went dead after a while (after Listen and Play), and
+  the app's notes never reached the keyboard. Cause: the practice screen stopped its own input on
+  every port change (a port finishing to open, the first note sent out), while still saying it was
+  connected. Fixed, with an e2e test that fails without it; checked with a virtual keyboard and a
+  virtual MIDI destination in real Chrome and Playwright's Firefox (notes in before and after
+  Listen + Play, notes out during it). Each piece now connects by itself once MIDI is allowed.
+  Left: the maintainer's check with a real keyboard in their own Chrome and Firefox. Reloading or closing the tab still ends Firefox's MIDI
+  service; the app cannot prevent that.
+
 - [~] **P5-13** (SONG, APP) A MIDI file gets a printed score (ADR 0017, proposed). Reason
   (maintainer, 2026-10-10): most pieces on score-sharing sites come only as PDF, MIDI and audio, and
   a MIDI import showed no score. Done: `songToMusicXml` in song-model writes the song as a grand
@@ -440,6 +462,15 @@ images, sounds or fonts, and credit the inspiration in [CREDITS.md](CREDITS.md).
   file" for sheet-only pieces; PDFs up to 60 MB; encrypted backup, sync and crash-report scrubbing
   keep the sheet. Left: the Library page loads every stored file into memory (a separate table for
   file bytes would fix it), an iPad check of the picker.
+
+- [~] **P5-16** (APP) The keyboard drawn in practice has exactly the keys chosen. Reason
+  (maintainer, 2026-10-11): 61 keys showed more than 61, and smaller sizes changed nothing. Cause:
+  the wide-window rule that adds octaves (white keys capped at 64 px) also widened a chosen
+  keyboard; at 2,560 px 61 keys drew 73, and 49, 37 and 25 keys all drew 61. Done: only "Fit
+  piece" widens; a chosen keyboard draws its keys, centred, with margins on a wide window; e2e
+  tests for every preset at 2,560, 2,056 and 320 px (keys drawn, edges from the pixels, lanes over
+  their keys) that fail without the fix. Checked in the maintainer's Chrome at 2,560 px: every
+  preset draws exactly its keys. Left: a real iPad.
 
 Left out on purpose: 128 General MIDI instruments (a piano trainer, and extra sample licences and
 size), Sightread's song library and assets, and any analytics.
@@ -473,12 +504,18 @@ Record the outcome as an ADR in `docs/adr/` and tick it here.
   and a sheet-music PDF can be kept with a piece (paired with its MIDI file on import) and shown as
   a "Sheet" view with the current bar highlighted (ADRs 0017 and 0018, proposed; pdf.js added).
 
+- **2026-10-10** — P5-12: a MIDI keyboard in Firefox no longer drops after moving around the site
+  (one MIDI access for the page instead of one per screen).
+
+- **2026-10-10** — Impressum: gehlot.site is given as the maintainer's website, a contact only;
+  it is no longer linked as an Impressum with the postal address (that site has neither).
+
 - **2026-10-10** — P5-09 started: the return to the start after a run moves like a drag of the
   score, repeated notes show on the keys, and the Content-Security-Policy allows connections only
   to the app's own origin (and the sync server, when a build has one; ADR 0013 amended). P5-11:
   hosting on GitHub Pages at opentiles.site chosen (ADR 0016, proposed), the deploy job, the frame
-  guard and the privacy text for it. The Impressum links the maintainer's own (gehlot.site) for the
-  postal address.
+  guard and the privacy text for it. The Impressum names the maintainer's website (gehlot.site) as
+  a contact; it has no postal address yet (P2-18).
 
 - **2026-10-10** — The UI redesign and release pass (PR #1, P4-10…P4-19) and the Phase 5 work so
   far (P5-02 wake lock, P5-03 note names, P5-04 transpose, P5-07 live stats and overview, P5-05

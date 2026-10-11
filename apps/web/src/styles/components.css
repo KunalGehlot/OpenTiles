@@ -31,6 +31,11 @@
   color: var(--bad);
 }
 
+/* Something the learner has to do elsewhere, such as answering the browser's permission prompt. */
+.hint {
+  color: var(--accent-ink);
+}
+
 .row {
   display: flex;
   align-items: center;
@@ -220,7 +225,7 @@ a.card:focus-visible {
 html[data-high-contrast] .segmented button[aria-pressed='true'] {
   border-color: var(--line-strong);
   background: var(--accent);
-  color: var(--accent-text);
+  color: var(--accent-ink);
 }
 
 /* ---- Switch: a checkbox that is a setting; its row layout is .setting (pages.css) ---- */

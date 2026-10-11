@@ -148,11 +148,12 @@ test('the privacy policy and Impressum exist in English and German', async ({ pa
   await expect(
     page.getByRole('link', { name: 'Kunal.gehlot@rwth-aachen.de' }).first(),
   ).toBeVisible();
-  // The postal address is in the operator's own Impressum, linked rather than repeated.
-  await expect(page.getByRole('link', { name: 'gehlot.site/impressum' }).first()).toHaveAttribute(
+  // The operator's website is a contact; it has no Impressum of its own, so none is linked.
+  await expect(page.getByRole('link', { name: 'gehlot.site' }).first()).toHaveAttribute(
     'href',
-    'https://gehlot.site/impressum/',
+    'https://gehlot.site/',
   );
+  await expect(page.locator('main')).not.toContainText(/gehlot\.site\/impressum|Postal address/);
   await expect(page.getByRole('heading', { name: /Notice and takedown/ })).toBeVisible();
   await page.getByRole('link', { name: 'Deutsch' }).click();
   await expect(

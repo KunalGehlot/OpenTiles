@@ -34,7 +34,7 @@ describe('MIDI help', () => {
   it('explains Firefox’s add-on prompt when MIDI is refused there', () => {
     const refused = new DOMException('WebMIDI requires a site permission add-on', 'SecurityError');
     expect(describeMidiError(refused, FIREFOX)).toMatch(/site permission/);
-    expect(describeMidiError(refused, CHROME)).toMatch(/Allow MIDI devices/);
+    expect(describeMidiError(refused, CHROME)).toMatch(/allow MIDI devices/);
     expect(describeMidiError(new Error('boom'), CHROME)).toBe('boom');
   });
 });
