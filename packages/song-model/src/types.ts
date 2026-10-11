@@ -6,8 +6,11 @@
 
 export type Hand = 'left' | 'right';
 
-export type SongFormat = 'musicxml' | 'mxl' | 'midi' | 'abc' | 'mscz' | 'audio';
-/** `audio`: approximate notes transcribed from a recording (P4-02). */
+export type SongFormat = 'musicxml' | 'mxl' | 'midi' | 'abc' | 'mscz' | 'audio' | 'pdf';
+/**
+ * `audio`: approximate notes transcribed from a recording (P4-02). `pdf`: a sheet-music PDF on its
+ * own, with no notes until a MIDI or score file is added to it (ADR 0018); its song is empty.
+ */
 
 export interface SongNote {
   /** Stable within the song: `n0`, `n1`, … in sorted order. */

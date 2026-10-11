@@ -12,10 +12,16 @@ let installed = false;
 let sent = 0;
 const seen = new Set<string>();
 
-async function libraryNames(): Promise<string[]> {
+/** Every title and file name in the library, removed from crash reports before they are sent. */
+export async function libraryNames(): Promise<string[]> {
   try {
     const items = await db.library.toArray();
-    return items.flatMap((i) => [i.title, i.fileName, i.song?.title ?? '']);
+    return items.flatMap((i) => [
+      i.title,
+      i.fileName,
+      i.song?.title ?? '',
+      i.sheet?.fileName ?? '',
+    ]);
   } catch {
     return [];
   }

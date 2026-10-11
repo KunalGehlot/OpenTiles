@@ -5,11 +5,13 @@ import {
   collectBackupData,
   createBackupFile,
   isDeviceSetting,
+  mergeBackupData,
   restoreBackupFile,
 } from '../src/backup/backup';
 import { db } from '../src/storage/db';
 import type { LibraryItem } from '../src/storage/db';
 import type { Song } from '@opentiles/song-model';
+import type { SheetMap } from '@opentiles/sheet';
 
 const KDF = { algorithm: 'argon2id', memoryKiB: 256, iterations: 1, parallelism: 1 } as const;
 const weak = { kdf: { ...KDF }, unsafeAllowWeakKdf: true };
@@ -147,5 +149,161 @@ describe('encrypted backup', () => {
     expect((data.settings as { key: string }[]).map((s) => s.key)).toEqual(['app']);
     expect(isDeviceSetting('sync.session')).toBe(true);
     expect(isDeviceSetting('rightsConfirmed')).toBe(false);
+  });
+});
+
+// Sheet-music PDFs kept with a piece (P5-15, ADR 0018).
+const PDF = new TextEncoder().encode('%PDF-1.4\n1 0 obj << >> endobj\n%%EOF\n');
+
+function sheetMap(): SheetMap {
+  return {
+    layout: {
+      pages: [{ width: 595, height: 842 }],
+      bars: [
+        {
+          page: 0,
+          system: 0,
+          box: { x: 40, y: 90, width: 130, height: 70 },
+          start: 'none',
+          end: 'repeat-end',
+          ending: 1,
+        },
+        {
+          page: 0,
+          system: 0,
+          box: { x: 170, y: 90, width: 130, height: 70 },
+          start: 'single',
+          end: 'final',
+        },
+      ],
+      source: 'vector',
+    },
+    barOfMeasure: [0, null, 1],
+    edited: true,
+    analyser: 2,
+  };
+}
+
+function withSheet(title: string, addedAt: number): LibraryItem {
+  return {
+    ...item(title, [7, 7, 7], addedAt),
+    sheet: {
+      fileName: 'Private Sheet Name.pdf',
+      bytes: PDF,
+      addedAt: addedAt + 1,
+      map: sheetMap(),
+    },
+  };
+}
+
+describe('backup with sheet music', () => {
+  it('keeps the PDF and its map, encrypted, and brings them back', async () => {
+    await db.library.add(withSheet('Sheet Study', 5000));
+    const sheetOnly: LibraryItem = {
+      ...item('Only The Sheet', [], 6000),
+      fileName: 'Only The Sheet.pdf',
+      format: 'pdf',
+      sheet: { fileName: 'Only The Sheet.pdf', bytes: PDF, addedAt: 6000 },
+    };
+    await db.library.add(sheetOnly);
+    const file = await createBackupFile(PASS, weak);
+    const text = new TextDecoder('latin1').decode(file);
+    expect(text).not.toContain('Private Sheet Name');
+    expect(text).not.toContain('Only The Sheet');
+    expect(text).not.toContain('%PDF-');
+
+    await clearAll();
+    expect(await restoreBackupFile(file, { passphrase: PASS })).toMatchObject({
+      added: 2,
+      sheets: 0,
+    });
+    const restored = await db.library.toArray();
+    const study = restored.find((i) => i.title === 'Sheet Study');
+    expect(study?.sheet).toEqual({
+      fileName: 'Private Sheet Name.pdf',
+      bytes: PDF,
+      addedAt: 5001,
+      map: sheetMap(),
+    });
+    const only = restored.find((i) => i.title === 'Only The Sheet');
+    expect(only).toMatchObject({ format: 'pdf', bytes: new Uint8Array(0) });
+    expect(only?.sheet?.bytes).toEqual(PDF);
+    expect(only?.sheet && 'map' in only.sheet).toBe(false);
+
+    // Restoring again adds nothing twice.
+    expect(await restoreBackupFile(file, { passphrase: PASS })).toMatchObject({
+      added: 0,
+      skipped: 2,
+    });
+  });
+
+  it('restores a backup made before pieces had sheet music', async () => {
+    // What older versions wrote: library items with no `sheet` key at all.
+    const summary = await mergeBackupData({
+      library: [{ ...item('Old Piece', [1, 2], 10), originalId: 1 }],
+      progress: { progress: [], days: [] },
+      settings: [],
+    });
+    expect(summary).toMatchObject({ added: 1, sheets: 0 });
+    const [restored] = await db.library.toArray();
+    expect(restored?.title).toBe('Old Piece');
+    expect(restored && 'sheet' in restored).toBe(false);
+  });
+
+  it('keeps the piece when its sheet is damaged, and the PDF when only its map is', async () => {
+    const good = withSheet('Damaged Map', 20);
+    const summary = await mergeBackupData({
+      library: [
+        { ...item('Damaged Sheet', [1], 10), sheet: { fileName: 'x.pdf', bytes: 'not bytes' } },
+        {
+          ...good,
+          sheet: { ...good.sheet, map: { ...sheetMap(), barOfMeasure: [0, 5] } },
+        },
+        {
+          ...withSheet('Odd Bar', 30),
+          sheet: {
+            ...good.sheet,
+            map: {
+              ...sheetMap(),
+              layout: { ...sheetMap().layout, bars: [{ page: 0, box: null }] },
+              barOfMeasure: [],
+            },
+          },
+        },
+      ],
+      progress: null,
+      settings: null,
+    });
+    expect(summary.added).toBe(3);
+    const all = await db.library.toArray();
+    const byTitle = (title: string) => all.find((i) => i.title === title);
+    expect(byTitle('Damaged Sheet')).toBeDefined();
+    expect(byTitle('Damaged Sheet')?.sheet).toBeUndefined();
+    expect(byTitle('Damaged Map')?.sheet?.bytes).toEqual(PDF);
+    expect(byTitle('Damaged Map')?.sheet?.map).toBeUndefined();
+    expect(byTitle('Odd Bar')?.sheet?.map).toBeUndefined();
+  });
+
+  it('gives a piece already here the backup’s sheet music only if it has none', async () => {
+    // Device B restored the pieces before they had sheets; device A then added them.
+    const plain = item('Shared Piece', [3, 1, 4], 100);
+    const other = item('Other Piece', [2, 7], 200);
+    const here = await db.library.add(plain);
+    await db.library.add({
+      ...other,
+      sheet: { fileName: 'Kept Here.pdf', bytes: PDF, addedAt: 1 },
+    });
+    const summary = await mergeBackupData({
+      library: [
+        { ...withSheet('Shared Piece', 100), bytes: plain.bytes, originalId: 1 },
+        { ...withSheet('Other Piece', 200), bytes: other.bytes, originalId: 2 },
+      ],
+      progress: null,
+      settings: null,
+    });
+    expect(summary).toMatchObject({ added: 0, skipped: 2, sheets: 1 });
+    expect((await db.library.get(here))?.sheet?.fileName).toBe('Private Sheet Name.pdf');
+    const kept = (await db.library.toArray()).find((i) => i.title === 'Other Piece');
+    expect(kept?.sheet?.fileName).toBe('Kept Here.pdf');
   });
 });

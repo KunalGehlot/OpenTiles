@@ -1,0 +1,62 @@
+// The shared shape of a sheet-music PDF's layout and of its link to a song (ADR 0018). The PDF is
+// only drawn, never read for notes: the notes come from the MIDI (or other score) file beside it,
+// and these types say where on the pages each of the song's measures is written.
+
+/** A rectangle on a PDF page, in PDF points (1/72 inch), origin at the page's top-left corner. */
+export interface SheetRect {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+}
+
+/** A page's size in PDF points, as drawn (after the page's own rotation). */
+export interface SheetPage {
+  width: number;
+  height: number;
+}
+
+/**
+ * How a written bar starts or ends. Repeat signs and endings matter because the song's measures
+ * are in playback order (a MIDI file plays repeats out) while the sheet writes a repeated passage
+ * once.
+ */
+export type SheetBarline = 'single' | 'double' | 'final' | 'repeat-start' | 'repeat-end' | 'none';
+
+/** One written bar: from one barline to the next, across every staff of its system. */
+export interface SheetBar {
+  /** 0-based page number. */
+  page: number;
+  /** 0-based system number, counted through the whole document. */
+  system: number;
+  box: SheetRect;
+  start: SheetBarline;
+  end: SheetBarline;
+  /** The volta number written over this bar ("1." or "2."), when one was found. */
+  ending?: number;
+}
+
+/** Where the bars are on the pages, in reading order. */
+export interface SheetLayout {
+  pages: SheetPage[];
+  bars: SheetBar[];
+  /**
+   * How the layout was found: from the PDF's vector drawing (exact for engraved PDFs such as
+   * MuseScore's), from the rendered page image (scans), or drawn by the learner.
+   */
+  source: 'vector' | 'raster' | 'manual';
+}
+
+/** Which written bar each of the song's measures is played from. */
+export interface SheetMap {
+  layout: SheetLayout;
+  /**
+   * One entry per `Song.measures` element, in the same order (playback order): the index into
+   * `layout.bars`, or null where no bar could be matched.
+   */
+  barOfMeasure: (number | null)[];
+  /** True once the learner has corrected the map; a newer analyser must not overwrite it. */
+  edited: boolean;
+  /** Version of the analysis that made the map, so unedited maps can be redone when it improves. */
+  analyser: number;
+}

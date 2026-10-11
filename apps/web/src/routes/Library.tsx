@@ -1,8 +1,7 @@
 import { useLiveQuery } from 'dexie-react-hooks';
 import { useEffect, useRef, useState } from 'react';
-import { FileMusic, FilePlus, Play, ShieldCheck, Trash2 } from 'lucide-react';
-import { estimateDifficulty, SUPPORTED_EXTENSIONS } from '@opentiles/song-model';
-import type { Song } from '@opentiles/song-model';
+import { BookOpen, FileMusic, FilePlus, FileText, Play, Trash2 } from 'lucide-react';
+import { SUPPORTED_EXTENSIONS } from '@opentiles/song-model';
 import {
   AUDIO_EXTENSIONS,
   audioProgressValue,
@@ -10,25 +9,31 @@ import {
   isAudioFile,
 } from '../lib/audio-import';
 import type { AudioImportStage } from '../lib/audio-import';
-import { applySettings, DEFAULT_SETTINGS, handCounts } from '../lib/import-settings';
-import { noteLabel } from '../lib/notes';
+import { DEFAULT_SETTINGS } from '../lib/import-settings';
 import { href } from '../lib/router';
 import { matchesQuery } from '../catalogue/search';
+import { AddNotesButton } from '../library/AddNotesButton';
+import { ImportReview } from '../library/ImportReview';
+import { planImport } from '../library/pairing';
+import type { ImportGroup } from '../library/pairing';
+import {
+  checkSize,
+  MAX_AUDIO_BYTES,
+  pieceNotes,
+  readScoreFile,
+  saveErrorMessage,
+  sheetOnlyPending,
+} from '../library/pending';
+import type { Pending } from '../library/pending';
+import { RightsDialog } from '../library/RightsDialog';
+import { isSheetOnly, readSheetFile, sheetAttachment } from '../library/sheet';
+import type { SheetFile } from '../library/sheet';
+import { attachSheet, deletePiece, removeSheet } from '../library/store';
 import { db, getSetting, setSetting } from '../storage/db';
+import type { LibraryItem } from '../storage/db';
 import { SearchBox } from '../ui/SearchBox';
-import type { ImportSettings } from '../storage/db';
 import { requestPersistence, shouldSuggestHomeScreen } from '../storage/persist';
 import { locale, t } from '../i18n';
-
-interface Pending {
-  fileName: string;
-  bytes: Uint8Array;
-  base: Song;
-  title: string;
-  settings: ImportSettings;
-  /** Transcribed from a recording (P4-02): the notes are a best guess. */
-  approximate: boolean;
-}
 
 interface AudioProgress {
   stage: AudioImportStage;
@@ -47,124 +52,209 @@ function audioStageLabel(stage: AudioImportStage): string {
   }
 }
 
-/** Largest score file and recording the library accepts, so a huge file cannot hang the tab. */
-const MAX_SCORE_BYTES = 30_000_000;
-const MAX_AUDIO_BYTES = 200_000_000;
+/** Files picked or dropped together, reviewed and saved one piece at a time. */
+interface Batch {
+  /** Bumped by each new batch, so a slow file from an earlier one is dropped. */
+  id: number;
+  queue: ImportGroup<File>[];
+  total: number;
+  /** Several files: messages name the file they are about. */
+  named: boolean;
+  saved: { id: number; practisable: boolean }[];
+}
+
+const ACCEPT = [...SUPPORTED_EXTENSIONS, ...AUDIO_EXTENSIONS, '.pdf', 'application/pdf'].join(',');
 
 export function Library() {
   const items = useLiveQuery(() => db.library.orderBy('addedAt').reverse().toArray(), []);
   const [query, setQuery] = useState('');
   const visible = (items ?? []).filter((i) =>
-    matchesQuery({ title: `${i.title} ${i.fileName}`, tags: i.tags }, query),
+    matchesQuery(
+      { title: `${i.title} ${i.fileName} ${i.sheet?.fileName ?? ''}`, tags: i.tags },
+      query,
+    ),
   );
   const [rightsConfirmed, setRightsConfirmed] = useState<boolean | null>(null);
-  const [askRights, setAskRights] = useState(false);
+  /** What to do once the learner confirms their rights: open the picker, or take dropped files. */
+  const [afterRights, setAfterRights] = useState<(() => void) | null>(null);
   const [pending, setPending] = useState<Pending | null>(null);
-  const [error, setError] = useState<string | null>(null);
+  const [progress, setProgress] = useState<{ index: number; total: number } | null>(null);
+  const [ask, setAsk] = useState<{ notes: File; sheet: File } | null>(null);
+  const [errors, setErrors] = useState<string[]>([]);
+  const [cardError, setCardError] = useState<{ id: number; message: string } | null>(null);
   const [homeScreenHint, setHomeScreenHint] = useState(false);
   const [audio, setAudio] = useState<AudioProgress | null>(null);
+  const [dragging, setDragging] = useState(false);
   const fileInput = useRef<HTMLInputElement>(null);
+  const sheetInput = useRef<HTMLInputElement>(null);
+  /** The piece "Add sheet music" or "Replace" was pressed on. */
+  const sheetTarget = useRef<number | null>(null);
+  const batch = useRef<Batch | null>(null);
+  const batchCount = useRef(0);
 
   useEffect(() => {
     void getSetting('rightsConfirmed', false).then(setRightsConfirmed);
   }, []);
 
-  const chooseFile = () => {
-    if (!rightsConfirmed) {
-      setAskRights(true);
-      return;
-    }
-    fileInput.current?.click();
+  const withRights = (then: () => void) => {
+    if (rightsConfirmed) then();
+    else setAfterRights(() => then);
   };
 
-  const onFile = async (file: File | undefined) => {
-    if (!file) return;
-    setError(null);
-    try {
-      const limit = isAudioFile(file.name, file.type) ? MAX_AUDIO_BYTES : MAX_SCORE_BYTES;
-      if (file.size > limit) {
-        throw new Error(
-          t('This file is too large ({size} MB). The limit is {limit} MB.', {
-            size: Math.round(file.size / 1e6),
-            limit: Math.round(limit / 1e6),
-          }),
-        );
-      }
-      const bytes = new Uint8Array(await file.arrayBuffer());
-      if (isAudioFile(file.name, file.type)) {
-        // Recordings are transcribed on this device; the model loads only now (P4-02).
-        const controller = new AbortController();
-        setAudio({ stage: 'loading', fraction: 0, controller });
-        try {
-          const base = await importAudioFile(file, {
-            signal: controller.signal,
-            onProgress: (stage, fraction) => setAudio({ stage, fraction, controller }),
-          });
-          setPending({
-            fileName: file.name,
-            bytes,
-            base,
-            title: base.title,
-            settings: { ...DEFAULT_SETTINGS },
-            approximate: true,
-          });
-        } finally {
-          setAudio(null);
-        }
-        return;
-      }
-      // The importers (and the MuseScore reader inside them) load only when a file is imported.
-      const { importAnyScore } = await import('@opentiles/importers');
-      const base = await importAnyScore(file.name, bytes);
-      setPending({
-        fileName: file.name,
-        bytes,
-        base,
-        title: base.title,
-        settings: { ...DEFAULT_SETTINGS },
-        approximate: false,
-      });
-    } catch (e) {
-      if (e instanceof DOMException && e.name === 'AbortError') return;
+  const chooseFile = () => withRights(() => fileInput.current?.click());
+
+  const fail = (message: string) => setErrors((list) => [...list, message]);
+
+  /** Reads the files of one piece. Null when nothing from them can be saved. */
+  const prepare = async (group: ImportGroup<File>, named: boolean): Promise<Pending | null> => {
+    const message = (file: File, e: unknown) => {
       // Import errors from the shared packages are in English; t() shows them in German too.
-      setError(e instanceof Error ? t(e.message) : String(e));
-    } finally {
-      if (fileInput.current) fileInput.current.value = '';
+      const text = e instanceof Error ? t(e.message) : String(e);
+      return named ? `${file.name}: ${text}` : text;
+    };
+    let sheet: SheetFile | undefined;
+    if (group.sheet) {
+      try {
+        sheet = await readSheetFile(group.sheet);
+      } catch (e) {
+        // The notes still make a piece; the learner can add a good PDF to it later.
+        fail(message(group.sheet, e));
+      }
+    }
+    const file = group.notes;
+    if (!file) return sheet ? sheetOnlyPending(sheet) : null;
+    try {
+      if (!isAudioFile(file.name, file.type)) return { ...(await readScoreFile(file)), sheet };
+      checkSize(file, MAX_AUDIO_BYTES);
+      // Recordings are transcribed on this device; the model loads only now (P4-02).
+      const controller = new AbortController();
+      setAudio({ stage: 'loading', fraction: 0, controller });
+      try {
+        const base = await importAudioFile(file, {
+          signal: controller.signal,
+          onProgress: (stage, fraction) => setAudio({ stage, fraction, controller }),
+        });
+        return {
+          fileName: file.name,
+          bytes: new Uint8Array(await file.arrayBuffer()),
+          base,
+          title: base.title,
+          settings: { ...DEFAULT_SETTINGS },
+          approximate: true,
+        };
+      } finally {
+        setAudio(null);
+      }
+    } catch (e) {
+      if (!(e instanceof DOMException && e.name === 'AbortError')) fail(message(file, e));
+      return null;
     }
   };
+
+  /** Shows the next piece of the batch for review, or ends the batch. */
+  const next = async () => {
+    const b = batch.current;
+    if (!b) return;
+    for (let group = b.queue.shift(); group; group = b.queue.shift()) {
+      const p = await prepare(group, b.named);
+      if (batch.current !== b) return;
+      if (p) {
+        setProgress({ index: b.total - b.queue.length, total: b.total });
+        setPending(p);
+        return;
+      }
+    }
+    batch.current = null;
+    setProgress(null);
+    // One piece with notes opens straight away, as before; several, or a sheet without notes,
+    // stay here where they can be seen.
+    const [only, ...others] = b.saved;
+    if (only?.practisable && others.length === 0) {
+      window.location.hash = href({ name: 'practice', source: 'library', id: String(only.id) });
+    }
+  };
+
+  const start = (groups: ImportGroup<File>[], named: boolean) => {
+    batchCount.current += 1;
+    batch.current = {
+      id: batchCount.current,
+      queue: [...groups],
+      total: groups.length,
+      named,
+      saved: [],
+    };
+    setPending(null);
+    void next();
+  };
+
+  const onFiles = (files: File[]) => {
+    // The picker is disabled while a recording is transcribed; files dropped then are ignored.
+    if (files.length === 0 || audio) return;
+    setErrors([]);
+    setAsk(null);
+    const plan = planImport(files);
+    if (plan.ask) setAsk(plan.ask);
+    else start(plan.groups, files.length > 1);
+  };
+
+  // Files dropped anywhere on the page are imported like picked ones. Only the files are read: a
+  // dragged link is never fetched (no imports from other sites). Without this, a dropped PDF would
+  // replace the app in the tab.
+  const onDrop = useRef<(files: File[]) => void>(() => {});
+  onDrop.current = (files) => withRights(() => onFiles(files));
+  useEffect(() => {
+    let depth = 0;
+    const hasFiles = (e: DragEvent) => e.dataTransfer?.types.includes('Files') ?? false;
+    const enter = (e: DragEvent) => {
+      if (!hasFiles(e)) return;
+      depth += 1;
+      setDragging(true);
+    };
+    const leave = (e: DragEvent) => {
+      if (!hasFiles(e)) return;
+      depth = Math.max(0, depth - 1);
+      if (depth === 0) setDragging(false);
+    };
+    const over = (e: DragEvent) => {
+      if (!hasFiles(e)) return;
+      e.preventDefault();
+      if (e.dataTransfer) e.dataTransfer.dropEffect = 'copy';
+    };
+    const drop = (e: DragEvent) => {
+      if (!hasFiles(e)) return;
+      e.preventDefault();
+      depth = 0;
+      setDragging(false);
+      onDrop.current([...(e.dataTransfer?.files ?? [])]);
+    };
+    window.addEventListener('dragenter', enter);
+    window.addEventListener('dragleave', leave);
+    window.addEventListener('dragover', over);
+    window.addEventListener('drop', drop);
+    return () => {
+      window.removeEventListener('dragenter', enter);
+      window.removeEventListener('dragleave', leave);
+      window.removeEventListener('dragover', over);
+      window.removeEventListener('drop', drop);
+    };
+  }, []);
 
   const save = async () => {
     if (!pending) return;
-    const song = {
-      ...applySettings(pending.base, pending.settings),
-      title: pending.title.trim() || t('Untitled'),
-    };
+    const notes = pieceNotes(pending);
     let id: number;
     try {
       id = await db.library.add({
-        title: song.title.slice(0, 200),
-        fileName: pending.fileName,
-        format: song.format,
-        bytes: pending.bytes,
-        song,
-        settings: pending.settings,
+        ...notes,
         tags: [],
         addedAt: Date.now(),
+        ...(pending.sheet ? { sheet: sheetAttachment(pending.sheet) } : {}),
       });
     } catch (e) {
-      // Most often the browser's storage is full, or blocked in a private window.
-      const full = e instanceof DOMException && e.name === 'QuotaExceededError';
-      setError(
-        full
-          ? t(
-              'There is not enough storage left on this device to save this piece. Delete a piece you no longer need and try again.',
-            )
-          : t(
-              'This piece could not be saved. Your browser may be blocking storage (a private window, for example).',
-            ),
-      );
+      fail(saveErrorMessage(e));
       return;
     }
+    batch.current?.saved.push({ id, practisable: !isSheetOnly(notes) });
     const first = (await db.library.count()) === 1;
     setPending(null);
     if (first) {
@@ -172,7 +262,31 @@ export function Library() {
       void requestPersistence();
       if (shouldSuggestHomeScreen()) setHomeScreenHint(true);
     }
-    window.location.hash = href({ name: 'practice', source: 'library', id: String(id) });
+    await next();
+  };
+
+  const skip = () => {
+    setPending(null);
+    void next();
+  };
+
+  const chooseSheet = (id: number) =>
+    withRights(() => {
+      sheetTarget.current = id;
+      sheetInput.current?.click();
+    });
+
+  const onSheetFile = async (file: File | undefined) => {
+    const id = sheetTarget.current;
+    if (!file || id === null) return;
+    setCardError(null);
+    try {
+      await attachSheet(id, await readSheetFile(file));
+    } catch (e) {
+      setCardError({ id, message: e instanceof Error ? e.message : String(e) });
+    } finally {
+      if (sheetInput.current) sheetInput.current.value = '';
+    }
   };
 
   return (
@@ -183,14 +297,16 @@ export function Library() {
           'Your own scores, stored only on this device. Nothing here can be sent to anyone: OpenTiles has no way to share or publish your files.',
         )}
       </p>
-      <div className="import-box">
+      <div className={dragging ? 'import-box import-box--drop' : 'import-box'}>
         <span className="file-tile" aria-hidden="true">
           <FilePlus />
         </span>
         <div className="import-box__text">
-          <strong>{t('Add a score or a recording')}</strong>
+          <strong>{t('Add a score, sheet music or a recording')}</strong>
           <span className="muted">
-            {t('MusicXML, MuseScore, ABC or MIDI, or a recording of a piano.')}{' '}
+            {t(
+              'MusicXML, MuseScore, ABC or MIDI, a PDF of the sheet music, or a recording of a piano. Pick or drop several files at once.',
+            )}{' '}
             <a href={href({ name: 'sheet-music' })}>{t('Where to find free sheet music')}</a>
           </span>
         </div>
@@ -201,8 +317,19 @@ export function Library() {
           ref={fileInput}
           type="file"
           hidden
-          accept={[...SUPPORTED_EXTENSIONS, ...AUDIO_EXTENSIONS].join(',')}
-          onChange={(e) => void onFile(e.target.files?.[0])}
+          multiple
+          accept={ACCEPT}
+          onChange={(e) => {
+            onFiles([...(e.target.files ?? [])]);
+            e.target.value = '';
+          }}
+        />
+        <input
+          ref={sheetInput}
+          type="file"
+          hidden
+          accept=".pdf,application/pdf"
+          onChange={(e) => void onSheetFile(e.target.files?.[0])}
         />
       </div>
       <details className="formats">
@@ -210,6 +337,11 @@ export function Library() {
         <p>
           {t(
             'MusicXML (.musicxml, .xml, .mxl), MuseScore (.mscz, .mscx), ABC (.abc) or MIDI (.mid). You can also import a recording (.wav, .mp3, .m4a, .ogg, .flac); its notes are detected on this device and are only approximate.',
+          )}
+        </p>
+        <p>
+          {t(
+            'A PDF (.pdf) is kept as the sheet music of a piece: pick it together with the MIDI or score file of the same name, or add it to a piece later. OpenTiles shows your PDF but does not read notes from it, so a PDF on its own can be read but not practised.',
           )}
         </p>
       </details>
@@ -235,7 +367,11 @@ export function Library() {
           </div>
         </div>
       )}
-      {error && <p className="error">{error}</p>}
+      {errors.map((message, i) => (
+        <p key={i} className="error">
+          {message}
+        </p>
+      ))}
       {homeScreenHint && (
         <div className="notice notice--warn">
           {t(
@@ -244,24 +380,57 @@ export function Library() {
         </div>
       )}
 
-      {askRights && (
+      {afterRights && (
         <RightsDialog
           onConfirm={async () => {
             await setSetting('rightsConfirmed', true);
             setRightsConfirmed(true);
-            setAskRights(false);
-            fileInput.current?.click();
+            setAfterRights(null);
+            afterRights();
           }}
-          onCancel={() => setAskRights(false)}
+          onCancel={() => setAfterRights(null)}
         />
+      )}
+
+      {ask && (
+        <div className="panel stack" role="group" aria-labelledby="pair-title">
+          <h2 id="pair-title">{t('Is this PDF the sheet music of this piece?')}</h2>
+          <p>
+            {t('The names differ: “{notes}” and “{sheet}”.', {
+              notes: ask.notes.name,
+              sheet: ask.sheet.name,
+            })}
+          </p>
+          <div className="row">
+            <button
+              className="primary"
+              onClick={() => {
+                setAsk(null);
+                start([{ notes: ask.notes, sheet: ask.sheet }], true);
+              }}
+            >
+              {t('Yes, one piece')}
+            </button>
+            <button
+              onClick={() => {
+                setAsk(null);
+                start([{ notes: ask.notes }, { sheet: ask.sheet }], true);
+              }}
+            >
+              {t('No, two pieces')}
+            </button>
+            <button onClick={() => setAsk(null)}>{t('Cancel')}</button>
+          </div>
+        </div>
       )}
 
       {pending && (
         <ImportReview
           pending={pending}
+          progress={progress ?? undefined}
           onChange={setPending}
           onSave={() => void save()}
-          onCancel={() => setPending(null)}
+          onCancel={skip}
         />
       )}
 
@@ -292,201 +461,112 @@ export function Library() {
       )}
       <div className="grid grid--wide">
         {visible.map((item) => (
-          <div key={item.id} className="card library-item">
-            <div className="library-item__head">
-              <span className="file-tile" aria-hidden="true">
-                <FileMusic />
-              </span>
-              <div className="library-item__text">
-                <h3>{item.title}</h3>
-                <span className="muted">
-                  {item.format.toUpperCase()} ·{' '}
-                  {t('added {date}', {
-                    date: new Date(item.addedAt).toLocaleDateString(locale()),
-                  })}
-                </span>
-              </div>
-            </div>
-            <div className="row">
-              <a
-                className="button primary"
-                href={href({ name: 'practice', source: 'library', id: String(item.id) })}
-              >
-                <Play /> {t('Practise')}
-              </a>
-              <button
-                className="danger quiet"
-                onClick={() => {
-                  if (
-                    item.id !== undefined &&
-                    confirm(t('Delete “{title}” from this device?', { title: item.title }))
-                  ) {
-                    void db.library.delete(item.id);
-                    void db.progress.delete(`library:${item.id}`);
-                  }
-                }}
-              >
-                <Trash2 /> {t('Delete')}
-              </button>
-            </div>
-          </div>
+          <LibraryCard
+            key={item.id}
+            item={item}
+            error={cardError && cardError.id === item.id ? cardError.message : null}
+            onChooseSheet={chooseSheet}
+          />
         ))}
       </div>
     </>
   );
 }
 
-function RightsDialog({ onConfirm, onCancel }: { onConfirm: () => void; onCancel: () => void }) {
-  const [checked, setChecked] = useState(false);
-  return (
-    <div className="panel stack" role="dialog" aria-labelledby="rights-title">
-      <h2 id="rights-title">
-        <ShieldCheck /> {t('Before your first import')}
-      </h2>
-      <p>
-        {t(
-          'Your library is private: files stay on this device and OpenTiles has no way to share them. Please only import music you have the right to use for your own practice — for example scores you bought, wrote or transcribed yourself, or public-domain music.',
-        )}
-      </p>
-      <label>
-        <input type="checkbox" checked={checked} onChange={(e) => setChecked(e.target.checked)} />
-        {t('I only import files I have the right to use for personal practice.')}
-      </label>
-      <div className="row">
-        <button className="primary" disabled={!checked} onClick={onConfirm}>
-          {t('Continue')}
-        </button>
-        <button onClick={onCancel}>{t('Cancel')}</button>
-      </div>
-    </div>
-  );
-}
-
-function ImportReview({
-  pending,
-  onChange,
-  onSave,
-  onCancel,
+function LibraryCard({
+  item,
+  error,
+  onChooseSheet,
 }: {
-  pending: Pending;
-  onChange: (p: Pending) => void;
-  onSave: () => void;
-  onCancel: () => void;
+  item: LibraryItem;
+  error: string | null;
+  onChooseSheet: (id: number) => void;
 }) {
-  const song = applySettings(pending.base, pending.settings);
-  const hands = handCounts(song);
-  const bpm = Math.round(song.tempos[0]?.bpm ?? 120);
-  const pitches = song.notes.map((n) => n.pitch);
-  const difficulty = estimateDifficulty(song);
-  const set = (s: Partial<ImportSettings>) =>
-    onChange({ ...pending, settings: { ...pending.settings, ...s } });
+  const id = item.id;
+  if (id === undefined) return null;
+  const sheetOnly = isSheetOnly(item);
+  const practice = href({ name: 'practice', source: 'library', id: String(id) });
   return (
-    <div className="panel stack" aria-labelledby="review-title">
-      <h2 id="review-title">{t('Check the import')}</h2>
-      {pending.approximate && (
-        <p className="row">
-          <span className="badge badge--warn">{t('Approximate')}</span>
-          <span className="muted">{t('Transcribed from a recording on this device.')}</span>
-        </p>
-      )}
-      <label className="field">
-        <span className="field__label">{t('Title')}</span>
-        <input
-          type="text"
-          value={pending.title}
-          onChange={(e) => onChange({ ...pending, title: e.target.value })}
-        />
-      </label>
-      <p className="muted">
-        {t('{notes} notes in {bars} bars · right hand {right}, left hand {left}', {
-          notes: song.notes.length,
-          bars: song.measures.length,
-          right: hands.right,
-          left: hands.left,
-        })}
-        {pitches.length > 0 && (
-          <>
-            {' '}
-            ·{' '}
-            {t('range {low}–{high}', {
-              low: noteLabel(Math.min(...pitches)),
-              high: noteLabel(Math.max(...pitches)),
+    <div className="card library-item">
+      <div className="library-item__head">
+        <span className="file-tile" aria-hidden="true">
+          {sheetOnly ? <FileText /> : <FileMusic />}
+        </span>
+        <div className="library-item__text">
+          <h3>{item.title}</h3>
+          <span className="muted library-item__meta">
+            {item.format.toUpperCase()} ·{' '}
+            {t('added {date}', {
+              date: new Date(item.addedAt).toLocaleDateString(locale()),
             })}
-          </>
-        )}
-      </p>
-      {song.notes.length > 0 && (
-        <p
-          className="muted"
-          title={t('Estimated from speed, rhythm, chords, hand stretch, key and hand independence')}
-        >
-          {t('Estimated level {n} of 5', { n: difficulty.level })}
-        </p>
-      )}
-      {song.warnings.map((w) => (
-        <p key={w} className="notice notice--warn">
-          {t(w)}
-        </p>
-      ))}
-      <div className="field-grid">
-        <label className="field">
-          <span className="field__label">{t('Tempo')}</span>
-          <span className="row">
-            <input
-              type="number"
-              min={20}
-              max={300}
-              value={pending.settings.baseBpm ?? bpm}
-              onChange={(e) => set({ baseBpm: Number(e.target.value) || undefined })}
-              style={{ width: '6em' }}
-            />
-            <span className="muted">{t('beats per minute')}</span>
+            {item.sheet && <span className="badge">{t('Sheet')}</span>}
           </span>
-        </label>
-        <label className="field">
-          <span className="field__label">{t('Transpose')}</span>
-          <select
-            value={pending.settings.transpose}
-            onChange={(e) => set({ transpose: Number(e.target.value) })}
-          >
-            {Array.from({ length: 25 }, (_, i) => i - 12).map((n) => (
-              <option key={n} value={n}>
-                {t('{n} semitones', { n: n > 0 ? `+${n}` : n })}
-              </option>
-            ))}
-          </select>
-        </label>
-        <div className="field">
-          <span className="field__label">{t('Hands')}</span>
-          <button
-            aria-pressed={pending.settings.swapHands}
-            onClick={() => set({ swapHands: !pending.settings.swapHands })}
-          >
-            {t('Swap hands')}
-          </button>
         </div>
       </div>
-      {song.format === 'midi' && (
-        <label className="field">
-          <span className="field__label">{t('Hand split point')}</span>
-          <span className="row">
-            <input
-              type="range"
-              min={48}
-              max={72}
-              value={pending.settings.splitPoint ?? 60}
-              onChange={(e) => set({ splitPoint: Number(e.target.value) })}
-            />
-            <span>{noteLabel(pending.settings.splitPoint ?? 60)}</span>
-          </span>
-        </label>
+      {sheetOnly && (
+        <p className="muted library-item__note">
+          {t('Sheet only — add the MIDI file to practise')}
+        </p>
       )}
       <div className="row">
-        <button className="primary" onClick={onSave}>
-          {t('Save to my library')}
+        {sheetOnly ? (
+          <>
+            <AddNotesButton itemId={id} />
+            <a className="button" href={practice}>
+              <BookOpen /> {t('Open')}
+            </a>
+          </>
+        ) : (
+          <a className="button primary" href={practice}>
+            <Play /> {t('Practise')}
+          </a>
+        )}
+        <button
+          className="danger quiet"
+          onClick={() => {
+            if (confirm(t('Delete “{title}” from this device?', { title: item.title }))) {
+              void deletePiece(id);
+            }
+          }}
+        >
+          <Trash2 /> {t('Delete')}
         </button>
-        <button onClick={onCancel}>{t('Cancel')}</button>
       </div>
+      <div className="library-item__sheet">
+        {item.sheet ? (
+          <>
+            <span className="library-item__sheet-name" title={item.sheet.fileName}>
+              <FileText />
+              <span>{item.sheet.fileName}</span>
+            </span>
+            <button
+              className="quiet"
+              aria-label={t('Replace sheet music')}
+              onClick={() => onChooseSheet(id)}
+            >
+              {t('Replace')}
+            </button>
+            {!sheetOnly && (
+              <button
+                className="quiet"
+                aria-label={t('Remove sheet music')}
+                onClick={() => {
+                  if (confirm(t('Remove the sheet music from “{title}”?', { title: item.title }))) {
+                    void removeSheet(id);
+                  }
+                }}
+              >
+                {t('Remove')}
+              </button>
+            )}
+          </>
+        ) : (
+          <button className="quiet" onClick={() => onChooseSheet(id)}>
+            <FilePlus /> {t('Add sheet music (PDF)')}
+          </button>
+        )}
+      </div>
+      {error && <p className="error">{error}</p>}
     </div>
   );
 }

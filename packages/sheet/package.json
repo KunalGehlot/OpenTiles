@@ -1,0 +1,20 @@
+{
+  "name": "@opentiles/sheet",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Sheet-music PDFs kept beside a piece: where the bars are on the pages, and which bar each measure of the song is played from",
+  "license": "AGPL-3.0-or-later",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "test": "vitest run",
+    "typecheck": "tsc -p tsconfig.json"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "typescript": "~6.0.3",
+    "vitest": "^5.0.3"
+  }
+}
