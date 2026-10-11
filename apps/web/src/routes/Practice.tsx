@@ -62,6 +62,7 @@ import {
   micCalibrationSkipped,
 } from '../storage/calibration';
 import { db, recordPracticeTime, recordRun } from '../storage/db';
+import type { SheetAttachment } from '../storage/db';
 import { hitTest, rangeFor } from '../views/keyboard';
 import { LoopDrag } from '../views/loop-drag';
 import { PracticeRenderer } from '../views/renderer';
@@ -71,6 +72,8 @@ import { formatOfPath, notationFor } from '../views/score/notation';
 import type { NotationSource } from '../views/score/notation';
 import { ScoreView } from '../views/score/ScoreView';
 import { usePracticeView, ViewToggle } from '../views/score/ViewToggle';
+import { SheetReader } from '../views/sheet/SheetReader';
+import { SheetView } from '../views/sheet/SheetView';
 import { Popover } from '../ui/Popover';
 import { t } from '../i18n';
 
@@ -83,6 +86,10 @@ interface Loaded {
   notation: NotationSource;
   /** A sight-reading drill (P5-05): what it hides, and the choices for the next one. */
   drill?: { guide: 'keys' | 'none'; prefs: DrillPrefs };
+  /** The learner's sheet music for a library piece (ADR 0018). */
+  sheet?: { itemId: number; attachment: SheetAttachment };
+  /** A sheet without notes yet (format 'pdf'): it can be read, not practised. */
+  sheetOnly?: boolean;
 }
 
 const NO_BARS: readonly number[] = [];
@@ -99,6 +106,8 @@ export function Practice({
   const [loaded, setLoaded] = useState<Loaded | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [prefs, setPrefs] = useState<PracticePrefs | null>(null);
+  // Loads the piece again, after notes were added to a sheet-only piece.
+  const [reload, setReload] = useState(0);
 
   // What the learner chose last time (mode, hands, tempo, metronome); read once per visit.
   useEffect(() => {
@@ -146,6 +155,9 @@ export function Practice({
         title: item.title,
         progressKey: `library:${id}`,
         notation: notationFor(item.format, item.bytes, item.settings.transpose),
+        sheet: item.sheet ? { itemId: Number(id), attachment: item.sheet } : undefined,
+        sheetOnly:
+          item.sheet !== undefined && (item.format === 'pdf' || item.song.notes.length === 0),
       };
     };
     load()
@@ -154,7 +166,7 @@ export function Practice({
     return () => {
       cancelled = true;
     };
-  }, [source, id]);
+  }, [source, id, reload]);
 
   if (error) {
     return (
@@ -167,6 +179,17 @@ export function Practice({
     );
   }
   if (!loaded || !prefs) return <p className="session-message muted">{t('Loading…')}</p>;
+  if (loaded.sheetOnly && loaded.sheet) {
+    // The slot for P5-15's button, once both branches are merged:
+    // addNotes={(onSaved) => <AddNotesButton itemId={Number(id)} onSaved={onSaved} />}
+    return (
+      <SheetReader
+        title={loaded.title}
+        bytes={loaded.sheet.attachment.bytes}
+        onNotesAdded={() => setReload((n) => n + 1)}
+      />
+    );
+  }
   return <PracticeView key={loaded.progressKey} {...loaded} prefs={prefs} />;
 }
 
@@ -178,6 +201,7 @@ function PracticeView({
   progressKey,
   notation,
   drill,
+  sheet,
   prefs: savedPrefs,
 }: Loaded & { prefs: PracticePrefs }) {
   const settings = useAppSettings();
@@ -239,7 +263,7 @@ function PracticeView({
   const touch = useRef(new TouchInput());
   const pointers = useRef(new Map<number, number>());
   const [loopDrag] = useState(() => new LoopDrag(session, () => rendererRef.current));
-  const [chosenView, setView] = usePracticeView(notation);
+  const [chosenView, setView] = usePracticeView(notation, sheet !== undefined);
   // The page view shows the whole drill at once, so the learner can read ahead.
   const view = drill ? 'page' : chosenView;
   useScreenWakeLock(session, status.playing);
@@ -863,7 +887,14 @@ function PracticeView({
         {liveStats && <LiveStatsStrip stats={status.live} mode={mode} />}
         {inputError && <span className="error">{inputError}</span>}
         <div className="session-status__view">
-          {!drill && <ViewToggle view={view} onChange={setView} notation={shownNotation} />}
+          {!drill && (
+            <ViewToggle
+              view={view}
+              onChange={setView}
+              notation={shownNotation}
+              hasSheet={sheet !== undefined}
+            />
+          )}
         </div>
       </div>
       {/* Above the loop controls, so it stays put under the pointer when they appear. */}
@@ -883,7 +914,7 @@ function PracticeView({
       {(showLoop || status.loop !== null) && (
         <SectionBar session={session} song={song} status={status} />
       )}
-      {view !== 'falling' && shownNotation.kind !== 'none' && (
+      {(view === 'scroll' || view === 'page') && shownNotation.kind !== 'none' && (
         <ScoreView
           session={session}
           song={prepared.score}
@@ -897,6 +928,9 @@ function PracticeView({
               : NO_BARS
           }
         />
+      )}
+      {view === 'sheet' && sheet && (
+        <SheetView session={session} song={song} itemId={sheet.itemId} sheet={sheet.attachment} />
       )}
       <div
         ref={wrapRef}

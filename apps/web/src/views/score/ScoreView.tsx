@@ -10,7 +10,8 @@ import { createToolkit } from './verovio';
 import { t } from '../../i18n';
 import './score.css';
 
-export type PracticeView = 'falling' | ScoreLayout;
+/** 'sheet': the learner's own PDF beside the piece (views/sheet, ADR 0018). */
+export type PracticeView = 'falling' | ScoreLayout | 'sheet';
 
 interface Props {
   session: PracticeSession;

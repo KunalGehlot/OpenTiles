@@ -1,0 +1,192 @@
+/* The learner's own sheet music (ADR 0018): the practice "Sheet" view and the reader for a
+   sheet-only piece. The pages stay paper-white in every theme (a scan inverted reads badly), so
+   the marks drawn on them use the light theme's colours in every theme too; everything around the
+   pages follows the tokens. */
+
+.ot-sheet-panel {
+  --sheet-mark: #1f6f5c;
+  --sheet-mark-fill: rgba(43, 120, 184, 0.16);
+  --sheet-outline: rgba(31, 111, 92, 0.75);
+  position: relative;
+  display: flex;
+  flex: 1 1 60%;
+  flex-direction: column;
+  min-height: 0;
+  margin: 0 env(safe-area-inset-right) 0 env(safe-area-inset-left);
+  background: var(--surface-2);
+  border-bottom: 1px solid var(--line);
+  color: var(--text);
+}
+
+/* With the sheet on screen the falling notes shrink to a strip above the keyboard, tall enough
+   for the after-run summary. */
+.ot-sheet-panel ~ .practice-canvas-wrap {
+  flex: 0 0 clamp(230px, 32vh, 320px);
+  min-height: 230px;
+}
+
+.ot-sheet-panel--reader {
+  flex: 1 1 auto;
+  border-bottom: 0;
+}
+
+.ot-sheet-host {
+  position: relative;
+  flex: 1;
+  min-height: 160px;
+  overflow: auto;
+  overscroll-behavior: contain;
+}
+
+.ot-sheet-host.adjusting {
+  cursor: crosshair;
+}
+
+.ot-sheet-pages {
+  position: relative;
+}
+
+.ot-sheet-page {
+  position: absolute;
+  top: 0;
+  left: 0;
+  background: #ffffff;
+  box-shadow: var(--shadow-1);
+}
+
+.ot-sheet-canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.ot-sheet-bar,
+.ot-sheet-cursor,
+.ot-sheet-outline {
+  position: absolute;
+  top: 0;
+  left: 0;
+  pointer-events: none;
+  will-change: transform;
+}
+
+.ot-sheet-bar {
+  border-radius: 6px;
+  background: var(--sheet-mark-fill);
+  box-shadow: inset 0 0 0 2px var(--sheet-mark);
+}
+
+.ot-sheet-bar__label {
+  position: absolute;
+  bottom: 100%;
+  left: 0;
+  display: none;
+  padding: 0 0.35em;
+  border-radius: 4px;
+  background: var(--sheet-mark);
+  color: #ffffff;
+  font-size: 0.75rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.adjusting .ot-sheet-bar__label {
+  display: block;
+}
+
+.ot-sheet-cursor {
+  width: 2px;
+  margin-left: -1px;
+  border-radius: 1px;
+  background: var(--sheet-mark);
+  opacity: 0.8;
+}
+
+.ot-sheet-outline {
+  border: 1px dashed var(--sheet-outline);
+  border-radius: 4px;
+}
+
+.ot-sheet-outline span {
+  position: absolute;
+  top: 1px;
+  left: 2px;
+  padding: 0 0.25em;
+  border-radius: 3px;
+  background: rgba(255, 255, 255, 0.9);
+  color: #0e5043;
+  font-size: 0.7rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.ot-sheet-status {
+  position: absolute;
+  z-index: 2;
+  top: var(--space-2);
+  left: 50%;
+  max-width: calc(100% - 2 * var(--space-3));
+  margin: 0;
+  padding: var(--space-1) var(--space-3);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  box-shadow: var(--shadow-1);
+  transform: translateX(-50%);
+  font-size: var(--text-sm);
+}
+
+.ot-sheet-pager {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 0.3rem 0.9rem;
+  padding: 0.3rem 0.5rem;
+  border-top: 1px solid var(--line);
+  background: var(--surface);
+  font-variant-numeric: tabular-nums;
+}
+
+.ot-sheet-pager__group {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.ot-sheet-pager button {
+  min-height: 34px;
+  padding: 0.2rem 0.6rem;
+}
+
+.ot-sheet-adjust {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-3);
+  border-top: 1px solid var(--line);
+  background: var(--surface);
+}
+
+.ot-sheet-adjust__hint {
+  margin: 0;
+  font-size: var(--text-sm);
+}
+
+.ot-sheet-adjust__row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.ot-sheet-adjust__label {
+  font-size: var(--text-sm);
+}
+
+.ot-sheet-adjust button {
+  min-height: 34px;
+  padding: 0.2rem 0.7rem;
+}
+
+.ot-sheet-reader-note p {
+  margin: 0;
+  flex: 1 1 16rem;
+}
