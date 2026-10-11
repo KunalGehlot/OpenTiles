@@ -115,7 +115,7 @@ the score views link glyphs to notes by source bar, onset in the bar and pitch (
   query per glyph: about half of the main-thread time on a long piece.
 - **Storing the written MusicXML with the library item.** Rejected: a storage change for something
   that takes milliseconds to write, and stored scores would not pick up writer improvements.
-- **A third-party MIDI-to-notation converter.** Verovio does not read MIDI files. Any converter
+- **A third-party MIDI-to-notation converter.** Verovio 6.3 reads no MIDI (MIDI is one of its outputs only). Any converter
   would still have to keep every onset exact and report which glyph draws which note; that is most
   of the work, so the writer is our own, in the package that already owns the `Song`.
 - **Recognising grace notes and writing them as such.** Deferred: the parser skips grace notes,
