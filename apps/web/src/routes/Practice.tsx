@@ -69,6 +69,7 @@ import { PracticeRenderer } from '../views/renderer';
 import { PracticeSession } from '../views/session';
 import type { PracticeMode, SessionStatus } from '../views/session';
 import { formatOfPath, scoreFor } from '../views/score/notation';
+import { AddNotesButton } from '../library/AddNotesButton';
 import type { NotationSource } from '../views/score/notation';
 import { ScoreView } from '../views/score/ScoreView';
 import { usePracticeView, ViewToggle } from '../views/score/ViewToggle';
@@ -185,14 +186,13 @@ export function Practice({
   }
   if (!loaded || !prefs) return <p className="session-message muted">{t('Loading…')}</p>;
   if (loaded.sheetOnly && loaded.sheet) {
-    // The slot for P5-15's button, once both branches are merged:
-    // addNotes={(onSaved) => <AddNotesButton itemId={Number(id)} onSaved={onSaved} />}
     const { SheetReader } = loaded.sheet.views;
     return (
       <SheetReader
         title={loaded.title}
         bytes={loaded.sheet.attachment.bytes}
         onNotesAdded={() => setReload((n) => n + 1)}
+        addNotes={(onSaved) => <AddNotesButton itemId={Number(id)} onSaved={onSaved} />}
       />
     );
   }

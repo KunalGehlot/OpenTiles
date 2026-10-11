@@ -69,6 +69,19 @@ function AboutEn() {
         </a>
         , used under the GNU LGPL-3.0 (or later).
       </p>
+      <p>
+        Your own sheet music (PDF) is drawn on your device by{' '}
+        <a href="https://mozilla.github.io/pdf.js/" rel="noreferrer">
+          pdf.js
+        </a>
+        , used under the{' '}
+        <a href="https://www.apache.org/licenses/LICENSE-2.0" rel="noreferrer">
+          Apache License 2.0
+        </a>
+        . Scanned pages are decoded with PDFium's JBIG2 decoder (BSD-3-Clause) and OpenJPEG
+        (BSD-2-Clause): see their <a href="pdfjs/wasm/LICENSE_JBIG2">licence</a> and{' '}
+        <a href="pdfjs/wasm/LICENSE_OPENJPEG">licence</a>.
+      </p>
       <h2>How it was made, and what came first</h2>
       <p>
         OpenTiles was written with a large language model (LLM) working under the maintainer's
@@ -173,6 +186,19 @@ function AboutDe() {
           Verovio
         </a>{' '}
         gesetzt, verwendet unter der GNU LGPL-3.0 (oder später).
+      </p>
+      <p>
+        Deine eigenen Noten (PDF) zeichnet{' '}
+        <a href="https://mozilla.github.io/pdf.js/" rel="noreferrer">
+          pdf.js
+        </a>{' '}
+        auf deinem Gerät, verwendet unter der{' '}
+        <a href="https://www.apache.org/licenses/LICENSE-2.0" rel="noreferrer">
+          Apache License 2.0
+        </a>
+        . Eingescannte Seiten werden mit dem JBIG2-Decoder von PDFium (BSD-3-Clause) und OpenJPEG
+        (BSD-2-Clause) gelesen: siehe ihre <a href="pdfjs/wasm/LICENSE_JBIG2">Lizenz</a> und{' '}
+        <a href="pdfjs/wasm/LICENSE_OPENJPEG">Lizenz</a> (auf Englisch).
       </p>
       <h2>Wie es entstanden ist, und was zuerst da war</h2>
       <p>
