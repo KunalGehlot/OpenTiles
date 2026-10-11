@@ -164,4 +164,47 @@ describe('encrypted sync from the web app', () => {
     await c.deleteAccount();
     expect(c.state.phase).toBe('signed-out');
   });
+
+  it('carries a piece’s sheet music to the other devices, and its removal too', async () => {
+    const PDF = new TextEncoder().encode('%PDF-1.4\n%%EOF\n');
+    const s = server();
+    const signIn = async () => {
+      const c = s.controller();
+      await c.init();
+      await c.startEmailSignIn('pianist@example.org');
+      await c.finishEmailSignIn({ token: s.lastToken() });
+      return c;
+    };
+    const a = await signIn();
+    await a.createLibraryKey(PASS);
+    const id = await db.library.add(item('Sheet Piece'));
+    await a.syncNow();
+    // Adding a PDF later is a change to upload, and only the PDF's piece goes up.
+    await db.library.update(id, {
+      sheet: { fileName: 'private-edition.pdf', bytes: PDF, addedAt: 7 },
+    });
+    expect((await a.syncNow()).pushed).toBe(1);
+    for (const body of s.bodies) {
+      expect(contains(body, 'private-edition')).toBe(false);
+      expect(contains(body, '%PDF')).toBe(false);
+    }
+
+    await wipeDevice();
+    const b = await signIn();
+    expect(await b.unlock({ passphrase: PASS })).toBe(true);
+    await b.syncNow();
+    const [onB] = await db.library.toArray();
+    expect(onB?.sheet).toEqual({ fileName: 'private-edition.pdf', bytes: PDF, addedAt: 7 });
+    expect((await b.syncNow()).pushed).toBe(0);
+    await db.library.update(onB?.id ?? -1, { sheet: undefined });
+    expect((await b.syncNow()).pushed).toBe(1);
+
+    await wipeDevice();
+    const c = await signIn();
+    expect(await c.unlock({ passphrase: PASS })).toBe(true);
+    await c.syncNow();
+    const [onC] = await db.library.toArray();
+    expect(onC?.title).toBe('Sheet Piece');
+    expect(onC && 'sheet' in onC).toBe(false);
+  });
 });

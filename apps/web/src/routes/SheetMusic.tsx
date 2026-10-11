@@ -37,7 +37,7 @@ function publicDomain(): Source[] {
       name: 'IMSLP – Petrucci Music Library',
       url: 'https://imslp.org/',
       description: t(
-        'The largest library of public-domain scores. Most files are scanned PDFs, which OpenTiles cannot open; some pieces also have MusicXML or MIDI files. Check the copyright note on each file for your country.',
+        'The largest library of public-domain scores. Most files are scanned PDFs: OpenTiles can keep one with a piece and show it as your sheet music, but the notes come from a MIDI or score file, which some pieces also have. Check the copyright note on each file for your country.',
       ),
       formats: t('mostly PDF; some MusicXML and MIDI'),
     },

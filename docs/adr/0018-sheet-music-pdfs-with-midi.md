@@ -33,6 +33,15 @@ all processing stays on the device; library items have no way out except the enc
    them) makes one piece. A PDF can be added to, replaced on, or removed from an existing piece. A
    PDF imported on its own becomes a "sheet only" piece (`format: 'pdf'`, empty song) that can be
    read but not practised until a MIDI or score file is added to it.
+
+   How the library applies this (P5-15): files picked or dropped together are grouped by base name,
+   ignoring case, spacing and the extension. A score file pairs with the PDF of the same name; when
+   a name has several of either, the first of each pairs and the others are pieces of their own.
+   Recordings are never paired, since their notes are a guess. When exactly one score file and one
+   PDF are picked under different names, the learner is asked whether they are one piece. Adding
+   notes to a sheet-only piece keeps its sheet but drops the map unless the learner corrected it;
+   replacing the PDF always drops it. A PDF must have a PDF header and be at most 60 MB.
+
 3. **Drawing.** pdf.js (`pdfjs-dist` 6.4.299, Apache-2.0) renders the pages
    (`apps/web/src/views/sheet/`).
    - **Legacy build.** The modern build calls `Map.prototype.getOrInsertComputed`,

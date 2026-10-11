@@ -84,9 +84,9 @@ export const de: Readonly<Record<string, string>> = {
     'Dieses Stück konnte nicht gespeichert werden. Vielleicht blockiert dein Browser den Speicher (zum Beispiel in einem privaten Fenster).',
   'Your own scores, stored only on this device. Nothing here can be sent to anyone: OpenTiles has no way to share or publish your files.':
     'Deine eigenen Noten, nur auf diesem Gerät gespeichert. Nichts davon kann an jemanden gesendet werden: OpenTiles kann deine Dateien weder teilen noch veröffentlichen.',
-  'Add a score or a recording': 'Noten oder eine Aufnahme hinzufügen',
-  'MusicXML, MuseScore, ABC or MIDI, or a recording of a piano.':
-    'MusicXML, MuseScore, ABC oder MIDI oder eine Klavieraufnahme.',
+  'Add a score, sheet music or a recording': 'Noten, ein Notenblatt oder eine Aufnahme hinzufügen',
+  'MusicXML, MuseScore, ABC or MIDI, a PDF of the sheet music, or a recording of a piano. Pick or drop several files at once.':
+    'MusicXML, MuseScore, ABC oder MIDI, ein PDF der Noten oder eine Klavieraufnahme. Du kannst mehrere Dateien auf einmal auswählen oder hierher ziehen.',
   'Import a file…': 'Datei importieren …',
   'Which files can I import?': 'Welche Dateien kann ich importieren?',
   'MusicXML (.musicxml, .xml, .mxl), MuseScore (.mscz, .mscx), ABC (.abc) or MIDI (.mid). You can also import a recording (.wav, .mp3, .m4a, .ogg, .flac); its notes are detected on this device and are only approximate.':
@@ -511,8 +511,8 @@ export const de: Readonly<Record<string, string>> = {
     'Klassische Stücke, von Freiwilligen gesetzt, die meisten gemeinfrei oder unter Creative Commons. Zu jedem Stück gibt es eine MIDI-Datei, die sich direkt in OpenTiles öffnen lässt.',
   'Public-domain music transcribed by volunteers and released as CC0, published on MuseScore.com. Download MusicXML or MuseScore files.':
     'Gemeinfreie Musik, von Freiwilligen übertragen und als CC0 veröffentlicht, auf MuseScore.com. Lade MusicXML- oder MuseScore-Dateien herunter.',
-  'The largest library of public-domain scores. Most files are scanned PDFs, which OpenTiles cannot open; some pieces also have MusicXML or MIDI files. Check the copyright note on each file for your country.':
-    'Die größte Bibliothek gemeinfreier Noten. Die meisten Dateien sind eingescannte PDFs, die OpenTiles nicht öffnen kann; zu manchen Stücken gibt es auch MusicXML- oder MIDI-Dateien. Prüf den Urheberrechtshinweis jeder Datei für dein Land.',
+  'The largest library of public-domain scores. Most files are scanned PDFs: OpenTiles can keep one with a piece and show it as your sheet music, but the notes come from a MIDI or score file, which some pieces also have. Check the copyright note on each file for your country.':
+    'Die größte Bibliothek gemeinfreier Noten. Die meisten Dateien sind eingescannte PDFs: OpenTiles kann eines mit einem Stück speichern und dir als Notenblatt zeigen, die Noten kommen aber aus einer MIDI- oder Notendatei, die es zu manchen Stücken auch gibt. Prüf den Urheberrechtshinweis jeder Datei für dein Land.',
   'mostly PDF; some MusicXML and MIDI': 'meist PDF; teils MusicXML und MIDI',
   'Public-domain sheet music and recordings, free to download.':
     'Gemeinfreie Noten und Aufnahmen zum kostenlosen Herunterladen.',
@@ -803,4 +803,34 @@ export const de: Readonly<Record<string, string>> = {
   'Next drill': 'Nächste Übung',
   'Change the drill': 'Übung ändern',
   'The next drill starts in a moment.': 'Die nächste Übung beginnt gleich.',
+  // Sheet-music PDFs kept with a piece (P5-15, ADR 0018).
+  'A PDF (.pdf) is kept as the sheet music of a piece: pick it together with the MIDI or score file of the same name, or add it to a piece later. OpenTiles shows your PDF but does not read notes from it, so a PDF on its own can be read but not practised.':
+    'Ein PDF (.pdf) wird als Notenblatt eines Stücks gespeichert: Wähle es zusammen mit der MIDI- oder Notendatei gleichen Namens aus oder füge es später einem Stück hinzu. OpenTiles zeigt dein PDF, liest aber keine Noten daraus. Ein PDF allein kannst du daher lesen, aber nicht üben.',
+  'Is this PDF the sheet music of this piece?': 'Ist dieses PDF das Notenblatt zu diesem Stück?',
+  'The names differ: “{notes}” and “{sheet}”.':
+    'Die Namen sind verschieden: „{notes}“ und „{sheet}“.',
+  'Yes, one piece': 'Ja, ein Stück',
+  'No, two pieces': 'Nein, zwei Stücke',
+  'Sheet only — add the MIDI file to practise':
+    'Nur Notenblatt – füge die MIDI-Datei hinzu, um zu üben',
+  Open: 'Öffnen',
+  'Replace sheet music': 'Notenblatt ersetzen',
+  Replace: 'Ersetzen',
+  'Remove sheet music': 'Notenblatt entfernen',
+  Remove: 'Entfernen',
+  'Remove the sheet music from “{title}”?': 'Das Notenblatt von „{title}“ entfernen?',
+  'Add sheet music (PDF)': 'Notenblatt hinzufügen (PDF)',
+  'Sheet music: {name}': 'Notenblatt: {name}',
+  'Leave out the sheet music': 'Notenblatt weglassen',
+  'Piece {n} of {total}': 'Stück {n} von {total}',
+  'This PDF has no notes OpenTiles can follow. You can read it now, and practise it once you add the MIDI or score file of the same piece.':
+    'Diesem PDF kann OpenTiles keine Noten entnehmen. Du kannst es jetzt lesen und üben, sobald du die MIDI- oder Notendatei desselben Stücks hinzufügst.',
+  'Choose a MIDI or score file. A recording cannot be paired with sheet music.':
+    'Wähle eine MIDI- oder Notendatei. Eine Aufnahme lässt sich nicht mit einem Notenblatt verbinden.',
+  'Add the MIDI or score file': 'MIDI- oder Notendatei hinzufügen',
+  'This PDF is too large ({size} MB). The limit is {limit} MB.':
+    'Dieses PDF ist zu groß ({size} MB). Die Grenze liegt bei {limit} MB.',
+  '“{name}” is not a PDF file, so it cannot be kept as sheet music.':
+    '„{name}“ ist keine PDF-Datei und kann daher nicht als Notenblatt gespeichert werden.',
+  'sheet music added to {n} of them': 'bei {n} davon das Notenblatt ergänzt',
 };

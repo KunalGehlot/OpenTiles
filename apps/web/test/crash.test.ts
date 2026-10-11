@@ -1,5 +1,8 @@
+import 'fake-indexeddb/auto';
 import { describe, expect, it } from 'vitest';
+import { libraryNames } from '../src/crash/reporter';
 import { buildScrubbedReport, coarsePlatform, scrubCrashText } from '../src/crash/scrub';
+import { db } from '../src/storage/db';
 
 const ORIGIN = 'https://opentiles.example';
 
@@ -85,5 +88,38 @@ describe('crash report scrubbing', () => {
         'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0 Safari/537.36',
       ),
     ).toBe('Windows / Chrome');
+  });
+});
+
+describe('names kept out of crash reports', () => {
+  it('include the file name of a piece’s sheet music', async () => {
+    await db.library.clear();
+    await db.library.add({
+      title: 'Secret Study',
+      fileName: 'secret-study.mid',
+      format: 'midi',
+      bytes: new Uint8Array(0),
+      song: {
+        title: 'Secret Study',
+        format: 'midi',
+        notes: [],
+        measures: [],
+        tempos: [{ beat: 0, bpm: 120 }],
+        timeSignatures: [],
+        keySignatures: [],
+        parts: [],
+        lengthBeats: 0,
+        warnings: [],
+      },
+      settings: { transpose: 0, swapHands: false },
+      tags: [],
+      addedAt: 1,
+      sheet: { fileName: 'A Different Edition.pdf', bytes: new Uint8Array(0), addedAt: 1 },
+    });
+    const names = await libraryNames();
+    expect(names).toContain('A Different Edition.pdf');
+    expect(
+      scrubCrashText('Failed to open A Different Edition.pdf', { names }, 'https://x.test'),
+    ).not.toContain('Different Edition');
   });
 });

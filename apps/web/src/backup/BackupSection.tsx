@@ -258,6 +258,9 @@ function ImportBackup() {
           {[
             summary.added === 1 ? t('1 piece added') : t('{n} pieces added', { n: summary.added }),
             ...(summary.skipped > 0 ? [t('{n} already here', { n: summary.skipped })] : []),
+            ...(summary.sheets > 0
+              ? [t('sheet music added to {n} of them', { n: summary.sheets })]
+              : []),
             summary.progress === 1
               ? t('1 progress entry merged')
               : t('{n} progress entries merged', { n: summary.progress }),
