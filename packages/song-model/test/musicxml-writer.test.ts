@@ -220,6 +220,26 @@ describe('song → MusicXML', () => {
     ]);
   });
 
+  it('writes quarter-note triplets as triplet quarters under one bracket', () => {
+    const song = midiToSong(
+      notatedMidi([
+        { pitch: 72, start: 0, value: 2 / 3 },
+        { pitch: 74, start: 2 / 3, value: 2 / 3 },
+        { pitch: 76, start: 4 / 3, value: 2 / 3 },
+        { pitch: 77, start: 2, value: 2 },
+        { pitch: 48, start: 0, value: 4, track: 1 },
+      ]),
+    );
+    const { xml } = songToMusicXml(song);
+    const upper = xml.split('<backup>')[0] ?? '';
+    expect(upper.match(/<type>quarter<\/type><time-modification>/g)).toHaveLength(3);
+    expect(upper.match(/<tuplet type="start"/g)).toHaveLength(1);
+    expect(upper).not.toContain('<tie ');
+    expect(parse(xml).notes.map((n) => n.startBeat.toFixed(3))).toEqual(
+      song.notes.map((n) => n.startBeat.toFixed(3)),
+    );
+  });
+
   it('writes rests where they fall in the bar', () => {
     // 4/4: a quarter on beat 2, a sixteenth after the middle; 6/8: one eighth.
     const song = midiToSong(

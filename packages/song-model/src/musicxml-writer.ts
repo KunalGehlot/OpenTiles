@@ -135,7 +135,7 @@ interface Metre {
   beam: number;
   /** Where a long note on beat 2 is tied (the middle of a 4/4 or 12/8 bar), or 0. */
   half: number;
-  /** Triplets are found and bracketed per unit (a quarter, or an eighth in x/8). */
+  /** Triplets are found and bracketed per unit: a quarter, or an eighth in x/8 (see tripletUnits). */
   unit: number;
   compound: boolean;
 }
@@ -265,15 +265,34 @@ function voicesOf(segments: Segment[]): Chord[][] {
   return voices.sort((a, b) => height(b) - height(a)).map((v) => v.chords);
 }
 
-/** Starts of the triplet units of one voice: units with an onset or end off the binary grid. */
-function tripletUnits(chords: readonly Chord[], metre: Metre): Set<number> {
-  const units = new Set<number>();
-  for (const c of chords) {
-    for (const p of [c.start, c.end]) {
-      if (p % SHORTEST !== 0) units.add(Math.floor(p / metre.unit) * metre.unit);
-    }
+/** Triplet units of one voice in one bar, as start → length. */
+type Triplets = Map<number, number>;
+
+/**
+ * The triplet units of one voice: units with an onset or end off the binary grid. In x/4 time two
+ * beats whose every onset and end falls on a third of a half note are one unit, so quarter-note
+ * triplets are written as such rather than as tied triplet eighths.
+ */
+function tripletUnits(chords: readonly Chord[], metre: Metre, length: number): Triplets {
+  const edges = chords.flatMap((c) => [c.start, c.end]);
+  const units: Triplets = new Map();
+  for (const p of edges) {
+    if (p % SHORTEST === 0) continue;
+    const pair = Math.floor(p / (2 * DIVISIONS)) * 2 * DIVISIONS;
+    const halfTriplets =
+      metre.beat === DIVISIONS &&
+      pair + 2 * DIVISIONS <= length &&
+      edges.every((e) => e <= pair || e >= pair + 2 * DIVISIONS || (e - pair) % 64 === 0);
+    if (halfTriplets) units.set(pair, 2 * DIVISIONS);
+    else units.set(Math.floor(p / metre.unit) * metre.unit, metre.unit);
   }
   return units;
+}
+
+/** The triplet unit that contains `p`, if any. */
+function unitAt(triplets: Triplets, p: number): [number, number] | undefined {
+  for (const [u, len] of triplets) if (p >= u && p < u + len) return [u, len];
+  return undefined;
 }
 
 /**
@@ -282,11 +301,11 @@ function tripletUnits(chords: readonly Chord[], metre: Metre): Set<number> {
  * nothing from beat 2 of a 4/4 bar crosses its middle. Each span is written as one value or tied
  * values.
  */
-function spans(a: number, b: number, metre: Metre, triplets: Set<number>) {
+function spans(a: number, b: number, metre: Metre, triplets: Triplets) {
   const cuts = new Set<number>();
-  for (const u of triplets) {
+  for (const [u, len] of triplets) {
     if (u > a && u < b) cuts.add(u);
-    if (u + metre.unit > a && u + metre.unit < b) cuts.add(u + metre.unit);
+    if (u + len > a && u + len < b) cuts.add(u + len);
   }
   const parts: [number, number][] = [];
   let from = a;
@@ -298,8 +317,7 @@ function spans(a: number, b: number, metre: Metre, triplets: Set<number>) {
 
   const out: { start: number; end: number; triplet: boolean }[] = [];
   for (const [s, e] of parts) {
-    const unit = Math.floor(s / metre.unit) * metre.unit;
-    if (triplets.has(unit)) {
+    if (unitAt(triplets, s)) {
       out.push({ start: s, end: e, triplet: true });
       continue;
     }
@@ -350,7 +368,7 @@ function restValues(start: number, end: number, metre: Metre, triplet: boolean):
  * those between their notes, as engravers usually leave the rest out.
  */
 function piecesOf(chords: readonly Chord[], length: number, metre: Metre, main: boolean): Piece[] {
-  const triplets = tripletUnits(chords, metre);
+  const triplets = tripletUnits(chords, metre, length);
   const pieces: Piece[] = [];
   const gap = (a: number, b: number, inner: boolean) => {
     if (b <= a) return;
@@ -431,16 +449,16 @@ function piecesOf(chords: readonly Chord[], length: number, metre: Metre, main: 
     at = c.end;
   }
   gap(at, length, false);
-  markTuplets(pieces, metre);
+  markTuplets(pieces, triplets);
   markBeams(pieces, metre);
   return pieces;
 }
 
-function markTuplets(pieces: Piece[], metre: Metre): void {
+function markTuplets(pieces: Piece[], triplets: Triplets): void {
   const byUnit = new Map<number, Piece[]>();
   for (const p of pieces) {
     if (!p.triplet || p.space) continue;
-    const u = Math.floor(p.start / metre.unit);
+    const u = unitAt(triplets, p.start)?.[0] ?? p.start;
     byUnit.set(u, [...(byUnit.get(u) ?? []), p]);
   }
   for (const group of byUnit.values()) {
