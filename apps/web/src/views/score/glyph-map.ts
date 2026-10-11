@@ -42,6 +42,37 @@ export interface ScoreLinks {
 const EPS = 1e-3;
 const key = (measure: number, onset: number) => `${measure}:${Math.round(onset * 96)}`;
 
+/**
+ * Links for a score written from the song (P5-13): each written note's id is the ref of the song
+ * note it draws (`SongNote.sourceRefs`), and Verovio keeps it as the glyph's id. So the links come
+ * straight from the refs, without the timemap and the per-note pitch queries, which take most of
+ * the time on a long piece. `drawn` holds the note ids in the rendered SVG; a ref missing from it
+ * leaves its note unmatched.
+ */
+export function linkByRefs(song: Song, drawn: ReadonlySet<string>): ScoreLinks {
+  const glyphsOf = new Map<string, string[]>();
+  const notesOf = new Map<string, string[]>();
+  const unmatched: string[] = [];
+  for (const n of song.notes) {
+    const glyphs = n.sourceRefs.filter((ref) => drawn.has(ref));
+    if (glyphs.length === 0 || glyphs[0] !== n.sourceRefs[0]) {
+      unmatched.push(n.id);
+      continue;
+    }
+    glyphsOf.set(n.id, glyphs);
+    for (const g of glyphs) notesOf.set(g, [...(notesOf.get(g) ?? []), n.id]);
+  }
+  return { glyphsOf, notesOf, unmatched };
+}
+
+/** Note ids in one or more SVG pages. */
+export function noteIdsFromSvg(svgs: readonly string[]): Set<string> {
+  const ids = new Set<string>();
+  const re = /<g\b[^>]*\bid="([^"]+)"[^>]*\bclass="note\b/g;
+  for (const svg of svgs) for (const m of svg.matchAll(re)) if (m[1]) ids.add(m[1]);
+  return ids;
+}
+
 /** Verovio marks the second and later passes of a repeat as `<id>-rend2`, `-rend3`, … */
 export function baseId(id: string): string {
   return id.replace(/-rend\d+$/, '');

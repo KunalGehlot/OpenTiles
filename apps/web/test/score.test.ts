@@ -4,18 +4,20 @@ import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { DOMParser } from '@xmldom/xmldom';
 import { describe, expect, it } from 'vitest';
-import { parseMusicXml } from '@opentiles/song-model';
+import { midiToSong, parseMusicXml, transpose } from '@opentiles/song-model';
 import type { DomParserLike, Song } from '@opentiles/song-model';
 import { beatAt, buildAnchors, positionAt } from '../src/views/score/cursor-map';
 import type { MeasureBox } from '../src/views/score/cursor-map';
 import {
   baseId,
   glyphsFromTimemap,
+  linkByRefs,
   linkNotes,
   measureOrderFromSvg,
+  noteIdsFromSvg,
 } from '../src/views/score/glyph-map';
 import type { Glyph, TimemapEntry } from '../src/views/score/glyph-map';
-import { formatOfPath, notationFor } from '../src/views/score/notation';
+import { formatOfPath, scoreFor } from '../src/views/score/notation';
 import { glyphStates, nearestByBeat, noteStates } from '../src/views/score/note-states';
 
 const domParser = new DOMParser() as unknown as DomParserLike;
@@ -78,6 +80,92 @@ function fixture(): string {
 }
 
 const parse = (xml: string): Song => parseMusicXml(xml, { domParser });
+
+/** A format-1 MIDI file at 480 ticks a beat; each track's notes are [start tick, end tick, pitch]. */
+function smf(tracks: { notes: [number, number, number][]; meta?: number[][] }[]): Uint8Array {
+  const varlen = (v: number) => {
+    const out = [v & 0x7f];
+    while ((v >>= 7) > 0) out.unshift((v & 0x7f) | 0x80);
+    return out;
+  };
+  const track = ({ notes, meta = [] }: (typeof tracks)[number]) => {
+    const events: [number, number[]][] = meta.map((m) => [0, m]);
+    for (const [start, end, pitch] of notes) {
+      events.push([start, [0x90, pitch, 80]], [end, [0x80, pitch, 0]]);
+    }
+    events.sort((a, b) => a[0] - b[0] || (a[1][0] ?? 0) - (b[1][0] ?? 0));
+    const bytes: number[] = [];
+    let last = 0;
+    for (const [tick, data] of events) {
+      bytes.push(...varlen(tick - last), ...data);
+      last = tick;
+    }
+    bytes.push(0, 0xff, 0x2f, 0);
+    return [0x4d, 0x54, 0x72, 0x6b, 0, 0, bytes.length >> 8, bytes.length & 0xff, ...bytes];
+  };
+  return new Uint8Array([
+    ...[0x4d, 0x54, 0x68, 0x64, 0, 0, 0, 6, 0, 1, 0, tracks.length, 0x01, 0xe0],
+    ...tracks.flatMap(track),
+  ]);
+}
+
+/**
+ * A two-track MIDI file as notation software writes one (self-made, CC0): B flat major, notes
+ * sounding for 95 % of their value. Notes are [beat, pitch, value in beats].
+ */
+function midiFixture(): Uint8Array {
+  const right: [number, number, number][] = [
+    [0, 70, 1],
+    [1, 72, 0.5],
+    [1.5, 74, 0.5],
+    [2, 75, 1],
+    [2, 79, 1],
+    [3, 77, 2], // tied over the barline
+    [5, 78, 1], // F sharp
+    [6, 79, 1 / 3],
+    [6 + 1 / 3, 81, 1 / 3],
+    [6 + 2 / 3, 82, 1 / 3],
+    [7, 84, 1],
+  ];
+  const left: [number, number, number][] = [
+    [0, 46, 4],
+    [0, 53, 2],
+    [2, 58, 2],
+    [4, 43, 4],
+  ];
+  const ticks = (notes: [number, number, number][]) =>
+    notes.map(([beat, pitch, value]): [number, number, number] => [
+      Math.round(beat * 480),
+      Math.round((beat + value * 0.95) * 480),
+      pitch,
+    ]);
+  const key = [0xff, 0x59, 2, 0xfe, 0];
+  const tempo = [0xff, 0x51, 3, 0x09, 0x27, 0xc0]; // 100 bpm
+  return smf([
+    { notes: ticks(right), meta: [tempo, key] },
+    { notes: ticks(left), meta: [key] },
+  ]);
+}
+
+/**
+ * A played one-track MIDI file (self-made, CC0): loose timing, so it takes the seconds-based
+ * quantiser and the hand split, and six-note chords whose keys are let go one after another, so
+ * a staff needs more lines than it has voices.
+ */
+function playedFixture(): Uint8Array {
+  const notes: [number, number, number][] = [];
+  const jitter = (i: number) => ((i * 37) % 17) - 8;
+  for (let bar = 0; bar < 4; bar++) {
+    const at = bar * 1920;
+    [72, 74, 76, 79, 81, 84].forEach((pitch, k) => {
+      notes.push([at + jitter(k), at + 480 + k * 240 + jitter(k + 3), pitch]);
+    });
+    for (let q = 0; q < 4; q++) {
+      notes.push([at + q * 480 + jitter(q), at + q * 480 + 400, 43 + q]);
+    }
+  }
+  return smf([{ notes }]);
+}
 
 /** The glyphs Verovio would report for the fixture (ids are made up). */
 function fixtureGlyphs(): { glyphs: Glyph[]; timemap: TimemapEntry[] } {
@@ -179,6 +267,25 @@ describe('glyph matching', () => {
     expect(linkNotes(song, renumbered).glyphsOf.get(g4?.id ?? '')).toEqual(['g4b']);
   });
 
+  it('links a written score by refs, and reports a note whose glyph is missing', () => {
+    const song = parse(fixture());
+    const drawn = new Set(song.notes.flatMap((n) => n.sourceRefs));
+    expect(linkByRefs(song, drawn).unmatched).toEqual([]);
+    const tied = song.notes.find((n) => n.sourceRefs.length === 2);
+    expect(linkByRefs(song, drawn).glyphsOf.get(tied?.id ?? '')).toEqual(tied?.sourceRefs);
+    // Both passes of the repeat are drawn by the first note's glyph.
+    const removed = song.notes[0]?.sourceRefs[0] ?? '';
+    drawn.delete(removed);
+    expect(linkByRefs(song, drawn).unmatched).toEqual(
+      song.notes.filter((n) => n.sourceRefs[0] === removed).map((n) => n.id),
+    );
+    expect(
+      noteIdsFromSvg([
+        '<g id="a" class="note"><g id="b" class="notehead"/></g><g id="c" class="note ot-correct">',
+      ]),
+    ).toEqual(new Set(['a', 'c']));
+  });
+
   it('reports notes it cannot place', () => {
     const song = parse(fixture());
     const links = linkNotes(song, []);
@@ -187,7 +294,7 @@ describe('glyph matching', () => {
 });
 
 describe('Verovio in Node', () => {
-  const loadToolkit = async (data: string) => {
+  const loadToolkit = async (data: string, options: object = {}) => {
     const { default: createModule } = await import('verovio/wasm');
     const { VerovioToolkit, enableLog, LOG_OFF } = await import('verovio/esm');
     const module = await createModule();
@@ -203,13 +310,13 @@ describe('Verovio in Node', () => {
         destroy(): void;
       }
     )(module);
-    tk.setOptions({ breaks: 'none', header: 'none', footer: 'none' });
+    tk.setOptions({ breaks: 'none', header: 'none', footer: 'none', ...options });
     expect(tk.loadData(data)).toBeTruthy();
     return tk;
   };
 
-  const linkWithVerovio = async (xml: string) => {
-    const tk = await loadToolkit(xml);
+  const linkWithVerovio = async (xml: string, song = parse(xml), options: object = {}) => {
+    const tk = await loadToolkit(xml, options);
     const svg = tk.renderToSVG(1);
     const glyphs = glyphsFromTimemap(
       tk.renderToTimemap({ includeMeasures: true, includeRests: false }),
@@ -217,13 +324,53 @@ describe('Verovio in Node', () => {
       (id) => tk.getMIDIValuesForElement(id).pitch,
     );
     tk.destroy();
-    return { svg, glyphs, links: linkNotes(parse(xml), glyphs) };
+    return { svg, glyphs, links: linkNotes(song, glyphs) };
   };
 
   it('links every note of the fixture to a rendered glyph and draws its fingering', async () => {
     const { svg, links } = await linkWithVerovio(fixture());
     expect(links.unmatched).toEqual([]);
     expect(svg).toContain('class="fing"');
+  }, 30_000);
+
+  it('links every note of a score written from a MIDI file to its own glyph, also transposed', async () => {
+    const written = scoreFor('midi', undefined, midiToSong(midiFixture()));
+    if (written.notation.kind === 'none') throw new Error(written.notation.reason);
+    for (const shift of [0, 3]) {
+      // As in practice: the song is shifted and Verovio transposes the score by the same amount.
+      const song = transpose(written.song, shift);
+      const { svg, glyphs, links } = await linkWithVerovio(
+        written.notation.text,
+        song,
+        shift ? { transpose: String(shift) } : {},
+      );
+      expect(links.unmatched, `shift ${shift}`).toEqual([]);
+      // Verovio keeps the refs as glyph ids, so linking by ref (what the app does for a written
+      // score) gives the very glyphs the timemap matching finds.
+      const byRefs = linkByRefs(song, noteIdsFromSvg([svg]));
+      expect(byRefs.unmatched).toEqual([]);
+      expect(byRefs.glyphsOf).toEqual(links.glyphsOf);
+      const pitchOf = new Map(glyphs.map((g) => [g.id, g.pitch]));
+      for (const n of song.notes) {
+        const ids = links.glyphsOf.get(n.id) ?? [];
+        // The head and every tie continuation, each at the note's own pitch.
+        expect(ids).toHaveLength(n.sourceRefs.length);
+        for (const id of ids) expect(pitchOf.get(id)).toBe(n.pitch);
+      }
+      expect(song.notes.some((n) => n.sourceRefs.length === 2)).toBe(true);
+    }
+  }, 30_000);
+
+  it('draws a played one-track MIDI file with crowded chords, bars intact and every note linked', async () => {
+    const imported = midiToSong(playedFixture());
+    const written = scoreFor('midi', undefined, imported);
+    if (written.notation.kind === 'none') throw new Error(written.notation.reason);
+    const back = parse(written.notation.text);
+    expect(back.measures.map((m) => [m.startBeat, m.lengthBeats])).toEqual(
+      imported.measures.map((m) => [m.startBeat, m.lengthBeats]),
+    );
+    const { svg } = await linkWithVerovio(written.notation.text, written.song);
+    expect(linkByRefs(written.song, noteIdsFromSvg([svg])).unmatched).toEqual([]);
   }, 30_000);
 
   it('links every note of the catalogue pieces', async () => {
@@ -377,16 +524,33 @@ describe('note colours', () => {
 
 describe('notation source', () => {
   const xml = new TextEncoder().encode(fixture());
+  const song = parse(fixture());
+  const notationFor = (format: Song['format'], bytes: Uint8Array, shift = 0) =>
+    scoreFor(format, bytes, song, shift).notation;
 
-  it('draws MusicXML and ABC, transposed like the song', () => {
+  it('draws MusicXML and ABC, transposed like the song, and keeps their song', () => {
     expect(notationFor('musicxml', xml, 2)).toMatchObject({ kind: 'musicxml', transpose: 2 });
     const abc = new TextEncoder().encode('X:1\nT:Scale\nK:C\nCDEF|\n');
     expect(notationFor('abc', abc)).toMatchObject({ kind: 'abc', transpose: 0 });
     expect(notationFor('musicxml', abc).kind).toBe('abc');
+    expect(scoreFor('musicxml', xml, song).song).toBe(song);
   });
 
-  it('has no score for MIDI, audio and MuseScore imports, and says why', () => {
-    for (const format of ['midi', 'audio', 'mscz'] as const) {
+  it('writes the score of a MIDI import from its song, which is already transposed', () => {
+    const imported = transpose(midiToSong(midiFixture()), 2);
+    const { song: linked, notation } = scoreFor('midi', midiFixture(), imported, 2);
+    expect(notation).toMatchObject({ kind: 'musicxml', transpose: 0, generated: true });
+    if (notation.kind !== 'musicxml') return;
+    // The score says what the song says: same notes, now with the refs of their glyphs.
+    const back = parse(notation.text);
+    const at = (n: Song['notes'][number]) => [n.pitch, Math.round(n.startBeat * 96)];
+    expect(back.notes.map(at)).toEqual(imported.notes.map(at));
+    expect(linked.notes.map((n) => n.id)).toEqual(imported.notes.map((n) => n.id));
+    expect(linked.notes.map((n) => n.sourceRefs)).toEqual(back.notes.map((n) => n.sourceRefs));
+  });
+
+  it('has no score for audio and MuseScore imports, and says why', () => {
+    for (const format of ['audio', 'mscz'] as const) {
       const n = notationFor(format, xml);
       expect(n.kind).toBe('none');
       if (n.kind === 'none') expect(n.reason).toMatch(/falling notes/);

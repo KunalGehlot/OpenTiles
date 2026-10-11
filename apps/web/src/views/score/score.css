@@ -167,6 +167,14 @@
   padding: 0.75rem 1rem;
 }
 
+/* A score written from a MIDI file (P5-13) says so, in one small line under the music. */
+.ot-score-note {
+  margin: 0;
+  padding: 0.15rem 0.75rem 0.3rem;
+  font-size: 0.8em;
+  text-align: center;
+}
+
 .ot-score-pager {
   display: flex;
   align-items: center;

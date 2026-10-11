@@ -1,7 +1,8 @@
-// What the score views can draw for a piece: the original MusicXML or ABC text, or nothing (with
-// the reason shown next to the view switch). Pure; nothing leaves the device.
-import { decodeXml, isZip, looksLikeAbc, unzipMxl } from '@opentiles/song-model';
-import type { SongFormat } from '@opentiles/song-model';
+// What the score views can draw for a piece: the original MusicXML or ABC text, a score written
+// from the song for MIDI files (P5-13, ADR 0017), or nothing (with the reason shown next to the view
+// switch). Pure; nothing leaves the device.
+import { decodeXml, isZip, looksLikeAbc, songToMusicXml, unzipMxl } from '@opentiles/song-model';
+import type { Song, SongFormat } from '@opentiles/song-model';
 import { t } from '../../i18n';
 
 export type NotationSource =
@@ -10,14 +11,14 @@ export type NotationSource =
       text: string;
       /** Semitones the song was transposed by on import; the score is drawn transposed too. */
       transpose: number;
+      /** Written from the song rather than taken from a score file (MIDI). */
+      generated?: boolean;
     }
   | { kind: 'none'; reason: string };
 
 /** Why a format has no score view, or null when it has one. */
 function noScoreReason(format: SongFormat): string | null {
   switch (format) {
-    case 'midi':
-      return t('MIDI files have no printed score, so this piece is shown as falling notes.');
     case 'audio':
       return t(
         'Pieces made from a recording have no printed score, so they are shown as falling notes.',
@@ -32,7 +33,7 @@ function noScoreReason(format: SongFormat): string | null {
 }
 
 /** The notation for a piece from its original file bytes. */
-export function notationFor(
+function notationFor(
   format: SongFormat,
   bytes: Uint8Array | undefined,
   transpose = 0,
@@ -57,6 +58,36 @@ export function notationFor(
     return { kind: 'musicxml', text, transpose };
   } catch {
     return { kind: 'none', reason: t('This score file could not be read for the score view.') };
+  }
+}
+
+/**
+ * The song to practise and the notation to draw for a piece. A MIDI file has no notation of its
+ * own, so its score is written from the song, which is already transposed and has the hands as
+ * reviewed on import; the song comes back with the glyph refs of that score. Other formats draw
+ * their original file (`notationFor`).
+ */
+export function scoreFor(
+  format: SongFormat,
+  bytes: Uint8Array | undefined,
+  song: Song,
+  transpose = 0,
+): { song: Song; notation: NotationSource } {
+  if (format !== 'midi') return { song, notation: notationFor(format, bytes, transpose) };
+  try {
+    const written = songToMusicXml(song);
+    return {
+      song: written.song,
+      notation: { kind: 'musicxml', text: written.xml, transpose: 0, generated: true },
+    };
+  } catch {
+    return {
+      song,
+      notation: {
+        kind: 'none',
+        reason: t('This score file could not be read for the score view.'),
+      },
+    };
   }
 }
 
