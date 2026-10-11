@@ -463,6 +463,15 @@ images, sounds or fonts, and credit the inspiration in [CREDITS.md](CREDITS.md).
   keep the sheet. Left: the Library page loads every stored file into memory (a separate table for
   file bytes would fix it), an iPad check of the picker.
 
+- [~] **P5-16** (APP) The keyboard drawn in practice has exactly the keys chosen. Reason
+  (maintainer, 2026-10-11): 61 keys showed more than 61, and smaller sizes changed nothing. Cause:
+  the wide-window rule that adds octaves (white keys capped at 64 px) also widened a chosen
+  keyboard; at 2,560 px 61 keys drew 73, and 49, 37 and 25 keys all drew 61. Done: only "Fit
+  piece" widens; a chosen keyboard draws its keys, centred, with margins on a wide window; e2e
+  tests for every preset at 2,560, 2,056 and 320 px (keys drawn, edges from the pixels, lanes over
+  their keys) that fail without the fix. Checked in the maintainer's Chrome at 2,560 px: every
+  preset draws exactly its keys. Left: a real iPad.
+
 Left out on purpose: 128 General MIDI instruments (a piano trainer, and extra sample licences and
 size), Sightread's song library and assets, and any analytics.
 
