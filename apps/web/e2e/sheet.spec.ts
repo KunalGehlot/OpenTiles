@@ -7,6 +7,21 @@ import type { Page } from '@playwright/test';
 import { scanPdf, scorePdf } from '../../../packages/sheet/test/fixtures';
 import type { FixtureBar } from '../../../packages/sheet/test/fixtures';
 
+/** The elements that reach past the right edge of the window, for a failure message. */
+function sticksOut(page: Page): Promise<string> {
+  return page.evaluate(() =>
+    [...document.querySelectorAll('body *')]
+      .map((e) => ({ e, r: e.getBoundingClientRect() }))
+      .filter(({ r }) => r.width > 0 && r.right > window.innerWidth + 0.5)
+      .slice(0, 12)
+      .map(
+        ({ e, r }) =>
+          `${e.tagName.toLowerCase()}.${String(e.className)} right=${r.right.toFixed(1)}`,
+      )
+      .join('; '),
+  );
+}
+
 // Eight written bars, with a repeat of bars 3 to 5: played 1 2 3 4 5 3 4 5 6 7 8.
 const HEADS = [3, 5, 6, 4, 7, 2, 5, 6];
 const PLAYED = [0, 1, 2, 3, 4, 2, 3, 4, 5, 6, 7];
@@ -208,9 +223,12 @@ test('the Sheet view draws the learner’s PDF and the highlight follows the mus
     await page.setViewportSize(size);
     await expect(highlight).toBeVisible();
     await expect(panel.locator('canvas.ot-sheet-canvas')).toHaveCount(1);
-    // Polled: right after a resize WebKit can report the old width for a moment.
+    // Polled: right after a resize WebKit can report the old width for a moment. On failure the
+    // message names what sticks out, since it can depend on the fonts of the machine.
     await expect
-      .poll(() => page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth))
+      .poll(() => page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth), {
+        message: `sideways scroll at ${size.width}px: ${await sticksOut(page)}`,
+      })
       .toBeLessThanOrEqual(0);
   }
   expect(problems).toEqual([]);

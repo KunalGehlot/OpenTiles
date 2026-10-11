@@ -504,7 +504,9 @@ function PracticeView({
       const input = createMidiInput();
       input.onNote = (e) => session.input(e);
       input.onRelease = (p, time) => session.release(p, time);
-      input.onDevicesChanged = setMidiDevices;
+      // A port opening fires this too; only a real change of keyboards re-renders the screen.
+      input.onDevicesChanged = (names) =>
+        setMidiDevices((old) => (old.join('\n') === names.join('\n') ? old : names));
       // The browser's permission prompt is easy to miss, and nothing happens until it is answered.
       await startMidiInput(input, () => !quiet && setMidiWaiting(true)).finally(() =>
         setMidiWaiting(false),
