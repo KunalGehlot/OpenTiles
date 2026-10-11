@@ -1,7 +1,7 @@
 // Standard MIDI File → Song (spec §8 "Rules for MIDI files").
 import { splitHands } from './handsplit';
 import { ImportError } from './errors';
-import { quantise } from './quantise';
+import { looksNotated, quantise, quantiseNotated } from './quantise';
 import { TempoMap } from './tempo';
 import type {
   KeySignatureEvent,
@@ -235,13 +235,17 @@ export function midiToSong(bytes: Uint8Array, options: MidiImportOptions = {}): 
   }
   const tempoMap = new TempoMap(tempos);
 
-  const q = quantise(
-    raw.map((n) => ({
-      startBeat: n.startTick / ppq,
-      durationBeats: (n.endTick - n.startTick) / ppq,
-    })),
-    tempoMap,
-  );
+  // A file written by notation software keeps its written rhythm; a played one is snapped to the
+  // grid that fits the playing (spec §8).
+  const q = looksNotated(raw, ppq)
+    ? { notes: quantiseNotated(raw, ppq) }
+    : quantise(
+        raw.map((n) => ({
+          startBeat: n.startTick / ppq,
+          durationBeats: (n.endTick - n.startTick) / ppq,
+        })),
+        tempoMap,
+      );
 
   // Hands: two or more tracks → by average pitch; one track → pitch split with smoothing.
   const tracks = [...new Set(raw.map((n) => n.track))];
@@ -268,17 +272,25 @@ export function midiToSong(bytes: Uint8Array, options: MidiImportOptions = {}): 
     ...q.notes.map((n) => n.startBeat + n.durationBeats),
     ...tempos.map((t) => t.beat),
   );
-  const timeSignatures: TimeSignatureEvent[] = file.timeSignatures
-    .sort((a, b) => a.tick - b.tick)
-    .map((t) => ({ beat: t.tick / ppq, numerator: t.numerator, denominator: t.denominator }));
+  const timeSignatures = changes(
+    file.timeSignatures.map((t) => ({
+      beat: t.tick / ppq,
+      numerator: t.numerator,
+      denominator: t.denominator,
+    })),
+    (a, b) => a.numerator === b.numerator && a.denominator === b.denominator,
+  );
   if (timeSignatures.length === 0 || (timeSignatures[0]?.beat ?? 0) > 0) {
     timeSignatures.unshift({ beat: 0, numerator: 4, denominator: 4 });
   }
-  const keySignatures: KeySignatureEvent[] = file.keySignatures.map((k) => ({
-    beat: k.tick / ppq,
-    fifths: k.fifths,
-    mode: k.minor ? 'minor' : 'major',
-  }));
+  const keySignatures = changes<KeySignatureEvent>(
+    file.keySignatures.map((k) => ({
+      beat: k.tick / ppq,
+      fifths: k.fifths,
+      mode: k.minor ? 'minor' : 'major',
+    })),
+    (a, b) => a.fifths === b.fifths && a.mode === b.mode,
+  );
   const measures = measuresFromTimeSignatures(timeSignatures, lengthBeats);
 
   const notes: SongNote[] = raw
@@ -315,6 +327,20 @@ export function midiToSong(bytes: Uint8Array, options: MidiImportOptions = {}): 
     lengthBeats: measures.reduce((s, m) => s + m.lengthBeats, 0),
     warnings,
   };
+}
+
+/**
+ * Events in order, one per beat (the last wins), kept only where the value changes. Notation
+ * software repeats key and time signatures on every track (MuseScore writes them once per staff).
+ */
+function changes<T extends { beat: number }>(events: T[], same: (a: T, b: T) => boolean): T[] {
+  const out: T[] = [];
+  for (const e of [...events].sort((a, b) => a.beat - b.beat)) {
+    const last = out[out.length - 1];
+    if (last && Math.abs(last.beat - e.beat) < 1e-9) out[out.length - 1] = e;
+    else if (!last || !same(last, e)) out.push(e);
+  }
+  return out;
 }
 
 function dedupe(tempos: TempoEvent[]): TempoEvent[] {
