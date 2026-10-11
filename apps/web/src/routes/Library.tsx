@@ -188,7 +188,7 @@ export function Library() {
   };
 
   const onFiles = (files: File[]) => {
-    // The picker is disabled while a recording is transcribed; a drop then waits its turn too.
+    // The picker is disabled while a recording is transcribed; files dropped then are ignored.
     if (files.length === 0 || audio) return;
     setErrors([]);
     setAsk(null);

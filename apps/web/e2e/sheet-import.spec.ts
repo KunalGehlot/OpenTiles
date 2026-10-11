@@ -1,9 +1,9 @@
 // Sheet-music PDFs kept with a piece (P5-15, ADR 0018): importing a PDF with its MIDI file, a PDF
 // on its own, and adding, replacing and removing one later. Every file is generated in
-// e2e/fixtures.ts (CC0).
+// e2e/sheet-import-fixtures.ts (CC0).
 import { expect, test } from '@playwright/test';
 import type { Locator, Page } from '@playwright/test';
-import { tinyMidi, tinyPdf } from './fixtures';
+import { tinyMidi, tinyPdf } from './sheet-import-fixtures';
 
 const midi = (name: string) => ({ name, mimeType: 'audio/midi', buffer: tinyMidi() });
 const pdf = (name: string) => ({ name, mimeType: 'application/pdf', buffer: tinyPdf() });
@@ -161,6 +161,28 @@ test('a score file and a PDF with different names: the learner decides', async (
   await pickFiles(page, [midi('Etude.mid'), pdf('Scan 0042.pdf')]);
   await page.getByRole('button', { name: 'Yes, one piece' }).click();
   await expect(page.getByText('Sheet music: Scan 0042.pdf')).toBeVisible();
+});
+
+test('files dropped before the first import wait for the rights confirmation', async ({ page }) => {
+  await page.goto('./#/library');
+  const files = [
+    { name: 'Prelude.mid', type: 'audio/midi', bytes: [...tinyMidi()] },
+    { name: 'Prelude.pdf', type: 'application/pdf', bytes: [...tinyPdf()] },
+  ];
+  const dataTransfer = await page.evaluateHandle((list) => {
+    const dt = new DataTransfer();
+    for (const f of list) {
+      dt.items.add(new File([new Uint8Array(f.bytes)], f.name, { type: f.type }));
+    }
+    return dt;
+  }, files);
+  await page.dispatchEvent('main', 'drop', { dataTransfer });
+  await expect(page.getByRole('heading', { name: 'Before your first import' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Check the import' })).toHaveCount(0);
+  await page.getByRole('checkbox', { name: /I only import files/ }).check();
+  await page.getByRole('button', { name: 'Continue' }).click();
+  await expect(page.getByRole('heading', { name: 'Check the import' })).toBeVisible();
+  await expect(page.getByText('Sheet music: Prelude.pdf')).toBeVisible();
 });
 
 test('several pairs dropped on the page at once are reviewed one by one', async ({ page }) => {
