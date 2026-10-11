@@ -485,8 +485,8 @@ export const de: Readonly<Record<string, string>> = {
     'Klassische Stücke, von Freiwilligen gesetzt, die meisten gemeinfrei oder unter Creative Commons. Zu jedem Stück gibt es eine MIDI-Datei, die sich direkt in OpenTiles öffnen lässt.',
   'Public-domain music transcribed by volunteers and released as CC0, published on MuseScore.com. Download MusicXML or MuseScore files.':
     'Gemeinfreie Musik, von Freiwilligen übertragen und als CC0 veröffentlicht, auf MuseScore.com. Lade MusicXML- oder MuseScore-Dateien herunter.',
-  'The largest library of public-domain scores. Most files are scanned PDFs, which OpenTiles cannot open; some pieces also have MusicXML or MIDI files. Check the copyright note on each file for your country.':
-    'Die größte Bibliothek gemeinfreier Noten. Die meisten Dateien sind eingescannte PDFs, die OpenTiles nicht öffnen kann; zu manchen Stücken gibt es auch MusicXML- oder MIDI-Dateien. Prüf den Urheberrechtshinweis jeder Datei für dein Land.',
+  'The largest library of public-domain scores. Most files are scanned PDFs: OpenTiles can keep one with a piece and show it as your sheet music, but the notes come from a MIDI or score file, which some pieces also have. Check the copyright note on each file for your country.':
+    'Die größte Bibliothek gemeinfreier Noten. Die meisten Dateien sind eingescannte PDFs: OpenTiles kann eines mit einem Stück speichern und dir als Notenblatt zeigen, die Noten kommen aber aus einer MIDI- oder Notendatei, die es zu manchen Stücken auch gibt. Prüf den Urheberrechtshinweis jeder Datei für dein Land.',
   'mostly PDF; some MusicXML and MIDI': 'meist PDF; teils MusicXML und MIDI',
   'Public-domain sheet music and recordings, free to download.':
     'Gemeinfreie Noten und Aufnahmen zum kostenlosen Herunterladen.',
