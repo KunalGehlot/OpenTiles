@@ -208,9 +208,10 @@ test('the Sheet view draws the learner’s PDF and the highlight follows the mus
     await page.setViewportSize(size);
     await expect(highlight).toBeVisible();
     await expect(panel.locator('canvas.ot-sheet-canvas')).toHaveCount(1);
-    expect(
-      await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth),
-    ).toBe(true);
+    // Polled: right after a resize WebKit can report the old width for a moment.
+    await expect
+      .poll(() => page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth))
+      .toBeLessThanOrEqual(0);
   }
   expect(problems).toEqual([]);
 });
