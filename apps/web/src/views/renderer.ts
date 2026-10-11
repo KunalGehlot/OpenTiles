@@ -10,15 +10,8 @@
 import type { Song, SongNote } from '@opentiles/song-model';
 import { isDark, parseColour, rgba } from './colour';
 import type { Rgb } from './colour';
-import {
-  BLACK_HEIGHT,
-  MAX_WHITE_WIDTH,
-  keyAt,
-  keyboardHeightFor,
-  layoutKeyboard,
-  widenRange,
-} from './keyboard';
-import type { KeyboardLayout, KeyRect } from './keyboard';
+import { BLACK_HEIGHT, keyAt, keyboardHeightFor, practiceLayout } from './keyboard';
+import type { KeyboardLayout, KeyRect, KeysToDraw } from './keyboard';
 import type { PracticeSession } from './session';
 import { appSettings, effectiveSettings, labelScale } from '../settings/store';
 import { t } from '../i18n';
@@ -149,11 +142,11 @@ export class PracticeRenderer {
 
   constructor(
     private readonly canvas: HTMLCanvasElement,
-    private range: { low: number; high: number },
+    private keys: KeysToDraw,
     readonly options: RenderOptions = { lookahead: 6, showNoteNames: false },
   ) {
     this.palette = readPalette(canvas);
-    this.layout = layoutKeyboard(range.low, range.high, 1);
+    this.layout = this.layoutAt(1);
   }
 
   get keyboardHeight(): number {
@@ -172,12 +165,20 @@ export class PracticeRenderer {
   }
 
   /** Draws other keys: the learner's own keyboard, or the keys a piece needs (P4-07). */
-  setRange(range: { low: number; high: number }): void {
-    if (range.low === this.range.low && range.high === this.range.high) return;
-    this.range = range;
-    const wide = widenRange(range, this.width);
-    this.layout = layoutKeyboard(wide.low, wide.high, this.width, MAX_WHITE_WIDTH);
+  setRange(keys: KeysToDraw): void {
+    // "Fit piece" can ask for the same keys as a preset (C3–C5 is both), but only it may widen.
+    const k = this.keys;
+    if (keys.low === k.low && keys.high === k.high && keys.fixed === k.fixed) return;
+    this.keys = keys;
+    this.layout = this.layoutAt(this.width);
     this.buildGradients();
+  }
+
+  /** The keyboard at `width`; the canvas carries the drawn keys for the end-to-end tests. */
+  private layoutAt(width: number): KeyboardLayout {
+    const layout = practiceLayout(this.keys, width);
+    this.canvas.dataset.drawn = `${layout.low}-${layout.high}`;
+    return layout;
   }
 
   resize(width: number, height: number, dpr = window.devicePixelRatio || 1): void {
@@ -189,8 +190,7 @@ export class PracticeRenderer {
     this.font = '';
     this.canvas.style.width = `${width}px`;
     this.canvas.style.height = `${height}px`;
-    const wide = widenRange(this.range, width);
-    this.layout = layoutKeyboard(wide.low, wide.high, width, MAX_WHITE_WIDTH);
+    this.layout = this.layoutAt(width);
     this.palette = readPalette(this.canvas);
     this.buildGradients();
   }

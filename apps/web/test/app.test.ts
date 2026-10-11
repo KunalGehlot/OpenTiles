@@ -93,4 +93,38 @@ describe('wide windows', () => {
     expect(wide.low).toBeGreaterThanOrEqual(21);
     expect(wide.high).toBeLessThanOrEqual(108);
   });
+
+  // P5-16: a wide window used to add octaves to the learner's own keyboard too.
+  it('draws a chosen keyboard with exactly its keys, centred, at any width', async () => {
+    const { MAX_WHITE_WIDTH, practiceLayout } = await import('../src/views/keyboard');
+    const boards = [
+      { low: 21, high: 108, whites: 52 },
+      { low: 36, high: 96, whites: 36 },
+      { low: 36, high: 84, whites: 29 },
+      { low: 48, high: 84, whites: 22 },
+      { low: 48, high: 72, whites: 15 },
+    ];
+    for (const b of boards) {
+      for (const width of [320, 600, 2056, 2560]) {
+        const l = practiceLayout({ low: b.low, high: b.high, fixed: true }, width);
+        expect([l.low, l.high]).toEqual([b.low, b.high]);
+        expect(l.keys).toHaveLength(b.high - b.low + 1);
+        expect(l.keys.filter((k) => !k.black)).toHaveLength(b.whites);
+        expect(l.whiteWidth).toBeCloseTo(Math.min(width / b.whites, MAX_WHITE_WIDTH));
+        const left = l.keys[0]?.x ?? NaN;
+        const last = l.keys.at(-1);
+        expect(left).toBeCloseTo(width - ((last?.x ?? 0) + (last?.width ?? 0)));
+      }
+    }
+  });
+
+  it('still widens the keys a piece needs on a wide window', async () => {
+    const { MAX_WHITE_WIDTH, practiceLayout } = await import('../src/views/keyboard');
+    const l = practiceLayout({ low: 48, high: 72, fixed: false }, 2056);
+    expect(l.low).toBeLessThan(48);
+    expect(l.high).toBeGreaterThanOrEqual(72);
+    expect(l.whiteWidth).toBeLessThanOrEqual(MAX_WHITE_WIDTH);
+    const narrow = practiceLayout({ low: 48, high: 72, fixed: false }, 320);
+    expect([narrow.low, narrow.high]).toEqual([48, 72]);
+  });
 });

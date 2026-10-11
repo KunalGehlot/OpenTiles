@@ -63,6 +63,7 @@ import {
 } from '../storage/calibration';
 import { db, recordPracticeTime, recordRun } from '../storage/db';
 import { hitTest, rangeFor } from '../views/keyboard';
+import type { KeysToDraw } from '../views/keyboard';
 import { LoopDrag } from '../views/loop-drag';
 import { PracticeRenderer } from '../views/renderer';
 import { PracticeSession } from '../views/session';
@@ -210,8 +211,12 @@ function PracticeView({
     () => prepareSong(shifted, range, fingering),
     [shifted, range, fingering],
   );
-  const keysRange = useMemo(
-    () => range ?? rangeFor(prepared.played.notes.map((n) => n.pitch)),
+  // The learner's keyboard is drawn as it is; the keys a piece needs may grow on a wide window.
+  const keysRange = useMemo<KeysToDraw>(
+    () =>
+      range
+        ? { ...range, fixed: true }
+        : { ...rangeFor(prepared.played.notes.map((n) => n.pitch)), fixed: false },
     [range, prepared],
   );
   const [session] = useState(() => new PracticeSession(prepared.played, now));
