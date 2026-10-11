@@ -108,7 +108,7 @@ export function describeMidiError(error: unknown, userAgent: string): string {
           'Firefox did not give this page access to MIDI. Firefox only sees keyboards that were connected and switched on when it started: connect the keyboard, quit Firefox completely and open it again, then click “Connect MIDI keyboard” and allow access. On a website (not localhost) Firefox also asks to add a small “site permission” add-on: accept it. If you declined before, allow MIDI again under Settings → Privacy & Security → Permissions.',
         )
       : t(
-          'The browser did not allow MIDI for this page. Allow MIDI devices for this site in the browser settings, then try again.',
+          'The browser did not allow MIDI for this site. Click the icon at the left of the address bar, allow MIDI devices (Chrome lists them under Site settings), then press Connect again.',
         );
   }
   if (name === 'NotSupportedError') {
@@ -117,6 +117,72 @@ export function describeMidiError(error: unknown, userAgent: string): string {
     );
   }
   return error instanceof Error ? t(error.message) : String(error);
+}
+
+let granted: MIDIAccess | null = null;
+// Every access the browser ever handed out, kept so none of them (or their ports) is collected.
+const kept: MIDIAccess[] = [];
+
+/**
+ * The page's one MIDIAccess, kept until the page closes. Firefox gives every requestMIDIAccess()
+ * its own port objects but closes a device by its id when any of them is garbage-collected
+ * (midirMIDIPlatformService::ScheduleClose), which silences the others; and when the last access
+ * is gone it stops its MIDI service, whose CoreMIDI client on a Mac may then not be created again
+ * until Firefox restarts (Apple's MIDIClientDispose note). So once access is granted every screen
+ * shares it. Until then each call asks again: Chrome and Firefox show a permission prompt that is
+ * easy to miss, and a request still waiting on it would never settle, so pressing Connect again
+ * must show the prompt again rather than wait on the old request. A refusal is not kept either.
+ */
+export async function midiAccess(): Promise<MIDIAccess> {
+  if (granted) return granted;
+  const access = await navigator.requestMIDIAccess();
+  kept.push(access);
+  granted ??= access;
+  return granted;
+}
+
+/**
+ * True when a screen may connect the keyboard by itself, without a prompt: access was granted on
+ * this page already, or the browser says MIDI is allowed for this site. Browsers that cannot say
+ * (the query throws) get the Connect button until access is granted once on the page.
+ */
+export async function midiAllowed(): Promise<boolean> {
+  if (!webMidiSupported()) return false;
+  if (granted) return true;
+  try {
+    const status = await navigator.permissions.query({ name: 'midi' });
+    return status.state === 'granted';
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Starts a MIDI input, and calls `onWaiting` if the browser has not answered after a moment: it is
+ * then showing its permission prompt, and nothing happens until the learner answers it.
+ */
+export async function startMidiInput(
+  input: MidiKeyboardInput,
+  onWaiting: () => void,
+  delayMs = 800,
+): Promise<void> {
+  const timer = setTimeout(onWaiting, delayMs);
+  try {
+    await input.start();
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
+/** Where to find the browser's MIDI permission prompt, for while a request is waiting on it. */
+export function midiWaitingMessage(userAgent: string): string {
+  return /Firefox\//.test(userAgent)
+    ? t(
+        'Firefox is asking whether this site may use MIDI devices (on a website it offers a small “site permission” add-on). Accept it in the box by the address bar. If you don’t see the box, click the icon at the left of the address bar.',
+      )
+    : t(
+        'Your browser is asking whether this site may use MIDI devices. Choose Allow in the box by the address bar. If you closed it, press Connect again, or click the icon at the left of the address bar and allow MIDI devices.',
+      );
 }
 
 /** The MIDI input for this platform: CoreMIDI in the iPad app, Web MIDI everywhere else. */
@@ -130,13 +196,16 @@ export class MidiInput implements MidiKeyboardInput {
   onRelease: (pitch: number, time: number) => void = () => {};
   onDevicesChanged: (names: string[]) => void = () => {};
   private access: MIDIAccess | null = null;
+  // Listeners, not onmidimessage: the access and its ports are shared with every other screen.
+  private readonly onMidiMessage = (e: Event) => this.onMessage(e as MIDIMessageEvent);
+  private readonly onStateChange = () => this.attach();
 
   async start(): Promise<void> {
     if (!webMidiSupported()) throw new Error(t('This browser has no MIDI support.'));
-    this.access = await navigator.requestMIDIAccess();
+    this.access = await midiAccess();
     this.attach();
     // A keyboard plugged in, switched on or unplugged later shows up here.
-    this.access.onstatechange = () => this.attach();
+    this.access.addEventListener('statechange', this.onStateChange);
   }
 
   get deviceNames(): string[] {
@@ -164,8 +233,10 @@ export class MidiInput implements MidiKeyboardInput {
   private attach(): void {
     if (!this.access) return;
     for (const input of this.access.inputs.values()) {
-      input.onmidimessage = (e) => this.onMessage(e);
-      // Setting onmidimessage opens the port in Chrome; open it explicitly for other browsers.
+      // Adding the same listener again does nothing, so this only reaches new ports.
+      input.addEventListener('midimessage', this.onMidiMessage);
+      // A listener opens the port in Chrome; open it explicitly for other browsers. Ports are
+      // never closed: in Firefox that would close the device for the whole page.
       if (input.connection !== 'open') void input.open().catch(() => {});
     }
     this.onDevicesChanged(this.deviceNames);
@@ -187,10 +258,13 @@ export class MidiInput implements MidiKeyboardInput {
     }
   }
 
+  /** Stops listening. The access and its open ports stay for the next screen (see midiAccess). */
   stop(): void {
     if (!this.access) return;
-    for (const input of this.access.inputs.values()) input.onmidimessage = null;
-    this.access.onstatechange = null;
+    for (const input of this.access.inputs.values()) {
+      input.removeEventListener('midimessage', this.onMidiMessage);
+    }
+    this.access.removeEventListener('statechange', this.onStateChange);
     this.access = null;
   }
 }

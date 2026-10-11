@@ -27,6 +27,9 @@ import {
   noKeyboardMessage,
   midiUnavailableMessage,
   midiUnavailableReason,
+  midiAllowed,
+  midiWaitingMessage,
+  startMidiInput,
 } from '../input/midi-input';
 import type { MidiKeyboardInput } from '../input/midi-input';
 import type { MicInput } from '../input/mic-input';
@@ -226,10 +229,15 @@ function PracticeView({
   const [accompany, setAccompany] = useState(prefs.accompany);
   const [liveStats, setLiveStats] = useState(prefs.liveStats);
   const [overview, setOverview] = useState(prefs.overview);
-  const [midi, setMidi] = useState<{ input: MidiKeyboardInput; devices: string[] } | null>(null);
+  // The input and its device names are separate state: the names change whenever a port opens or
+  // a keyboard comes or goes (also when the app first plays on the keyboard), and that must never
+  // look like a new input, which used to stop the one in use while the screen still said connected.
+  const [midiInput, setMidiInput] = useState<MidiKeyboardInput | null>(null);
+  const [midiDevices, setMidiDevices] = useState<string[]>([]);
   const [mic, setMic] = useState<MicInput | null>(null);
   const [inputError, setInputError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const [midiWaiting, setMidiWaiting] = useState(false);
   const [showLoop, setShowLoop] = useState(false);
   const [midiCalibrating, setMidiCalibrating] = useState(false);
   const [micCalibrating, setMicCalibrating] = useState<MicInput | null>(null);
@@ -305,11 +313,15 @@ function PracticeView({
   const pendingMic = useRef<MicInput | null>(null);
   useEffect(() => () => pendingMic.current?.stop(), []);
 
+  // The input in use, stopped when another replaces it (Connect pressed twice, or pressed while
+  // the screen connects by itself) and when the screen closes; otherwise both would hear every key.
+  const midiInUse = useRef<MidiKeyboardInput | null>(null);
   useEffect(
     () => () => {
-      midi?.input.stop();
+      midiInUse.current?.stop();
+      midiInUse.current = null;
     },
-    [midi],
+    [],
   );
   useEffect(
     () => () => {
@@ -374,7 +386,7 @@ function PracticeView({
   const { echo: midiEcho, playback: midiPlayback, output: midiOutput } = settings.midi;
   const applySound = (ctx: AudioContext) => {
     const device = synthFor(ctx);
-    const sink = midi?.input.output(midiOutput) ?? null;
+    const sink = midiInput?.output(midiOutput) ?? null;
     const keyboard = sink ? new MidiOutInstrument(sink, now) : null;
     session.setSynth(playbackInstrument(device, keyboard, midiPlayback));
     session.midiEcho = midiEcho ? device : null;
@@ -386,13 +398,14 @@ function PracticeView({
     await connectClickTrack(session);
   };
 
-  // A changed setting, or a keyboard connected later, applies at once once audio is running.
+  // A changed setting, or a keyboard (and its output) connected later, applies at once once audio
+  // is running.
   useEffect(() => {
     const ctx = audioContext();
     if (ctx) applySound(ctx);
     // applySound reads exactly these values.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [midi, midiEcho, midiPlayback, midiOutput]);
+  }, [midiInput, midiDevices, midiEcho, midiPlayback, midiOutput]);
 
   const toggle = async () => {
     await ensureAudio();
@@ -447,21 +460,52 @@ function PracticeView({
     touch.current.release(pitch);
   };
 
-  const connectMidi = async () => {
-    setInputError(null);
+  const mounted = useRef(true);
+  /** Connects the MIDI keyboard; `quiet` when the screen does it by itself, which never prompts. */
+  const connectMidi = async (quiet = false) => {
+    if (!quiet) setInputError(null);
+    setMidiWaiting(false);
     try {
       const input = createMidiInput();
       input.onNote = (e) => session.input(e);
       input.onRelease = (p, time) => session.release(p, time);
-      input.onDevicesChanged = (devices) => setMidi((m) => (m ? { ...m, devices } : m));
-      await input.start();
-      setMidi({ input, devices: input.deviceNames });
-      if (input.deviceNames.length === 0) setInputError(noKeyboardMessage(navigator.userAgent));
+      input.onDevicesChanged = setMidiDevices;
+      // The browser's permission prompt is easy to miss, and nothing happens until it is answered.
+      await startMidiInput(input, () => !quiet && setMidiWaiting(true)).finally(() =>
+        setMidiWaiting(false),
+      );
+      if (!mounted.current) {
+        input.stop();
+        return;
+      }
+      midiInUse.current?.stop();
+      midiInUse.current = input;
+      setMidiInput(input);
+      setMidiDevices(input.deviceNames);
+      if (input.deviceNames.length === 0 && !quiet) {
+        setInputError(noKeyboardMessage(navigator.userAgent));
+      }
       await applyMidiCalibration(input.deviceNames);
     } catch (e) {
-      setInputError(describeMidiError(e, navigator.userAgent));
+      if (!quiet) setInputError(describeMidiError(e, navigator.userAgent));
     }
   };
+
+  // Once the browser allows MIDI for this site, every piece connects by itself, so Connect is
+  // pressed once, not on every piece.
+  useEffect(() => {
+    mounted.current = true;
+    let cancelled = false;
+    void midiAllowed().then((allowed) => {
+      if (allowed && !cancelled) void connectMidi(true);
+    });
+    return () => {
+      cancelled = true;
+      mounted.current = false;
+    };
+    // Once per piece; connectMidi reads the session, which lives as long as this screen.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const midiDevice = (names: string[]) => names.join(', ') || 'default';
   const applyMidiCalibration = async (names: string[]) => {
@@ -544,19 +588,19 @@ function PracticeView({
         </h1>
         <div className="session-bar__end">
           {midiSupported() ? (
-            midi ? (
+            midiInput ? (
               <>
                 <span
                   className="chip chip--live"
                   title={
-                    midi.devices.length > 0
+                    midiDevices.length > 0
                       ? t('A MIDI keyboard is connected')
                       : t('Plug in your keyboard and switch it on; it appears here by itself.')
                   }
                 >
                   <Piano />
                   <span className="chip__text">
-                    MIDI: {midi.devices.join(', ') || t('no device connected')}
+                    MIDI: {midiDevices.join(', ') || t('no device connected')}
                   </span>
                 </span>
                 <button
@@ -568,9 +612,11 @@ function PracticeView({
                 </button>
               </>
             ) : (
-              <button onClick={() => void connectMidi()}>
+              <button aria-busy={midiWaiting} onClick={() => void connectMidi()}>
                 <Piano />
-                <span className="btn-label">{t('Connect MIDI keyboard')}</span>
+                <span className="btn-label">
+                  {midiWaiting ? t('Waiting for the browser…') : t('Connect MIDI keyboard')}
+                </span>
               </button>
             )
           ) : (
@@ -862,6 +908,11 @@ function PracticeView({
         </span>
         {liveStats && <LiveStatsStrip stats={status.live} mode={mode} />}
         {inputError && <span className="error">{inputError}</span>}
+        {midiWaiting && (
+          <span className="hint" role="status" data-testid="midi-waiting">
+            {midiWaitingMessage(navigator.userAgent)}
+          </span>
+        )}
         <div className="session-status__view">
           {!drill && <ViewToggle view={view} onChange={setView} notation={shownNotation} />}
         </div>
@@ -1022,13 +1073,13 @@ function PracticeView({
             </div>
           </div>
         )}
-        {midiCalibrating && midi && (
+        {midiCalibrating && midiInput && (
           <MidiLatencyCalibration
-            input={midi.input}
-            device={midiDevice(midi.devices)}
+            input={midiInput}
+            device={midiDevice(midiDevices)}
             onClose={() => {
               setMidiCalibrating(false);
-              void applyMidiCalibration(midi.devices);
+              void applyMidiCalibration(midiDevices);
             }}
           />
         )}

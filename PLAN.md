@@ -416,6 +416,27 @@ images, sounds or fonts, and credit the inspiration in [CREDITS.md](CREDITS.md).
   with the domain `opentiles.site` set (2026-10-10). Left: the DNS at Cloudflare ("DNS only", no
   parking record) and the domain verification, the first deploy, HTTPS enforced and a header
   check of the live site, and the lawyer's view of hosting in the USA (P2-18).
+- [~] **P5-12** (APP) A MIDI keyboard in Firefox stays connected. Reason (maintainer's report,
+  2026-10-10): in Firefox the keyboard worked for a while, then fell silent after moving around the
+  site, and then "Firefox found no MIDI keyboard" until Firefox was restarted. Each screen asked for
+  its own MIDI access and dropped it on leaving; Firefox closes a device for the whole page when any
+  access's ports are garbage-collected, and once the last access is gone it stops its MIDI service,
+  whose CoreMIDI client on a Mac may not come back until Firefox restarts. Done: one MIDI access
+  for the page, shared by every screen with listeners, ports never closed. Second report
+  (2026-10-10, "doesn't connect in Chrome either"): Chrome and Firefox ask for permission per site
+  and port, and the request waits until the learner answers; the app showed nothing meanwhile, and
+  the shared request kept a waiting one, so Connect never showed the prompt again. Now Connect
+  asks again until access is granted, says it is waiting and where to allow MIDI. Checked with a
+  virtual CoreMIDI keyboard in real Chrome and in Playwright's Firefox (prompts auto-accepted):
+  notes reach Settings and wait mode on every screen. Third report (2026-10-11): in Firefox
+  practice heard nothing, in Chrome the keys went dead after a while (after Listen and Play), and
+  the app's notes never reached the keyboard. Cause: the practice screen stopped its own input on
+  every port change (a port finishing to open, the first note sent out), while still saying it was
+  connected. Fixed, with an e2e test that fails without it; checked with a virtual keyboard and a
+  virtual MIDI destination in real Chrome and Playwright's Firefox (notes in before and after
+  Listen + Play, notes out during it). Each piece now connects by itself once MIDI is allowed.
+  Left: the maintainer's check with a real keyboard in their own Chrome and Firefox. Reloading or closing the tab still ends Firefox's MIDI
+  service; the app cannot prevent that.
 
 Left out on purpose: 128 General MIDI instruments (a piano trainer, and extra sample licences and
 size), Sightread's song library and assets, and any analytics.
@@ -444,6 +465,9 @@ Record the outcome as an ADR in `docs/adr/` and tick it here.
 - [x] Engine exposes a plain C ABI instead of wasm-bindgen glue — ADR 0002.
 
 ## Changelog
+
+- **2026-10-10** — P5-12: a MIDI keyboard in Firefox no longer drops after moving around the site
+  (one MIDI access for the page instead of one per screen).
 
 - **2026-10-10** — P5-09 started: the return to the start after a run moves like a drag of the
   score, repeated notes show on the keys, and the Content-Security-Policy allows connections only
