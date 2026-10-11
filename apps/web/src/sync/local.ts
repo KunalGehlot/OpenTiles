@@ -30,7 +30,7 @@ import {
   type VaultSecret,
 } from '@opentiles/vault';
 import type { Song } from '@opentiles/song-model';
-import { isDeviceSetting } from '../backup/backup';
+import { asSheetAttachment, isDeviceSetting } from '../backup/backup';
 import { reloadAppSettings } from '../settings/store';
 import { createPasskey, getPasskey } from './webauthn';
 import { db } from '../storage/db';
@@ -141,6 +141,7 @@ async function idKey(libraryKey: CryptoKey): Promise<CryptoKey> {
 }
 
 function librarySignature(item: LibraryItem): string {
+  const { sheet } = item;
   return JSON.stringify([
     item.title,
     item.fileName,
@@ -148,6 +149,8 @@ function librarySignature(item: LibraryItem): string {
     item.bytes.length,
     item.settings,
     item.tags,
+    // Only pieces with sheet music get the extra entry, so the others keep the signature they had.
+    ...(sheet ? [[sheet.fileName, sheet.bytes.length, sheet.addedAt]] : []),
   ]);
 }
 
@@ -427,6 +430,8 @@ export class SyncController {
     }
     const d = r.data as Record<string, unknown> | null;
     if (!isObj(d) || typeof d.title !== 'string' || !(d.bytes instanceof Uint8Array)) return;
+    // The record replaces the local item, sheet music included (ADR 0018).
+    const sheet = asSheetAttachment(d.sheet);
     const item: LibraryItem = {
       title: d.title,
       fileName: String(d.fileName ?? ''),
@@ -436,6 +441,7 @@ export class SyncController {
       settings: (d.settings ?? { transpose: 0, swapHands: false }) as LibraryItem['settings'],
       tags: Array.isArray(d.tags) ? (d.tags as string[]) : [],
       addedAt: typeof d.addedAt === 'number' ? d.addedAt : Date.now(),
+      ...(sheet ? { sheet } : {}),
     };
     let id: number;
     if (link) {

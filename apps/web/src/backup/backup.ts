@@ -140,8 +140,11 @@ function asSheetMap(v: unknown): SheetMap | undefined {
   return v as unknown as SheetMap;
 }
 
-/** A piece's sheet music (ADR 0018); a damaged map is left out, keeping the PDF. */
-function asSheet(v: unknown): SheetAttachment | undefined {
+/**
+ * A piece's sheet music (ADR 0018) as read back from a backup or a sync record, or undefined when it
+ * is damaged. A damaged map is left out, keeping the PDF.
+ */
+export function asSheetAttachment(v: unknown): SheetAttachment | undefined {
   if (!isRecord(v) || typeof v.fileName !== 'string' || !(v.bytes instanceof Uint8Array)) {
     return undefined;
   }
@@ -161,7 +164,7 @@ function asLibraryItem(v: unknown): BackupLibraryItem | null {
   if (!Array.isArray((v.song as { notes?: unknown }).notes)) return null;
   if (typeof v.format !== 'string' || typeof v.addedAt !== 'number') return null;
   // Backups made before sheet music existed have no `sheet`; a damaged one keeps the piece.
-  const sheet = asSheet(v.sheet);
+  const sheet = asSheetAttachment(v.sheet);
   return {
     title: v.title,
     fileName: v.fileName,
