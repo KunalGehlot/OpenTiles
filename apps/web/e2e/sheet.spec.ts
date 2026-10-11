@@ -252,7 +252,11 @@ test('bars can be adjusted, and the corrections are kept', async ({ page }) => {
   await panel.getByRole('button', { name: 'a bar behind' }).click();
   await expect(page.getByTestId('sheet-highlight')).toHaveAttribute('data-bar', '1');
   // A tap in the first bar goes there and marks the place; the barline is added on request.
-  const box = await panel.locator('.ot-sheet-outline').first().boundingBox();
+  // The outlines are placed on the next animation frame, which a slow machine may not have drawn.
+  const first = panel.locator('.ot-sheet-outline').first();
+  await expect(first).toBeVisible();
+  await expect.poll(async () => (await first.boundingBox())?.width ?? 0).toBeGreaterThan(0);
+  const box = await first.boundingBox();
   if (!box) throw new Error('No outline for the first bar');
   const tapFirstBar = () => page.mouse.click(box.x + box.width * 0.6, box.y + box.height / 2);
   await tapFirstBar();
