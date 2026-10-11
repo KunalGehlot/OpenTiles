@@ -361,16 +361,29 @@ function bestPair(slot: Slot, head: PrintedHead, tracks: Tracks): Pair {
 }
 
 /**
- * Pairs the notes of one onset with a run of heads, pitch order against the order down the page.
- * Hands that cross within one chord (an upper-staff note below a lower-staff one) are beyond it.
+ * Pairs the notes of one onset with a run of heads, keeping their order down the page: by pitch,
+ * or by the song's staff and then pitch when that differs (hands crossed within a chord: the
+ * lower staff above the upper one), whichever fits better.
  */
 function pairRun(
   slots: readonly Slot[],
   heads: readonly PrintedHead[],
   pairOf: (slot: Slot, head: PrintedHead) => Pair,
 ): { cost: number; pairs: Pair[] } {
-  const notes = [...slots].sort((a, b) => b.pitch - a.pitch || a.staff - b.staff);
   const hs = [...heads].sort((a, b) => a.y - b.y);
+  const byPitch = [...slots].sort((a, b) => b.pitch - a.pitch || a.staff - b.staff);
+  const byStaff = [...slots].sort((a, b) => a.staff - b.staff || b.pitch - a.pitch);
+  const first = pairInOrder(byPitch, hs, pairOf);
+  if (byStaff.every((s, i) => s === byPitch[i])) return first;
+  const second = pairInOrder(byStaff, hs, pairOf);
+  return second.cost < first.cost ? second : first;
+}
+
+function pairInOrder(
+  notes: readonly Slot[],
+  hs: readonly PrintedHead[],
+  pairOf: (slot: Slot, head: PrintedHead) => Pair,
+): { cost: number; pairs: Pair[] } {
   const n = notes.length;
   const m = hs.length;
   const width = m + 1;
