@@ -26,8 +26,11 @@ export interface Glyph {
   onset: number;
   /** Onset in the unrolled timemap, in quarter notes (first pass). */
   absolute: number;
-  /** MIDI pitch as sounded (after Verovio's transposition). */
-  pitch: number;
+  /**
+   * MIDI pitch as sounded (after Verovio's transposition); NaN for an element without one. Read
+   * from Verovio only when asked (see `glyphsFromTimemap`).
+   */
+  readonly pitch: number;
 }
 
 export interface ScoreLinks {
@@ -98,6 +101,10 @@ export function measureOrderFromSvg(svgs: readonly string[]): string[] {
 /**
  * Glyphs from a timemap. `measureIds` is the document order of the measures; `pitchOf` returns a
  * note's MIDI pitch (Verovio's `getMIDIValuesForElement`), or undefined for unpitched elements.
+ * It is called only for the glyphs whose pitch is read, once each: Verovio looks each element up
+ * through the whole score, so asking for every note of a long piece took a quarter of a second,
+ * and most notes are the only glyph at their place in the bar, where the pitch decides nothing.
+ * So `pitchOf` (the toolkit) must still work when the glyphs are linked.
  */
 export function glyphsFromTimemap(
   timemap: readonly TimemapEntry[],
@@ -118,9 +125,17 @@ export function glyphsFromTimemap(
       const id = baseId(raw);
       if (seen.has(id) || measure < 0) continue;
       seen.add(id);
-      const pitch = pitchOf(id);
-      if (pitch === undefined) continue;
-      glyphs.push({ id, measure, onset: e.qstamp - measureStart, absolute: e.qstamp, pitch });
+      let pitch: number | undefined;
+      glyphs.push({
+        id,
+        measure,
+        onset: e.qstamp - measureStart,
+        absolute: e.qstamp,
+        get pitch() {
+          pitch ??= pitchOf(id) ?? Number.NaN;
+          return pitch;
+        },
+      });
     }
   }
   return glyphs;
@@ -163,9 +178,12 @@ export function linkNotes(song: Song, glyphs: readonly Glyph[]): ScoreLinks {
     let found: Glyph | undefined;
     if (m) {
       const here = (byPos.get(key(m.sourceIndex, n.startBeat - m.startBeat)) ?? []).filter(free);
+      // A glyph alone at its place is the note's, whatever its pitch: no need to ask for it.
       found =
-        here.find((g) => g.pitch === n.pitch) ??
-        [...here].sort((a, b) => Math.abs(a.pitch - n.pitch) - Math.abs(b.pitch - n.pitch))[0];
+        here.length === 1
+          ? here[0]
+          : (here.find((g) => g.pitch === n.pitch) ??
+            [...here].sort((a, b) => Math.abs(a.pitch - n.pitch) - Math.abs(b.pitch - n.pitch))[0]);
     }
     found ??= (byAbs.get(key(0, n.startBeat)) ?? []).find((g) => free(g) && g.pitch === n.pitch);
     if (found) {
@@ -186,9 +204,10 @@ export function linkNotes(song: Song, glyphs: readonly Glyph[]): ScoreLinks {
       if (m.startBeat >= end - EPS) break;
       if (m.startBeat + m.lengthBeats <= n.startBeat + EPS) continue;
       for (const g of glyphs) {
-        if (g.measure !== m.sourceIndex || g.pitch !== head.pitch || g.id === head.id) continue;
+        if (g.measure !== m.sourceIndex || g.id === head.id) continue;
         const at = m.startBeat + g.onset;
-        if (at > n.startBeat + EPS && at < end - EPS) link(n, g.id);
+        // The pitch last: it is read from Verovio only for glyphs inside the tied note.
+        if (at > n.startBeat + EPS && at < end - EPS && g.pitch === head.pitch) link(n, g.id);
       }
     }
   });
