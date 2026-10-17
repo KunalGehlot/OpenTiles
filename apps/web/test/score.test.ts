@@ -318,13 +318,22 @@ describe('Verovio in Node', () => {
   const linkWithVerovio = async (xml: string, song = parse(xml), options: object = {}) => {
     const tk = await loadToolkit(xml, options);
     const svg = tk.renderToSVG(1);
-    const glyphs = glyphsFromTimemap(
+    let asked = 0;
+    const lazy = glyphsFromTimemap(
       tk.renderToTimemap({ includeMeasures: true, includeRests: false }),
       measureOrderFromSvg([svg]),
-      (id) => tk.getMIDIValuesForElement(id).pitch,
+      (id) => {
+        asked += 1;
+        return tk.getMIDIValuesForElement(id).pitch;
+      },
     );
+    // Linked while the toolkit lives (pitches are read from it on first use), then every pitch
+    // read for the tests' own checks.
+    const links = linkNotes(song, lazy);
+    const pitchesAsked = asked;
+    const glyphs = lazy.map((g) => ({ ...g, pitch: g.pitch }));
     tk.destroy();
-    return { svg, glyphs, links: linkNotes(song, glyphs) };
+    return { svg, glyphs, links, pitchesAsked };
   };
 
   it('links every note of the fixture to a rendered glyph and draws its fingering', async () => {
@@ -379,8 +388,11 @@ describe('Verovio in Node', () => {
         resolve(import.meta.dirname, `../../../catalogue/pieces/${slug}/score.musicxml`),
         'utf8',
       );
-      const { links } = await linkWithVerovio(xml);
+      const { links, glyphs, pitchesAsked } = await linkWithVerovio(xml);
       expect(links.unmatched, slug).toEqual([]);
+      // Verovio is asked for a pitch only where several glyphs share a place in the bar, or for a
+      // tie (each ask searches the whole score, so asking for every note made long pieces slow).
+      expect(pitchesAsked, slug).toBeLessThan(glyphs.length / 2);
     }
   }, 60_000);
 });
