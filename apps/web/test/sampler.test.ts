@@ -333,6 +333,13 @@ describe('PianoSampler', () => {
     expect(ctx.sources[1]?.stoppedAt).toBe(scheduled);
   });
 
+  it('sounds a note as long as the piece’s pedal holds it', () => {
+    const ctx = new FakeContext();
+    const s = new PianoSampler(asContext(ctx), fakeSamples());
+    s.play(60, 0, 0.5, 80, 2);
+    expect(ctx.sources[0]?.stoppedAt).toBeCloseTo(2 + releaseTime(60) * 8, 9);
+  });
+
   it('silences every note at once, and stops ones that have not started', () => {
     const ctx = new FakeContext();
     const s = new PianoSampler(asContext(ctx), fakeSamples());

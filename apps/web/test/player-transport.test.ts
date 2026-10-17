@@ -57,16 +57,21 @@ function seeded(seed = 7): () => number {
 function harness(songs: Song[], options: { hidden?: boolean; lookAhead?: number } = {}) {
   const clock = { t: 100 };
   let tick: (() => void) | null = null;
-  const played: { pitch: number; when: number; duration: number; at: number }[] = [];
+  const played: { pitch: number; when: number; duration: number; at: number; held?: number }[] = [];
+  const log: string[] = [];
   const started: CollectionKey[] = [];
   const awake: boolean[] = [];
   let silenced = 0;
   const instrument: Instrument = {
     volume: 1,
     noteOn: () => ({ stop: () => {} }),
-    play: (pitch, when, duration) => {
-      played.push({ pitch, when, duration, at: clock.t });
+    play: (pitch, when, duration, _velocity, held) => {
+      played.push({ pitch, when, duration, at: clock.t, ...(held === undefined ? {} : { held }) });
+      log.push(`note ${pitch}`);
       return { stop: () => {} };
+    },
+    pedal: (pedal, value) => {
+      log.push(`${pedal} ${value}`);
     },
     click: () => {},
     silence: () => {
@@ -110,6 +115,7 @@ function harness(songs: Song[], options: { hidden?: boolean; lookAhead?: number 
     transport,
     clock,
     played,
+    log,
     started,
     awake,
     run,
@@ -333,5 +339,36 @@ describe('this device’s piano on the page’s clock (P6-05)', () => {
     } as unknown as BaseAudioContext;
     onPageClock(inner, ctx).play(60, 6.25, 0.5);
     expect(calls[0]?.when).toBeCloseTo(11.25, 9);
+  });
+});
+
+describe('the pedals through the transport (P6-10)', () => {
+  // Four notes under the sustain pedal until beat 6 (3 s).
+  const pedalled: Song = {
+    ...piece(4),
+    lengthBeats: 8,
+    pedals: [
+      { beat: 0, pedal: 'sustain', value: 127 },
+      { beat: 6, pedal: 'sustain', value: 0 },
+    ],
+  };
+
+  it('sends the pedal with the notes, and the held lengths', async () => {
+    const h = harness([pedalled]);
+    await h.transport.playQueue([key(0)]);
+    await h.run(0.2);
+    expect(h.log.slice(0, 2)).toEqual(['sustain 127', 'note 60']);
+    expect(h.played[0]?.held).toBeCloseTo(3, 6);
+    await h.run(3.5);
+    expect(h.log).toContain('sustain 0');
+  });
+
+  it('puts the pedal down first when it seeks into pedalled music', async () => {
+    const h = harness([pedalled]);
+    await h.transport.playQueue([key(0)]);
+    h.log.length = 0;
+    h.transport.seek(2.25);
+    // Every key is up at 2.25 s, but the pedal still holds all four notes.
+    expect(h.log).toEqual(['sustain 127', 'note 60', 'note 61', 'note 62', 'note 63']);
   });
 });

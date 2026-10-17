@@ -52,6 +52,18 @@ export interface TimeSignatureEvent {
   denominator: number;
 }
 
+export type PedalKind = 'sustain' | 'soft' | 'sostenuto';
+
+/**
+ * A pedal pressed or let go (P6-10, ADR 0020). `value` is 0–127 as in MIDI: 64 and up is down for
+ * the sustain and sostenuto pedals; values in between are half pedalling.
+ */
+export interface PedalEvent {
+  beat: number;
+  pedal: PedalKind;
+  value: number;
+}
+
 export interface KeySignatureEvent {
   beat: number;
   /** Sharps (positive) or flats (negative). */
@@ -87,6 +99,11 @@ export interface Song {
   keySignatures: KeySignatureEvent[];
   parts: Part[];
   lengthBeats: number;
+  /**
+   * Pedal changes in playback order, sorted by beat (P6-10, ADR 0020). Absent in songs stored
+   * before the importers read pedals, and in files that have none.
+   */
+  pedals?: PedalEvent[];
   /** Non-fatal import issues to show on the import review screen. */
   warnings: string[];
 }

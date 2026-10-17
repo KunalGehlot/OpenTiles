@@ -1,11 +1,13 @@
 // Standard MIDI File → Song (spec §8 "Rules for MIDI files").
 import { splitHands } from './handsplit';
+import { PEDAL_CONTROLLERS, tidyPedals } from './pedals';
 import { ImportError } from './errors';
 import { looksNotated, quantise, quantiseNotated } from './quantise';
 import { TempoMap } from './tempo';
 import type {
   KeySignatureEvent,
   Measure,
+  PedalEvent,
   Song,
   SongNote,
   TempoEvent,
@@ -30,6 +32,8 @@ export interface MidiFile {
   tempos: { tick: number; bpm: number }[];
   timeSignatures: { tick: number; numerator: number; denominator: number }[];
   keySignatures: { tick: number; fifths: number; minor: boolean }[];
+  /** Sustain (64), sostenuto (66) and soft (67) pedal changes. */
+  pedals: { tick: number; channel: number; controller: number; value: number }[];
 }
 
 class Reader {
@@ -89,6 +93,7 @@ export function parseMidiFile(bytes: Uint8Array): MidiFile {
     tempos: [],
     timeSignatures: [],
     keySignatures: [],
+    pedals: [],
   };
 
   for (let t = 0; t < ntracks && r.remaining >= 8; t++) {
@@ -169,6 +174,14 @@ export function parseMidiFile(bytes: Uint8Array): MidiFile {
         case 0xd0:
           tr.u8();
           break;
+        case 0xb0: {
+          const controller = tr.u8();
+          const value = tr.u8();
+          if (controller in PEDAL_CONTROLLERS) {
+            file.pedals.push({ tick, channel: ch, controller, value });
+          }
+          break;
+        }
         default:
           tr.bytes(2);
       }
@@ -319,6 +332,21 @@ export function midiToSong(bytes: Uint8Array, options: MidiImportOptions = {}): 
     .sort((a, b) => a.startBeat - b.startBeat || a.pitch - b.pitch);
   notes.forEach((n, i) => (n.id = `n${i}`));
 
+  // Pedals on the channels whose notes were kept, snapped to the grid a played file's notes were.
+  const channels = new Set(raw.map((n) => n.channel));
+  const grid = 'grid' in q ? q.grid : 0;
+  const snap = (beat: number) => (grid > 0 ? Math.round(beat / grid) * grid : beat);
+  const pedals = tidyPedals(
+    file.pedals
+      .filter((p) => channels.has(p.channel))
+      .sort((a, b) => a.tick - b.tick)
+      .map((p): PedalEvent => ({
+        beat: snap(p.tick / ppq),
+        pedal: PEDAL_CONTROLLERS[p.controller] ?? 'sustain',
+        value: p.value,
+      })),
+  );
+
   const named = file.trackNames.find((n) => n && !/^(track|piano)\s*\d*$/i.test(n));
   return {
     title: named ?? options.fallbackTitle ?? 'Untitled',
@@ -330,6 +358,7 @@ export function midiToSong(bytes: Uint8Array, options: MidiImportOptions = {}): 
     keySignatures,
     parts: [{ name: 'Piano' }],
     lengthBeats: measures.reduce((s, m) => s + m.lengthBeats, 0),
+    ...(pedals.length > 0 ? { pedals } : {}),
     warnings,
   };
 }

@@ -72,9 +72,10 @@ export class AdditiveSynth implements Instrument {
     };
   }
 
-  play(pitch: number, when: number, duration: number, velocity = 90): Voice {
+  play(pitch: number, when: number, duration: number, velocity = 90, held?: number): Voice {
     const v = this.noteOn(pitch, velocity, when);
-    v.stop(when + Math.max(0.05, duration));
+    // The piece's pedal holds it on past the key (P6-10).
+    v.stop(when + Math.max(0.05, held ?? duration, duration));
     return v;
   }
 

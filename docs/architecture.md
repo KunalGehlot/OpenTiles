@@ -75,6 +75,10 @@ Defined in `packages/song-model/src/types.ts` (ADR 0003).
 - `measures` lists the playback order of bars after repeats are unrolled, each with its start beat,
   length and the original bar number.
 - `tempoMap`, `timeSignatures` and `keySignatures` are beat-indexed event lists.
+- `pedals` (P6-10, ADR 0020) lists the sustain, soft and sostenuto pedal changes in beats, with
+  MIDI's 0–127 values; read from MIDI control changes and MusicXML pedal marks and sounds. In
+  playback each note also gets a held length (how long the pedal makes it sound): this device's
+  piano sounds notes that long, a MIDI keyboard gets the pedal as control changes instead.
 
 ## The practice engine
 

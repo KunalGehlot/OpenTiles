@@ -299,8 +299,14 @@ export class PlayerTransport {
     );
     const start = this.deps.now() + START_DELAY;
     this.cursor = new PlaybackCursor(events, { time: start, seconds }, tempo);
-    const { sounding } = this.cursor.seek(seconds, start);
-    for (const n of sounding) this.instrument?.play(n.pitch, n.time, n.duration, n.velocity);
+    const { sounding, pedals } = this.cursor.seek(seconds, start);
+    // The pedals as they stand here first, so the keyboard holds what they hold.
+    for (const pedal of ['sustain', 'soft', 'sostenuto'] as const) {
+      if (pedals[pedal] > 0) this.instrument?.pedal?.(pedal, pedals[pedal], start);
+    }
+    for (const n of sounding) {
+      this.instrument?.play(n.pitch, n.time, n.duration, n.velocity, n.heldDuration);
+    }
   }
 
   private tick(): void {
@@ -317,7 +323,9 @@ export class PlayerTransport {
       ? HIDDEN_LOOK_AHEAD
       : Math.min(LOOK_AHEAD, instrument.lookAhead ?? LOOK_AHEAD);
     for (const e of cursor.take(now + ahead, now)) {
-      if (e.kind === 'note') instrument.play(e.pitch, e.time, e.duration, e.velocity);
+      if (e.kind === 'note') {
+        instrument.play(e.pitch, e.time, e.duration, e.velocity, e.heldDuration);
+      } else instrument.pedal?.(e.pedal, e.value, e.time);
     }
     if (cursor.done && now >= cursor.timeOf(this.endSeconds)) {
       this.cursor = null;

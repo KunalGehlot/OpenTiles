@@ -559,8 +559,13 @@ without a word when no MIDI output is found.
       device.
 - [ ] **P6-09** (APP) Mini player on other pages and media keys (Media Session where it works without
       tricks); practice, drills and the Detector Lab stop the Player.
-- [ ] **P6-10** (SONG) The sustain pedal in the `Song` from MIDI (CC 64) and MusicXML, sent to the
-      keyboard and honoured by the sampler (ADR 0020, amending ADR 0003).
+- [~] **P6-10** (SONG) The sustain pedal in the `Song` from MIDI (CC 64) and MusicXML, sent to the
+  keyboard and honoured by the sampler (ADR 0020, amending ADR 0003). Done: `Song.pedals` (sustain,
+  soft, sostenuto) from MIDI control changes 64, 66 and 67 and from MusicXML pedal marks and
+  sounds, through repeats and trimming; each note gets a held length, which this device's piano
+  sounds and a MIDI keyboard gets as the pedal's control changes instead; Listen and the Player
+  send the pedal, play-along's other hand does not; Stop lifts every pedal; stored library pieces
+  get their pedals from their kept file once. Left: engraved pedal marks (`songToMusicXml`).
 - [ ] **P6-11** (PRAC) Natural touch for pieces without velocities (beat strength, melody, dynamics),
       with an "even" option.
 - [ ] **P6-12** (APP, iOS) MIDI out in the iPad app (CoreMIDI destinations, timed batched send,
@@ -595,6 +600,9 @@ Record the outcome as an ADR in `docs/adr/` and tick it here.
 - [x] Engine exposes a plain C ABI instead of wasm-bindgen glue — ADR 0002.
 
 ## Changelog
+
+- **2026-10-17** — P6-10: the pedals in the `Song` (ADR 0020, proposed), read from MIDI and
+  MusicXML, held by this device's piano and sent to a MIDI keyboard.
 
 - **2026-10-17** — P6-05 (most of it): the Player's queue and transport, a worker clock that keeps
   playing in a hidden tab, and output-only MIDI access; Stop in practice now cuts this device's
