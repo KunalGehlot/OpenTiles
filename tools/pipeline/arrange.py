@@ -140,7 +140,34 @@ def divisions_for(arr: Arrangement) -> int:
     return d
 
 
-def note_xml(ev: Event, staff: int, voice: int, divisions: int = DIVISIONS) -> str:
+def tuplet_marks(events: list[Event]) -> list[str | None]:
+    """Where each triplet group starts and stops ("start", "stop" or None per event).
+
+    A group is three notes in the time of two of the first one's value (e3 e3 e3, or e3 s3 s3 …);
+    MusicXML's <time-modification> only times a note, and engravers such as Verovio need the
+    <tuplet> marks to draw the "3" and to place the notes (P2-04).
+    """
+    marks: list[str | None] = [None] * len(events)
+    start = -1
+    filled = Fraction(0)
+    span = Fraction(0)
+    for i, ev in enumerate(events):
+        if not ev.triplet:
+            start = -1
+            continue
+        if start < 0:
+            start, filled, span = i, Fraction(0), 2 * VALUES[ev.value] * (Fraction(3, 2) if ev.dotted else 1)
+        filled += ev.beats
+        if filled >= span:
+            if i > start:
+                marks[start], marks[i] = "start", "stop"
+            start = -1
+    return marks
+
+
+def note_xml(
+    ev: Event, staff: int, voice: int, divisions: int = DIVISIONS, group_mark: str | None = None
+) -> str:
     dur = int(ev.beats * divisions)
     dot = "<dot/>" if ev.dotted else ""
     tuplet = (
@@ -150,20 +177,24 @@ def note_xml(ev: Event, staff: int, voice: int, divisions: int = DIVISIONS) -> s
     )
     kind = f"<type>{TYPES[ev.value]}</type>{dot}{tuplet}"
     tail = f"<voice>{voice}</voice>{kind}<staff>{staff}</staff>"
+    group = f'<tuplet type="{group_mark}"/>' if group_mark else ""
     if not ev.pitches:
-        return f"<note><rest/><duration>{dur}</duration>{tail}</note>"
+        marks = f"<notations>{group}</notations>" if group else ""
+        return f"<note><rest/><duration>{dur}</duration>{tail}{marks}</note>"
     out = []
     for i, (step, alter, octave) in enumerate(ev.pitches):
         chord = "<chord/>" if i > 0 else ""
         alt = f"<alter>{alter}</alter>" if alter else ""
-        finger = (
-            f"<notations><technical><fingering>{ev.finger}</fingering></technical></notations>"
-            if ev.finger and i == 0
-            else ""
-        )
+        # The first note of a chord carries its marks: the triplet bracket and the fingering.
+        inner = ""
+        if i == 0:
+            inner = group + (
+                f"<technical><fingering>{ev.finger}</fingering></technical>" if ev.finger else ""
+            )
+        notations = f"<notations>{inner}</notations>" if inner else ""
         out.append(
             f"<note>{chord}<pitch><step>{step}</step>{alt}<octave>{octave}</octave></pitch>"
-            f"<duration>{dur}</duration>{tail}{finger}</note>"
+            f"<duration>{dur}</duration>{tail}{notations}</note>"
         )
     return "".join(out)
 
@@ -201,9 +232,9 @@ def to_musicxml(arr: Arrangement) -> str:
                     f"<per-minute>{int(bpm)}</per-minute></metronome></direction-type>"
                     f"<sound tempo=\"{int(bpm)}\"/></direction>"
                 )
-        parts.extend(note_xml(e, 1, 1, divisions) for e in rh)
+        parts.extend(note_xml(e, 1, 1, divisions, t) for e, t in zip(rh, tuplet_marks(rh)))
         parts.append(f"<backup><duration>{int(rh_len * divisions)}</duration></backup>")
-        parts.extend(note_xml(e, 2, 5, divisions) for e in lh)
+        parts.extend(note_xml(e, 2, 5, divisions, t) for e, t in zip(lh, tuplet_marks(lh)))
         implicit = ' implicit="yes"' if is_pickup else ""
         measures.append(f'<measure number="{number}"{implicit}>{"".join(parts)}</measure>')
     if measures:

@@ -185,7 +185,7 @@ engines.
 - [x] **P2-02** EU term check against Wikidata death years (composer and lyricist).
 - [x] **P2-03** Protected-edition exclusion (§§ 70/71 UrhG): only uploader's own CC0
       transcriptions.
-- [~] **P2-04** Automatic file validation: renders, plays, survives a `Song` round trip. Done: XML and musical sanity checks in the validator, Song round trip in the song-model tests. Left: render check with Verovio in CI.
+- [x] **P2-04** Automatic file validation: renders, plays, survives a `Song` round trip. Done: XML and musical sanity checks in the validator, Song round trip in the song-model tests, and a render check with Verovio in CI (`apps/web/test/catalogue-render.test.ts`: every catalogue score draws, every note has its glyph, every triplet group is drawn as one). It found triplets written without `<tuplet>` marks, which Verovio drew as plain sixteenths in Für Elise (complete) and the Menuett WoO 82; `arrange.py` now writes the marks.
 - [~] **P2-05** Difficulty scoring (PDMX complexity + own measures → 5 levels). Done: estimateDifficulty in song-model, shown on the import review screen, within ±1 of the catalogue levels. Left: combine with PDMX complexity in the pipeline.
 - [~] **P2-06** Human review workflow: catalogue PR template, `verified: true`, ~10 min per piece.
 - [~] **P2-07** Publish static `.mxl` + JSON index with stable URLs; **150 verified pieces**. Done: 31 CC0 arrangements and the PDMX/Wikidata/edition pipeline. Left: human review (all are `verified: false`) and growth to 150.
@@ -621,6 +621,8 @@ Record the outcome as an ADR in `docs/adr/` and tick it here.
 - [x] Engine exposes a plain C ABI instead of wasm-bindgen glue — ADR 0002.
 
 ## Changelog
+
+- **2026-10-17** — P2-04: every catalogue score is rendered in CI; triplets in two pieces drawn right.
 
 - **2026-10-17** — P6-10: the score of a MIDI piece marks the sustain pedal.
 
