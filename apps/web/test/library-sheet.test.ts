@@ -23,6 +23,7 @@ import {
   sheetForNewSong,
 } from '../src/library/store';
 import { db } from '../src/storage/db';
+import { addLibraryItem, getLibraryItem } from '../src/storage/library';
 import type { LibraryItem } from '../src/storage/db';
 
 const file = (name: string, type = '') => ({ name, type });
@@ -268,13 +269,13 @@ const notes = {
 
 describe('sheet music in the library', () => {
   beforeEach(async () => {
-    await Promise.all([db.library.clear(), db.progress.clear()]);
+    await Promise.all([db.library.clear(), db.files.clear(), db.progress.clear()]);
   });
 
   it('adds the notes to a sheet-only piece, keeping its sheet, id, tags and date', async () => {
-    const id = await db.library.add(sheetOnlyItem(false));
+    const id = await addLibraryItem(sheetOnlyItem(false));
     await addNotes(id, notes);
-    const item = await db.library.get(id);
+    const item = await getLibraryItem(id);
     expect(item).toMatchObject({
       id,
       title: 'Waltz',
@@ -291,37 +292,37 @@ describe('sheet music in the library', () => {
   });
 
   it('keeps a map the learner corrected when the song changes', async () => {
-    const id = await db.library.add(sheetOnlyItem(true));
+    const id = await addLibraryItem(sheetOnlyItem(true));
     await addNotes(id, notes);
-    expect((await db.library.get(id))?.sheet?.map).toEqual(map(true));
+    expect((await getLibraryItem(id))?.sheet?.map).toEqual(map(true));
     expect(sheetForNewSong(sheetOnlyItem(false).sheet!)).not.toHaveProperty('map');
     expect(sheetForNewSong(sheetOnlyItem().sheet!)).not.toHaveProperty('map');
   });
 
   it('adds, replaces and removes a piece’s PDF', async () => {
     const { sheet: _none, ...plain } = sheetOnlyItem();
-    const id = await db.library.add({ ...plain, ...notes });
+    const id = await addLibraryItem({ ...plain, ...notes });
     await attachSheet(id, { fileName: 'First.pdf', bytes: PDF });
-    expect((await db.library.get(id))?.sheet?.fileName).toBe('First.pdf');
+    expect((await getLibraryItem(id))?.sheet?.fileName).toBe('First.pdf');
 
     // A new PDF drops the old one's map, even a corrected one: its pages are different.
     await db.library.update(id, { 'sheet.map': map(true) });
-    expect((await db.library.get(id))?.sheet?.map?.edited).toBe(true);
+    expect((await getLibraryItem(id))?.sheet?.map?.edited).toBe(true);
     const second = new Uint8Array([...PDF, 0x0a]);
     await attachSheet(id, { fileName: 'Second.pdf', bytes: second });
-    const replaced = await db.library.get(id);
+    const replaced = await getLibraryItem(id);
     expect(replaced?.sheet).toMatchObject({ fileName: 'Second.pdf', bytes: second });
     expect(replaced?.sheet && 'map' in replaced.sheet).toBe(false);
 
     await removeSheet(id);
-    const removed = await db.library.get(id);
+    const removed = await getLibraryItem(id);
     expect(removed && 'sheet' in removed).toBe(false);
     expect(removed?.song.measures).toHaveLength(3);
     await expect(attachSheet(id + 100, { fileName: 'x.pdf', bytes: PDF })).rejects.toThrow();
   });
 
   it('deletes a piece with its sheet music and progress', async () => {
-    const id = await db.library.add(sheetOnlyItem(false));
+    const id = await addLibraryItem(sheetOnlyItem(false));
     await db.progress.put({
       key: `library:${id}`,
       bestAccuracy: 0.5,

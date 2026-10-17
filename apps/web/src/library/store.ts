@@ -2,6 +2,12 @@
 // this device; the only way out is the learner's own encrypted backup.
 import { db } from '../storage/db';
 import type { LibraryItem, SheetAttachment } from '../storage/db';
+import {
+  deleteLibraryItem,
+  getLibraryItem,
+  putLibraryItem,
+  setLibrarySheet,
+} from '../storage/library';
 import { sheetAttachment } from './sheet';
 import type { SheetFile } from './sheet';
 
@@ -13,14 +19,12 @@ export type PieceNotes = Pick<
 
 /** Adds or replaces a piece's PDF. A new PDF has new pages, so any map of the old one goes. */
 export async function attachSheet(id: number, file: SheetFile): Promise<void> {
-  const updated = await db.library.update(id, { sheet: sheetAttachment(file) });
-  if (updated === 0) throw new Error('No such piece');
+  if (!(await setLibrarySheet(id, sheetAttachment(file)))) throw new Error('No such piece');
 }
 
 /** Removes a piece's PDF; the piece and its notes stay. */
 export async function removeSheet(id: number): Promise<void> {
-  // Dexie deletes a property that an update sets to undefined.
-  await db.library.update(id, { sheet: undefined });
+  await setLibrarySheet(id, undefined);
 }
 
 /**
@@ -39,13 +43,14 @@ export function sheetForNewSong(sheet: SheetAttachment): SheetAttachment {
  * id, tags and date so its place in the library and its links stay the same.
  */
 export async function addNotes(id: number, notes: PieceNotes): Promise<void> {
-  await db.transaction('rw', db.library, async () => {
-    const item = await db.library.get(id);
+  await db.transaction('rw', db.library, db.files, async () => {
+    const item = await getLibraryItem(id);
     if (!item) throw new Error('No such piece');
     const { sheet, ...rest } = item;
-    await db.library.put({
+    await putLibraryItem({
       ...rest,
       ...notes,
+      id,
       ...(sheet ? { sheet: sheetForNewSong(sheet) } : {}),
     });
   });
@@ -53,8 +58,8 @@ export async function addNotes(id: number, notes: PieceNotes): Promise<void> {
 
 /** Deletes a piece, its sheet music (which is part of it) and its progress. */
 export async function deletePiece(id: number): Promise<void> {
-  await db.transaction('rw', db.library, db.progress, async () => {
-    await db.library.delete(id);
+  await db.transaction('rw', db.library, db.files, db.progress, async () => {
+    await deleteLibraryItem(id);
     await db.progress.delete(`library:${id}`);
   });
 }

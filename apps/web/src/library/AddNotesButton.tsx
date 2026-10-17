@@ -6,7 +6,8 @@ import { FilePlus } from 'lucide-react';
 import { SUPPORTED_EXTENSIONS } from '@opentiles/song-model';
 import { isAudioFile } from '../lib/audio-import';
 import { href } from '../lib/router';
-import { db, getSetting, setSetting } from '../storage/db';
+import { getSetting, setSetting } from '../storage/db';
+import { getLibraryItem } from '../storage/library';
 import { t } from '../i18n';
 import { ImportReview } from './ImportReview';
 import { pieceNotes, readScoreFile, saveErrorMessage } from './pending';
@@ -66,7 +67,7 @@ export function AddNotesButton({
           t('Choose a MIDI or score file. A recording cannot be paired with sheet music.'),
         );
       }
-      const [pending, item] = await Promise.all([readScoreFile(file), db.library.get(itemId)]);
+      const [pending, item] = await Promise.all([readScoreFile(file), getLibraryItem(itemId)]);
       if (!item) throw new Error(t('This piece is not in your library on this device.'));
       // The learner may have named the piece already; the file's own title is usually the same.
       const sheet = item.sheet && { fileName: item.sheet.fileName, bytes: item.sheet.bytes };

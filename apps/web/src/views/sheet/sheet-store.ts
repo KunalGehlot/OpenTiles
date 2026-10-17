@@ -3,10 +3,12 @@
 // was analysed, since the learner may replace or remove it meanwhile.
 import type { SheetMap } from '@opentiles/sheet';
 import { db } from '../../storage/db';
-import type { SheetAttachment } from '../../storage/db';
+import type { SheetAttachment, SheetInfo } from '../../storage/db';
 
-const sameSheet = (a: SheetAttachment, b: SheetAttachment) =>
-  a.addedAt === b.addedAt && a.fileName === b.fileName && a.bytes.length === b.bytes.length;
+const sameSheet = (stored: SheetInfo, sheet: SheetAttachment) =>
+  stored.addedAt === sheet.addedAt &&
+  stored.fileName === sheet.fileName &&
+  stored.size === sheet.bytes.length;
 
 /**
  * Stores a map. A map the learner corrected is never replaced by one they did not make

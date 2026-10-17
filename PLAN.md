@@ -469,8 +469,8 @@ images, sounds or fonts, and credit the inspiration in [CREDITS.md](CREDITS.md).
   or dropped together pair by base name (a question when one score and one PDF differ in name); a
   PDF alone is a sheet-only piece; add, replace or remove a piece's PDF; "Add the MIDI or score
   file" for sheet-only pieces; PDFs up to 60 MB; encrypted backup, sync and crash-report scrubbing
-  keep the sheet. Left: the Library page loads every stored file into memory (a separate table for
-  file bytes would fix it), an iPad check of the picker.
+  keep the sheet. Left: an iPad check of the picker. (The Library page no longer loads the stored
+  files: P6-04.)
 
 - [~] **P5-16** (APP) The keyboard drawn in practice has exactly the keys chosen. Reason
   (maintainer, 2026-10-11): 61 keys showed more than 61, and smaller sizes changed nothing. Cause:
@@ -530,8 +530,14 @@ without a word when no MIDI output is found.
       song seconds and mapped onto the caller's clock; the practice session uses them for Listen
       and the other hand, with the look-ahead its instrument asks for. Pedal events are in the
       event type and the cursor; P6-10 fills them from the files.
-- [ ] **P6-04** (STORE, APP) All the music in one fast list: file and PDF bytes in their own table
+- [x] **P6-04** (STORE, APP) All the music in one fast list: file and PDF bytes in their own table
       (Dexie version 2, the P5-15 leftover), durations, and a collection of catalogue plus library.
+      Done: database version 2 keeps each piece's row (song, settings, sheet name and bar map) apart
+      from its files; the upgrade moves the bytes one piece at a time; the backup format and sync
+      records are unchanged. `player/collection.ts` lists the catalogue and the library with
+      lengths, last played, search and sorting; 200 pieces with PDFs list in about 45 ms without
+      reading a byte of them. Catalogue lengths are remembered on the device the first time a piece
+      loads (the full score reader is needed to work them out), so the Player fills them in.
 - [ ] **P6-05** (APP) The Player transport: a singleton with a worker clock that keeps playing in a
       hidden tab, the queue model, auto-advance, wake lock, pause when the keyboard disappears.
 - [ ] **P6-06** (APP, human) Design the Player with the maintainer in their dark-mode Chrome: a
@@ -579,6 +585,10 @@ Record the outcome as an ADR in `docs/adr/` and tick it here.
 - [x] Engine exposes a plain C ABI instead of wasm-bindgen glue — ADR 0002.
 
 ## Changelog
+
+- **2026-10-17** — P6-04: each library piece's file and PDF live in their own table (database
+  version 2), so the Library page and the coming Player list without loading them; the Player's
+  collection of catalogue and library.
 
 - **2026-10-17** — P6-03: one playback scheduler in `packages/practice` for Listen, the other hand
   and the coming Player; MIDI notes are handed over at most 0.1 s ahead where the browser cannot

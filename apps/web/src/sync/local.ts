@@ -34,7 +34,14 @@ import { asSheetAttachment, isDeviceSetting } from '../backup/backup';
 import { reloadAppSettings } from '../settings/store';
 import { createPasskey, getPasskey } from './webauthn';
 import { db } from '../storage/db';
-import type { DayStat, LibraryItem, Progress, Setting } from '../storage/db';
+import { splitLibraryItem } from '../storage/db';
+import type { DayStat, LibraryItem, LibraryRow, Progress, Setting } from '../storage/db';
+import {
+  addLibraryItem,
+  deleteLibraryItem,
+  getLibraryItem,
+  putLibraryItem,
+} from '../storage/library';
 
 interface MetaRow {
   key: string;
@@ -140,17 +147,21 @@ async function idKey(libraryKey: CryptoKey): Promise<CryptoKey> {
   );
 }
 
-function librarySignature(item: LibraryItem): string {
-  const { sheet } = item;
+/**
+ * What tells a library piece's version apart, from its row alone, so finding the changed pieces
+ * reads no file bytes. The sizes are the files' byte lengths, as the signature always used.
+ */
+function librarySignature(row: LibraryRow): string {
+  const { sheet } = row;
   return JSON.stringify([
-    item.title,
-    item.fileName,
-    item.addedAt,
-    item.bytes.length,
-    item.settings,
-    item.tags,
+    row.title,
+    row.fileName,
+    row.addedAt,
+    row.size,
+    row.settings,
+    row.tags,
     // Only pieces with sheet music get the extra entry, so the others keep the signature they had.
-    ...(sheet ? [[sheet.fileName, sheet.bytes.length, sheet.addedAt]] : []),
+    ...(sheet ? [[sheet.fileName, sheet.size, sheet.addedAt]] : []),
   ]);
 }
 
@@ -365,7 +376,10 @@ export class SyncController {
       const recordId = link?.recordId ?? newRecordId();
       libraryRecord.set(item.id, recordId);
       if (link?.signature !== sig) {
-        await engine.change(recordId, 'library', libraryData(item));
+        // Only a changed piece's files are read.
+        const whole = await getLibraryItem(item.id);
+        if (!whole) continue;
+        await engine.change(recordId, 'library', libraryData(whole));
         await syncDb.links.put({ localKey, recordId, signature: sig });
         changes += 1;
       }
@@ -422,7 +436,7 @@ export class SyncController {
     if (r.deleted) {
       if (link) {
         const id = Number(link.localKey.slice('library:'.length));
-        await db.library.delete(id);
+        await deleteLibraryItem(id);
         await db.progress.delete(`library:${id}`);
         await syncDb.links.delete(link.localKey);
       }
@@ -446,14 +460,14 @@ export class SyncController {
     let id: number;
     if (link) {
       id = Number(link.localKey.slice('library:'.length));
-      await db.library.put({ ...item, id });
+      await putLibraryItem({ ...item, id });
     } else {
-      id = await db.library.add(item);
+      id = await addLibraryItem(item);
     }
     await syncDb.links.put({
       localKey: `library:${id}`,
       recordId: r.id,
-      signature: librarySignature({ ...item, id }),
+      signature: librarySignature(splitLibraryItem({ ...item, id }).row),
     });
   }
 

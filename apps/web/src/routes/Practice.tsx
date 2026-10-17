@@ -67,7 +67,8 @@ import {
   getMidiCalibration,
   micCalibrationSkipped,
 } from '../storage/calibration';
-import { db, recordPracticeTime, recordRun } from '../storage/db';
+import { recordPracticeTime, recordRun } from '../storage/db';
+import { getLibraryItem } from '../storage/library';
 import type { SheetAttachment } from '../storage/db';
 import { hitTest, rangeFor } from '../views/keyboard';
 import type { KeysToDraw } from '../views/keyboard';
@@ -164,7 +165,7 @@ export function Practice({
           progressKey: `catalogue:${id}`,
         };
       }
-      const item = await db.library.get(Number(id));
+      const item = await getLibraryItem(Number(id));
       if (!item) throw new Error(t('This piece is not in your library on this device.'));
       const views = item.sheet ? await import('../views/sheet') : null;
       return {

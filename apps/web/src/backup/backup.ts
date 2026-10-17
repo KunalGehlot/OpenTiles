@@ -14,6 +14,12 @@ import type { SheetMap } from '@opentiles/sheet';
 import type { Song } from '@opentiles/song-model';
 import { db } from '../storage/db';
 import type { DayStat, LibraryItem, Progress, Setting, SheetAttachment } from '../storage/db';
+import {
+  addLibraryItem,
+  allLibraryItems,
+  getLibraryFiles,
+  setLibrarySheet,
+} from '../storage/library';
 
 export { backupFileName };
 
@@ -44,7 +50,7 @@ export function isDeviceSetting(key: string): boolean {
 
 export async function collectBackupData(): Promise<BackupData> {
   const [library, progress, days, settings] = await Promise.all([
-    db.library.toArray(),
+    allLibraryItems(),
     db.progress.toArray(),
     db.days.toArray(),
     db.settings.toArray(),
@@ -226,77 +232,84 @@ export async function mergeBackupData(data: BackupData): Promise<RestoreSummary>
   );
 
   // Hash outside the transaction: IndexedDB transactions close while awaiting other promises.
+  // One piece's file at a time, so the library's PDFs never sit in memory together.
   const local = await db.library.toArray();
   const withoutSheet = new Set(local.filter((i) => !i.sheet).map((i) => i.id));
   const known = new Map<string, number>();
-  for (const item of local) {
-    if (item.id !== undefined) known.set(await fingerprint(item), item.id);
+  for (const row of local) {
+    if (row.id === undefined) continue;
+    const bytes = (await getLibraryFiles(row.id))?.bytes ?? new Uint8Array(0);
+    known.set(await fingerprint({ ...row, bytes }), row.id);
   }
   const incoming = await Promise.all(
     items.map(async (i) => ({ item: i, fp: await fingerprint(i) })),
   );
 
-  await db.transaction('rw', [db.library, db.progress, db.days, db.settings], async () => {
-    // Old id on the backup's device -> id on this device.
-    const idMap = new Map<number, number>();
-    for (const { item, fp } of incoming) {
-      let id = known.get(fp);
-      if (id === undefined) {
-        const { originalId: _drop, ...rest } = item;
-        id = await db.library.add(rest);
-        known.set(fp, id);
-        summary.added += 1;
-      } else {
-        summary.skipped += 1;
-        // The piece got its sheet music on another device after this one restored it.
-        if (item.sheet && withoutSheet.has(id)) {
-          await db.library.update(id, { sheet: item.sheet });
-          withoutSheet.delete(id);
-          summary.sheets += 1;
+  await db.transaction(
+    'rw',
+    [db.library, db.files, db.progress, db.days, db.settings],
+    async () => {
+      // Old id on the backup's device -> id on this device.
+      const idMap = new Map<number, number>();
+      for (const { item, fp } of incoming) {
+        let id = known.get(fp);
+        if (id === undefined) {
+          const { originalId: _drop, ...rest } = item;
+          id = await addLibraryItem(rest);
+          known.set(fp, id);
+          summary.added += 1;
+        } else {
+          summary.skipped += 1;
+          // The piece got its sheet music on another device after this one restored it.
+          if (item.sheet && withoutSheet.has(id)) {
+            await setLibrarySheet(id, item.sheet);
+            withoutSheet.delete(id);
+            summary.sheets += 1;
+          }
+        }
+        if (item.originalId !== null) idMap.set(item.originalId, id);
+      }
+
+      for (const entry of progress) {
+        let key = entry.key;
+        const m = /^library:(\d+)$/.exec(key);
+        if (m) {
+          const id = idMap.get(Number(m[1]));
+          if (id === undefined) continue;
+          key = `library:${id}`;
+        } else if (!key.startsWith('catalogue:')) {
+          continue;
+        }
+        const prev = await db.progress.get(key);
+        const next: Progress = prev
+          ? {
+              key,
+              bestAccuracy: Math.max(prev.bestAccuracy, entry.bestAccuracy),
+              runs: Math.max(prev.runs, entry.runs),
+              lastPlayedAt: Math.max(prev.lastPlayedAt, entry.lastPlayedAt),
+              secondsPractised: Math.max(prev.secondsPractised, entry.secondsPractised),
+            }
+          : { ...entry, key };
+        await db.progress.put(next);
+        summary.progress += 1;
+      }
+
+      for (const d of days) {
+        const prev = await db.days.get(d.day);
+        if (!prev || prev.seconds < d.seconds) {
+          await db.days.put(d);
+          summary.days += 1;
         }
       }
-      if (item.originalId !== null) idMap.set(item.originalId, id);
-    }
 
-    for (const entry of progress) {
-      let key = entry.key;
-      const m = /^library:(\d+)$/.exec(key);
-      if (m) {
-        const id = idMap.get(Number(m[1]));
-        if (id === undefined) continue;
-        key = `library:${id}`;
-      } else if (!key.startsWith('catalogue:')) {
-        continue;
+      for (const s of settings) {
+        if ((await db.settings.get(s.key)) === undefined) {
+          await db.settings.put({ key: s.key, value: s.value });
+          summary.settings += 1;
+        }
       }
-      const prev = await db.progress.get(key);
-      const next: Progress = prev
-        ? {
-            key,
-            bestAccuracy: Math.max(prev.bestAccuracy, entry.bestAccuracy),
-            runs: Math.max(prev.runs, entry.runs),
-            lastPlayedAt: Math.max(prev.lastPlayedAt, entry.lastPlayedAt),
-            secondsPractised: Math.max(prev.secondsPractised, entry.secondsPractised),
-          }
-        : { ...entry, key };
-      await db.progress.put(next);
-      summary.progress += 1;
-    }
-
-    for (const d of days) {
-      const prev = await db.days.get(d.day);
-      if (!prev || prev.seconds < d.seconds) {
-        await db.days.put(d);
-        summary.days += 1;
-      }
-    }
-
-    for (const s of settings) {
-      if ((await db.settings.get(s.key)) === undefined) {
-        await db.settings.put({ key: s.key, value: s.value });
-        summary.settings += 1;
-      }
-    }
-  });
+    },
+  );
   return summary;
 }
 

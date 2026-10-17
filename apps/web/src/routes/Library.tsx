@@ -30,7 +30,8 @@ import { isSheetOnly, readSheetFile, sheetAttachment } from '../library/sheet';
 import type { SheetFile } from '../library/sheet';
 import { attachSheet, deletePiece, removeSheet } from '../library/store';
 import { db, getSetting, setSetting } from '../storage/db';
-import type { LibraryItem } from '../storage/db';
+import type { LibraryRow } from '../storage/db';
+import { addLibraryItem } from '../storage/library';
 import { SearchBox } from '../ui/SearchBox';
 import { requestPersistence, shouldSuggestHomeScreen } from '../storage/persist';
 import { locale, t } from '../i18n';
@@ -244,7 +245,7 @@ export function Library() {
     const notes = pieceNotes(pending);
     let id: number;
     try {
-      id = await db.library.add({
+      id = await addLibraryItem({
         ...notes,
         tags: [],
         addedAt: Date.now(),
@@ -478,7 +479,7 @@ function LibraryCard({
   error,
   onChooseSheet,
 }: {
-  item: LibraryItem;
+  item: LibraryRow;
   error: string | null;
   onChooseSheet: (id: number) => void;
 }) {

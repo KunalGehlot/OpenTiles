@@ -1,7 +1,7 @@
 // The private library and progress, in IndexedDB on this device only (spec §10). Nothing here is
 // ever sent anywhere; optional encrypted sync comes later (P3-03).
 import Dexie from 'dexie';
-import type { Table } from 'dexie';
+import type { Table, Transaction } from 'dexie';
 import type { Song, SongFormat } from '@opentiles/song-model';
 import type { SheetMap } from '@opentiles/sheet';
 
@@ -28,6 +28,11 @@ export interface SheetAttachment {
   map?: SheetMap;
 }
 
+/**
+ * A whole library piece, its files included: what an import, the backup and sync hand over. In the
+ * database it is split in two (P6-04): a `LibraryRow` with everything but the bytes, which lists
+ * open fast, and its `LibraryFiles`.
+ */
 export interface LibraryItem {
   id?: number;
   title: string;
@@ -42,6 +47,91 @@ export interface LibraryItem {
   addedAt: number;
   /** The sheet-music PDF for this piece, when the learner added one. */
   sheet?: SheetAttachment;
+}
+
+/** A piece's sheet music without its bytes, as a library row keeps it. */
+export interface SheetInfo {
+  fileName: string;
+  addedAt: number;
+  /** Size of the PDF in bytes, to tell one PDF from its replacement. */
+  size: number;
+  map?: SheetMap;
+}
+
+/** A library piece without its files: what the Library page and the Player list. */
+export interface LibraryRow extends Omit<LibraryItem, 'bytes' | 'sheet'> {
+  /** Size of the original file in bytes. */
+  size: number;
+  sheet?: SheetInfo;
+}
+
+/** A piece's files, kept apart from its row under the same id (P6-04). */
+export interface LibraryFiles {
+  id: number;
+  bytes: Uint8Array;
+  sheetBytes?: Uint8Array;
+}
+
+/** A sheet's info without its bytes. */
+export function sheetInfo(sheet: SheetAttachment): SheetInfo {
+  const { bytes, ...rest } = sheet;
+  return { ...rest, size: bytes.length };
+}
+
+/** Splits a whole piece into its row and its files. */
+export function splitLibraryItem(item: LibraryItem & { id: number }): {
+  row: LibraryRow & { id: number };
+  files: LibraryFiles;
+} {
+  const { bytes, sheet, ...rest } = item;
+  return {
+    row: { ...rest, size: bytes.length, ...(sheet ? { sheet: sheetInfo(sheet) } : {}) },
+    files: { id: item.id, bytes, ...(sheet ? { sheetBytes: sheet.bytes } : {}) },
+  };
+}
+
+/**
+ * A whole piece from its row and files. Files that went missing read as empty, so a damaged
+ * database still opens the piece's other parts.
+ */
+export function joinLibraryItem(row: LibraryRow, files: LibraryFiles | undefined): LibraryItem {
+  const { size: _size, sheet, ...rest } = row;
+  const empty = new Uint8Array(0);
+  return {
+    ...rest,
+    bytes: files?.bytes ?? empty,
+    ...(sheet
+      ? {
+          sheet: {
+            fileName: sheet.fileName,
+            addedAt: sheet.addedAt,
+            bytes: files?.sheetBytes ?? empty,
+            ...(sheet.map ? { map: sheet.map } : {}),
+          },
+        }
+      : {}),
+  };
+}
+
+/**
+ * Version 1 kept each piece's file and PDF in its row, so listing the library read every byte.
+ * Version 2 moves them to `files`, one piece at a time so a large library never sits in memory at
+ * once. A row without bytes (damaged) is left as it is.
+ */
+export async function moveFilesOutOfRows(tx: Transaction): Promise<void> {
+  const library = tx.table('library');
+  const files = tx.table('files');
+  const ids = (await library.toCollection().primaryKeys()) as number[];
+  for (const id of ids) {
+    const old = (await library.get(id)) as (LibraryItem & { id: number }) | undefined;
+    if (!old || !(old.bytes instanceof Uint8Array)) continue;
+    // A sheet without bytes has no PDF to keep; its map alone is of no use.
+    const { sheet, ...piece } = old;
+    const keep = sheet && sheet.bytes instanceof Uint8Array ? { sheet } : {};
+    const { row, files: f } = splitLibraryItem({ ...piece, ...keep });
+    await files.put(f);
+    await library.put(row);
+  }
 }
 
 export interface Progress {
@@ -65,7 +155,8 @@ export interface Setting {
 }
 
 class OpenTilesDb extends Dexie {
-  library!: Table<LibraryItem, number>;
+  library!: Table<LibraryRow, number>;
+  files!: Table<LibraryFiles, number>;
   progress!: Table<Progress, string>;
   days!: Table<DayStat, string>;
   settings!: Table<Setting, string>;
@@ -78,6 +169,7 @@ class OpenTilesDb extends Dexie {
       days: 'day',
       settings: 'key',
     });
+    this.version(2).stores({ files: 'id' }).upgrade(moveFilesOutOfRows);
   }
 }
 
