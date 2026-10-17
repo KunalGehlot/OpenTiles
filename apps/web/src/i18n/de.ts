@@ -751,6 +751,11 @@ export const de: Readonly<Record<string, string>> = {
     'Für Stücke, deren Datei keine eigene Lautstärke hat, etwa im Katalog: Natürlich hebt die Melodie und die betonten Zählzeiten hervor, gleichmäßig spielt jede Note gleich laut. MIDI-Dateien behalten ihre eigene.',
   Natural: 'Natürlich',
   Even: 'Gleichmäßig',
+  // The iPad app (P6-12)
+  'Bluetooth MIDI keyboard': 'Bluetooth-MIDI-Keyboard',
+  'On the iPad, a Bluetooth MIDI keyboard is paired here, not in the iPad’s own Bluetooth settings. Once paired it works like a keyboard plugged in by USB.':
+    'Auf dem iPad wird ein Bluetooth-MIDI-Keyboard hier gekoppelt, nicht in den Bluetooth-Einstellungen des iPads. Danach funktioniert es wie ein per USB angestecktes Keyboard.',
+  'Pair a Bluetooth MIDI keyboard': 'Bluetooth-MIDI-Keyboard koppeln',
   // Plays on (P6-01)
   'Plays on': 'Spielt auf',
   Connect: 'Verbinden',

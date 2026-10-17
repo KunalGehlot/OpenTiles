@@ -8,6 +8,7 @@ import type { Instrument } from '../audio/instrument';
 import { MidiOutInstrument, playbackInstrument } from '../audio/midi-out';
 import { synthFor } from '../audio/synth';
 import { midiOutputPort } from '../input/midi-input';
+import { keepScreenAwake } from '../input/native-midi-input';
 import { appSettings } from '../settings/store';
 import { getSetting, setSetting } from '../storage/db';
 import type { CollectionKey } from './collection';
@@ -52,6 +53,8 @@ function wakeLock() {
   });
   return (on: boolean) => {
     wanted = on;
+    // The iPad app's web view may have no Wake Lock: the app keeps the screen on itself (P6-12).
+    void keepScreenAwake(on).catch(() => {});
     if (on) void request();
     else {
       void held?.release().catch(() => {});

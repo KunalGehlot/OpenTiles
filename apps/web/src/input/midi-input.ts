@@ -9,6 +9,9 @@ import { parseMidiMessage } from './midi-message';
 import { t } from '../i18n';
 import { NativeMidiInput, nativeMidiAvailable } from './native-midi-input';
 import type { MidiSink } from '../audio/midi-out';
+import { pickOutput } from './pick-output';
+
+export { pickOutput };
 
 /** What the practice screen needs from a MIDI keyboard, wherever its notes come from. */
 export interface MidiKeyboardInput extends InputAdapter {
@@ -19,21 +22,6 @@ export interface MidiKeyboardInput extends InputAdapter {
   readonly outputNames: string[];
   /** The output called `name`; with no name, the one belonging to the connected keyboard. */
   output(name?: string): MidiSink | null;
-}
-
-/**
- * The output to play on: the one asked for by name, else the one named like a connected keyboard
- * (a keyboard's input and output share its name), else the only one there is.
- */
-export function pickOutput(
-  outputs: readonly string[],
-  inputs: readonly string[],
-  name = '',
-): string | null {
-  if (name && outputs.includes(name)) return name;
-  const same = outputs.find((o) => inputs.includes(o));
-  if (same) return same;
-  return outputs.length === 1 ? (outputs[0] ?? null) : null;
 }
 
 export function webMidiSupported(): boolean {
@@ -218,6 +206,7 @@ export interface MidiOutputPort {
  * one MIDI access, so it may show the browser's permission prompt the first time.
  */
 export async function midiOutputPort(name = ''): Promise<MidiOutputPort | null> {
+  if (nativeMidiAvailable()) return nativeOutputPort(name);
   if (!webMidiSupported()) return null;
   const access = await midiAccess();
   const label = (p: MIDIPort) => p.name ?? 'MIDI device';
@@ -234,6 +223,38 @@ export async function midiOutputPort(name = ''): Promise<MidiOutputPort | null> 
       };
       access.addEventListener('statechange', check);
       return () => access.removeEventListener('statechange', check);
+    },
+  };
+}
+
+/** The iPad app's CoreMIDI connection for the Player's notes (P6-12), started once. */
+let native: { input: NativeMidiInput; ready: Promise<void> } | null = null;
+
+async function nativeOutputPort(name: string): Promise<MidiOutputPort | null> {
+  if (!native) {
+    const input = new NativeMidiInput();
+    native = { input, ready: input.start() };
+  }
+  const { input } = native;
+  try {
+    await native.ready;
+  } catch {
+    native = null;
+    return null;
+  }
+  const sink = input.output(name);
+  const pick = pickOutput(input.outputNames, input.deviceNames, name);
+  if (!sink || pick === null) return null;
+  return {
+    name: pick,
+    sink,
+    watch(onGone) {
+      input.onOutputsChanged = (names) => {
+        if (!names.includes(pick)) onGone();
+      };
+      return () => {
+        input.onOutputsChanged = () => {};
+      };
     },
   };
 }

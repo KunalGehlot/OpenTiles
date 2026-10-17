@@ -62,6 +62,15 @@ enum UniversalPacket {
             return nil
         }
     }
+
+    /// A MIDI 1.0 channel voice message (note on and off, control change, …) as the one-word type
+    /// 2 packet MIDISendEventList takes, on group 0; nil for anything else (P6-12).
+    static func midi1Word(_ bytes: [Int]) -> UInt32? {
+        guard let status = bytes.first, (0x80...0xEF).contains(status) else { return nil }
+        let data1 = bytes.count > 1 ? UInt32(bytes[1] & 0x7F) : 0
+        let data2 = bytes.count > 2 ? UInt32(bytes[2] & 0x7F) : 0
+        return 0x2000_0000 | UInt32(status) << 16 | data1 << 8 | data2
+    }
 }
 
 /// CoreMIDI timestamps are host time: mach_absolute_time() ticks since boot. The clock is
@@ -83,5 +92,11 @@ enum HostClock {
 
     static func now() -> Double {
         seconds(fromHostTime: mach_absolute_time())
+    }
+
+    /// Host time for a time in seconds on this clock; 0 ("now") for a time not after the present.
+    static func hostTime(fromSeconds seconds: Double) -> UInt64 {
+        guard seconds.isFinite, seconds > now() else { return 0 }
+        return UInt64(seconds / secondsPerTick)
     }
 }

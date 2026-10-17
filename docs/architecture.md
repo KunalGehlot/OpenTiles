@@ -388,8 +388,11 @@ device. Build steps, App Store and privacy-manifest notes:
   output, or several outputs leave the choice open, the notes play on this device and the screen
   says why; the button shows a warning. A new output moves the notes to it by itself. With "Play my
   MIDI keys on this device", `PracticeSession.midiEcho` sounds each MIDI note on this device until
-  its key is released. The metronome and count-in always stay on this device. The iPad app has no
-  MIDI out yet (P6-12).
+  its key is released. The metronome and count-in always stay on this device. In the iPad app the
+  notes go out through CoreMIDI (P6-12): `NativeMidiInput.output()` stamps each message in host
+  time with the clock estimate the keys played use, batches a tick's messages into one bridge
+  call, and CoreMIDI sends each when it is due; `flush` drops what has not been sent, so Stop is
+  as clean as with Web MIDI's `clear()`.
 - **Stopping cleanly** (P6-02). The practice screen keeps one `MidiOutInstrument` per output, which
   remembers every note it sent that may still sound or is stamped to start. `silence()` calls
   `clear()` where the browser has it, sends a note-off for each of those notes, then the sustain

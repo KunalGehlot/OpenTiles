@@ -132,8 +132,19 @@ function fakeShell(options: { failStart?: boolean } = {}) {
   const listeners = new Map<string, Set<Listener>>();
   const calls: string[] = [];
   let sources = [{ id: 7, name: 'Digital Piano' }];
+  let destinations = [{ id: 8, name: 'Digital Piano' }];
+  const sent: { destination: number; messages: { data: number[]; time?: number }[] }[] = [];
+  const flushed: (number | undefined)[] = [];
   const plugin = {
     listSources: async () => ({ sources }),
+    listDestinations: async () => ({ destinations }),
+    send: async (options: (typeof sent)[number]) => {
+      sent.push(options);
+      return { sent: true };
+    },
+    flush: async (options: { destination?: number }) => {
+      flushed.push(options.destination);
+    },
     start: async () => {
       calls.push('start');
       if (options.failStart) throw new Error('MIDIClientCreateWithBlock failed (OSStatus -50).');
@@ -169,7 +180,11 @@ function fakeShell(options: { failStart?: boolean } = {}) {
     sources = next;
     emit('devicesChanged', { sources: next });
   };
-  return { state, input, emit, calls, listenerCount, setSources };
+  const setDestinations = (next: typeof destinations) => {
+    destinations = next;
+    emit('destinationsChanged', { destinations: next });
+  };
+  return { state, input, emit, calls, listenerCount, setSources, setDestinations, sent, flushed };
 }
 
 describe('NativeMidiInput', () => {
@@ -237,7 +252,8 @@ describe('NativeMidiInput', () => {
     expect(syncs()).toBe(3);
     vi.advanceTimersByTime(5000);
     expect(syncs()).toBe(4);
-    expect(shell.listenerCount()).toBe(3);
+    // Notes on and off, sources and (P6-12) destinations.
+    expect(shell.listenerCount()).toBe(4);
 
     shell.input.stop();
     expect(shell.listenerCount()).toBe(0);
@@ -301,5 +317,71 @@ describe('native shell detection', () => {
       },
     });
     expect(isNativeShell()).toBe(false);
+  });
+});
+
+describe('MIDI out in the iPad app (P6-12)', () => {
+  const flush = async () => {
+    for (let i = 0; i < 5; i++) await Promise.resolve();
+  };
+
+  it('lists the keyboards it can play on and follows them', async () => {
+    const shell = fakeShell();
+    const seen: string[][] = [];
+    shell.input.onOutputsChanged = (names) => seen.push(names);
+    await shell.input.start();
+    expect(shell.input.outputNames).toEqual(['Digital Piano']);
+    shell.setDestinations([]);
+    expect(shell.input.outputNames).toEqual([]);
+    expect(seen.at(-1)).toEqual([]);
+  });
+
+  it('sends a tick’s messages in one call, stamped on the host clock', async () => {
+    const shell = fakeShell();
+    await shell.input.start();
+    const sink = shell.input.output();
+    expect(sink).not.toBeNull();
+    // Local 110.5 s is host 5110.5 s (the fake's host clock runs 5000 s ahead).
+    sink?.send([0x90, 60, 80], 110_500);
+    sink?.send([0x80, 60, 0], 111_000);
+    sink?.send([0xb0, 64, 0]);
+    expect(shell.sent).toHaveLength(0);
+    await flush();
+    expect(shell.sent).toHaveLength(1);
+    expect(shell.sent[0]?.destination).toBe(8);
+    const messages = shell.sent[0]?.messages ?? [];
+    expect(messages.map((m) => m.data)).toEqual([
+      [0x90, 60, 80],
+      [0x80, 60, 0],
+      [0xb0, 64, 0],
+    ]);
+    expect(messages[0]?.time).toBeCloseTo(5110.5, 6);
+    expect(messages[1]?.time).toBeCloseTo(5111, 6);
+    expect(messages[2]).not.toHaveProperty('time');
+  });
+
+  it('clears what is still waiting, here and in CoreMIDI', async () => {
+    const shell = fakeShell();
+    await shell.input.start();
+    const sink = shell.input.output();
+    sink?.send([0x90, 62, 80], 120_000);
+    sink?.clear?.();
+    sink?.send([0x80, 62, 0]);
+    await flush();
+    expect(shell.flushed).toEqual([8]);
+    expect(shell.sent.flatMap((s) => s.messages.map((m) => m.data))).toEqual([[0x80, 62, 0]]);
+  });
+
+  it('has no output before it is started or without a keyboard', async () => {
+    const shell = fakeShell();
+    expect(shell.input.output()).toBeNull();
+    await shell.input.start();
+    shell.setDestinations([
+      { id: 1, name: 'Network Session' },
+      { id: 2, name: 'Synth' },
+    ]);
+    // Two outputs, neither named like the keyboard: the learner has to choose.
+    expect(shell.input.output()).toBeNull();
+    expect(shell.input.output('Synth')).not.toBeNull();
   });
 });

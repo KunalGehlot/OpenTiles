@@ -11,6 +11,7 @@ import type { MidiKeyboardInput } from './midi-input';
 import type { MidiSink } from '../audio/midi-out';
 import { parseNativeNote, parseNativeSources } from './midi-message';
 import type { NativeSource } from './midi-message';
+import { pickOutput } from './pick-output';
 
 /** The plugin's JavaScript name (jsName in CoreMidiPlugin.swift). */
 const PLUGIN_NAME = 'CoreMidi';
@@ -32,6 +33,22 @@ export type CoreMidiLoader = () => Promise<{ CoreMidi: CoreMidiPlugin }>;
 
 const loadCoreMidi: CoreMidiLoader = () => import('@opentiles/capacitor-core-midi');
 
+/** Shows Apple's Bluetooth MIDI pairing screen in the iPad app (P6-12). */
+export async function pairBluetoothKeyboard(load: CoreMidiLoader = loadCoreMidi): Promise<void> {
+  const { CoreMidi } = await load();
+  await CoreMidi.pairBluetooth();
+}
+
+/** Keeps the iPad app's screen on while the Player plays; outside the app, does nothing. */
+export async function keepScreenAwake(
+  on: boolean,
+  load: CoreMidiLoader = loadCoreMidi,
+): Promise<void> {
+  if (!nativeMidiAvailable()) return;
+  const { CoreMidi } = await load();
+  await CoreMidi.keepAwake({ on });
+}
+
 interface ListenerHandle {
   remove: () => Promise<void>;
 }
@@ -41,9 +58,15 @@ export class NativeMidiInput implements MidiKeyboardInput {
   onNote: (event: NoteEvent) => void = () => {};
   onRelease: (pitch: number, time: number) => void = () => {};
   onDevicesChanged: (names: string[]) => void = () => {};
+  /** The outputs (CoreMIDI destinations) came or went (P6-12). */
+  onOutputsChanged: (names: string[]) => void = () => {};
   private plugin: CoreMidiPlugin | null = null;
   private handles: ListenerHandle[] = [];
   private sources: NativeSource[] = [];
+  private destinations: NativeSource[] = [];
+  /** Messages for the keyboard, sent over the bridge together at the end of the current task. */
+  private pending: { destination: number; data: number[]; time?: number }[] = [];
+  private sendQueued = false;
   private readonly clock = new ClockSync();
   private timer: ReturnType<typeof setInterval> | undefined;
   /** Bumped by start() and stop(), so a start() still awaiting the bridge knows it is stale. */
@@ -61,13 +84,52 @@ export class NativeMidiInput implements MidiKeyboardInput {
     return this.sources.map((s) => s.name);
   }
 
-  /** The iPad app reads keyboards only; MIDI out through CoreMIDI is not written yet. */
   get outputNames(): string[] {
-    return [];
+    return this.destinations.map((d) => d.name);
   }
 
-  output(): MidiSink | null {
-    return null;
+  /**
+   * The app's notes on a keyboard through CoreMIDI (P6-12). Time stamps on performance.now() are
+   * turned into host time with the same clock estimate the keys played use, and CoreMIDI sends
+   * each message when it is due. Messages are batched, one bridge call per scheduling tick.
+   */
+  output(name = ''): MidiSink | null {
+    const plugin = this.plugin;
+    if (!plugin) return null;
+    const pick = pickOutput(this.outputNames, this.deviceNames, name);
+    const destination = this.destinations.find((d) => d.name === pick)?.id;
+    if (destination === undefined) return null;
+    return {
+      send: (data, timestamp) => this.enqueue(destination, data, timestamp),
+      // CoreMIDI can drop what it has not sent yet, so the session schedules as usual.
+      clear: () => {
+        this.pending = this.pending.filter((m) => m.destination !== destination);
+        void plugin.flush({ destination }).catch(() => {});
+      },
+    };
+  }
+
+  private enqueue(destination: number, data: number[], timestamp?: number): void {
+    const time = timestamp === undefined ? null : this.clock.toRemote(timestamp / 1000);
+    this.pending.push({ destination, data: [...data], ...(time !== null ? { time } : {}) });
+    if (this.sendQueued) return;
+    this.sendQueued = true;
+    queueMicrotask(() => this.sendPending());
+  }
+
+  private sendPending(): void {
+    this.sendQueued = false;
+    const plugin = this.plugin;
+    const pending = this.pending;
+    this.pending = [];
+    if (!plugin) return;
+    const byDestination = new Map<number, { data: number[]; time?: number }[]>();
+    for (const { destination, ...message } of pending) {
+      byDestination.set(destination, [...(byDestination.get(destination) ?? []), message]);
+    }
+    for (const [destination, messages] of byDestination) {
+      void plugin.send({ destination, messages }).catch(() => {});
+    }
   }
 
   async start(): Promise<void> {
@@ -94,6 +156,7 @@ export class NativeMidiInput implements MidiKeyboardInput {
       CoreMidi.addListener('noteOn', (e) => this.receive(e, true)),
       CoreMidi.addListener('noteOff', (e) => this.receive(e, false)),
       CoreMidi.addListener('devicesChanged', (e) => this.setSources(e)),
+      CoreMidi.addListener('destinationsChanged', (e) => this.setDestinations(e)),
     ]);
     if (generation !== this.generation) {
       for (const h of handles) void h.remove().catch(() => {});
@@ -101,8 +164,15 @@ export class NativeMidiInput implements MidiKeyboardInput {
     }
     this.handles = handles;
 
-    const result = await CoreMidi.start();
+    const [result, outputs] = await Promise.all([
+      CoreMidi.start(),
+      // An app built before MIDI out (P6-12) has no destinations to list.
+      Promise.resolve()
+        .then(() => CoreMidi.listDestinations())
+        .catch(() => ({ destinations: [] })),
+    ]);
     if (generation !== this.generation) return;
+    this.setDestinations(outputs);
     this.setSources(result);
     this.timer = setInterval(() => void this.measureClock(), CLOCK_RESYNC_MS);
   }
@@ -149,5 +219,10 @@ export class NativeMidiInput implements MidiKeyboardInput {
   private setSources(payload: unknown): void {
     this.sources = parseNativeSources(payload);
     this.onDevicesChanged(this.deviceNames);
+  }
+
+  private setDestinations(payload: unknown): void {
+    this.destinations = parseNativeSources(payload, 'destinations');
+    this.onOutputsChanged(this.outputNames);
   }
 }

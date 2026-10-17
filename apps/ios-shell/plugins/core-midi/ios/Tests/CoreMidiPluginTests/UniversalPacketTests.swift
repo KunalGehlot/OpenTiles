@@ -68,3 +68,31 @@ final class UniversalPacketTests: XCTestCase {
         XCTAssertGreaterThanOrEqual(second, first)
     }
 }
+
+final class OutgoingPacketTests: XCTestCase {
+    func testChannelVoiceMessagesBecomeType2Words() {
+        // Note-on C4 velocity 100 on channel 0, the same word the parser reads back.
+        XCTAssertEqual(UniversalPacket.midi1Word([0x90, 60, 100]), 0x2090_3C64)
+        XCTAssertEqual(UniversalPacket.midi1Word([0xB0, 64, 127]), 0x20B0_407F)
+        // Program change has one data byte.
+        XCTAssertEqual(UniversalPacket.midi1Word([0xC2, 5]), 0x20C2_0500)
+        var parsed: [MidiNote] = []
+        [UInt32(0x2090_3C64)].withUnsafeBufferPointer { buffer in
+            UniversalPacket.forEachNote(in: buffer) { parsed.append($0) }
+        }
+        XCTAssertEqual(parsed, [MidiNote(isOn: true, channel: 0, pitch: 60, velocity: 100)])
+    }
+
+    func testOnlyChannelVoiceMessagesAreSent() {
+        XCTAssertNil(UniversalPacket.midi1Word([0xF0, 1, 2]))
+        XCTAssertNil(UniversalPacket.midi1Word([0x40]))
+        XCTAssertNil(UniversalPacket.midi1Word([]))
+    }
+
+    func testHostTimeRoundTripsAndThePastIsNow() {
+        let later = HostClock.now() + 0.25
+        let ticks = HostClock.hostTime(fromSeconds: later)
+        XCTAssertEqual(HostClock.seconds(fromHostTime: ticks), later, accuracy: 1e-6)
+        XCTAssertEqual(HostClock.hostTime(fromSeconds: HostClock.now() - 1), 0)
+    }
+}

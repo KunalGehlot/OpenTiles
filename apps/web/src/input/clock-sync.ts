@@ -56,6 +56,12 @@ export class ClockSync {
     return offset === null ? null : remote + offset;
   }
 
+  /** A local time on the remote clock; null before the first sample. */
+  toRemote(local: number): number | null {
+    const offset = this.offset;
+    return offset === null ? null : local - offset;
+  }
+
   reset(): void {
     this.estimates = [];
   }
