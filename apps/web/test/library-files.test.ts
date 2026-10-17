@@ -189,7 +189,9 @@ describe('library pieces across rows and files', () => {
     expect(entries).toHaveLength(200);
     expect(entries[0]).toMatchObject({ title: 'Piece 199', hasSheet: true, seconds: 100 });
     expect(rows.some((r) => 'bytes' in r || (r.sheet && 'bytes' in r.sheet))).toBe(false);
-    expect(ms).toBeLessThan(200);
+    // About 45 ms on a laptop; the limit only catches something going badly wrong, since CI runs
+    // this beside the catalogue's render check and once took 240 ms.
+    expect(ms).toBeLessThan(1000);
     // The backup still gets every file.
     const whole = await allLibraryItems();
     expect(whole.every((i) => i.sheet?.bytes.length === pdf.length)).toBe(true);
