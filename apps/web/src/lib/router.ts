@@ -4,6 +4,8 @@ import { useEffect, useState } from 'react';
 export type Route =
   | { name: 'home' }
   | { name: 'library' }
+  /** All the music, played on this device or the learner's keyboard (Phase 6, ADR 0019). */
+  | { name: 'player' }
   /** `drill` ids are generated drill options, not stored pieces (P5-05). */
   | { name: 'practice'; source: 'catalogue' | 'library' | 'drill'; id: string }
   /** Sight-reading drills: choose a clef, key and level (P5-05). */
@@ -25,10 +27,18 @@ export function parseHash(hash: string): Route {
   // Sign-in links may carry the token as a bare fragment: `…#token=abc`.
   const bare = /^#token=([\w-]+)$/.exec(hash);
   if (bare?.[1]) return { name: 'sign-in', token: bare[1] };
-  const parts = hash.replace(/^#\/?/, '').split('/').filter(Boolean).map(decodeURIComponent);
+  // A query after the page (`#/player?design=b`) is the page's own business.
+  const parts = hash
+    .replace(/^#\/?/, '')
+    .replace(/\?.*$/, '')
+    .split('/')
+    .filter(Boolean)
+    .map(decodeURIComponent);
   switch (parts[0]) {
     case 'library':
       return { name: 'library' };
+    case 'player':
+      return { name: 'player' };
     case 'practice':
       if (
         (parts[1] === 'catalogue' || parts[1] === 'library' || parts[1] === 'drill') &&
