@@ -23,18 +23,20 @@ async function rememberSeconds(slug: string, song: Song): Promise<void> {
 
 /** Every piece the learner can play: the catalogue (verified only in production) and the library. */
 export async function loadCollection(): Promise<CollectionEntry[]> {
-  const [catalogue, library, progress, catalogueSeconds] = await Promise.all([
+  const [catalogue, library, progress, catalogueSeconds, listened] = await Promise.all([
     // Offline before the index was ever cached, the library still lists.
     loadCatalogue().catch(() => []),
     libraryRows(),
     db.progress.toArray(),
     getSetting<Record<string, number>>(SECONDS_KEY, {}),
+    getSetting<Record<string, number>>('device.playerPlayed', {}),
   ]);
   return buildCollection({
     catalogue,
     library,
     progress,
     catalogueSeconds,
+    listened,
     showUnverified: __SHOW_UNVERIFIED__,
   });
 }

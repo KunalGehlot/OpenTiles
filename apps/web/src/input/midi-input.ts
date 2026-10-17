@@ -185,6 +185,59 @@ export function midiWaitingMessage(userAgent: string): string {
       );
 }
 
+/** A Web MIDI output as the app's notes need it. */
+function sinkFor(port: MIDIOutput): MidiSink {
+  return {
+    send: (data, timestamp) => {
+      try {
+        port.send(data, timestamp);
+      } catch {
+        // Unplugged or switched off: the browser throws, and the screen moves the notes to this
+        // device as soon as it reports the change. Throwing here would stop the drawing loop.
+      }
+    },
+    // Only where the browser has it (Firefox; not Chrome or Edge): without it the session
+    // schedules MIDI notes less far ahead.
+    ...(typeof (port as MIDIOutput & { clear?: unknown }).clear === 'function'
+      ? { clear: () => (port as MIDIOutput & { clear: () => void }).clear() }
+      : {}),
+  };
+}
+
+/** A MIDI output picked for playing on, and a way to hear when it goes away. */
+export interface MidiOutputPort {
+  name: string;
+  sink: MidiSink;
+  /** Calls `onGone` when the output is unplugged or switched off; returns the unsubscribe. */
+  watch(onGone: () => void): () => void;
+}
+
+/**
+ * The output to play the app's notes on, without listening to any keyboard (the Player, P6-05):
+ * the one named, else the one named like a connected keyboard, else the only one. Uses the page's
+ * one MIDI access, so it may show the browser's permission prompt the first time.
+ */
+export async function midiOutputPort(name = ''): Promise<MidiOutputPort | null> {
+  if (!webMidiSupported()) return null;
+  const access = await midiAccess();
+  const label = (p: MIDIPort) => p.name ?? 'MIDI device';
+  const outputs = [...access.outputs.values()];
+  const pick = pickOutput(outputs.map(label), [...access.inputs.values()].map(label), name);
+  const port = outputs.find((o) => label(o) === pick);
+  if (!port || pick === null) return null;
+  return {
+    name: pick,
+    sink: sinkFor(port),
+    watch(onGone) {
+      const check = () => {
+        if (port.state === 'disconnected') onGone();
+      };
+      access.addEventListener('statechange', check);
+      return () => access.removeEventListener('statechange', check);
+    },
+  };
+}
+
 /** The MIDI input for this platform: CoreMIDI in the iPad app, Web MIDI everywhere else. */
 export function createMidiInput(): MidiKeyboardInput {
   return nativeMidiAvailable() ? new NativeMidiInput() : new MidiInput();
@@ -223,22 +276,7 @@ export class MidiInput implements MidiKeyboardInput {
     const outputs = [...this.access.outputs.values()];
     const pick = pickOutput(this.outputNames, this.deviceNames, name);
     const port = outputs.find((o) => (o.name ?? 'MIDI device') === pick);
-    if (!port) return null;
-    return {
-      send: (data, timestamp) => {
-        try {
-          port.send(data, timestamp);
-        } catch {
-          // Unplugged or switched off: the browser throws, and the screen moves the notes to this
-          // device as soon as it reports the change. Throwing here would stop the drawing loop.
-        }
-      },
-      // Only where the browser has it (Firefox; not Chrome or Edge): without it the session
-      // schedules MIDI notes less far ahead.
-      ...(typeof (port as MIDIOutput & { clear?: unknown }).clear === 'function'
-        ? { clear: () => (port as MIDIOutput & { clear: () => void }).clear() }
-        : {}),
-    };
+    return port ? sinkFor(port) : null;
   }
 
   private attach(): void {

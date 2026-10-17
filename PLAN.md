@@ -538,8 +538,18 @@ without a word when no MIDI output is found.
       lengths, last played, search and sorting; 200 pieces with PDFs list in about 45 ms without
       reading a byte of them. Catalogue lengths are remembered on the device the first time a piece
       loads (the full score reader is needed to work them out), so the Player fills them in.
-- [ ] **P6-05** (APP) The Player transport: a singleton with a worker clock that keeps playing in a
-      hidden tab, the queue model, auto-advance, wake lock, pause when the keyboard disappears.
+- [~] **P6-05** (APP) The Player transport: a singleton with a worker clock that keeps playing in a
+  hidden tab, the queue model, auto-advance, wake lock, pause when the keyboard disappears.
+  Done: `player/queue.ts` (shuffle that plays every piece once per round, repeat one and all,
+  play next), `player/transport.ts` (play, pause, seek, next, previous within 3 s, tempo, hands,
+  the gap between pieces, pause and a message when the keyboard goes away, on the shared
+  scheduler), `player/browser.ts` (one transport for the app, a worker clock, time on the page's
+  clock with this device's piano converted to the audio clock, output-only MIDI access, wake
+  lock, `pagehide`; practice, drills and the Detector Lab stop it); this device's piano can now
+  be silenced at once, so Stop in practice cuts its notes too. "Recently played" from the Player
+  is kept on the device, apart from practice progress. Left: the timing check in real browsers
+  (jitter, and 10 minutes in a hidden tab in Chrome, Edge and Firefox), once the Player page plays
+  through it (P6-07).
 - [ ] **P6-06** (APP, human) Design the Player with the maintainer in their dark-mode Chrome: a
       prototype with two variants, generated cover art, the piece's picture as the seek bar.
 - [ ] **P6-07** (APP) The Player page (`#/player`): search, filters and sorting over all music, Now
@@ -585,6 +595,10 @@ Record the outcome as an ADR in `docs/adr/` and tick it here.
 - [x] Engine exposes a plain C ABI instead of wasm-bindgen glue — ADR 0002.
 
 ## Changelog
+
+- **2026-10-17** — P6-05 (most of it): the Player's queue and transport, a worker clock that keeps
+  playing in a hidden tab, and output-only MIDI access; Stop in practice now cuts this device's
+  notes at once.
 
 - **2026-10-17** — P6-04: each library piece's file and PDF live in their own table (database
   version 2), so the Library page and the coming Player list without loading them; the Player's

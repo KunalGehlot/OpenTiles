@@ -38,8 +38,11 @@ export class PianoSampler implements Instrument {
   private readonly out: GainNode;
   private readonly pitches: number[];
   private readonly samples = new Map<number, PianoSample>();
-  /** Sounding and scheduled voices, oldest first; the value releases the voice quickly. */
-  private readonly voices = new Map<Voice, () => void>();
+  /**
+   * Sounding and scheduled voices, oldest first; the value releases the voice quickly, or with
+   * `cut` also stops one that has not started yet.
+   */
+  private readonly voices = new Map<Voice, (cut?: boolean) => void>();
 
   constructor(
     private readonly ctx: BaseAudioContext,
@@ -123,7 +126,22 @@ export class PianoSampler implements Instrument {
       this.voices.delete(voice);
       env.disconnect();
     };
-    this.voices.set(voice, () => release(ctx.currentTime, STEAL_RELEASE));
+    this.voices.set(voice, (cut = false) => {
+      const now = ctx.currentTime;
+      if (!cut || when <= now) {
+        release(now, STEAL_RELEASE);
+        return;
+      }
+      // Scheduled but not started: it never will (a stop before the start plays nothing).
+      releaseAt = now;
+      env.gain.cancelScheduledValues(now);
+      env.gain.setValueAtTime(0, now);
+      try {
+        src.stop(now);
+      } catch {
+        // Older Safari allows only one stop() per source; the envelope is already at zero.
+      }
+    });
     if (this.voices.size > this.maxVoices) {
       const [oldest] = this.voices.keys();
       if (oldest) {
@@ -132,6 +150,14 @@ export class PianoSampler implements Instrument {
       }
     }
     return voice;
+  }
+
+  /**
+   * Stops every note at once (the Player's Pause, P6-05): sounding notes fade in a few
+   * milliseconds, and notes scheduled to start later never start.
+   */
+  silence(): void {
+    for (const cut of [...this.voices.values()]) cut(true);
   }
 
   play(pitch: number, when: number, duration: number, velocity = 90): Voice {

@@ -47,6 +47,7 @@ import type { DrillPrefs } from '../practice/drill';
 import { LiveStatsStrip } from '../practice/LiveStatsStrip';
 import { OverviewStrip } from '../practice/OverviewStrip';
 import { PlaysOnControl } from '../practice/PlaysOnControl';
+import { stopPlayer } from '../player/browser';
 import { SectionBar } from '../practice/SectionBar';
 import {
   shiftLabel,
@@ -305,6 +306,9 @@ function PracticeView({
   useEffect(() => {
     session.glideHome = !reducedMotion;
   }, [session, reducedMotion]);
+
+  // Practice and drills take the sound over from the Player (P6-05, plan Q5).
+  useEffect(() => stopPlayer(), []);
 
   // Wire the session to React and inputs.
   useEffect(() => {
