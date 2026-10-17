@@ -73,6 +73,25 @@ class ArrangeTest(unittest.TestCase):
         # Pieces without thirty-seconds keep 12 divisions, so their scores do not change.
         self.assertIn("<divisions>12</divisions>", arrange.to_musicxml(arrange.parse(ARRANGEMENT)))
 
+    def test_triplet_groups_are_marked(self):
+        # Verovio draws and times a triplet only with <tuplet> start and stop marks (P2-04): one
+        # group of three eighths, one of eighths and two sixteenths, and a group with a rest.
+        text = "time: 2/4\nRH: C4e3 D4e3 E4e3 F4e3 G4s3 A4s3 B4e3 | re3 C5e3 [E4 G4]e3@2 C4q\nLH: C3h | C3h\n"
+        events = arrange.parse(text).rh
+        self.assertEqual(arrange.tuplet_marks(events[0]), ["start", None, "stop", "start", None, None, "stop"])
+        self.assertEqual(arrange.tuplet_marks(events[1]), ["start", None, "stop", None])
+        xml = arrange.to_musicxml(arrange.parse(text))
+        self.assertEqual(xml.count('<tuplet type="start"/>'), 3)
+        self.assertEqual(xml.count('<tuplet type="stop"/>'), 3)
+        # A rest can start a group, and a chord's marks go on its first note with its fingering.
+        rest = xml[xml.index("<note><rest/>") :]
+        self.assertIn('<tuplet type="start"/>', rest[: rest.index("</note>")])
+        self.assertIn(
+            '<notations><tuplet type="stop"/><technical><fingering>2</fingering></technical></notations>',
+            xml,
+        )
+        self.assertEqual(xml.count("<tuplet"), 6)
+
     def test_sharps_are_not_comments(self):
         bars = arrange.parse("RH: F#4q G4q # a comment\nLH: rh\n").rh
         self.assertEqual(bars[0][0].pitches, [("F", 1, 4)])
