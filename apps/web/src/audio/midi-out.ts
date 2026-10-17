@@ -12,7 +12,10 @@ const NOTE_ON = 0x90;
 const NOTE_OFF = 0x80;
 const CONTROL = 0xb0;
 const SUSTAIN = 64;
+const SOSTENUTO = 66;
+const SOFT = 67;
 const ALL_NOTES_OFF = 123;
+const PEDAL_CONTROL = { sustain: SUSTAIN, sostenuto: SOSTENUTO, soft: SOFT } as const;
 
 /** How long after the app sends a note a keyboard's copy of it may arrive, in seconds. */
 export const ECHO_WINDOW = 0.05;
@@ -108,7 +111,8 @@ export class MidiOutInstrument implements Instrument {
     };
   }
 
-  play(pitch: number, when: number, duration: number, velocity?: number): Voice {
+  /** `held` is for instruments without pedals: the keyboard's own pedal holds the note (P6-10). */
+  play(pitch: number, when: number, duration: number, velocity?: number, _held?: number): Voice {
     const voice = this.noteOn(pitch, velocity, when);
     voice.stop(when + Math.max(0.02, duration));
     return voice;
@@ -116,6 +120,12 @@ export class MidiOutInstrument implements Instrument {
 
   click(): void {
     // Clicks stay on this device.
+  }
+
+  /** The piece's pedal as a control change: the keyboard's own pedal sound (P6-10). */
+  pedal(pedal: 'sustain' | 'soft' | 'sostenuto', value: number, when?: number): void {
+    const v = Math.max(0, Math.min(127, Math.round(value)));
+    this.sink.send([CONTROL | this.channel, PEDAL_CONTROL[pedal], v], this.at(when));
   }
 
   get lookAhead(): number | undefined {
@@ -141,7 +151,8 @@ export class MidiOutInstrument implements Instrument {
     }
     for (const pitch of this.soundingPitches) this.sink.send([NOTE_OFF | this.channel, pitch, 0]);
     this.sounding.clear();
-    this.sink.send([CONTROL | this.channel, SUSTAIN, 0]);
+    for (const pedal of [SUSTAIN, SOSTENUTO, SOFT])
+      this.sink.send([CONTROL | this.channel, pedal, 0]);
     this.sink.send([CONTROL | this.channel, ALL_NOTES_OFF, 0]);
   }
 
@@ -180,9 +191,13 @@ export class SplitInstrument implements Instrument {
     return { stop: (at?: number) => voices.forEach((v) => v.stop(at)) };
   }
 
-  play(pitch: number, when: number, duration: number, velocity?: number): Voice {
-    const voices = this.parts.map((p) => p.play(pitch, when, duration, velocity));
+  play(pitch: number, when: number, duration: number, velocity?: number, held?: number): Voice {
+    const voices = this.parts.map((p) => p.play(pitch, when, duration, velocity, held));
     return { stop: (at?: number) => voices.forEach((v) => v.stop(at)) };
+  }
+
+  pedal(pedal: 'sustain' | 'soft' | 'sostenuto', value: number, when?: number): void {
+    for (const p of this.parts) p.pedal?.(pedal, value, when);
   }
 
   click(when: number, accent?: boolean): void {

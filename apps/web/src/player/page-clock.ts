@@ -34,7 +34,10 @@ export function onPageClock(inner: Instrument, ctx: BaseAudioContext): Instrumen
       );
       return { stop: (at) => voice.stop(at === undefined ? undefined : toAudio(at)) };
     },
-    play: (pitch, when, duration, velocity) => inner.play(pitch, toAudio(when), duration, velocity),
+    play: (pitch, when, duration, velocity, held) =>
+      inner.play(pitch, toAudio(when), duration, velocity, held),
+    pedal: (pedal, value, when) =>
+      inner.pedal?.(pedal, value, when === undefined ? undefined : toAudio(when)),
     click: (when, accent) => inner.click(toAudio(when), accent),
     silence: () => inner.silence?.(),
   };

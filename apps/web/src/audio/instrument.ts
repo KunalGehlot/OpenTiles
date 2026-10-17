@@ -11,8 +11,13 @@ export interface Instrument {
   volume: number;
   /** Starts a note; call `stop` on the result to release it. */
   noteOn(pitch: number, velocity?: number, when?: number): Voice;
-  /** Plays a note of a fixed length. */
-  play(pitch: number, when: number, duration: number, velocity?: number): Voice;
+  /**
+   * Plays a note of a fixed length. `held`, when longer, is how long it sounds with the piece's
+   * pedal (P6-10): an instrument without pedals of its own sounds it that long.
+   */
+  play(pitch: number, when: number, duration: number, velocity?: number, held?: number): Voice;
+  /** The piece's pedal, for an instrument with pedals of its own (a MIDI keyboard). */
+  pedal?(pedal: 'sustain' | 'soft' | 'sostenuto', value: number, when?: number): void;
   /** A short click for count-ins, metronome and the latency test. */
   click(when: number, accent?: boolean): void;
   /** Stops every note at once, including ones scheduled ahead (a MIDI keyboard needs this). */

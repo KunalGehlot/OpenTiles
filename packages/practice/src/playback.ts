@@ -6,8 +6,8 @@
 // Events are timed in *song seconds*, the tempo map's seconds at 100 % tempo. The cursor maps
 // them onto the caller's clock at the chosen tempo, so the `Song` itself never holds seconds
 // (ADR 0003) and a tempo change only moves the mapping.
-import { TempoMap } from '@opentiles/song-model';
-import type { Hand, Song } from '@opentiles/song-model';
+import { PEDAL_DOWN, pedalsBefore, TempoMap } from '@opentiles/song-model';
+import type { Hand, PedalKind, Song } from '@opentiles/song-model';
 import { includesHand } from './steps';
 import type { HandFilter } from './steps';
 
@@ -17,15 +17,21 @@ export const DEFAULT_VELOCITY = 80;
 export interface PlaybackNote {
   kind: 'note';
   pitch: number;
-  /** Start and end in song seconds. */
+  /** Start, and when the key goes up, in song seconds. */
   start: number;
   end: number;
+  /**
+   * When the note stops sounding, in song seconds: later than `end` while the sustain pedal is
+   * down then, or the sostenuto pedal caught it (P6-10). An instrument with pedals of its own (a
+   * MIDI keyboard) gets `end` and the pedal events instead.
+   */
+  held: number;
   velocity: number;
   hand: Hand;
   noteId: string;
 }
 
-export type PedalKind = 'sustain' | 'soft' | 'sostenuto';
+export type { PedalKind };
 
 export interface PlaybackPedal {
   kind: 'pedal';
@@ -49,35 +55,103 @@ export interface PlaybackOptions {
   /** Notes starting in `[fromBeat, toBeat)` play; defaults to the whole song. */
   fromBeat?: number;
   toBeat?: number;
+  /**
+   * Include the pedal events (default). Off for play-along's other hand: the learner plays on the
+   * same keyboard, and the file's pedal would hold their notes too. Notes are still held as the
+   * pedal would hold them.
+   */
+  pedals?: boolean;
+}
+
+/** Spans of song seconds in which a pedal is down. */
+function downSpans(song: Song, tempo: TempoMap, pedal: PedalKind): [number, number][] {
+  const spans: [number, number][] = [];
+  let downAt: number | null = null;
+  for (const e of song.pedals ?? []) {
+    if (e.pedal !== pedal) continue;
+    const at = tempo.beatToSeconds(e.beat);
+    if (e.value >= PEDAL_DOWN && downAt === null) downAt = at;
+    else if (e.value < PEDAL_DOWN && downAt !== null) {
+      spans.push([downAt, at]);
+      downAt = null;
+    }
+  }
+  if (downAt !== null) spans.push([downAt, Infinity]);
+  return spans;
 }
 
 /** The song's notes (and, later, pedal events) to play, in song seconds, sorted by start. */
 export function buildPlayback(song: Song, options: PlaybackOptions = {}): PlaybackEvent[] {
-  const { hands = 'both', accompany = false, fromBeat = 0, toBeat = song.lengthBeats } = options;
+  const {
+    hands = 'both',
+    accompany = false,
+    fromBeat = 0,
+    toBeat = song.lengthBeats,
+    pedals = true,
+  } = options;
   const tempo = new TempoMap(song.tempos);
+  const sustain = downSpans(song, tempo, 'sustain');
+  const sostenuto = downSpans(song, tempo, 'sostenuto');
+  const songEnd = tempo.beatToSeconds(song.lengthBeats);
+  const heldUntil = (start: number, end: number) => {
+    let held = end;
+    // The damper stays off the strings while the sustain pedal is down when the key goes up.
+    const span = sustain.find(([down, up]) => down <= end + 1e-9 && end < up - 1e-9);
+    if (span) held = Math.max(held, span[1]);
+    // The sostenuto pedal holds the notes whose keys were down when it went down.
+    for (const [down, up] of sostenuto) {
+      if (start < down - 1e-9 && end > down + 1e-9) held = Math.max(held, up);
+    }
+    return Math.min(held, Math.max(end, songEnd));
+  };
   const events: PlaybackEvent[] = [];
   for (const n of song.notes) {
     if (n.startBeat < fromBeat - 1e-6 || n.startBeat >= toBeat - 1e-6) continue;
     if (includesHand(hands, n.hand) === accompany) continue;
+    const start = tempo.beatToSeconds(n.startBeat);
+    const end = tempo.beatToSeconds(n.startBeat + n.durationBeats);
     events.push({
       kind: 'note',
       pitch: n.pitch,
-      start: tempo.beatToSeconds(n.startBeat),
-      end: tempo.beatToSeconds(n.startBeat + n.durationBeats),
+      start,
+      end,
+      held: heldUntil(start, end),
       velocity: n.velocity ?? DEFAULT_VELOCITY,
       hand: n.hand,
       noteId: n.id,
     });
   }
-  // Stable, so notes of one chord keep the song's order.
-  return events.sort((a, b) => a.start - b.start);
+  if (pedals && song.pedals?.length) {
+    // The pedals as they stand where playing starts, then their changes inside the range.
+    const from = tempo.beatToSeconds(fromBeat);
+    const state = pedalsBefore(song.pedals, fromBeat);
+    for (const pedal of ['sustain', 'soft', 'sostenuto'] as const) {
+      if (state[pedal] > 0) events.push({ kind: 'pedal', start: from, pedal, value: state[pedal] });
+    }
+    for (const e of song.pedals) {
+      if (e.beat < fromBeat - 1e-6 || e.beat >= toBeat - 1e-6) continue;
+      events.push({
+        kind: 'pedal',
+        start: tempo.beatToSeconds(e.beat),
+        pedal: e.pedal,
+        value: e.value,
+      });
+    }
+  }
+  // Stable, so notes of one chord keep the song's order and a pedal change ("up, then down")
+  // its own. A pedal comes before the notes on its beat, as the held lengths assume: a sostenuto
+  // pressed with a note does not catch it, and a change of pedal does not cut the new note.
+  const rank = (e: PlaybackEvent) => (e.kind === 'pedal' ? 0 : 1);
+  return events.sort((a, b) => a.start - b.start || rank(a) - rank(b));
 }
 
 /** A note handed out by the cursor, on the caller's clock. */
 export interface TimedPlaybackNote extends PlaybackNote {
-  /** Clock time to start, and how long to hold it at the current tempo (both seconds). */
+  /** Clock time to start, and how long to hold the key at the current tempo (both seconds). */
   time: number;
   duration: number;
+  /** How long it sounds with the pedal, at the current tempo (seconds). */
+  heldDuration: number;
 }
 
 export interface TimedPlaybackPedal extends PlaybackPedal {
@@ -167,8 +241,14 @@ export class PlaybackCursor {
       const e = this.events[i];
       if (!e) continue;
       if (e.kind === 'pedal') pedals[e.pedal] = e.value;
-      else if (e.end > seconds + 1e-9) {
-        sounding.push({ ...e, time: at, duration: (e.end - seconds) / this.factorValue });
+      else if (e.held > seconds + 1e-9) {
+        // A key already up but held by the pedal sounds on with no key held.
+        sounding.push({
+          ...e,
+          time: at,
+          duration: Math.max(0, e.end - seconds) / this.factorValue,
+          heldDuration: (e.held - seconds) / this.factorValue,
+        });
       }
     }
     return { sounding, pedals };
@@ -183,7 +263,12 @@ export class PlaybackCursor {
   }
 
   private timed(e: PlaybackNote, time: number): TimedPlaybackNote {
-    return { ...e, time, duration: (e.end - e.start) / this.factorValue };
+    return {
+      ...e,
+      time,
+      duration: (e.end - e.start) / this.factorValue,
+      heldDuration: (e.held - e.start) / this.factorValue,
+    };
   }
 
   /** Index of the first event starting at or after `seconds`. */

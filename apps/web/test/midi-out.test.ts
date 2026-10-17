@@ -88,6 +88,8 @@ describe('MIDI out', () => {
       [0x80, 60, 0],
       [0x80, 64, 0],
       [0xb0, 64, 0],
+      [0xb0, 66, 0],
+      [0xb0, 67, 0],
       [0xb0, 123, 0],
     ]);
     expect(s.sent.every((m) => m.at === undefined)).toBe(true);
@@ -106,8 +108,36 @@ describe('MIDI out', () => {
     expect(sent.slice(1)).toEqual([
       [0x80, 70, 0],
       [0xb0, 64, 0],
+      [0xb0, 66, 0],
+      [0xb0, 67, 0],
       [0xb0, 123, 0],
     ]);
+  });
+
+  it('sends the piece’s pedals as control changes, and plays keys for their own length', () => {
+    const s = sink();
+    const out = new MidiOutInstrument(
+      s,
+      () => 10,
+      () => 5000,
+    );
+    out.pedal('sustain', 127, 10.5);
+    out.pedal('soft', 90);
+    // A held length is for instruments without pedals: the keyboard's pedal holds the note.
+    out.play(60, 10, 0.5, 80, 3);
+    expect(s.sent.map((m) => [m.data, m.at])).toEqual([
+      [[0xb0, 64, 127], 5500],
+      [[0xb0, 67, 90], undefined],
+      [[0x90, 60, 80], undefined],
+      [[0x80, 60, 0], 5500],
+    ]);
+    const device = fakeInstrument();
+    const keyboard = {
+      ...fakeInstrument().inst,
+      pedal: (p: string, v: number) => device.log.push(`${p} ${v}`),
+    };
+    new SplitInstrument(device.inst, keyboard).pedal('sustain', 0);
+    expect(device.log).toEqual(['sustain 0']);
   });
 
   it('asks for a short look-ahead only where the output cannot drop stamped notes', () => {

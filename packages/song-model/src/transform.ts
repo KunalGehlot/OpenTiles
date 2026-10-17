@@ -1,6 +1,7 @@
 // Edits made on the import review screen (spec §8). All return a new Song.
 import { splitHands } from './handsplit';
 import { measureIndexAt } from './midi';
+import { pedalsBefore, tidyPedals } from './pedals';
 import type { Hand, Song, SongNote } from './types';
 
 function withNotes(song: Song, notes: SongNote[]): Song {
@@ -78,8 +79,20 @@ export function trimMeasures(song: Song, from: number, to: number): Song {
       durationBeats: Math.min(n.durationBeats, end - n.startBeat),
       measureIndex: measureIndexAt(measures, n.startBeat - start),
     }));
+  // Each pedal as it stood at the start, then its changes inside.
+  const held = pedalsBefore(song.pedals ?? [], start + 1e-9);
+  const pedals = tidyPedals([
+    ...(['sustain', 'soft', 'sostenuto'] as const)
+      .filter((p) => held[p] > 0)
+      .map((pedal) => ({ beat: 0, pedal, value: held[pedal] })),
+    ...(song.pedals ?? [])
+      .filter((e) => e.beat > start + 1e-9 && e.beat < end - 1e-9)
+      .map((e) => ({ ...e, beat: e.beat - start })),
+  ]);
+  const { pedals: _old, ...rest } = withNotes(song, notes);
   return {
-    ...withNotes(song, notes),
+    ...rest,
+    ...(pedals.length > 0 ? { pedals } : {}),
     measures,
     tempos: shiftEvents(song.tempos),
     timeSignatures: shiftEvents(song.timeSignatures),

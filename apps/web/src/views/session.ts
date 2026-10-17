@@ -831,11 +831,18 @@ export class PracticeSession {
     this.homing = null;
     const tl = this.timeline;
     // Listen plays every note; play-along plays the other hand when the learner asks for it.
+    // The other hand plays without the file's pedal: it would hold the learner's notes too.
     const events =
       this.mode === 'listen'
         ? buildPlayback(this.song, { fromBeat, toBeat })
         : this.accompany
-          ? buildPlayback(this.song, { hands: this.hands, accompany: true, fromBeat, toBeat })
+          ? buildPlayback(this.song, {
+              hands: this.hands,
+              accompany: true,
+              fromBeat,
+              toBeat,
+              pedals: false,
+            })
           : [];
     this.playback = new PlaybackCursor(
       events,
@@ -1025,7 +1032,8 @@ export class PracticeSession {
     // A MIDI output that cannot drop stamped notes on Stop asks for a shorter look-ahead (P6-02).
     const ahead = Math.min(SCHEDULE_AHEAD, synth.lookAhead ?? SCHEDULE_AHEAD);
     for (const e of this.playback.take(t + ahead, t)) {
-      if (e.kind === 'note') synth.play(e.pitch, e.time, e.duration, e.velocity);
+      if (e.kind === 'note') synth.play(e.pitch, e.time, e.duration, e.velocity, e.heldDuration);
+      else synth.pedal?.(e.pedal, e.value, e.time);
     }
   }
 

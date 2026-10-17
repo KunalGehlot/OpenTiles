@@ -4,6 +4,7 @@ import type { Song } from '@opentiles/song-model';
 import { loadCatalogue, loadCatalogueSong } from '../catalogue/catalogue';
 import { db, getSetting, setSetting } from '../storage/db';
 import { libraryRows } from '../storage/library';
+import { songWithPedals } from '../library/pedals';
 import { t } from '../i18n';
 import { buildCollection, songSeconds } from './collection';
 import type { CollectionEntry, CollectionKey } from './collection';
@@ -51,11 +52,12 @@ export async function loadPlayable(
     void rememberSeconds(slug, song).catch(() => {});
     return { song, title: piece.title, composer: piece.composer };
   }
-  // The row holds the song; the files are not needed to play it.
-  const row = await db.library.get(Number(key.slice('library:'.length)));
-  if (!row) throw new Error(t('This piece is not in your library on this device.'));
+  // The row holds the song; the file is read once, for pedals stored songs lack (P6-10).
+  const id = Number(key.slice('library:'.length));
+  const [row, song] = await Promise.all([db.library.get(id), songWithPedals(id)]);
+  if (!row || !song) throw new Error(t('This piece is not in your library on this device.'));
   return {
-    song: row.song,
+    song,
     title: row.title,
     ...(row.song.composer ? { composer: row.song.composer } : {}),
   };

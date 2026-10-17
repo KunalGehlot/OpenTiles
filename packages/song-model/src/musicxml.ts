@@ -4,7 +4,7 @@ import { assembleSong, parseEndingNumbers, rawMeasure } from './builder';
 import type { RawMeasure, RawPart } from './builder';
 import { ImportError } from './errors';
 import { stepToMidi } from './pitch';
-import type { Song, SongFormat } from './types';
+import type { PedalKind, Song, SongFormat } from './types';
 import {
   parseXmlDocument,
   xmlChild as child,
@@ -50,6 +50,52 @@ function parseTempo(direction: Element): number | undefined {
     return perMinute * unit * dotted;
   }
   return undefined;
+}
+
+/** A `<sound>` pedal attribute: "yes", "no", or a percentage of the way down (MusicXML). */
+function soundPedal(value: string | null): number | undefined {
+  if (value === null) return undefined;
+  if (value === 'yes') return 127;
+  if (value === 'no') return 0;
+  const percent = Number(value);
+  return Number.isFinite(percent)
+    ? Math.round(Math.max(0, Math.min(100, percent)) * 1.27)
+    : undefined;
+}
+
+/**
+ * The pedalling a direction or sound gives at its place (P6-10): `<pedal>` marks (start, stop, and
+ * change, a quick up and down again) and the `<sound>` pedal attributes, which say how it sounds.
+ */
+function parsePedals(el: Element): { pedal: PedalKind; value: number }[] {
+  const out: { pedal: PedalKind; value: number }[] = [];
+  const sound = el.nodeName === 'sound' ? el : child(el, 'sound');
+  if (el.nodeName === 'direction') {
+    for (const dt of elements(el, 'direction-type')) {
+      for (const mark of elements(dt, 'pedal')) {
+        const type = mark.getAttribute('type');
+        if (type === 'start' || type === 'resume') out.push({ pedal: 'sustain', value: 127 });
+        else if (type === 'stop' || type === 'discontinue')
+          out.push({ pedal: 'sustain', value: 0 });
+        else if (type === 'change') {
+          out.push({ pedal: 'sustain', value: 0 }, { pedal: 'sustain', value: 127 });
+        } else if (type === 'sostenuto') out.push({ pedal: 'sostenuto', value: 127 });
+      }
+    }
+  }
+  if (sound) {
+    const attrs: [string, PedalKind][] = [
+      ['damper-pedal', 'sustain'],
+      ['soft-pedal', 'soft'],
+      ['sostenuto-pedal', 'sostenuto'],
+    ];
+    for (const [attr, pedal] of attrs) {
+      const value = soundPedal(sound.getAttribute(attr));
+      // A mark and a sound for one pedal say the same thing; the mark also knows a change.
+      if (value !== undefined && !out.some((p) => p.pedal === pedal)) out.push({ pedal, value });
+    }
+  }
+  return out;
 }
 
 export function parseMusicXml(xml: string, options: MusicXmlOptions = {}): Song {
@@ -195,6 +241,9 @@ export function parseMusicXml(xml: string, options: MusicXmlOptions = {}): Song 
           case 'direction': {
             const bpm = parseTempo(el);
             if (bpm !== undefined) raw.tempos.push({ posBeats: pos, bpm });
+            const offset = (num(child(el, 'offset')) ?? 0) / divisions;
+            for (const p of parsePedals(el))
+              raw.pedals.push({ posBeats: Math.max(0, pos + offset), ...p });
             const sound = child(el, 'sound');
             if (sound) noteJumps(sound, warnings);
             break;
@@ -202,6 +251,7 @@ export function parseMusicXml(xml: string, options: MusicXmlOptions = {}): Song 
           case 'sound': {
             const bpm = Number(el.getAttribute('tempo') ?? NaN);
             if (Number.isFinite(bpm) && bpm > 0) raw.tempos.push({ posBeats: pos, bpm });
+            for (const p of parsePedals(el)) raw.pedals.push({ posBeats: pos, ...p });
             noteJumps(el, warnings);
             break;
           }

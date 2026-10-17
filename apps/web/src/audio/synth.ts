@@ -82,8 +82,8 @@ export class Piano implements Instrument {
     return this.active.noteOn(pitch, velocity, when);
   }
 
-  play(pitch: number, when: number, duration: number, velocity?: number): Voice {
-    return this.active.play(pitch, when, duration, velocity);
+  play(pitch: number, when: number, duration: number, velocity?: number, held?: number): Voice {
+    return this.active.play(pitch, when, duration, velocity, held);
   }
 
   click(when: number, accent = false): void {

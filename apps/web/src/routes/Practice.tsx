@@ -70,6 +70,7 @@ import {
 } from '../storage/calibration';
 import { recordPracticeTime, recordRun } from '../storage/db';
 import { getLibraryItem } from '../storage/library';
+import { songWithPedals } from '../library/pedals';
 import type { SheetAttachment } from '../storage/db';
 import { hitTest, rangeFor } from '../views/keyboard';
 import type { KeysToDraw } from '../views/keyboard';
@@ -166,8 +167,10 @@ export function Practice({
           progressKey: `catalogue:${id}`,
         };
       }
-      const item = await getLibraryItem(Number(id));
-      if (!item) throw new Error(t('This piece is not in your library on this device.'));
+      const found = await getLibraryItem(Number(id));
+      if (!found) throw new Error(t('This piece is not in your library on this device.'));
+      // Pieces stored before pedals were read get them from their file, once (P6-10).
+      const item = { ...found, song: (await songWithPedals(found.id)) ?? found.song };
       const views = item.sheet ? await import('../views/sheet') : null;
       return {
         source,

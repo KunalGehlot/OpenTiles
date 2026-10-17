@@ -32,6 +32,7 @@ export { quantise, GRIDS, looksNotated, quantiseNotated } from './quantise';
 export type { QuantiseResult, TickNote, Timed } from './quantise';
 export { splitHands } from './handsplit';
 export { transpose, swapHands, resplitHands, setBaseTempo, trimMeasures } from './transform';
+export { PEDAL_CONTROLLERS, PEDAL_DOWN, pedalsBefore, tidyPedals } from './pedals';
 export { estimateDifficulty } from './difficulty';
 export type { DifficultyEstimate, DifficultyMeasures } from './difficulty';
 export { importScore, SUPPORTED_EXTENSIONS, baseName } from './import';

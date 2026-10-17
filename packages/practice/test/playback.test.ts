@@ -65,6 +65,7 @@ describe('buildPlayback (P6-03)', () => {
       pitch: 48,
       start: 0,
       end: 2,
+      held: 2,
       velocity: DEFAULT_VELOCITY,
       hand: 'left',
       noteId: '48@0',
@@ -186,5 +187,61 @@ describe('PlaybackCursor (P6-03)', () => {
     const seeking = new PlaybackCursor(events, { time: 0, seconds: 0 });
     expect(seeking.seek(1, 5).pedals).toEqual({ sustain: 127, soft: 0, sostenuto: 0 });
     expect(seeking.seek(2, 5).pedals).toEqual({ sustain: 0, soft: 100, sostenuto: 0 });
+  });
+});
+
+describe('the pedals in playback (P6-10)', () => {
+  // C (0–0.5 s) and E (0.5–1 s) under the sustain pedal, which goes up at 1.5 s; G after it.
+  const pedalled = song([n(60, 0, 'right'), n(64, 1, 'right'), n(67, 4, 'right')], {
+    pedals: [
+      { beat: 0, pedal: 'sustain', value: 127 },
+      { beat: 3, pedal: 'sustain', value: 0 },
+    ],
+  });
+
+  it('holds notes released while the sustain pedal is down until it goes up', () => {
+    const notes = buildPlayback(pedalled).filter((e) => e.kind === 'note');
+    expect(notes.map((e) => e.kind === 'note' && [e.pitch, e.end, e.held])).toEqual([
+      [60, 0.5, 1.5],
+      [64, 1, 1.5],
+      [67, 2.5, 2.5],
+    ]);
+  });
+
+  it('holds what the sostenuto pedal caught, and nothing played after it went down', () => {
+    // A long left-hand C under the sostenuto from beat 1 to 6; a short right-hand E after it.
+    const caught = song([n(48, 0, 'left', 4), n(64, 2, 'right')], {
+      pedals: [
+        { beat: 1, pedal: 'sostenuto', value: 127 },
+        { beat: 6, pedal: 'sostenuto', value: 0 },
+      ],
+    });
+    const [c, e] = buildPlayback(caught).filter((x) => x.kind === 'note');
+    expect(c?.kind === 'note' && c.held).toBe(3);
+    expect(e?.kind === 'note' && e.held).toBe(1.5);
+  });
+
+  it('sends the pedal as it stands where playing starts, and leaves it out for the other hand', () => {
+    const fromBar = buildPlayback(pedalled, { fromBeat: 1 });
+    expect(fromBar.filter((e) => e.kind === 'pedal')).toEqual([
+      { kind: 'pedal', start: 0.5, pedal: 'sustain', value: 127 },
+      { kind: 'pedal', start: 1.5, pedal: 'sustain', value: 0 },
+    ]);
+    const other = buildPlayback(pedalled, { hands: 'left', accompany: true, pedals: false });
+    expect(other.some((e) => e.kind === 'pedal')).toBe(false);
+    expect(other[0]?.kind === 'note' && other[0].held).toBe(1.5);
+  });
+
+  it('hands out held lengths, and a seek finds notes the pedal still holds', () => {
+    const cursor = new PlaybackCursor(buildPlayback(pedalled), { time: 0, seconds: 0 }, 0.5);
+    const first = notes(cursor.take(0.01))[0];
+    expect([first?.duration, first?.heldDuration]).toEqual([1, 3]);
+    const { sounding, pedals } = cursor.seek(1.25, 10);
+    // Both keys are up at 1.25 s, but the pedal holds them until 1.5 s.
+    expect(sounding.map((e) => [e.pitch, e.duration, e.heldDuration])).toEqual([
+      [60, 0, 0.5],
+      [64, 0, 0.5],
+    ]);
+    expect(pedals.sustain).toBe(127);
   });
 });

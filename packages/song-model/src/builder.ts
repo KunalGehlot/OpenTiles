@@ -4,12 +4,15 @@
 // (positions relative to the measure), tempo, time and key changes, and repeat marks. This module
 // unrolls the repeats into playback order, lays the measures out on the beat axis, merges ties,
 // assigns hands and produces a sorted Song (spec §8, ADR 0003).
+import { tidyPedals } from './pedals';
 import { DEFAULT_BPM } from './tempo';
 import type {
   Hand,
   KeySignatureEvent,
   Measure,
   Part,
+  PedalEvent,
+  PedalKind,
   Song,
   SongFormat,
   SongNote,
@@ -59,6 +62,8 @@ export interface RawMeasure extends RepeatMarks {
   lengthBeats: number;
   notes: RawNote[];
   tempos: { posBeats: number; bpm: number }[];
+  /** Pedal marks and pedal sounds in the measure (P6-10). */
+  pedals: { posBeats: number; pedal: PedalKind; value: number }[];
   time?: { numerator: number; denominator: number };
   key?: { fifths: number; mode?: 'major' | 'minor' };
 }
@@ -90,6 +95,7 @@ export function rawMeasure(number: string): RawMeasure {
     lengthBeats: 0,
     notes: [],
     tempos: [],
+    pedals: [],
     forwardRepeat: false,
     backwardRepeat: false,
     repeatTimes: 2,
@@ -205,6 +211,7 @@ export function assembleSong(input: SongDraft): Song {
   );
   const measures: Measure[] = [];
   const tempos: TempoEvent[] = [];
+  const pedals: PedalEvent[] = [];
   const timeSignatures: TimeSignatureEvent[] = [];
   const keySignatures: KeySignatureEvent[] = [];
   const drafts: Draft[] = [];
@@ -240,6 +247,10 @@ export function assembleSong(input: SongDraft): Song {
       const prev = tempos[tempos.length - 1];
       if (!prev || prev.bpm !== t.bpm) tempos.push({ beat: beat + t.posBeats, bpm: t.bpm });
     }
+    // A repeated measure repeats its pedalling too.
+    for (const p of raw.pedals ?? []) {
+      pedals.push({ beat: beat + p.posBeats, pedal: p.pedal, value: p.value });
+    }
     for (const n of raw.notes) {
       drafts.push({
         pitch: n.pitch,
@@ -268,6 +279,7 @@ export function assembleSong(input: SongDraft): Song {
     tempos.unshift({ beat: 0, bpm: tempos[0]?.bpm ?? DEFAULT_BPM });
   }
 
+  const pedalled = tidyPedals(pedals);
   const merged = mergeTies(drafts);
   const hands = handAssigner(input.parts, merged);
   const notes: SongNote[] = merged
@@ -292,6 +304,7 @@ export function assembleSong(input: SongDraft): Song {
     keySignatures,
     parts: input.parts.map((p): Part => ({ name: p.name })),
     lengthBeats: beat,
+    ...(pedalled.length > 0 ? { pedals: pedalled } : {}),
     warnings: [...input.warnings],
   };
 }
