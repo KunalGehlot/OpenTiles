@@ -17,7 +17,8 @@ import { customKeyboard, KEYBOARD_PRESETS, keyCount } from '@opentiles/practice'
 import type { HandFilter } from '@opentiles/practice';
 import type { Song } from '@opentiles/song-model';
 import { audioContext, now, unlockAudio } from '../audio/context';
-import { MidiOutInstrument, playbackInstrument } from '../audio/midi-out';
+import { MidiOutInstrument, playbackInstrument, SentNotes } from '../audio/midi-out';
+import { playsOn, playsOnMessage, playsOnUnavailableHint } from '../audio/plays-on';
 import { synthFor } from '../audio/synth';
 import { loadCatalogueSong } from '../catalogue/catalogue';
 import {
@@ -29,6 +30,7 @@ import {
   midiUnavailableReason,
   midiAllowed,
   midiWaitingMessage,
+  pickOutput,
   startMidiInput,
 } from '../input/midi-input';
 import type { MidiKeyboardInput } from '../input/midi-input';
@@ -44,6 +46,7 @@ import { drillRoute, loadDrill, loadDrillPrefs, notesPerMinute } from '../practi
 import type { DrillPrefs } from '../practice/drill';
 import { LiveStatsStrip } from '../practice/LiveStatsStrip';
 import { OverviewStrip } from '../practice/OverviewStrip';
+import { PlaysOnControl } from '../practice/PlaysOnControl';
 import { SectionBar } from '../practice/SectionBar';
 import {
   shiftLabel,
@@ -103,6 +106,13 @@ interface Loaded {
 const NO_BARS: readonly number[] = [];
 /** How long an endless drill's result stays before the next drill starts. */
 const ENDLESS_PAUSE_MS = 2500;
+
+const unavailableReason = () =>
+  midiUnavailableReason({
+    userAgent: navigator.userAgent,
+    maxTouchPoints: navigator.maxTouchPoints,
+    secure: window.isSecureContext,
+  });
 
 export function Practice({
   source,
@@ -269,6 +279,9 @@ function PracticeView({
   // look like a new input, which used to stop the one in use while the screen still said connected.
   const [midiInput, setMidiInput] = useState<MidiKeyboardInput | null>(null);
   const [midiDevices, setMidiDevices] = useState<string[]>([]);
+  const [midiOutputs, setMidiOutputs] = useState<string[]>([]);
+  // True once the screen has tried to connect by itself, so "not connected" does not flash first.
+  const [midiChecked, setMidiChecked] = useState(false);
   const [mic, setMic] = useState<MicInput | null>(null);
   const [inputError, setInputError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
@@ -365,6 +378,22 @@ function PracticeView({
     [mic],
   );
 
+  // Leaving the page or hiding it ends the run, so nothing keeps sounding on a MIDI keyboard
+  // (P6-02): notes stamped ahead may lose their note-offs once the page is gone, and a hidden tab
+  // draws no frames, so the piece would stop there anyway.
+  useEffect(() => {
+    const onVisibility = () => {
+      if (document.visibilityState === 'hidden') session.stop();
+    };
+    const onPageHide = () => session.stop();
+    document.addEventListener('visibilitychange', onVisibility);
+    window.addEventListener('pagehide', onPageHide);
+    return () => {
+      document.removeEventListener('visibilitychange', onVisibility);
+      window.removeEventListener('pagehide', onPageHide);
+    };
+  }, [session]);
+
   // A new keyboard size or fingering: the same piece with other pitches or fingers.
   useEffect(() => {
     session.setSong(prepared.played);
@@ -415,14 +444,51 @@ function PracticeView({
   });
 
   /**
-   * Where notes sound (Settings → MIDI keyboard): the app's own notes on this device, the MIDI
-   * keyboard or both, and the keys played on the MIDI keyboard echoed on this device or not.
+   * Where notes sound ("Plays on", P6-01): the app's own notes on this device, the MIDI keyboard or
+   * both, and the keys played on the MIDI keyboard echoed on this device or not. With the keyboard
+   * chosen but out of reach, the notes play on this device and the screen says why.
    */
-  const { echo: midiEcho, playback: midiPlayback, output: midiOutput } = settings.midi;
+  const { echo: midiEcho, playback: midiPlayback, output: midiOutput, thru } = settings.midi;
+  const route = playsOn(midiPlayback, {
+    supported: midiSupported(),
+    connected: midiInput !== null,
+    inputs: midiDevices,
+    outputs: midiOutputs,
+    name: midiOutput,
+  });
+  // Copies of the app's notes that a "MIDI thru" keyboard sends back, ignored as input (P6-02).
+  const echoes = useRef<SentNotes | null>(null);
+  // One instrument per output, kept while it is in use: it knows which notes it has sounding, so
+  // Stop can end them all (Play, Stop and every tap apply the sound again).
+  const keyboardOut = useRef<{
+    input: MidiKeyboardInput;
+    output: string;
+    instrument: MidiOutInstrument;
+  } | null>(null);
   const applySound = (ctx: AudioContext) => {
     const device = synthFor(ctx);
-    const sink = midiInput?.output(midiOutput) ?? null;
-    const keyboard = sink ? new MidiOutInstrument(sink, now) : null;
+    let kept = keyboardOut.current;
+    if (kept && (kept.input !== midiInput || kept.output !== route.output)) {
+      // The notes move elsewhere (another output, or this device): nothing may keep sounding here.
+      kept.instrument.silence();
+      kept = null;
+    }
+    if (!kept && midiInput && route.output) {
+      const sink = midiInput.output(midiOutput);
+      if (sink) {
+        kept = {
+          input: midiInput,
+          output: route.output,
+          instrument: new MidiOutInstrument(sink, now),
+        };
+      }
+    }
+    keyboardOut.current = kept;
+    const keyboard = kept?.instrument ?? null;
+    if (kept && keyboard) {
+      keyboard.sent = thru.includes(kept.output) ? (keyboard.sent ?? new SentNotes()) : null;
+    }
+    echoes.current = keyboard?.sent ?? null;
     session.setSynth(playbackInstrument(device, keyboard, midiPlayback));
     session.midiEcho = midiEcho ? device : null;
   };
@@ -440,12 +506,17 @@ function PracticeView({
     if (ctx) applySound(ctx);
     // applySound reads exactly these values.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [midiInput, midiDevices, midiEcho, midiPlayback, midiOutput]);
+  }, [midiInput, midiDevices, midiOutputs, midiEcho, midiPlayback, midiOutput, thru]);
 
   const toggle = async () => {
+    // Stopping needs no sound, so it never waits for the browser to start audio (which can take
+    // up to two seconds where it never starts): the keyboard and the screen stop at once.
+    if (session.playing) {
+      session.stop();
+      return;
+    }
     await ensureAudio();
-    if (session.playing) session.stop();
-    else session.start();
+    session.start();
   };
 
   const pitchAt = (e: React.PointerEvent) => {
@@ -502,11 +573,19 @@ function PracticeView({
     setMidiWaiting(false);
     try {
       const input = createMidiInput();
-      input.onNote = (e) => session.input(e);
-      input.onRelease = (p, time) => session.release(p, time);
+      input.onNote = (e) => {
+        if (!echoes.current?.isEcho(true, e.pitch, e.time)) session.input(e);
+      };
+      input.onRelease = (p, time) => {
+        if (!echoes.current?.isEcho(false, p, time)) session.release(p, time);
+      };
       // A port opening fires this too; only a real change of keyboards re-renders the screen.
-      input.onDevicesChanged = (names) =>
-        setMidiDevices((old) => (old.join('\n') === names.join('\n') ? old : names));
+      const same = (a: string[], b: string[]) => a.join('\n') === b.join('\n');
+      input.onDevicesChanged = (names) => {
+        setMidiDevices((old) => (same(old, names) ? old : names));
+        const outs = input.outputNames;
+        setMidiOutputs((old) => (same(old, outs) ? old : outs));
+      };
       // The browser's permission prompt is easy to miss, and nothing happens until it is answered.
       await startMidiInput(input, () => !quiet && setMidiWaiting(true)).finally(() =>
         setMidiWaiting(false),
@@ -519,13 +598,22 @@ function PracticeView({
       midiInUse.current = input;
       setMidiInput(input);
       setMidiDevices(input.deviceNames);
+      setMidiOutputs(input.outputNames);
       if (input.deviceNames.length === 0 && !quiet) {
         setInputError(noKeyboardMessage(navigator.userAgent));
       }
       await applyMidiCalibration(input.deviceNames);
     } catch (e) {
       if (!quiet) setInputError(describeMidiError(e, navigator.userAgent));
+    } finally {
+      if (mounted.current) setMidiChecked(true);
     }
+  };
+
+  /** "Plays on": choosing the keyboard connects it, as Connect does (P6-01). */
+  const choosePlayback = (playback: MidiPlayback) => {
+    void updateAppSettings({ midi: { ...settings.midi, playback } });
+    if (playback !== 'device' && !midiInput && midiSupported()) void connectMidi();
   };
 
   // Once the browser allows MIDI for this site, every piece connects by itself, so Connect is
@@ -534,7 +622,9 @@ function PracticeView({
     mounted.current = true;
     let cancelled = false;
     void midiAllowed().then((allowed) => {
-      if (allowed && !cancelled) void connectMidi(true);
+      if (cancelled) return;
+      if (allowed) void connectMidi(true);
+      else setMidiChecked(true);
     });
     return () => {
       cancelled = true;
@@ -659,13 +749,7 @@ function PracticeView({
           ) : (
             <Popover label={t('MIDI keyboard')} icon={<Piano />}>
               <p className="popover__hint" data-testid="midi-unavailable">
-                {midiUnavailableMessage(
-                  midiUnavailableReason({
-                    userAgent: navigator.userAgent,
-                    maxTouchPoints: navigator.maxTouchPoints,
-                    secure: window.isSecureContext,
-                  }),
-                )}
+                {midiUnavailableMessage(unavailableReason())}
               </p>
             </Popover>
           )}
@@ -796,34 +880,16 @@ function PracticeView({
               {t('Live stats')}
             </label>
             {midiSupported() && (
-              <>
-                <label className="field">
-                  <span className="field__label">{t('App’s notes play on')}</span>
-                  <select
-                    aria-label={t('App’s notes play on')}
-                    value={midiPlayback}
-                    onChange={(e) =>
-                      void updateAppSettings({
-                        midi: { ...settings.midi, playback: e.target.value as MidiPlayback },
-                      })
-                    }
-                  >
-                    <option value="device">{t('This device')}</option>
-                    <option value="keyboard">{t('My MIDI keyboard')}</option>
-                    <option value="both">{t('Both')}</option>
-                  </select>
-                </label>
-                <label className="check">
-                  <input
-                    type="checkbox"
-                    checked={midiEcho}
-                    onChange={(e) =>
-                      void updateAppSettings({ midi: { ...settings.midi, echo: e.target.checked } })
-                    }
-                  />
-                  {t('Play my MIDI keys on this device')}
-                </label>
-              </>
+              <label className="check">
+                <input
+                  type="checkbox"
+                  checked={midiEcho}
+                  onChange={(e) =>
+                    void updateAppSettings({ midi: { ...settings.midi, echo: e.target.checked } })
+                  }
+                />
+                {t('Play my MIDI keys on this device')}
+              </label>
             )}
             <p className="muted popover__hint">
               {t(
@@ -859,6 +925,17 @@ function PracticeView({
             <RotateCcw />
             <span className="btn-label">{t('Restart')}</span>
           </button>
+          <PlaysOnControl
+            choice={midiPlayback}
+            route={route}
+            supported={midiSupported()}
+            keyboardName={pickOutput(midiOutputs, midiDevices, midiOutput)}
+            outputs={midiOutputs}
+            outputName={midiOutput}
+            unavailableHint={playsOnUnavailableHint(unavailableReason())}
+            onChoose={choosePlayback}
+            onOutput={(output) => void updateAppSettings({ midi: { ...settings.midi, output } })}
+          />
         </div>
         <div className="group">
           <div className="segmented" role="group" aria-label={t('Hands')}>
@@ -945,6 +1022,17 @@ function PracticeView({
         </span>
         {liveStats && <LiveStatsStrip stats={status.live} mode={mode} />}
         {inputError && <span className="error">{inputError}</span>}
+        {route.problem && route.problem !== 'no-midi' && midiChecked && !midiWaiting && (
+          <span className="hint" role="status" data-testid="plays-on-notice">
+            {playsOnMessage(route.problem)}
+            {route.problem === 'not-connected' && (
+              <>
+                {' '}
+                <button onClick={() => void connectMidi()}>{t('Connect')}</button>
+              </>
+            )}
+          </span>
+        )}
         {midiWaiting && (
           <span className="hint" role="status" data-testid="midi-waiting">
             {midiWaitingMessage(navigator.userAgent)}

@@ -57,6 +57,14 @@ itself whenever it is connected.
   delay**. OpenTiles then corrects its scoring for that keyboard.
 - **Play my MIDI keys on this device** makes the app play the sound of the keys you press. Leave it
   off if your keyboard has its own speakers, otherwise you hear everything twice.
+- **Plays on**, next to Restart in practice, chooses where the app's own notes sound (Listen, the
+  other hand, listening back): **This device**, **My keyboard** (its own sound) or **Both**. If you
+  choose the keyboard but it isn't connected, the notes play on this device and a line under the
+  controls says why; they move to the keyboard as soon as it appears. The metronome stays on this
+  device.
+- On an iPad or iPhone, browsers cannot reach MIDI keyboards. Many digital pianos also work as a USB
+  audio interface: plugged in, they play the iPad's sound, the app's notes included, through their
+  own speakers. The keys you play still need the microphone.
 
 ### Microphone (acoustic pianos)
 

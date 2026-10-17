@@ -176,8 +176,36 @@
   animation: pop-in var(--dur-2) var(--ease) backwards;
 }
 
+.popover--start .popover__panel {
+  right: auto;
+  left: 0;
+}
+
 .popover__panel .field {
   align-items: stretch;
+}
+
+/* "Plays on" (P6-01): a warning while the keyboard was chosen but the notes play on this device. */
+.plays-on--warn {
+  border-color: var(--warn);
+  color: var(--warn);
+}
+
+.plays-on__choices {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.plays-on__choices label.check {
+  color: var(--text);
+}
+
+.plays-on__name {
+  color: var(--muted);
 }
 
 .popover__hint {

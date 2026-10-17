@@ -1,5 +1,10 @@
 import { describe, expect, it } from 'vitest';
-import { MidiOutInstrument, playbackInstrument, SplitInstrument } from '../src/audio/midi-out';
+import {
+  MidiOutInstrument,
+  playbackInstrument,
+  SentNotes,
+  SplitInstrument,
+} from '../src/audio/midi-out';
 import type { Instrument, Voice } from '../src/audio/instrument';
 import { pickOutput } from '../src/input/midi-input';
 import { normaliseSettings } from '../src/settings/model';
@@ -61,16 +66,72 @@ describe('MIDI out', () => {
     ]);
   });
 
-  it('silences the keyboard: drops scheduled notes and sends all notes off', () => {
+  it('silences the keyboard: drops stamped notes, ends every note, lifts the pedal', () => {
     const s = sink();
+    let perf = 1000;
     const out = new MidiOutInstrument(
       s,
       () => 0,
-      () => 0,
+      () => perf,
     );
+    out.play(60, 0.5, 1); // stamped from 1500 to 2500 ms
+    out.play(62, 0, 0.1); // now, off at 1100 ms
+    out.noteOn(64); // held
+    perf = 1200; // 62 has ended
+    expect(out.soundingPitches).toEqual([60, 64]);
+    s.sent.length = 0;
     out.silence();
     expect(s.cleared).toBe(1);
-    expect(s.sent.at(-1)?.data).toEqual([0xb0, 123, 0]);
+    // A browser with clear() also dropped 60's stamped note-off, so each note gets one now.
+    expect(s.sent.map((m) => m.data)).toEqual([
+      [0x80, 60, 0],
+      [0x80, 64, 0],
+      [0xb0, 64, 0],
+      [0xb0, 123, 0],
+    ]);
+    expect(s.sent.every((m) => m.at === undefined)).toBe(true);
+    expect(out.soundingPitches).toEqual([]);
+  });
+
+  it('silences a keyboard whose browser has no clear()', () => {
+    const sent: number[][] = [];
+    const out = new MidiOutInstrument(
+      { send: (d) => sent.push(d) },
+      () => 0,
+      () => 0,
+    );
+    out.noteOn(70);
+    out.silence();
+    expect(sent.slice(1)).toEqual([
+      [0x80, 70, 0],
+      [0xb0, 64, 0],
+      [0xb0, 123, 0],
+    ]);
+  });
+
+  it('knows the copies a MIDI thru keyboard sends back', () => {
+    const sent = new SentNotes();
+    sent.record(true, 60, 10);
+    sent.record(false, 60, 10.5);
+    expect(sent.isEcho(true, 62, 10.01)).toBe(false);
+    expect(sent.isEcho(true, 60, 10.2)).toBe(false); // too late: the learner's own key
+    expect(sent.isEcho(true, 60, 10.01)).toBe(true);
+    // Used up, so the learner's next press of the key counts.
+    expect(sent.isEcho(true, 60, 10.02)).toBe(false);
+    expect(sent.isEcho(false, 60, 10.52)).toBe(true);
+  });
+
+  it('records what it sends for a MIDI thru keyboard, on the audio clock', () => {
+    const s = sink();
+    const out = new MidiOutInstrument(
+      s,
+      () => 3,
+      () => 0,
+    );
+    out.sent = new SentNotes();
+    out.play(65, 3.25, 0.5);
+    expect(out.sent.isEcho(true, 65, 3.26)).toBe(true);
+    expect(out.sent.isEcho(false, 65, 3.76)).toBe(true);
   });
 
   it('plays on the device, the keyboard or both', () => {
@@ -102,14 +163,17 @@ describe('MIDI out', () => {
       echo: false,
       playback: 'device',
       output: '',
+      thru: [],
     });
-    expect(normaliseSettings({ midi: { echo: true, playback: 'both', output: 'X' } }).midi).toEqual(
-      {
-        echo: true,
-        playback: 'both',
-        output: 'X',
-      },
-    );
+    expect(
+      normaliseSettings({ midi: { echo: true, playback: 'both', output: 'X', thru: ['X', 3] } })
+        .midi,
+    ).toEqual({
+      echo: true,
+      playback: 'both',
+      output: 'X',
+      thru: ['X'],
+    });
     expect(normaliseSettings({ midi: { playback: 'loud', echo: 'yes' } }).midi.playback).toBe(
       'device',
     );

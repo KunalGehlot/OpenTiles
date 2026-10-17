@@ -7,11 +7,22 @@ export function Popover({
   label,
   icon,
   children,
+  value,
+  className,
+  title,
+  align = 'end',
 }: {
   /** The button's text and the panel's accessible name. */
   label: string;
   icon: React.ReactNode;
   children: React.ReactNode;
+  /** The current choice, shown on the button instead of the label (named "label: value"). */
+  value?: string;
+  /** Extra classes for the button, such as a warning state. */
+  className?: string;
+  title?: string;
+  /** Which edge of the button the panel lines up with: the end suits the header's last buttons. */
+  align?: 'start' | 'end';
 }) {
   const [open, setOpen] = useState(false);
   const root = useRef<HTMLDivElement>(null);
@@ -37,16 +48,19 @@ export function Popover({
   }, [open]);
 
   return (
-    <div className="popover" ref={root}>
+    <div className={align === 'start' ? 'popover popover--start' : 'popover'} ref={root}>
       <button
         ref={button}
         type="button"
         aria-expanded={open}
         aria-controls={open ? panelId : undefined}
+        aria-label={value === undefined ? undefined : `${label}: ${value}`}
+        className={className}
+        title={title}
         onClick={() => setOpen((o) => !o)}
       >
         {icon}
-        <span className="btn-label">{label}</span>
+        <span className="btn-label">{value ?? label}</span>
       </button>
       {open && (
         <div id={panelId} className="popover__panel" role="group" aria-label={label}>
