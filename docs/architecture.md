@@ -93,6 +93,16 @@ Defined in `packages/song-model/src/types.ts` (ADR 0003).
 - Every run is recorded with `PerformanceRecorder` (key down and up, velocity). Inputs that report
   key release (MIDI, on-screen and computer keys) also get hold feedback from `judgeHold`. After a
   run the session renders it as played or polished for playback (ADR 0010).
+- **One playback scheduler** (`playback.ts`, P6-03, ADR 0019) plays a song's notes for Listen,
+  play-along's other hand and, later, the Player. `buildPlayback(song, { hands, accompany,
+fromBeat, toBeat })` lists the notes (and, from P6-10, pedal events) in _song seconds_, the tempo
+  map's seconds at 100 %. A `PlaybackCursor` maps them onto the caller's clock at a tempo factor:
+  `take(until, now)` hands out what is due before the caller's look-ahead and skips notes more than
+  50 ms late (pedal events are never skipped), `seek(seconds, at)` returns the notes that would
+  already be sounding there with what is left of them and the pedals' positions, and
+  `setTempo(factor, at)` re-anchors without a jump. The `Song` never holds seconds. How far ahead to
+  schedule is the caller's choice: the practice session hands notes over 0.3 s ahead, or as little
+  as its instrument asks for (`Instrument.lookAhead`; 0.1 s for a MIDI output without `clear()`).
 
 ## The note-detection engine
 
@@ -363,8 +373,8 @@ device. Build steps, App Store and privacy-manifest notes:
   and Edge have no `clear()`; Firefox has it. Chrome and Edge hold stamped messages and send each
   when it is due, so a note stamped up to the look-ahead (`SCHEDULE_AHEAD`, 0.3 s) before Stop can
   still start after it, followed by its own note-off; one started 58 ms after leaving the page.
-  Nothing was left sounding 50 ms after Stop or `pagehide` in any of the three browsers. P6-03
-  shortens the MIDI look-ahead where `clear()` is missing.
+  Nothing was left sounding 50 ms after Stop or `pagehide` in any of the three browsers. Where
+  `clear()` is missing, the session therefore hands MIDI notes over at most 0.1 s ahead (P6-03).
 - **"MIDI thru" keyboards** send what they receive back to the app. Settings' test note listens
   200 ms for its own copy and remembers such outputs (`settings.midi.thru`); practice then ignores
   input that matches a note it sent less than 50 ms before (`SentNotes`), so play-along does not
