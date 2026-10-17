@@ -31,7 +31,14 @@ export type { MidiFile, MidiImportOptions, MidiNoteRaw } from './midi';
 export { quantise, GRIDS, looksNotated, quantiseNotated } from './quantise';
 export type { QuantiseResult, TickNote, Timed } from './quantise';
 export { splitHands } from './handsplit';
-export { transpose, swapHands, resplitHands, setBaseTempo, trimMeasures } from './transform';
+export {
+  transpose,
+  transposeKey,
+  swapHands,
+  resplitHands,
+  setBaseTempo,
+  trimMeasures,
+} from './transform';
 export { PEDAL_CONTROLLERS, PEDAL_DOWN, pedalsBefore, tidyPedals } from './pedals';
 export { estimateDifficulty } from './difficulty';
 export type { DifficultyEstimate, DifficultyMeasures } from './difficulty';

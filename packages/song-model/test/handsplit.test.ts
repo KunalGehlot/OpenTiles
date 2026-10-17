@@ -1,6 +1,13 @@
 import { describe, expect, it } from 'vitest';
 import { splitHands } from '../src/handsplit';
-import { transpose, resplitHands, setBaseTempo, swapHands, trimMeasures } from '../src/transform';
+import {
+  transpose,
+  transposeKey,
+  resplitHands,
+  setBaseTempo,
+  swapHands,
+  trimMeasures,
+} from '../src/transform';
 import type { Song } from '../src/types';
 
 describe('splitHands', () => {
@@ -91,6 +98,17 @@ describe('transforms', () => {
     const s = transpose(baseSong(), 2);
     expect(s.notes.map((n) => n.pitch)).toEqual([50, 66, 69]);
     expect(s.keySignatures[0]?.fifths).toBe(2);
+  });
+  it('moves the key as the score views engrave it, also at a tritone and an octave', () => {
+    // Two sharps up a tritone is A flat; C up a tritone is G flat and down one F sharp, as
+    // Verovio writes them; an octave keeps the key, C sharp major included.
+    expect(transposeKey(2, 6)).toBe(-4);
+    expect(transposeKey(0, 6)).toBe(-6);
+    expect(transposeKey(0, -6)).toBe(6);
+    expect(transposeKey(5, 7)).toBe(-6);
+    expect(transposeKey(7, 12)).toBe(7);
+    expect(transposeKey(7, 5)).toBe(6);
+    expect(transposeKey(-3, 1)).toBe(4);
   });
   it('swaps and re-splits hands', () => {
     expect(swapHands(baseSong()).notes.map((n) => n.hand)).toEqual(['right', 'left', 'left']);

@@ -374,9 +374,10 @@ images, sounds or fonts, and credit the inspiration in [CREDITS.md](CREDITS.md).
       the labels. Today transposing exists only at import. The score views re-engrave, fingering is
       recomputed. Done: Options → Transpose (− / +, an octave either way, never past the piano's
       keys, so no note is dropped) and Black keys (as the key, sharps, flats; also in Settings). The
-      screen says "Transposed up 2 semitones."; Verovio engraves the score in the new key. Left: the
-      shift is not remembered between visits; at ±6 semitones the song's key becomes F♯ where
-      Verovio engraves G♭, so with "as the key" the falling notes and the score spell it differently.
+      screen says "Transposed up 2 semitones."; Verovio engraves the score in the new key, and the
+      song's key moves as Verovio moves it (`transposeKey`, checked against Verovio for every key and
+      shift), so "as the key" names black keys as the score writes them, at ±6 semitones too. Left:
+      the shift is not remembered between visits.
 - [~] **P5-05** (APP, PRAC) Sight-reading drills (the "Speed" and "Infinite" ideas): random notes or
   generated phrases on a staff, with clef, key signature, letters on/off and a speed readout. Works
   with MIDI, microphone and the on-screen keyboard through the usual `NoteEvent` stream. Material is
@@ -618,6 +619,9 @@ Record the outcome as an ADR in `docs/adr/` and tick it here.
 - [x] Engine exposes a plain C ABI instead of wasm-bindgen glue — ADR 0002.
 
 ## Changelog
+
+- **2026-10-17** — P5-04: a shifted piece's key is the key the score is engraved in, at a tritone
+  too.
 
 - **2026-10-17** — P5-18: a MIDI piece's Score tab follows the staves, clefs and spelling of the
   learner's PDF.
