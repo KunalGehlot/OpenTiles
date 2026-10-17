@@ -30,6 +30,39 @@ export function tidyPedals(events: readonly PedalEvent[]): PedalEvent[] {
   return out;
 }
 
+export type PedalMark = 'start' | 'stop' | 'change';
+
+/**
+ * Lifted and pressed again within this many beats, the sustain pedal is written as one change.
+ * Played files lift it briefly at a new harmony; exported ones lift and press on one tick.
+ */
+const CHANGE_WITHIN = 1 / 8;
+
+/**
+ * How a score marks the sustain pedal (P6-10): "Ped." where it goes down, the release star where
+ * it comes up, and one change mark where it is lifted and pressed again at once, at the lift.
+ * Half pedalling counts as down from 64, as MIDI has it.
+ */
+export function sustainMarks(events: readonly PedalEvent[]): { beat: number; mark: PedalMark }[] {
+  const moves: { beat: number; down: boolean }[] = [];
+  let down = false;
+  for (const e of tidyPedals(events)) {
+    if (e.pedal !== 'sustain' || e.value >= PEDAL_DOWN === down) continue;
+    down = !down;
+    moves.push({ beat: e.beat, down });
+  }
+  const out: { beat: number; mark: PedalMark }[] = [];
+  for (let i = 0; i < moves.length; i++) {
+    const m = moves[i] as { beat: number; down: boolean };
+    const next = moves[i + 1];
+    if (!m.down && next?.down && next.beat - m.beat <= CHANGE_WITHIN + 1e-9) {
+      out.push({ beat: m.beat, mark: 'change' });
+      i += 1;
+    } else out.push({ beat: m.beat, mark: m.down ? 'start' : 'stop' });
+  }
+  return out;
+}
+
 /** Each pedal's value just before `beat` (0 when never pressed). */
 export function pedalsBefore(
   events: readonly PedalEvent[],
