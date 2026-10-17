@@ -116,6 +116,14 @@ describe('black keys', () => {
     expect(spellingFor('flats', 4)).toBe('flats');
   });
 
+  it('are named as the score writes them after a tritone shift', () => {
+    // C major up six semitones is engraved in G flat, down six in F sharp (P5-04).
+    const up = shiftSong(song([60, 66]), 6).keySignatures[0]?.fifths ?? 0;
+    const down = shiftSong(song([60, 66]), -6).keySignatures[0]?.fifths ?? 0;
+    expect([up, spellingFor('key', up)]).toEqual([-6, 'flats']);
+    expect([down, spellingFor('key', down)]).toEqual([6, 'sharps']);
+  });
+
   it('default to the key and keep only known choices', () => {
     expect(DEFAULT_APP_SETTINGS.noteSpelling).toBe('key');
     expect(normaliseSettings({ noteSpelling: 'flats' }).noteSpelling).toBe('flats');
