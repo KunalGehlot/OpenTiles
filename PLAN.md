@@ -566,8 +566,12 @@ without a word when no MIDI output is found.
   sounds and a MIDI keyboard gets as the pedal's control changes instead; Listen and the Player
   send the pedal, play-along's other hand does not; Stop lifts every pedal; stored library pieces
   get their pedals from their kept file once. Left: engraved pedal marks (`songToMusicXml`).
-- [ ] **P6-11** (PRAC) Natural touch for pieces without velocities (beat strength, melody, dynamics),
-      with an "even" option.
+- [x] **P6-11** (PRAC) Natural touch for pieces without velocities (beat strength, melody, dynamics),
+      with an "even" option. Done: `touchVelocities` in `packages/practice` (the melody over the
+      accompaniment, the downbeat and the bar's second strong beat over off-beats, pickup bars
+      counted from the end of the bar, a small variation fixed per note); MIDI velocities are kept;
+      Settings → Practice → Touch (natural by default, plan Q4) for practice and the Player.
+      Dynamics marks are not read yet, so they do not shape it.
 - [ ] **P6-12** (APP, iOS) MIDI out in the iPad app (CoreMIDI destinations, timed batched send,
       flush) and Bluetooth MIDI pairing. Device test needs P3-01.
 - [ ] **P6-13** (human) The maintainer's checks: their keyboard in Chrome, Edge and Firefox on the Mac;
@@ -600,6 +604,9 @@ Record the outcome as an ADR in `docs/adr/` and tick it here.
 - [x] Engine exposes a plain C ABI instead of wasm-bindgen glue — ADR 0002.
 
 ## Changelog
+
+- **2026-10-17** — P6-11: natural touch for pieces without velocities (the catalogue): the melody
+  and the strong beats brought out; "even" in Settings → Practice.
 
 - **2026-10-17** — P6-10: the pedals in the `Song` (ADR 0020, proposed), read from MIDI and
   MusicXML, held by this device's piano and sent to a MIDI keyboard.

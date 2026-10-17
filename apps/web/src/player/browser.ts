@@ -96,6 +96,7 @@ export function playerTransport(): PlayerTransport {
       return playbackInstrument(device, keyboard, keyboard ? playback : 'device');
     },
     hidden: () => document.visibilityState === 'hidden',
+    touch: () => appSettings().touch,
     played: (key) => void recordPlayed(key).catch(() => {}),
     awake,
   });

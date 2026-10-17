@@ -154,3 +154,11 @@ describe('misc', () => {
     expect(normaliseServerUrl('not a url')).toBeNull();
   });
 });
+
+describe('touch (P6-11)', () => {
+  it('is natural unless even was chosen', () => {
+    expect(normaliseSettings(undefined).touch).toBe('natural');
+    expect(normaliseSettings({ touch: 'even' }).touch).toBe('even');
+    expect(normaliseSettings({ touch: 'loud' }).touch).toBe('natural');
+  });
+});

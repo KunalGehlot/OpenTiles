@@ -386,6 +386,11 @@ function PracticeView({
     [mic],
   );
 
+  // How the app plays notes without velocities (Settings → Practice, P6-11).
+  useEffect(() => {
+    session.touch = settings.touch;
+  }, [session, settings.touch]);
+
   // Leaving the page or hiding it ends the run, so nothing keeps sounding on a MIDI keyboard
   // (P6-02): notes stamped ahead may lose their note-offs once the page is gone, and a hidden tab
   // draws no frames, so the piece would stop there anyway.

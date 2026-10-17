@@ -185,6 +185,22 @@ function Practice({
         </>
       )}
 
+      <h3>{t('How the app plays')}</h3>
+      <Setting
+        label={t('Touch')}
+        hint={t(
+          'For pieces whose file has no loudness of its own, such as the catalogue: natural brings out the melody and the strong beats, even plays every note alike. MIDI files keep their own.',
+        )}
+      >
+        <select
+          value={settings.touch}
+          onChange={(e) => set({ touch: e.target.value === 'even' ? 'even' : 'natural' })}
+        >
+          <option value="natural">{t('Natural')}</option>
+          <option value="even">{t('Even')}</option>
+        </select>
+      </Setting>
+
       <h3>{t('Fingering')}</h3>
       <Setting
         label={t('Fingers to show')}

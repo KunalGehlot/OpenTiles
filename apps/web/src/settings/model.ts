@@ -72,6 +72,8 @@ export interface AppSettings {
   noteLabels: NoteLabelSetting;
   /** Black keys on the falling notes and keys: as the key signature, or sharps or flats (P5-04). */
   noteSpelling: SpellingSetting;
+  /** How the app plays notes whose file has no velocities (P6-11, plan Q4). */
+  touch: 'natural' | 'even';
   midi: MidiSetting;
 }
 
@@ -88,6 +90,7 @@ export const DEFAULT_APP_SETTINGS: Readonly<AppSettings> = Object.freeze({
   noteNames: true,
   noteLabels: 'auto',
   noteSpelling: 'key',
+  touch: 'natural',
   midi: Object.freeze({ echo: false, playback: 'device', output: '', thru: [] }),
 }) as Readonly<AppSettings>;
 
@@ -162,6 +165,7 @@ export function normaliseSettings(value: unknown): AppSettings {
     noteNames: bool(v.noteNames, d.noteNames),
     noteLabels: NOTE_LABEL_SETTINGS.find((s) => s === v.noteLabels) ?? d.noteLabels,
     noteSpelling: SPELLING_SETTINGS.find((s) => s === v.noteSpelling) ?? d.noteSpelling,
+    touch: v.touch === 'even' ? 'even' : 'natural',
     midi: normaliseMidi(v.midi),
   };
 }

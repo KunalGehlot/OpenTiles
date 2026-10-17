@@ -10,6 +10,8 @@ import { PEDAL_DOWN, pedalsBefore, TempoMap } from '@opentiles/song-model';
 import type { Hand, PedalKind, Song } from '@opentiles/song-model';
 import { includesHand } from './steps';
 import type { HandFilter } from './steps';
+import { touchVelocities } from './touch';
+import type { Touch } from './touch';
 
 /** The velocity of a note whose source has none (MusicXML, ABC): mezzo-forte. */
 export const DEFAULT_VELOCITY = 80;
@@ -61,6 +63,8 @@ export interface PlaybackOptions {
    * pedal would hold them.
    */
   pedals?: boolean;
+  /** How notes without a velocity of their own are played (P6-11): natural by default. */
+  touch?: Touch;
 }
 
 /** Spans of song seconds in which a pedal is down. */
@@ -88,8 +92,10 @@ export function buildPlayback(song: Song, options: PlaybackOptions = {}): Playba
     fromBeat = 0,
     toBeat = song.lengthBeats,
     pedals = true,
+    touch = 'natural',
   } = options;
   const tempo = new TempoMap(song.tempos);
+  const shaped = touchVelocities(song, touch);
   const sustain = downSpans(song, tempo, 'sustain');
   const sostenuto = downSpans(song, tempo, 'sostenuto');
   const songEnd = tempo.beatToSeconds(song.lengthBeats);
@@ -116,7 +122,7 @@ export function buildPlayback(song: Song, options: PlaybackOptions = {}): Playba
       start,
       end,
       held: heldUntil(start, end),
-      velocity: n.velocity ?? DEFAULT_VELOCITY,
+      velocity: n.velocity ?? shaped.get(n.id) ?? DEFAULT_VELOCITY,
       hand: n.hand,
       noteId: n.id,
     });
