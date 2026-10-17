@@ -217,8 +217,12 @@ that follows the audio clock without its buffer-sized steps (`steadyClock`, ADR 
 ## Design system
 
 `apps/web/src/styles/` holds the whole look (ADR 0011). `tokens.css` defines every colour, size,
-radius, shadow and duration once, in four colour sets: light, dark (`prefers-color-scheme`) and
-high contrast in each (Settings → Accessibility, or `prefers-contrast: more`). `base.css` restyles
+radius, shadow and duration once, in four colour sets: light, dark (`prefers-color-scheme`, or
+Settings → Accessibility → Appearance, which sets `data-theme` on `<html>`; `public/theme.js` sets it
+from the settings' localStorage copy before anything is drawn, since the CSP allows no inline
+script) and high contrast in each (Settings → Accessibility, or `prefers-contrast: more`). The dark
+sets are written twice, under the media query and for the choice, and the test keeps them equal.
+`base.css` restyles
 the native controls, `components.css` has the shared pieces (segmented control, switch, card,
 panel, notice, badge, toast), `shell.css` the header, footer and full-height practice layout,
 `pages.css` Home, Library, Settings and the text pages, and `practice.css` the practice screen and

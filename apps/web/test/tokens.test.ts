@@ -70,14 +70,25 @@ const DARK = '(prefers-color-scheme: dark)';
 
 // The cascade: html[data-high-contrast] (more specific) beats :root, so its values win in both
 // colour schemes; the dark variant of it then overrides the light one.
+// A theme chosen in Settings (P5-09): the media query's dark sets apply unless light is chosen,
+// and the same sets are written again for dark chosen. `:where()` adds nothing to specificity.
+const SYSTEM_DARK = ":root:where(:not([data-theme='light']))";
+const CHOSEN_DARK = ":root:where([data-theme='dark'])";
+const HC = 'html[data-high-contrast]';
+const HC_SYSTEM_DARK = "html[data-high-contrast]:where(:not([data-theme='light']))";
+const HC_CHOSEN_DARK = "html[data-high-contrast]:where([data-theme='dark'])";
+
 const light: Tokens = find(':root', null);
-const dark: Tokens = { ...light, ...find(':root', DARK) };
-const hcLight: Tokens = { ...light, ...find('html[data-high-contrast]', null) };
-const hcDark: Tokens = {
-  ...dark,
-  ...find('html[data-high-contrast]', null),
-  ...find('html[data-high-contrast]', DARK),
-};
+const dark: Tokens = { ...light, ...find(SYSTEM_DARK, DARK) };
+const hcLight: Tokens = { ...light, ...find(HC, null) };
+const hcDark: Tokens = { ...dark, ...find(HC, null), ...find(HC_SYSTEM_DARK, DARK) };
+describe('dark chosen in Settings (P5-09)', () => {
+  it('has the same colours as the device’s dark mode, in full', () => {
+    expect(find(CHOSEN_DARK, null)).toEqual(find(SYSTEM_DARK, DARK));
+    expect(find(HC_CHOSEN_DARK, null)).toEqual(find(HC_SYSTEM_DARK, DARK));
+  });
+});
+
 const SETS: [string, Tokens][] = [
   ['light', light],
   ['dark', dark],

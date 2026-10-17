@@ -208,6 +208,14 @@ function writeMirror(key: string, value: unknown): void {
 }
 
 /**
+ * The localStorage copy of a setting, read at once: for what must be right before the first paint
+ * (the colours chosen in Settings), while IndexedDB is still opening.
+ */
+export function settingCopy<T>(key: string): T | undefined {
+  return readMirror<T>(key)?.value;
+}
+
+/**
  * Reads a setting. IndexedDB is the store; a small copy in localStorage covers browsers where
  * IndexedDB is unavailable or was cleared on its own, so settings survive in either.
  */

@@ -499,6 +499,21 @@ function Accessibility({
   return (
     <section aria-labelledby="a11y-title">
       <h2 id="a11y-title">{t('Accessibility')}</h2>
+      <Setting label={t('Appearance')}>
+        <select
+          value={settings.appearance}
+          onChange={(e) =>
+            set({
+              appearance:
+                e.target.value === 'light' || e.target.value === 'dark' ? e.target.value : 'system',
+            })
+          }
+        >
+          <option value="system">{t('Same as this device')}</option>
+          <option value="light">{t('Light')}</option>
+          <option value="dark">{t('Dark')}</option>
+        </select>
+      </Setting>
       <Toggle
         label={t('Large print')}
         description={t('Bigger text, buttons and keyboard labels.')}

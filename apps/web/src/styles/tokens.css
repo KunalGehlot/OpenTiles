@@ -10,9 +10,13 @@
  * light-dark(), no popover attribute. Sizes are in rem so Large print (125 % root size) scales
  * everything.
  *
- * Four colour sets: light, dark (prefers-color-scheme), and high contrast in each of the two
- * (Settings → Accessibility, or prefers-contrast: more). test/tokens.test.ts checks the contrast
- * of the pairs that carry text in all four.
+ * Four colour sets: light, dark, and high contrast in each of the two (Settings → Accessibility,
+ * or prefers-contrast: more). Dark follows prefers-color-scheme unless Settings → Appearance
+ * chooses light or dark (`data-theme` on <html>, P5-09); the dark values are written twice for
+ * that, once under the media query and once for the choice. The `:where()` keeps each selector
+ * as specific as a plain `:root` or `html[data-high-contrast]`, so high contrast still wins.
+ * test/tokens.test.ts checks the contrast of the pairs that carry text in all four, and that the
+ * two copies of each dark set are the same.
  */
 
 :root {
@@ -126,7 +130,7 @@
 }
 
 @media (prefers-color-scheme: dark) {
-  :root {
+  :root:where(:not([data-theme='light'])) {
     --shadow-1: 0 1px 2px rgba(0, 0, 0, 0.4);
     --shadow-2: 0 1px 2px rgba(0, 0, 0, 0.4), 0 8px 20px -6px rgba(0, 0, 0, 0.55);
     --shadow-3: 0 2px 4px rgba(0, 0, 0, 0.5), 0 20px 44px -10px rgba(0, 0, 0, 0.7);
@@ -172,6 +176,63 @@
     --loop-band: rgba(76, 194, 161, 0.12);
     --glow: rgba(76, 194, 161, 0.1);
   }
+}
+
+/* Dark chosen in Settings: the same values as above (test/tokens.test.ts keeps them equal). */
+:root:where([data-theme='dark']) {
+  --shadow-1: 0 1px 2px rgba(0, 0, 0, 0.4);
+  --shadow-2: 0 1px 2px rgba(0, 0, 0, 0.4), 0 8px 20px -6px rgba(0, 0, 0, 0.55);
+  --shadow-3: 0 2px 4px rgba(0, 0, 0, 0.5), 0 20px 44px -10px rgba(0, 0, 0, 0.7);
+
+  --bg: #0b100f;
+  --surface: #121918;
+  --surface-2: #19211f;
+  --sunken: #080b0b;
+  --text: #e8eeec;
+  --muted: #9aaaa4;
+  --line: #24302d;
+  --line-strong: #394844;
+  --control: #70807a;
+
+  --accent: #4cc2a1;
+  --accent-hover: #66d0b2;
+  --accent-text: #06241c;
+  --accent-soft: #11302a;
+  --accent-ink: #8fe0c7;
+  --accent-line: #2a5a4d;
+  --focus: #86abff;
+
+  --ok: #5fcf8d;
+  --ok-soft: #14301f;
+  --bad: #ff7f6e;
+  --bad-soft: #3b1b17;
+  --warn: #e9b54f;
+  --warn-soft: #382a0e;
+
+  --hand-right: #5aa7e6;
+  --hand-right-soft: rgba(90, 167, 230, 0.35);
+  --hand-left: #e8914a;
+  --hand-left-soft: rgba(232, 145, 74, 0.35);
+  --on-hand: #0b1520;
+  --done: rgba(95, 207, 141, 0.4);
+
+  --canvas-bg: #0e1413;
+  --canvas-grid: rgba(232, 238, 236, 0.06);
+  --key-white: #e6ebe8;
+  --key-edge: #98a39e;
+  --key-black: #090c0b;
+  --now-line: rgba(232, 238, 236, 0.55);
+  --loop-band: rgba(76, 194, 161, 0.12);
+  --glow: rgba(76, 194, 161, 0.1);
+}
+
+/* A theme chosen in Settings (P5-09) also sets the colours of form controls and scrollbars. */
+:root[data-theme='light'] {
+  color-scheme: light;
+}
+
+:root[data-theme='dark'] {
+  color-scheme: dark;
 }
 
 /* ---- High contrast (Settings → Accessibility, or prefers-contrast: more) ---- */
@@ -221,7 +282,7 @@ html[data-high-contrast] {
 }
 
 @media (prefers-color-scheme: dark) {
-  html[data-high-contrast] {
+  html[data-high-contrast]:where(:not([data-theme='light'])) {
     --bg: #000000;
     --surface: #000000;
     --surface-2: #000000;
@@ -264,6 +325,51 @@ html[data-high-contrast] {
     --loop-band: rgba(111, 240, 200, 0.16);
     --glow: transparent;
   }
+}
+
+/* High contrast with dark chosen in Settings: the same values as above. */
+html[data-high-contrast]:where([data-theme='dark']) {
+  --bg: #000000;
+  --surface: #000000;
+  --surface-2: #000000;
+  --sunken: #1a1a1a;
+  --text: #ffffff;
+  --muted: #e0e0e0;
+  --line: #ffffff;
+  --line-strong: #ffffff;
+  --control: #ffffff;
+  --switch-thumb: #000000;
+
+  --accent: #6ff0c8;
+  --accent-hover: #9ff6da;
+  --accent-text: #000000;
+  --accent-soft: #000000;
+  --accent-ink: #6ff0c8;
+  --accent-line: #6ff0c8;
+  --focus: #9db8ff;
+
+  --ok: #7dff9c;
+  --ok-soft: #000000;
+  --bad: #ff8a80;
+  --bad-soft: #000000;
+  --warn: #ffd060;
+  --warn-soft: #000000;
+
+  --hand-right: #7cc0ff;
+  --hand-right-soft: rgba(124, 192, 255, 0.35);
+  --hand-left: #ffa65a;
+  --hand-left-soft: rgba(255, 166, 90, 0.35);
+  --on-hand: #000000;
+  --done: rgba(125, 255, 156, 0.4);
+
+  --canvas-bg: #000000;
+  --canvas-grid: rgba(255, 255, 255, 0.3);
+  --key-white: #ffffff;
+  --key-edge: #ffffff;
+  --key-black: #000000;
+  --now-line: #ffffff;
+  --loop-band: rgba(111, 240, 200, 0.16);
+  --glow: transparent;
 }
 
 /* ---- Large print (Settings → Accessibility): every size above is in rem ---- */

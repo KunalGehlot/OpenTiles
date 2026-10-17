@@ -2,7 +2,7 @@
 // table and applied to <html> as data attributes the stylesheet reads. Components subscribe with
 // `useAppSettings`; code outside React (canvas renderers, crash reporting) reads `appSettings()`.
 import { useSyncExternalStore } from 'react';
-import { getSetting, setSetting } from '../storage/db';
+import { getSetting, setSetting, settingCopy } from '../storage/db';
 import { requestPersistence } from '../storage/persist';
 import { browserLanguage, setLanguage } from '../i18n';
 import { labelStyleFor, setNoteLabelStyle } from '../lib/notes';
@@ -12,7 +12,7 @@ import {
   effectiveAccessibility,
   normaliseSettings,
 } from './model';
-import type { AppSettings, EffectiveAccessibility, MediaPreferences } from './model';
+import type { AppSettings, Appearance, EffectiveAccessibility, MediaPreferences } from './model';
 
 /** The IndexedDB settings key that holds `AppSettings`. */
 export const APP_SETTINGS_KEY = 'app';
@@ -33,7 +33,16 @@ function mediaPreferences(): MediaPreferences {
   };
 }
 
+/** Light or dark chosen in Settings, or the device's colours (`data-theme`, tokens.css). */
+function applyAppearance(appearance: Appearance): void {
+  if (typeof document === 'undefined') return;
+  const root = document.documentElement;
+  if (appearance === 'system') root.removeAttribute('data-theme');
+  else root.setAttribute('data-theme', appearance);
+}
+
 function apply(): void {
+  applyAppearance(current.appearance);
   setLanguage(current.language);
   setNoteLabelStyle(labelStyleFor(current.noteLabels, current.language));
   effective = effectiveAccessibility(current, mediaPreferences());
@@ -130,6 +139,8 @@ export function useLeftHanded(): boolean {
 
 /** Starts the store: loads settings and follows OS preference changes. Call once at start-up. */
 export function initAppSettings(): Promise<AppSettings> {
+  // The colours chosen last time, before IndexedDB answers, so the other theme never flashes up.
+  applyAppearance(normaliseSettings(settingCopy<unknown>(APP_SETTINGS_KEY)).appearance);
   if (typeof window !== 'undefined' && typeof window.matchMedia === 'function') {
     for (const q of ['(prefers-contrast: more)', '(prefers-reduced-motion: reduce)']) {
       window.matchMedia(q).addEventListener?.('change', apply);
