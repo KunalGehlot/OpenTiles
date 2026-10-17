@@ -209,7 +209,7 @@ engines.
 - [~] **P2-15** Accessibility: large print, high contrast, left-handed layout, keyboard shortcuts,
   Bluetooth foot-pedal page turn. Done: settings for large print, high contrast, left-handed controls, reduced motion, shortcuts list, pedal key. Left: practice view reading the left-handed flag beyond CSS; pedal hook wired to the page score.
 - [x] **P2-16** Licence scanner for third-party dependencies in CI.
-- [~] **P2-17** Privacy policy, Impressum with notice-and-takedown address, records of processing. Done: privacy policy and Impressum (EN/DE), records of processing; the postal address is the maintainer's own Impressum at gehlot.site, linked rather than repeated (2026-10-10). Left: lawyer review (P2-18).
+- [~] **P2-17** Privacy policy, Impressum with notice-and-takedown address, records of processing. Done: privacy policy and Impressum (EN/DE), records of processing; the Impressum gives the maintainer's website gehlot.site as a contact only (2026-10-10). Left: the postal address and the lawyer review (P2-18).
 - [ ] **P2-18** (human) Legal consultation with a German copyright lawyer (timing is an open
       decision). Also ask: Bella Ciao (P4-14), the LLM disclosure and the Sightread credit wording
       (P5-01), and whether MIDI export of a user's own free-play recording breaks guardrail 1 (P5-06).
@@ -418,9 +418,12 @@ images, sounds or fonts, and credit the inspiration in [CREDITS.md](CREDITS.md).
   privacy policy (English and German) names GitHub Pages and the transfer basis, and mentions
   sync and crash reports only in a build with a sync server, which the public site has not; the
   same goes for the crash-report setting; records of processing §1 and `docs/deploying.md` updated;
-  the Impressum links the maintainer's own at gehlot.site for the postal address; Pages enabled
-  with the domain `opentiles.site` set (2026-10-10). Left: the DNS at Cloudflare ("DNS only", no
-  parking record) and the domain verification, the first deploy, HTTPS enforced and a header
+  the Impressum gives gehlot.site as a contact (it has no postal address yet, P2-18); Pages enabled
+  with the domain `opentiles.site` set (2026-10-10); `main` deploys there since 2026-10-11. Left:
+  the DNS at Cloudflare ("DNS only", no parking record) and the domain verification. On
+  2026-10-17 the site was still served through Cloudflare's proxy, which adds its bot-check script
+  to every page and an error-report (NEL) header, so visitors' browsers can contact Cloudflare
+  (hard rule 5), and GitHub has no certificate for the domain yet. Then HTTPS enforced, a header
   check of the live site, and the lawyer's view of hosting in the USA (P2-18).
 - [~] **P5-12** (APP) A MIDI keyboard in Firefox stays connected. Reason (maintainer's report,
   2026-10-10): in Firefox the keyboard worked for a while, then fell silent after moving around the
@@ -561,6 +564,10 @@ Record the outcome as an ADR in `docs/adr/` and tick it here.
 - [x] Engine exposes a plain C ABI instead of wasm-bindgen glue — ADR 0002.
 
 ## Changelog
+
+- **2026-10-17** — Phase 6 started: the maintainer accepted the recommended answers to the plan's
+  open questions Q1–Q8 (ADR 0019). P2-17 and P5-11 no longer say that gehlot.site holds the postal
+  address; P5-11 notes that the site is still served through Cloudflare's proxy.
 
 - **2026-10-11** — Phase 6 planned (P6-00): a Player page for the whole library and catalogue on the
   learner's own keyboard, and a visible "Plays on" choice in practice. Plan in

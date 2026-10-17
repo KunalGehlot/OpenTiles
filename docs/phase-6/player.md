@@ -1,6 +1,6 @@
 # Phase 6 — The Player, and playing on your own keyboard
 
-- **Status:** planned on 2026-10-11, nothing built yet. The tasks are P6-00 to P6-14 in
+- **Status:** planned on 2026-10-11; work started on 2026-10-17. The tasks are P6-00 to P6-14 in
   [PLAN.md](../../PLAN.md#phase-6--the-player-from-2026-10-11); the decisions are in
   [ADR 0019](../adr/0019-player-and-keyboard-output.md) (proposed).
 - **Read first:** the [development guide](../development.md) (hard rules), [PLAN.md](../../PLAN.md),
@@ -25,7 +25,8 @@
 
 - Every browser on iPad (Safari, Chrome, Edge, Firefox) uses Apple's WebKit engine, and WebKit has
   no Web MIDI. Since iPadOS 18 the EU allows other engines, but as of mid-2026 Google and Mozilla
-  had only shown prototypes. **Recheck this when you pick the work up.** The app feature-detects
+  had only shown prototypes. Rechecked on 2026-10-17: Chrome for iPad still uses WebKit, and no iPad
+  browser has Web MIDI. **Recheck this when you pick the work up.** The app feature-detects
   `navigator.requestMIDIAccess`, so a browser that ships Web MIDI on iPad will work without changes.
 - **The maintainer's finding (2026-10-11):** M1 iPad Pro, Edge, their Yamaha keyboard plugged in by
   USB. The app's notes came out of the keyboard's speakers without pressing Connect. Nothing else
@@ -626,7 +627,8 @@ Wide window (2,560 px, dark), variant A:
 
 ## 7. Open questions for the maintainer
 
-Each has a recommendation, so work can start; change it in ADR 0019 when you decide.
+Each has a recommendation, so work can start. On 2026-10-17 the maintainer accepted the
+recommendations for Q1 to Q8 (recorded in ADR 0019); Q9 is decided in P6-06.
 
 | #   | Question                                                              | Recommendation                                                                                         |
 | --- | --------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------ |

@@ -56,8 +56,25 @@ What the code and the platforms allow:
    link, cast, export or recording in the Player (hard rule 1, ADR 0010). Media Session metadata
    goes only to the device's own system controls.
 
-The answers to the open questions in the plan (§7) amend this ADR when the maintainer decides. A
-pedal field in the `Song` (P6-10) gets its own ADR (0020), because it changes the model of ADR 0003.
+A pedal field in the `Song` (P6-10) gets its own ADR (0020), because it changes the model of ADR 0003.
+
+### The open questions, answered (2026-10-17)
+
+The maintainer accepted the plan's recommendations (§7 of the plan) for Q1 to Q8:
+
+- **Q1:** one "Plays on" setting for all of the app's notes, visible in the session bar and the
+  Player. No separate setting for Listen.
+- **Q2:** with the keyboard chosen but not reachable, practice plays on this device, says so and
+  offers Connect.
+- **Q3:** the metronome and count-in stay on this device.
+- **Q4:** pieces without velocities play with natural touch by default; "even" is an option.
+- **Q5:** the Player keeps playing on other pages, with a mini player; practice, drills and the
+  Detector Lab stop it.
+- **Q6:** a gap of 2 s between pieces, adjustable from 0 to 5 s.
+- **Q7:** no programme change at the start, so the voice chosen on the keyboard stays.
+- **Q8:** the German name of the page is "Wiedergabe", pending the native read-through.
+
+Q9, the Player's design, is chosen in P6-06.
 
 ## Consequences
 
