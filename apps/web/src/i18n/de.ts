@@ -768,6 +768,8 @@ export const de: Readonly<Record<string, string>> = {
   'Your keyboard was disconnected.': 'Dein Keyboard wurde getrennt.',
   'Play on this device': 'Auf diesem Gerät spielen',
   'This piece could not be loaded.': 'Dieses Stück konnte nicht geladen werden.',
+  'Stopped while you practise.': 'Angehalten, während du übst.',
+  'Open the Player': 'Wiedergabe öffnen',
   'Now playing': 'Läuft gerade',
   'Everything you can play, the catalogue and your library, played on this device or your keyboard.':
     'Alles, was du spielen kannst, der Katalog und deine Bibliothek – auf diesem Gerät oder auf deinem Keyboard.',

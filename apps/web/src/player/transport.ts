@@ -61,8 +61,11 @@ export interface TransportState {
   hands: HandFilter;
   /** Seconds of silence between two pieces (plan Q6: 2 s, from 0 to 5). */
   gap: number;
-  /** Why playback stopped by itself: the keyboard went away, or a piece would not load. */
-  message: 'disconnected' | 'failed' | null;
+  /**
+   * Why playback stopped by itself: the keyboard went away, a piece would not load, or practice
+   * took the sound over.
+   */
+  message: 'disconnected' | 'failed' | 'practice' | null;
 }
 
 export const LOOK_AHEAD = 0.12;
@@ -213,11 +216,15 @@ export class PlayerTransport {
   }
 
   /** Stops, as when practice takes over the sound: the position goes back to the start. */
-  stop(): void {
+  stop(reason?: 'practice'): void {
+    const { status } = this.stateValue;
+    const playing = status === 'playing' || status === 'between';
     this.halt();
     this.position = 0;
     this.deps.awake?.(false);
-    if (this.stateValue.status !== 'idle') this.set({ status: 'paused' });
+    if (status !== 'idle') {
+      this.set({ status: 'paused', ...(playing && reason ? { message: reason } : {}) });
+    }
   }
 
   /** Moves to `seconds` (song seconds) and plays on from there if playing. */

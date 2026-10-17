@@ -291,7 +291,11 @@ moves the highlight and cursor from `requestAnimationFrame` and scrolls to keep 
   tick every 25 ms, since a hidden tab stops animation frames and throttles the page's timers; on
   each tick notes are handed over about 120 ms ahead (less for a MIDI output without `clear()`),
   1.5 s while the page is hidden. The queue (`player/queue.ts`) shuffles so that every piece plays
-  once per round.
+  once per round. On other pages a slim bar (`player/MiniPlayer.tsx`, P6-09) shows the piece with
+  play or pause and next; it only reads a transport the Player page made, so a visit that never
+  opens the Player starts nothing for it. The device's media controls get the title, composer,
+  cover and position through the Media Session API; Chrome and Edge offer them while this device's
+  piano plays (Web Audio), not while only a MIDI keyboard does.
 - **The Player's collection** (`player/collection.ts`, `player/load.ts`) is the catalogue (verified
   pieces only in production) and the library rows in one list, with the last time each was played
   from `progress`. A library piece's length comes from its song; a catalogue piece's is remembered

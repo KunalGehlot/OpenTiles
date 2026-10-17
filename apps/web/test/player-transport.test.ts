@@ -323,6 +323,21 @@ describe('the Player’s transport (P6-05)', () => {
     expect(h.transport.state.status).toBe('paused');
   });
 
+  it('says practice stopped it only when it was playing, until Play (P6-09)', async () => {
+    const h = harness([piece(8)]);
+    await h.transport.cue([key(0)]);
+    h.transport.stop('practice');
+    expect(h.transport.state.message).toBeNull();
+    await h.transport.play();
+    await h.run(1);
+    h.transport.stop('practice');
+    expect(h.transport.state).toMatchObject({ status: 'paused', message: 'practice' });
+    expect(h.ticking()).toBe(false);
+    expect(h.transport.positionNow()).toBe(0);
+    await h.transport.play();
+    expect(h.transport.state).toMatchObject({ status: 'playing', message: null });
+  });
+
   it('a piece that will not load leaves the transport paused with a message', async () => {
     const h = harness([]);
     await h.transport.playQueue([key(3)]);

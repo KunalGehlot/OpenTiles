@@ -560,8 +560,13 @@ without a word when no MIDI output is found.
       layouts, German strings, shortcuts.
 - [ ] **P6-08** (APP) Queue: play all, shuffle, repeat, reorder by drag and keyboard, kept on the
       device.
-- [ ] **P6-09** (APP) Mini player on other pages and media keys (Media Session where it works without
-      tricks); practice, drills and the Detector Lab stop the Player.
+- [x] **P6-09** (APP) Mini player on other pages and media keys (Media Session where it works without
+      tricks); practice, drills and the Detector Lab stop the Player. Done: a bar on every page but
+      the Player and practice (tile, title, play or pause, next; a tap opens the Player), "Stopped
+      while you practise." there and in the Player, and Media Session metadata, actions and position.
+      Checked on chrome://media-internals: Chrome and Edge give the page a controllable session while
+      this device's piano plays, none while only a MIDI keyboard plays (no silent `<audio>` added).
+      Firefox not checked (no page lists its sessions).
 - [~] **P6-10** (SONG) The sustain pedal in the `Song` from MIDI (CC 64) and MusicXML, sent to the
   keyboard and honoured by the sampler (ADR 0020, amending ADR 0003). Done: `Song.pedals` (sustain,
   soft, sostenuto) from MIDI control changes 64, 66 and 67 and from MusicXML pedal marks and
@@ -584,7 +589,8 @@ without a word when no MIDI output is found.
   Left: running the Swift tests (no simulator runtime here) and the device test (P3-01, P6-13).
 - [ ] **P6-13** (human) The maintainer's checks: their keyboard in Chrome, Edge and Firefox on the Mac;
       the Player over USB audio on the iPad, and whether the microphone hears the keyboard's USB
-      audio; the iPad app; design approval.
+      audio; the iPad app; design approval; the media keys and Now Playing showing the piece in
+      Chrome, Edge, Firefox and Safari.
 - [ ] **P6-14** (GOV) Docs: user guide, FAQ (MIDI on iPad), architecture (scheduler, transport, MIDI
       out), README.
 
