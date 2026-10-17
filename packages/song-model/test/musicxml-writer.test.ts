@@ -396,3 +396,64 @@ describe('song → MusicXML with the hints of a sheet-music PDF (P5-18)', () => 
     expect(xml).toBe(songToMusicXml(song).xml);
   });
 });
+
+describe('song → MusicXML: the sustain pedal (P6-10)', () => {
+  const pedal = (beat: number, value: number) => ({ beat, pedal: 'sustain' as const, value });
+
+  it('marks it down, up and changed under the lower staff, and reads back the same', () => {
+    const song: Song = {
+      ...pieceSong(),
+      pedals: [
+        pedal(0, 127),
+        // Lifted and pressed on one beat, as exported files do: one change mark.
+        pedal(2, 0),
+        pedal(2, 127),
+        // Half pedalling counts as down from 64: no mark for 100 → 90.
+        pedal(3, 100),
+        pedal(3.25, 90),
+        // Up a little after the barline, inside the lower staff's whole note.
+        pedal(4.5, 0),
+        pedal(8, 127),
+        // A played change: lifted, pressed again a sixteenth later.
+        pedal(9, 0),
+        pedal(9.0625, 127),
+        pedal(11, 0),
+        { beat: 1, pedal: 'soft' as const, value: 127 },
+      ],
+    };
+    const { xml } = songToMusicXml(song);
+    const doc = domParser.parseFromString(xml, 'application/xml');
+    const marks = [...doc.getElementsByTagName('pedal')].map((p) => p.getAttribute('type'));
+    expect(marks).toEqual(['start', 'change', 'stop', 'start', 'change', 'stop']);
+    for (const d of [...doc.getElementsByTagName('direction')].filter(
+      (d) => d.getElementsByTagName('pedal').length,
+    )) {
+      expect(d.getElementsByTagName('staff')[0]?.textContent).toBe('2');
+    }
+    // Read back, the pedal goes down and up where it did (a played change at its lift).
+    const back = (parse(xml).pedals ?? []).filter((p) => p.pedal === 'sustain');
+    expect(back.map((p) => [p.beat, p.value >= 64 ? 'down' : 'up'])).toEqual([
+      [0, 'down'],
+      [2, 'up'],
+      [2, 'down'],
+      [4.5, 'up'],
+      [8, 'down'],
+      [9, 'up'],
+      [9, 'down'],
+      [11, 'up'],
+    ]);
+  });
+
+  it('writes nothing for a song without pedalling, and keeps the notes as they were', () => {
+    const song = pieceSong();
+    const plain = songToMusicXml(song).xml;
+    expect(plain).not.toContain('<pedal');
+    const withPedal = songToMusicXml({ ...song, pedals: [pedal(0, 127), pedal(4, 0)] });
+    expect(parse(withPedal.xml).notes.map((n) => [n.pitch, n.startBeat])).toEqual(
+      parse(plain).notes.map((n) => [n.pitch, n.startBeat]),
+    );
+    expect(withPedal.song.notes.map((n) => n.sourceRefs)).toEqual(
+      songToMusicXml(song).song.notes.map((n) => n.sourceRefs),
+    );
+  });
+});
