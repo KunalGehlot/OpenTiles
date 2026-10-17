@@ -75,3 +75,26 @@
     position: static;
   }
 }
+
+/* ⅓ of an iPad and phones (the compact practice layout, practice.css): finger-sized controls in
+   fewer rows, so the falling notes keep most of the height. Segments sit closer, with their track
+   flush around them. */
+@media (pointer: coarse) and (max-width: 640px) {
+  .bar .segmented {
+    padding: 0;
+  }
+
+  .bar .segmented button {
+    padding-inline: 0.45rem;
+  }
+
+  .session-controls {
+    column-gap: 0.4rem;
+  }
+
+  /* Each control wraps on its own rather than with its group (the groups have no role), so a
+     wider system font costs no extra row. */
+  .session-controls > .group {
+    display: contents;
+  }
+}
