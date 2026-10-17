@@ -2,7 +2,7 @@
 // from the song for MIDI files (P5-13, ADR 0017), or nothing (with the reason shown next to the view
 // switch). Pure; nothing leaves the device.
 import { decodeXml, isZip, looksLikeAbc, songToMusicXml, unzipMxl } from '@opentiles/song-model';
-import type { Song, SongFormat } from '@opentiles/song-model';
+import type { ScoreHints, Song, SongFormat } from '@opentiles/song-model';
 import { t } from '../../i18n';
 
 export type NotationSource =
@@ -72,10 +72,12 @@ export function scoreFor(
   bytes: Uint8Array | undefined,
   song: Song,
   transpose = 0,
+  /** How the learner's sheet-music PDF writes the song (P5-18), to engrave it the same way. */
+  hints?: ScoreHints,
 ): { song: Song; notation: NotationSource } {
   if (format !== 'midi') return { song, notation: notationFor(format, bytes, transpose) };
   try {
-    const written = songToMusicXml(song);
+    const written = songToMusicXml(song, hints);
     return {
       song: written.song,
       notation: { kind: 'musicxml', text: written.xml, transpose: 0, generated: true },

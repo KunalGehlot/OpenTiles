@@ -8,6 +8,9 @@ import {
   drawingFromBitmap,
   drawingFromOperatorList,
   layoutFromPages,
+  printedHeads,
+  readNotation,
+  scoreHints,
 } from '@opentiles/sheet';
 import type { PageDrawing, PageResult, SheetLayout, SheetMap } from '@opentiles/sheet';
 import type { Song } from '@opentiles/song-model';
@@ -55,7 +58,12 @@ export async function findLayout(
   pdfjs: PdfJs,
   doc: PdfDocument,
   signal?: AbortSignal,
-): Promise<{ layout: SheetLayout; timing: AnalysisTiming }> {
+): Promise<{
+  layout: SheetLayout;
+  timing: AnalysisTiming;
+  /** Each page's bars, when every page was read from its vector drawing (not a scan). */
+  vectorPages: PageResult[] | null;
+}> {
   const started = performance.now();
   const pages: { drawing: PageDrawing; result: PageResult; source: 'vector' | 'raster' }[] = [];
   const timing: number[] = [];
@@ -96,6 +104,7 @@ export async function findLayout(
   return {
     layout: layoutFromPages(pages),
     timing: { pages: timing, total: performance.now() - started },
+    vectorPages: pages.every((p) => p.source === 'vector') ? pages.map((p) => p.result) : null,
   };
 }
 
@@ -106,6 +115,15 @@ export async function analyseSheet(
   song: Pick<Song, 'measures' | 'notes'>,
   signal?: AbortSignal,
 ): Promise<{ map: SheetMap; timing: AnalysisTiming }> {
-  const { layout, timing } = await findLayout(pdfjs, doc, signal);
-  return { map: buildSheetMap(layout, song), timing };
+  const { layout, timing, vectorPages } = await findLayout(pdfjs, doc, signal);
+  const map = buildSheetMap(layout, song);
+  // How the sheet writes the song (P5-18), for the Score tab; only from a vector PDF's heads.
+  const score = vectorPages
+    ? scoreHints(
+        readNotation(printedHeads(vectorPages), song, map.barOfMeasure),
+        song,
+        map.barOfMeasure,
+      )
+    : null;
+  return { map: score ? { ...map, score } : map, timing };
 }

@@ -12,7 +12,8 @@ import type { SheetBar, SheetLayout, SheetMap } from './types';
  * Version of the analysis (bar detection and alignment). Raise it when either improves: maps made
  * by an older version are redone unless the learner corrected them.
  */
-export const ANALYSER_VERSION = 1;
+// 2 (P5-18): the map also keeps how the sheet writes the song (`SheetMap.score`).
+export const ANALYSER_VERSION = 2;
 
 /**
  * Note heads each measure should show: the notes that start in it and the notes held into it from

@@ -348,3 +348,51 @@ describe('song → MusicXML', () => {
     expect(linked.notes).toHaveLength(2000);
   });
 });
+
+describe('song → MusicXML with the hints of a sheet-music PDF (P5-18)', () => {
+  it('follows the staff, the spelling and the clefs the sheet writes', () => {
+    const song = pieceSong();
+    // The right hand's first note (B flat 4) written as A sharp on the lower staff, and the
+    // lower staff of bar 2 in the treble clef.
+    const first = song.notes.find((n) => n.pitch === 70 && n.startBeat === 0);
+    if (!first) throw new Error('no first note');
+    const plain = parse(songToMusicXml(song).xml);
+    const { xml } = songToMusicXml(song, {
+      notes: { [first.id]: { staff: 2, step: 'A', alter: 1 } },
+      clefs: { 1: { 2: 'G' } },
+    });
+    const read = parse(xml);
+    // The same music: every note at its pitch and time.
+    expect(read.notes.map((n) => [n.pitch, n.startBeat])).toEqual(
+      plain.notes.map((n) => [n.pitch, n.startBeat]),
+    );
+    const doc = domParser.parseFromString(xml, 'application/xml');
+    const notes = [...doc.getElementsByTagName('note')];
+    const aSharp = notes.find(
+      (n) =>
+        n.getElementsByTagName('step')[0]?.textContent === 'A' &&
+        n.getElementsByTagName('alter')[0]?.textContent === '1',
+    );
+    expect(aSharp?.getElementsByTagName('staff')[0]?.textContent).toBe('2');
+    expect(aSharp?.getElementsByTagName('octave')[0]?.textContent).toBe('4');
+    const bar2 = doc.getElementsByTagName('measure')[1];
+    const clefs = [...(bar2?.getElementsByTagName('clef') ?? [])];
+    expect(
+      clefs.map((c) => [c.getAttribute('number'), c.getElementsByTagName('sign')[0]?.textContent]),
+    ).toContainEqual(['2', 'G']);
+  });
+
+  it('ignores a spelling that cannot be the note', () => {
+    const song = pieceSong();
+    const first = song.notes[0];
+    if (!first) throw new Error('no notes');
+    const { xml } = songToMusicXml(song, {
+      notes: { [first.id]: { step: 'C', alter: 0 } },
+      clefs: {},
+    });
+    expect(parse(xml).notes.map((n) => n.pitch)).toEqual(
+      parse(songToMusicXml(song).xml).notes.map((n) => n.pitch),
+    );
+    expect(xml).toBe(songToMusicXml(song).xml);
+  });
+});

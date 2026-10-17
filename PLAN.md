@@ -486,6 +486,15 @@ images, sounds or fonts, and credit the inspiration in [CREDITS.md](CREDITS.md).
       the learner's PDF when the piece has one, otherwise the engraved pages. A saved "Page" choice
       opens Sheet. A piece with both notation and a PDF can no longer show the engraved pages.
 
+- [~] **P5-18** (APP) The Score tab of a MIDI piece follows the learner's PDF: its staves, clefs and
+  spelling (maintainer, 2026-10-11: Score tab only, no note highlight in the PDF). Done: reading
+  which printed head draws each note (spike: 99.1 % of notes, all 9 clef changes and 99.4 % of
+  spellings on the maintainer's MuseScore pair, local only; tests on scores engraved by Verovio in
+  four music fonts), hints kept with the bar map (`SheetMap.score`, analyser version 2, so older
+  unedited maps are read again once), and `songToMusicXml` following them. Left: the maintainer's
+  pair again for a real check of the whole path; octave signs (the writer has none) and clef
+  changes inside a bar; scans.
+
 Left out on purpose: 128 General MIDI instruments (a piano trainer, and extra sample licences and
 size), Sightread's song library and assets, and any analytics.
 
@@ -609,6 +618,9 @@ Record the outcome as an ADR in `docs/adr/` and tick it here.
 - [x] Engine exposes a plain C ABI instead of wasm-bindgen glue — ADR 0002.
 
 ## Changelog
+
+- **2026-10-17** — P5-18: a MIDI piece's Score tab follows the staves, clefs and spelling of the
+  learner's PDF.
 
 - **2026-10-17** — P6-12 (code): MIDI out and Bluetooth MIDI pairing in the iPad app; not yet run
   on an iPad.

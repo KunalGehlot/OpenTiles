@@ -3,7 +3,14 @@
 // the staves, clefs, octave signs and spellings the score was written with. The score is made up
 // in notation-score.ts (CC0).
 import { describe, expect, it } from 'vitest';
-import { alignSong, detectPage, layoutFromPages, printedHeads, readNotation } from '../src';
+import {
+  alignSong,
+  detectPage,
+  layoutFromPages,
+  printedHeads,
+  readNotation,
+  scoreHints,
+} from '../src';
 import type { PageResult } from '../src';
 import { engrave, svgPdf } from './engraved';
 import type { MusicFont } from './engraved';
@@ -72,3 +79,30 @@ describe.each<MusicFont>(['Leipzig', 'Bravura', 'Leland', 'Gootville'])(
     });
   },
 );
+
+describe('hints for engraving the song as the sheet writes it (P5-18)', () => {
+  it('give each note its printed staff and spelling, and each bar its clefs', async () => {
+    const { song, expected, barOfMeasure, reading } = await read('Leipzig');
+    const hints = scoreHints(reading, song, barOfMeasure);
+    expect(hints).not.toBeNull();
+    song.notes.forEach((note, i) => {
+      const e = expected[i] as Expected;
+      expect(hints?.notes[note.id], `note ${i}`).toEqual({
+        staff: e.staff,
+        step: e.written.step,
+        alter: e.written.alter ?? 0,
+      });
+    });
+    // The clefs each bar starts with; the octave sign over bars 6 and 7 is not a clef.
+    expect(Object.values(hints?.clefs ?? {}).map((c) => `${c[1]}/${c[2]}`)).toEqual([
+      'G/F',
+      'G/F',
+      'G/G',
+      'G/G',
+      'G/F',
+      'G/F',
+      'G/F',
+      'G/F',
+    ]);
+  });
+});

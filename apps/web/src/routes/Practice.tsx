@@ -176,7 +176,15 @@ export function Practice({
         source,
         // A MIDI file's score is written from the song (P5-13), which comes back with the refs of
         // its glyphs.
-        ...scoreFor(item.format, item.bytes, item.song, item.settings.transpose),
+        // A MIDI piece with the learner's PDF is engraved as the PDF writes it, unless the learner
+        // had to correct how its bars were found (P5-18).
+        ...scoreFor(
+          item.format,
+          item.bytes,
+          item.song,
+          item.settings.transpose,
+          item.sheet?.map && !item.sheet.map.edited ? item.sheet.map.score : undefined,
+        ),
         title: item.title,
         progressKey: `library:${id}`,
         sheet:

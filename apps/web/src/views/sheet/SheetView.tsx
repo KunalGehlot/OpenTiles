@@ -65,8 +65,10 @@ export function SheetView({ session, song, itemId, sheet }: Props) {
       let next: SheetMap;
       if (need === 'none' && current.map) next = current.map;
       else if (need === 'align' && current.map) {
+        // The hints name the old song's notes, so they go with it.
+        const { score: _stale, ...kept } = current.map;
         next = {
-          ...current.map,
+          ...kept,
           barOfMeasure: alignSong(current.map.layout, song).barOfMeasure,
         };
         await saveSheetMap(itemId, sheet, next);

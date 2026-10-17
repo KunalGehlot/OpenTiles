@@ -158,3 +158,12 @@ all processing stays on the device; library items have no way out except the enc
 - **Converting on a server:** breaks the rule that music never leaves the device unencrypted.
 - **Rasterising the PDF on import and keeping images:** larger, blurry when zoomed, and loses the
   vector drawing the bar detection relies on.
+
+## Amendment (2026-10-17, P5-18)
+
+The PDF is now also read for how it writes the notes, not for which notes there are: for a MIDI
+piece with a vector PDF the analysis matches the printed heads to the song's notes and keeps each
+note's staff and spelling and each bar's clefs with the bar map (`SheetMap.score`), so the Score
+tab can engrave the piece the way the learner's edition writes it. The maintainer chose this for
+the Score tab only (no highlighting of single notes in the PDF). The notes still come from the MIDI
+file. Scans and maps the learner corrected keep the writer's own choices.

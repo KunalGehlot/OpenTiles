@@ -1,6 +1,8 @@
 // The shared shape of a sheet-music PDF's layout and of its link to a song (ADR 0018). The PDF is
-// only drawn, never read for notes: the notes come from the MIDI (or other score) file beside it,
-// and these types say where on the pages each of the song's measures is written.
+// drawn, and its notes are never taken from it: the notes come from the MIDI (or other score) file
+// beside it. These types say where on the pages each of the song's measures is written, and
+// (P5-18) how the PDF writes them, for engraving the song the same way.
+import type { ScoreHints } from '@opentiles/song-model';
 
 /** A rectangle on a PDF page, in PDF points (1/72 inch), origin at the page's top-left corner. */
 export interface SheetRect {
@@ -69,4 +71,10 @@ export interface SheetMap {
   edited: boolean;
   /** Version of the analysis that made the map, so unedited maps can be redone when it improves. */
   analyser: number;
+  /**
+   * How the sheet writes the song (P5-18): each note's staff and spelling and each bar's clefs,
+   * read from the printed heads of a vector PDF. Absent for scans and for maps of older analysers;
+   * not used once the learner has corrected the map.
+   */
+  score?: ScoreHints;
 }
