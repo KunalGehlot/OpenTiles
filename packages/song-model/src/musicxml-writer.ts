@@ -5,6 +5,8 @@
 // views link glyphs to notes exactly as they do for a MusicXML file (ADR 0009). What the writer
 // decides is only how to show it: staves and clefs, spelling and accidentals, voices, ties at
 // barlines and beats, rests, beams and triplets.
+import { sustainMarks } from './pedals';
+import type { PedalMark } from './pedals';
 import type { KeySignatureEvent, Measure, Song, SongNote, TimeSignatureEvent } from './types';
 
 /**
@@ -743,6 +745,11 @@ export function songToMusicXml(song: Song, hints?: ScoreHints): WrittenScore {
   let lastKey = '';
   const lastClef: (Clef | undefined)[] = [undefined, undefined];
   let tempoIndex = 0;
+  const pedalMarks = sustainMarks(song.pedals ?? []).map((m) => ({
+    div: toDivs(m.beat),
+    mark: m.mark,
+  }));
+  let markIndex = 0;
 
   measures.forEach((m, b) => {
     const bar = bars[b] as { start: number; end: number };
@@ -798,6 +805,18 @@ export function songToMusicXml(song: Song, hints?: ScoreHints): WrittenScore {
       tempoIndex += 1;
     }
 
+    // The sustain pedal is marked under the lower staff, before the note or rest of its main
+    // voice that sounds when the pedal moves, with the distance into it as an offset.
+    const marks: { div: number; mark: PedalMark }[] = [];
+    while (
+      markIndex < pedalMarks.length &&
+      (pedalMarks[markIndex] as { div: number }).div < bar.end
+    ) {
+      const m = pedalMarks[markIndex] as { div: number; mark: PedalMark };
+      marks.push({ div: Math.max(0, m.div - bar.start), mark: m.mark });
+      markIndex += 1;
+    }
+
     let noteIndex = 0;
     const written: string[] = [];
     for (const staff of [1, 2] as const) {
@@ -825,6 +844,12 @@ export function songToMusicXml(song: Song, hints?: ScoreHints): WrittenScore {
               written.push(`<sound tempo="${round(t.bpm)}"/>`);
             }
           }
+          if (staff === 2 && v === main) {
+            while (marks.length && (marks[0] as { div: number }).div < p.start + p.divs) {
+              const m = marks.shift() as { div: number; mark: PedalMark };
+              written.push(pedalXml(m.mark, Math.max(0, m.div - p.start)));
+            }
+          }
           const ids = p.segments.map((_, i) => `p0-m${b}-n${noteIndex + i}`);
           p.segments.forEach((s, i) => refs[s.note]?.push(ids[i] as string));
           noteIndex += Math.max(1, p.segments.length);
@@ -836,6 +861,7 @@ export function songToMusicXml(song: Song, hints?: ScoreHints): WrittenScore {
     }
     out.push(...written);
     for (const t of tempoChanges) out.push(`<sound tempo="${round(t.bpm)}"/>`);
+    for (const m of marks) out.push(pedalXml(m.mark, 0));
     if (b === measures.length - 1) {
       out.push('<barline location="right"><bar-style>light-heavy</bar-style></barline>');
     }
@@ -850,6 +876,15 @@ export function songToMusicXml(song: Song, hints?: ScoreHints): WrittenScore {
 }
 
 const round = (x: number) => Math.round(x * 1000) / 1000;
+
+/** A sustain pedal mark under the lower staff, `offset` divisions into the next note or rest. */
+function pedalXml(mark: PedalMark, offset: number): string {
+  return (
+    `<direction placement="below"><direction-type><pedal type="${mark}" line="no" sign="yes"/></direction-type>` +
+    `${offset > 0 ? `<offset>${offset}</offset>` : ''}<staff>2</staff>` +
+    `<sound damper-pedal="${mark === 'stop' ? 'no' : 'yes'}"/></direction>`
+  );
+}
 
 /** The first tempo as a metronome mark: a dotted quarter in compound time. */
 function tempoMark(bpm: number, metre: Metre): string {

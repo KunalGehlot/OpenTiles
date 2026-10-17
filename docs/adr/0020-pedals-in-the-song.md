@@ -48,7 +48,10 @@ not been told about yet.
 - Pieces played on a keyboard sound as their files say, pedal included; on this device, notes ring
   for as long as the pedal holds them.
 - The soft pedal reaches MIDI keyboards only; the sampler ignores it for now (P6-11 may use it).
-- The score views do not engrave pedal marks yet: `songToMusicXml` does not write them.
+- The score written for a MIDI piece (`songToMusicXml`) marks the sustain pedal under the lower
+  staff: "Ped." where it goes down, the release star where it comes up, and one change mark where
+  it is lifted and pressed again within an eighth of a beat (`sustainMarks`). The soft and
+  sostenuto pedals are not marked.
 - A song read with an older importer differs from a fresh one only in having no `pedals`, which
   the one-time read fills in.
 
