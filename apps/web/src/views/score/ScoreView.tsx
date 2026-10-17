@@ -6,7 +6,8 @@ import type { PracticeSession } from '../session';
 import type { NotationSource } from './notation';
 import { ScoreController } from './score-controller';
 import type { PageInfo, ScoreLayout } from './score-controller';
-import { createToolkit } from './verovio';
+import { openEngraver } from './engraver';
+import type { Engraver } from './engraver';
 import { pageTurn } from '../../settings/pedal';
 import { appSettings } from '../../settings/store';
 import { t } from '../../i18n';
@@ -70,14 +71,13 @@ export function ScoreView({
       );
     });
     setState('loading');
-    createToolkit(notation, {})
-      .then((tk) => {
-        if (cancelled) {
-          tk.destroy();
-          return;
-        }
-        controller = new ScoreController(
-          tk,
+    let engraver: Engraver | null = null;
+    openEngraver(notation)
+      .then((opened) => {
+        engraver = opened;
+        if (cancelled) return null;
+        return ScoreController.create(
+          opened,
           song,
           session,
           layout,
@@ -87,6 +87,14 @@ export function ScoreView({
           suggested,
           notation.generated,
         );
+      })
+      .then((made) => {
+        if (!made) return;
+        if (cancelled) {
+          made.destroy();
+          return;
+        }
+        controller = made;
         controllerRef.current = controller;
         controller.onPage = setPage;
         setPage({ page: controller.page, pageCount: controller.pageCount });
@@ -100,6 +108,7 @@ export function ScoreView({
         raf = requestAnimationFrame(loop);
       })
       .catch(() => {
+        engraver?.close();
         if (cancelled) return;
         setState({
           error: t(
@@ -112,7 +121,9 @@ export function ScoreView({
       cancelAnimationFrame(raf);
       window.clearTimeout(resizeTimer);
       ro.disconnect();
-      controller?.destroy();
+      // The controller closes the engraver; one still opening or laying out is closed here.
+      if (controller) controller.destroy();
+      else engraver?.close();
       controllerRef.current = null;
     };
   }, [session, song, suggested, notation, layout]);

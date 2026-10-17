@@ -58,9 +58,9 @@ hardest bars after a run. Constraints:
 
 - First visits download about 8 MB more (about 2.4 MB gzipped) for offline use. If that becomes a
   problem, the chunk can move to a runtime cache filled the first time a score view opens.
-- Engraving runs on the main thread when a score view opens (and again when the page view is
-  resized). Very long scores may need a worker that returns SVG strings; measuring stays in the
-  DOM.
+- Engraving runs in a worker of its own since P5-13 (2026-10-17): the page asks it to lay the
+  score out, gets every page as an SVG string and the note-to-glyph links, and only measures in the
+  DOM. Before, a long piece held the page for up to 0.6 s on a fast Mac when its score opened.
 - Scores whose bars Verovio and the song model count differently fall back to the unrolled onset;
   notes that still do not match are simply not coloured.
 - The view choice is stored per device (`settings.practiceView`). (Since P5-17 the page view has no
