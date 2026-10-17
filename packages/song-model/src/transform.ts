@@ -9,6 +9,29 @@ function withNotes(song: Song, notes: SongNote[]): Song {
   return { ...song, notes: sorted.map((n, i) => ({ ...n, id: `n${i}` })) };
 }
 
+/**
+ * Fifths a key moves by when the music goes up 1 to 11 semitones, by the interval the score views'
+ * engraver (Verovio) uses for it: m2, M2, m3, M3, P4, A4, P5, m6, M6, m7, M7.
+ */
+const FIFTHS_PER_SEMITONES = [0, -5, 2, -3, 4, -1, 6, 1, -4, 3, -2, 5];
+
+/**
+ * The key a signature of `fifths` becomes when the music moves `semitones`, chosen as Verovio
+ * chooses it when it engraves the moved score, so the song's key (the falling notes' "as the key"
+ * names) and the score agree (P5-04): by the interval above, then kept within six sharps or flats
+ * (seven for a key already in seven), a key of six going over to the other side. Octaves keep the
+ * key. Checked against Verovio for every key and shift up to an octave (apps/web test).
+ */
+export function transposeKey(fifths: number, semitones: number): number {
+  const shift = Math.round(semitones) % 12;
+  if (shift === 0) return fifths;
+  const moved = fifths + Math.sign(shift) * (FIFTHS_PER_SEMITONES[Math.abs(shift)] ?? 0);
+  const limit = Math.abs(fifths) >= 7 ? 7 : 6;
+  if (moved >= limit) return moved - 12;
+  if (moved <= -limit) return moved + 12;
+  return moved;
+}
+
 /** Shifts every note by `semitones`, keeping notes on the piano keyboard (A0–C8). */
 export function transpose(song: Song, semitones: number): Song {
   const shift = Math.round(semitones);
@@ -16,13 +39,10 @@ export function transpose(song: Song, semitones: number): Song {
   const notes = song.notes
     .map((n) => ({ ...n, pitch: n.pitch + shift }))
     .filter((n) => n.pitch >= 21 && n.pitch <= 108);
-  const keySignatures = song.keySignatures.map((k) => {
-    // Move the key by the interval's equivalent on the circle of fifths, spelled within ±6.
-    let fifths = (k.fifths + shift * 7) % 12;
-    if (fifths > 6) fifths -= 12;
-    if (fifths < -6) fifths += 12;
-    return { ...k, fifths };
-  });
+  const keySignatures = song.keySignatures.map((k) => ({
+    ...k,
+    fifths: transposeKey(k.fifths, shift),
+  }));
   return { ...withNotes(song, notes), keySignatures };
 }
 
