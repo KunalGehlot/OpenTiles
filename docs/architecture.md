@@ -341,12 +341,34 @@ device. Build steps, App Store and privacy-manifest notes:
   localhost, asks to install a site permission add-on; `describeMidiError` explains both. A MIDI
   timestamp more than a second from now is treated as "now", so a browser stamping events on another
   clock cannot push notes into the past.
-- **Out and echo** (Settings → MIDI keyboard, P4-19). `PracticeSession` plays through one `Instrument`;
-  `playbackInstrument()` makes it this device's piano, a `MidiOutInstrument` (the keyboard's own
-  sound, notes scheduled on the performance clock from audio-clock times) or both (`SplitInstrument`).
-  Stopping calls `silence()`, which clears scheduled MIDI and sends all notes off. With "Play my MIDI
-  keys on this device", `PracticeSession.midiEcho` sounds each MIDI note on this device until its key is
-  released. The metronome always stays on this device. The iPad app has no MIDI out yet.
+- **Out and echo** (P4-19; "Plays on", P6-01; ADR 0019). `PracticeSession` plays through one
+  `Instrument`; `playbackInstrument()` makes it this device's piano, a `MidiOutInstrument` (the
+  keyboard's own sound, notes scheduled on the performance clock from audio-clock times) or both
+  (`SplitInstrument`). The learner chooses with "Plays on" in the practice session bar or in
+  Settings → MIDI keyboard. `playsOn()` (`audio/plays-on.ts`) works out where the notes really go:
+  when the keyboard was chosen but MIDI is not connected, no keyboard is plugged in, it has no
+  output, or several outputs leave the choice open, the notes play on this device and the screen
+  says why; the button shows a warning. A new output moves the notes to it by itself. With "Play my
+  MIDI keys on this device", `PracticeSession.midiEcho` sounds each MIDI note on this device until
+  its key is released. The metronome and count-in always stay on this device. The iPad app has no
+  MIDI out yet (P6-12).
+- **Stopping cleanly** (P6-02). The practice screen keeps one `MidiOutInstrument` per output, which
+  remembers every note it sent that may still sound or is stamped to start. `silence()` calls
+  `clear()` where the browser has it, sends a note-off for each of those notes, then the sustain
+  pedal up (CC 64 = 0) and All Notes Off (CC 123), so keyboards that ignore CC 123 stop too. It runs
+  on Stop, a seek, a change of mode or hands, leaving practice, `pagehide`, and when the tab is
+  hidden (a hidden tab draws no frames, so the run ends there). A note sent to an unplugged output
+  is dropped instead of throwing in the drawing loop.
+- **`MIDIOutput.clear()`** (checked 2026-10-17 on a Mac with a virtual CoreMIDI destination): Chrome
+  and Edge have no `clear()`; Firefox has it. Chrome and Edge hold stamped messages and send each
+  when it is due, so a note stamped up to the look-ahead (`SCHEDULE_AHEAD`, 0.3 s) before Stop can
+  still start after it, followed by its own note-off; one started 58 ms after leaving the page.
+  Nothing was left sounding 50 ms after Stop or `pagehide` in any of the three browsers. P6-03
+  shortens the MIDI look-ahead where `clear()` is missing.
+- **"MIDI thru" keyboards** send what they receive back to the app. Settings' test note listens
+  200 ms for its own copy and remembers such outputs (`settings.midi.thru`); practice then ignores
+  input that matches a note it sent less than 50 ms before (`SentNotes`), so play-along does not
+  score the app's accompaniment as the learner's notes.
 
 ## Languages
 

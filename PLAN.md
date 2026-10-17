@@ -505,14 +505,24 @@ without a word when no MIDI output is found.
 
 - [x] **P6-00** (GOV) The plan ([docs/phase-6/player.md](docs/phase-6/player.md)) and ADR 0019
       (proposed).
-- [ ] **P6-01** (APP) A "Plays on" control (this device, my keyboard, both) in the practice session
+- [x] **P6-01** (APP) A "Plays on" control (this device, my keyboard, both) in the practice session
       bar; no silent fallback to the device (say so, offer Connect, move to the keyboard when it
       appears); choosing the keyboard connects MIDI; a USB audio tip where there is no Web MIDI.
-      Quick win, ship first.
-- [ ] **P6-02** (APP) Clean MIDI out: output-only access from the shared `midiAccess()`; on stop,
-      seek, mode change, leaving and `pagehide` send note-offs, pedal up and All Notes Off; check
-      `MIDIOutput.clear()` in Chrome, Edge and Firefox; handle an unplugged keyboard; ignore notes a
-      keyboard echoes back.
+      Done: "Plays on" next to Restart (Options no longer has the select; Settings keeps it). When
+      the keyboard is chosen but cannot be used (not connected, none plugged in, no output, several
+      outputs to choose from), the notes play on this device, the button shows a warning and a line
+      says why, with Connect where that helps; a new output takes the notes over by itself. Where
+      there is no Web MIDI it offers this device only, with the USB audio tip on iPad and iPhone.
+- [~] **P6-02** (APP) Clean MIDI out: output-only access from the shared `midiAccess()`; on stop,
+  seek, mode change, leaving and `pagehide` send note-offs, pedal up and All Notes Off; check
+  `MIDIOutput.clear()` in Chrome, Edge and Firefox; handle an unplugged keyboard; ignore notes a
+  keyboard echoes back. Done: the instrument remembers what it sent, and stopping (also on
+  leaving, `pagehide` and a hidden tab) ends every note, lifts the pedal and sends All Notes Off;
+  sending to an unplugged output no longer throws in the drawing loop; Settings' test note finds
+  "MIDI thru" keyboards and practice ignores their copies. `clear()` checked with a virtual
+  destination: missing in Chrome and Edge, present in Firefox; nothing left sounding 50 ms after
+  Stop in any of them (notes in `docs/architecture.md`). Left: output-only access moves to P6-05,
+  which is the first to need it; the shorter MIDI look-ahead where `clear()` is missing to P6-03.
 - [ ] **P6-03** (PRAC, APP) One playback scheduler in `packages/practice` (notes and pedal as timed
       events, seek, tempo change), used by Listen, play-along's accompaniment and the Player.
 - [ ] **P6-04** (STORE, APP) All the music in one fast list: file and PDF bytes in their own table
@@ -564,6 +574,9 @@ Record the outcome as an ADR in `docs/adr/` and tick it here.
 - [x] Engine exposes a plain C ABI instead of wasm-bindgen glue — ADR 0002.
 
 ## Changelog
+
+- **2026-10-17** — P6-01 and P6-02: "Plays on" in the practice session bar, no silent fallback to
+  this device, and a complete stop on a MIDI keyboard (note-offs, pedal up, All Notes Off).
 
 - **2026-10-17** — Phase 6 started: the maintainer accepted the recommended answers to the plan's
   open questions Q1–Q8 (ADR 0019). P2-17 and P5-11 no longer say that gehlot.site holds the postal
