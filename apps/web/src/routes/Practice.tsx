@@ -509,9 +509,14 @@ function PracticeView({
   }, [midiInput, midiDevices, midiOutputs, midiEcho, midiPlayback, midiOutput, thru]);
 
   const toggle = async () => {
+    // Stopping needs no sound, so it never waits for the browser to start audio (which can take
+    // up to two seconds where it never starts): the keyboard and the screen stop at once.
+    if (session.playing) {
+      session.stop();
+      return;
+    }
     await ensureAudio();
-    if (session.playing) session.stop();
-    else session.start();
+    session.start();
   };
 
   const pitchAt = (e: React.PointerEvent) => {

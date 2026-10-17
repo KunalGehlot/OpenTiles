@@ -59,3 +59,14 @@ test('a listen run plays through without sound', async ({ page }) => {
   await page.getByRole('button', { name: 'Play', exact: true }).click();
   await expect.poll(() => scoreOffset(page), { timeout: 15_000 }).toBeGreaterThan(start + 40);
 });
+
+test('Stop acts at once, without waiting for sound to start', async ({ page }) => {
+  await page.goto('./#/practice/catalogue/ode-to-joy');
+  await page.getByRole('button', { name: 'Listen', exact: true }).click();
+  await page.getByRole('button', { name: 'Play', exact: true }).click();
+  await page.getByRole('button', { name: 'Stop', exact: true }).click();
+  // unlockAudio() gives up after 2 s; Stop must not wait for it.
+  await expect(page.getByRole('button', { name: 'Play', exact: true })).toBeVisible({
+    timeout: 1000,
+  });
+});
