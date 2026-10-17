@@ -521,10 +521,15 @@ without a word when no MIDI output is found.
   sending to an unplugged output no longer throws in the drawing loop; Settings' test note finds
   "MIDI thru" keyboards and practice ignores their copies. `clear()` checked with a virtual
   destination: missing in Chrome and Edge, present in Firefox; nothing left sounding 50 ms after
-  Stop in any of them (notes in `docs/architecture.md`). Left: output-only access moves to P6-05,
-  which is the first to need it; the shorter MIDI look-ahead where `clear()` is missing to P6-03.
-- [ ] **P6-03** (PRAC, APP) One playback scheduler in `packages/practice` (notes and pedal as timed
+  Stop in any of them (notes in `docs/architecture.md`); where it is missing, MIDI notes are
+  handed over at most 0.1 s ahead (with P6-03). Left: output-only access moves to P6-05, which is
+  the first to need it.
+- [x] **P6-03** (PRAC, APP) One playback scheduler in `packages/practice` (notes and pedal as timed
       events, seek, tempo change), used by Listen, play-along's accompaniment and the Player.
+      Done: `buildPlayback` and `PlaybackCursor` (`packages/practice/src/playback.ts`), timed in
+      song seconds and mapped onto the caller's clock; the practice session uses them for Listen
+      and the other hand, with the look-ahead its instrument asks for. Pedal events are in the
+      event type and the cursor; P6-10 fills them from the files.
 - [ ] **P6-04** (STORE, APP) All the music in one fast list: file and PDF bytes in their own table
       (Dexie version 2, the P5-15 leftover), durations, and a collection of catalogue plus library.
 - [ ] **P6-05** (APP) The Player transport: a singleton with a worker clock that keeps playing in a
@@ -574,6 +579,10 @@ Record the outcome as an ADR in `docs/adr/` and tick it here.
 - [x] Engine exposes a plain C ABI instead of wasm-bindgen glue — ADR 0002.
 
 ## Changelog
+
+- **2026-10-17** — P6-03: one playback scheduler in `packages/practice` for Listen, the other hand
+  and the coming Player; MIDI notes are handed over at most 0.1 s ahead where the browser cannot
+  drop stamped notes on Stop (Chrome, Edge).
 
 - **2026-10-17** — P6-01 and P6-02: "Plays on" in the practice session bar, no silent fallback to
   this device, and a complete stop on a MIDI keyboard (note-offs, pedal up, All Notes Off).

@@ -17,6 +17,11 @@ export interface Instrument {
   click(when: number, accent?: boolean): void;
   /** Stops every note at once, including ones scheduled ahead (a MIDI keyboard needs this). */
   silence?(): void;
+  /**
+   * The most, in seconds, that notes should be handed to it ahead of time. A MIDI output that
+   * cannot drop stamped notes asks for little, so few notes still start after Stop (P6-02).
+   */
+  readonly lookAhead?: number;
 }
 
 /**

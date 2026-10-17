@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
+  MIDI_LOOK_AHEAD_WITHOUT_CLEAR,
   MidiOutInstrument,
   playbackInstrument,
   SentNotes,
@@ -107,6 +108,16 @@ describe('MIDI out', () => {
       [0xb0, 64, 0],
       [0xb0, 123, 0],
     ]);
+  });
+
+  it('asks for a short look-ahead only where the output cannot drop stamped notes', () => {
+    const withClear = new MidiOutInstrument(sink(), () => 0);
+    const without = new MidiOutInstrument({ send: () => {} }, () => 0);
+    expect(withClear.lookAhead).toBeUndefined();
+    expect(without.lookAhead).toBe(MIDI_LOOK_AHEAD_WITHOUT_CLEAR);
+    const device = fakeInstrument().inst;
+    expect(new SplitInstrument(device, without).lookAhead).toBe(MIDI_LOOK_AHEAD_WITHOUT_CLEAR);
+    expect(new SplitInstrument(device, withClear).lookAhead).toBeUndefined();
   });
 
   it('knows the copies a MIDI thru keyboard sends back', () => {

@@ -18,6 +18,12 @@ const ALL_NOTES_OFF = 123;
 export const ECHO_WINDOW = 0.05;
 
 /**
+ * Look-ahead for an output without clear() (Chrome and Edge, checked 2026-10-17): every note
+ * stamped ahead still starts after Stop, so hand them over at most this early.
+ */
+export const MIDI_LOOK_AHEAD_WITHOUT_CLEAR = 0.1;
+
+/**
  * Notes the app sent to a keyboard that sends everything it receives back ("MIDI thru"), so the
  * input can tell those copies from the learner's own keys (P6-02). Without this, play-along would
  * score the app's own accompaniment as the learner's notes. Times are on the audio clock.
@@ -112,6 +118,10 @@ export class MidiOutInstrument implements Instrument {
     // Clicks stay on this device.
   }
 
+  get lookAhead(): number | undefined {
+    return this.sink.clear ? undefined : MIDI_LOOK_AHEAD_WITHOUT_CLEAR;
+  }
+
   /** Pitches that may still sound, or are stamped to start, on the keyboard. */
   get soundingPitches(): number[] {
     this.forgetEnded();
@@ -154,6 +164,11 @@ export class SplitInstrument implements Instrument {
 
   get volume(): number {
     return (this.device ?? this.keyboard)?.volume ?? 1;
+  }
+
+  get lookAhead(): number | undefined {
+    const asked = this.parts.flatMap((p) => (p.lookAhead === undefined ? [] : [p.lookAhead]));
+    return asked.length ? Math.min(...asked) : undefined;
   }
 
   set volume(v: number) {

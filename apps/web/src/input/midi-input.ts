@@ -233,7 +233,11 @@ export class MidiInput implements MidiKeyboardInput {
           // device as soon as it reports the change. Throwing here would stop the drawing loop.
         }
       },
-      clear: () => (port as MIDIOutput & { clear?: () => void }).clear?.(),
+      // Only where the browser has it (Firefox; not Chrome or Edge): without it the session
+      // schedules MIDI notes less far ahead.
+      ...(typeof (port as MIDIOutput & { clear?: unknown }).clear === 'function'
+        ? { clear: () => (port as MIDIOutput & { clear: () => void }).clear() }
+        : {}),
     };
   }
 
