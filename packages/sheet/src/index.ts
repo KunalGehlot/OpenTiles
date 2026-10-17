@@ -25,3 +25,14 @@ export {
 } from './align';
 export type { Alignment, Candidate, SongAlignment } from './align';
 export { addBarline, barAt, barlineAt, removeBarline, shiftFrom } from './edit';
+export { frameOf, printedHeads, readNotation, spellingAt, topOf } from './notes';
+export { scoreHints } from './hints';
+export type {
+  BarFrame,
+  Clef,
+  Frame,
+  NotationReading,
+  NoteReading,
+  PrintedHead,
+  Spelling,
+} from './notes';

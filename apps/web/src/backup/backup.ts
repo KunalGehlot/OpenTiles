@@ -143,7 +143,11 @@ function asSheetMap(v: unknown): SheetMap | undefined {
     );
   if (!pagesOk || !barsOk || !linksOk || typeof source !== 'string') return undefined;
   if (typeof v.edited !== 'boolean' || !isFiniteNumber(v.analyser)) return undefined;
-  return v as unknown as SheetMap;
+  // How the sheet writes the song (P5-18) is only a hint for engraving: a damaged one is dropped,
+  // the map kept. The writer takes only staff 1 or 2, real spellings and G or F clefs anyway.
+  const { score, ...map } = v;
+  const scoreOk = isRecord(score) && isRecord(score.notes) && isRecord(score.clefs);
+  return (scoreOk ? { ...map, score } : map) as unknown as SheetMap;
 }
 
 /**

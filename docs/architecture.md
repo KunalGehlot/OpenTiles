@@ -271,6 +271,17 @@ background, and saved on the item; "Adjust bars" corrects it, and a corrected ma
 sheet-only piece (`format: 'pdf'`) opens as a reader. `SheetController` draws the pages lazily,
 moves the highlight and cursor from `requestAnimationFrame` and scrolls to keep the bar in view.
 
+**The Score tab follows the PDF** (P5-18). For a MIDI piece with a vector PDF, the analysis also
+reads which printed head draws each note (`readNotation`: heads matched to notes bar by bar, the
+clef and octave sign of each staff learnt through the piece) and keeps, with the map, each note's
+staff and spelling and each bar's clefs (`scoreHints` → `SheetMap.score`). `songToMusicXml` takes
+them, so the engraved score puts notes on the staff and with the letter the edition uses, and
+changes clef where it does. Only for a grand staff (two staves a system); not for scans, and not
+once the learner has corrected the map. The PDF's notes are never taken: the notes stay the MIDI
+file's. The practice screen reads the PDF in the background whichever view is open
+(`ensureSheetMap`, one reading shared with the Sheet view) and engraves the Score tab again when it
+is done, if nothing has been played yet on that visit (a new score restarts the run).
+
 ## Storage
 
 - **Private library:** IndexedDB via Dexie — original file bytes, the parsed `Song`, practice

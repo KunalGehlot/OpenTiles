@@ -7,6 +7,17 @@
 // barlines and beats, rests, beams and triplets.
 import type { KeySignatureEvent, Measure, Song, SongNote, TimeSignatureEvent } from './types';
 
+/**
+ * How a learner's sheet music writes the song (P5-18): read from the printed heads of its PDF, so
+ * the engraved score can follow it. Anything missing is decided as usual.
+ */
+export interface ScoreHints {
+  /** By note id: the staff it is printed on (1 upper, 2 lower) and the letter and accidental. */
+  notes: Record<string, { staff?: 1 | 2; step?: string; alter?: number }>;
+  /** By bar (index into `song.measures`): the clef each staff starts the bar with. */
+  clefs: Record<number, { 1?: 'G' | 'F'; 2?: 'G' | 'F' }>;
+}
+
 export interface WrittenScore {
   /** MusicXML 4.0, partwise: one piano part on two staves. */
   xml: string;
@@ -63,6 +74,18 @@ export function spellPitch(pitch: number, fifths: number, minor = false): Spelli
   const alter = Math.floor((p + 1) / 7);
   const octave = Math.floor((pitch - (LETTER_SEMITONES[step] ?? 0) - alter) / 12) - 1;
   return { step, alter, octave };
+}
+
+/**
+ * A pitch written with a given letter and accidental, in the octave that makes it sound right;
+ * null when that letter and accidental cannot spell the pitch.
+ */
+function spellAs(pitch: number, step: string, alter: number): Spelling | null {
+  const semitone = LETTER_SEMITONES[step];
+  if (semitone === undefined || !Number.isInteger(alter) || Math.abs(alter) > 2) return null;
+  const rest = pitch - semitone - alter;
+  if (rest % 12 !== 0) return null;
+  return { step, alter, octave: rest / 12 - 1 };
 }
 
 /** The alteration the key signature gives a letter. */
@@ -619,7 +642,7 @@ function minorKeys(song: Song, keys: readonly KeySignatureEvent[]): boolean[] {
  * MIDI file, or its first track), the lower staff the rest. Bars follow `song.measures` one to one,
  * so bar `i` of the score is `song.measures[i]`.
  */
-export function songToMusicXml(song: Song): WrittenScore {
+export function songToMusicXml(song: Song, hints?: ScoreHints): WrittenScore {
   const measures: Measure[] =
     song.measures.length > 0
       ? song.measures
@@ -660,14 +683,21 @@ export function songToMusicXml(song: Song): WrittenScore {
   });
 
   // Segments per bar and staff.
-  const staffOf = (n: SongNote) => (n.staff >= 2 ? 2 : 1);
+  // Hints may come from a backup or another device: only a staff of 1 or 2 is taken.
+  const staffOf = (n: SongNote) => {
+    const hinted = hints?.notes[n.id]?.staff;
+    return hinted === 1 || hinted === 2 ? hinted : n.staff >= 2 ? 2 : 1;
+  };
   const segments: Segment[][][] = bars.map(() => [[], []]);
   const spelled: Spelling[] = [];
   song.notes.forEach((n, i) => {
     const start = toDivs(n.startBeat);
     const end = Math.max(start + SHORTEST, toDivs(n.startBeat + n.durationBeats));
     const first = barOf(start);
-    spelled[i] = spellPitch(n.pitch, keyOfBar[first]?.fifths ?? 0, keyOfBar[first]?.minor ?? false);
+    const hint = hints?.notes[n.id];
+    spelled[i] =
+      (hint?.step !== undefined ? spellAs(n.pitch, hint.step, hint.alter ?? 0) : null) ??
+      spellPitch(n.pitch, keyOfBar[first]?.fifths ?? 0, keyOfBar[first]?.minor ?? false);
     for (let b = first; b < bars.length; b++) {
       const bar = bars[b] as { start: number; end: number };
       if (bar.start >= end) break;
@@ -741,7 +771,7 @@ export function songToMusicXml(song: Song): WrittenScore {
     }
     if (b === 0) attrs.push('<staves>2</staves>');
     for (const staff of [1, 2] as const) {
-      const clef = clefs[staff - 1]?.[b] ?? (staff === 1 ? 'G' : 'F');
+      const clef = hints?.clefs[b]?.[staff] ?? clefs[staff - 1]?.[b] ?? (staff === 1 ? 'G' : 'F');
       if (clef !== lastClef[staff - 1]) {
         attrs.push(clefXml(staff, clef));
         lastClef[staff - 1] = clef;

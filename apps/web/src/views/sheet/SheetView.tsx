@@ -4,22 +4,14 @@
 // lets the learner fix a map that is wrong.
 import { useEffect, useRef, useState } from 'react';
 import { SlidersHorizontal } from 'lucide-react';
-import {
-  addBarline,
-  alignSong,
-  barAt,
-  barlineAt,
-  needsAnalysis,
-  removeBarline,
-  shiftFrom,
-} from '@opentiles/sheet';
+import { addBarline, barAt, barlineAt, removeBarline, shiftFrom } from '@opentiles/sheet';
 import type { SheetMap } from '@opentiles/sheet';
 import { measureIndexAt } from '@opentiles/song-model';
 import type { Song } from '@opentiles/song-model';
-import { db } from '../../storage/db';
 import type { SheetAttachment } from '../../storage/db';
 import type { PracticeSession } from '../session';
 import { analyseSheet } from './analyse';
+import { ensureSheetMap } from './ensure-map';
 import type { SheetPoint } from './sheet-controller';
 import { SheetPager } from './SheetPager';
 import { clearSheetMap, saveSheetMap } from './sheet-store';
@@ -58,25 +50,15 @@ export function SheetView({ session, song, itemId, sheet }: Props) {
     if (!open) return;
     const abort = new AbortController();
     const run = async () => {
-      // The item may hold a newer map than the one this screen was opened with.
-      const stored = (await db.library.get(itemId))?.sheet;
-      const current = stored && stored.addedAt === sheet.addedAt ? stored : sheet;
-      const need = needsAnalysis(current.map, song.measures.length);
-      let next: SheetMap;
-      if (need === 'none' && current.map) next = current.map;
-      else if (need === 'align' && current.map) {
-        next = {
-          ...current.map,
-          barOfMeasure: alignSong(current.map.layout, song).barOfMeasure,
-        };
-        await saveSheetMap(itemId, sheet, next);
-      } else {
-        setMapState('finding');
-        const result = await analyseSheet(open.pdfjs, open.doc, song, abort.signal);
-        next = result.map;
-        setAnalysisMs(Math.round(result.timing.total));
-        await saveSheetMap(itemId, sheet, next);
-      }
+      const { map: next, timing } = await ensureSheetMap(
+        itemId,
+        sheet,
+        song,
+        // This view's document stays open for drawing.
+        () => Promise.resolve({ pdfjs: open.pdfjs, doc: open.doc, done: () => {} }),
+        { signal: abort.signal, onFinding: () => setMapState('finding') },
+      );
+      if (timing) setAnalysisMs(Math.round(timing.total));
       if (abort.signal.aborted) return;
       setMap(next);
       setMapState(next.layout.bars.length > 0 ? 'ready' : 'none-found');
