@@ -1,32 +1,25 @@
 // Bluetooth foot-pedal page turn (P2-15). Page-turn pedals pair as keyboards and send a key such
-// as Right arrow or Page Down; the user picks which in Settings. Views that turn pages call
-// `usePedalPageTurn` with what to do; the hook does nothing while the pedal is switched off.
-import { useEffect, useRef } from 'react';
+// as Right arrow or Page Down. Every page view (the engraved pages, the learner's sheet and the
+// sheet reader) turns with the usual keys, and with the keys chosen for a pedal in Settings while
+// it is switched on.
 import { pedalAction } from './model';
-import { appSettings } from './store';
+import type { PedalSettings } from './model';
 
-export function usePedalPageTurn(handlers: { onNext: () => void; onPrevious: () => void }): void {
-  const ref = useRef(handlers);
-  useEffect(() => {
-    ref.current = handlers;
-  });
-  useEffect(() => {
-    const onKey = (e: KeyboardEvent) => {
-      const target = e.target as HTMLElement | null;
-      const action = pedalAction(appSettings().pedal, {
-        key: e.key,
-        repeat: e.repeat,
-        altKey: e.altKey,
-        ctrlKey: e.ctrlKey,
-        metaKey: e.metaKey,
-        inTextField: Boolean(target?.closest?.('input, textarea, select, [contenteditable]')),
-      });
-      if (action === null) return;
-      e.preventDefault();
-      if (action === 'next') ref.current.onNext();
-      else ref.current.onPrevious();
-    };
-    window.addEventListener('keydown', onKey);
-    return () => window.removeEventListener('keydown', onKey);
-  }, []);
+/** What most page-turn pedals send, and the arrow keys. */
+const NEXT_KEYS = new Set(['PageDown', 'ArrowRight', 'Space']);
+const PREVIOUS_KEYS = new Set(['PageUp', 'ArrowLeft']);
+
+/**
+ * Which way a key press turns a page view: 1, -1, or 0 for none. The pedal's own keys come first
+ * (not when held down or with a modifier); then the usual ones, Space by its key code.
+ */
+export function pageTurn(
+  event: Pick<KeyboardEvent, 'key' | 'code' | 'repeat' | 'altKey' | 'ctrlKey' | 'metaKey'>,
+  pedal: PedalSettings,
+): 1 | -1 | 0 {
+  const action = pedalAction(pedal, event);
+  if (action) return action === 'next' ? 1 : -1;
+  if (event.altKey || event.ctrlKey || event.metaKey) return 0;
+  const key = event.code === 'Space' ? 'Space' : event.key;
+  return NEXT_KEYS.has(key) ? 1 : PREVIOUS_KEYS.has(key) ? -1 : 0;
 }

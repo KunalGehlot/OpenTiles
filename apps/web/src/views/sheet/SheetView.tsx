@@ -16,12 +16,10 @@ import type { SheetPoint } from './sheet-controller';
 import { SheetPager } from './SheetPager';
 import { clearSheetMap, saveSheetMap } from './sheet-store';
 import { useSheet } from './use-sheet';
+import { pageTurn } from '../../settings/pedal';
+import { appSettings } from '../../settings/store';
 import { t } from '../../i18n';
 import './sheet.css';
-
-/** Keys a Bluetooth page-turn pedal sends (P2-15), and the arrow keys. */
-const NEXT_KEYS = new Set(['PageDown', 'ArrowRight', 'Space']);
-const PREVIOUS_KEYS = new Set(['PageUp', 'ArrowLeft']);
 
 interface Props {
   session: PracticeSession;
@@ -154,7 +152,7 @@ export function SheetView({ session, song, itemId, sheet }: Props) {
       if (e.metaKey || e.ctrlKey || e.altKey || session.playing) return;
       const key = e.code === 'Space' ? 'Space' : e.key;
       if (key === 'Space' && (session.mode !== 'wait' || target?.closest('button'))) return;
-      const delta = NEXT_KEYS.has(key) ? 1 : PREVIOUS_KEYS.has(key) ? -1 : 0;
+      const delta = pageTurn(e, appSettings().pedal);
       if (delta === 0) return;
       e.preventDefault();
       controller?.turn(delta);

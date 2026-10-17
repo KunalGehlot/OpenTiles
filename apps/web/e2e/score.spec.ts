@@ -401,6 +401,27 @@ test('the engraved pages go back to the first page after a run', async ({ page }
     .toMatch(/Page 1 of/);
 });
 
+test('a foot pedal’s own key, chosen in Settings, turns the engraved pages (P2-15)', async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 700, height: 600 });
+  await page.goto('./#/settings');
+  await page.getByRole('checkbox', { name: 'Turn pages with a foot pedal' }).check();
+  await page.getByRole('combobox', { name: 'Next page' }).selectOption({ label: 'Enter' });
+  await page.goto('./#/practice/catalogue/minuet-in-g-melody');
+  await page.getByRole('group', { name: 'View' }).getByRole('button', { name: 'Sheet' }).click();
+  await expect(page.locator('[data-testid="score-strip"] > svg')).toBeVisible({ timeout: 20_000 });
+  const pager = page.locator('.ot-score-pager');
+  await expect(pager).toContainText('Page 1 of');
+  // Nothing has focus that Enter would press.
+  await page.locator('body').click({ position: { x: 5, y: 300 } });
+  await page.keyboard.press('Enter');
+  await expect(pager).toContainText('Page 2 of');
+  // The usual keys still turn back.
+  await page.keyboard.press('PageUp');
+  await expect(pager).toContainText('Page 1 of');
+});
+
 test('the piece can be shifted by semitones during practice (P5-04)', async ({ page }) => {
   await page.goto('./#/practice/catalogue/ode-to-joy');
   await page.getByRole('button', { name: 'Right', exact: true }).click();
