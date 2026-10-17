@@ -15,7 +15,7 @@ import {
 } from 'lucide-react';
 import { customKeyboard, KEYBOARD_PRESETS, keyCount } from '@opentiles/practice';
 import type { HandFilter } from '@opentiles/practice';
-import type { Song } from '@opentiles/song-model';
+import type { ScoreHints, Song } from '@opentiles/song-model';
 import { audioContext, now, unlockAudio } from '../audio/context';
 import { MidiOutInstrument, playbackInstrument, SentNotes } from '../audio/midi-out';
 import { playsOn, playsOnMessage, playsOnUnavailableHint } from '../audio/plays-on';
@@ -104,6 +104,11 @@ interface Loaded {
   sheet?: { itemId: number; attachment: SheetAttachment; views: SheetViews };
   /** A sheet without notes yet (format 'pdf'): it can be read, not practised. */
   sheetOnly?: boolean;
+  /**
+   * Set when the score is engraved from the song (a MIDI piece, P5-13): the hints from the
+   * learner's PDF it was engraved with (P5-18), if any.
+   */
+  engraved?: { hints: ScoreHints | undefined };
 }
 
 const NO_BARS: readonly number[] = [];
@@ -172,19 +177,15 @@ export function Practice({
       // Pieces stored before pedals were read get them from their file, once (P6-10).
       const item = { ...found, song: (await songWithPedals(found.id)) ?? found.song };
       const views = item.sheet ? await import('../views/sheet') : null;
+      const hints = item.sheet?.map && !item.sheet.map.edited ? item.sheet.map.score : undefined;
       return {
         source,
         // A MIDI file's score is written from the song (P5-13), which comes back with the refs of
         // its glyphs.
         // A MIDI piece with the learner's PDF is engraved as the PDF writes it, unless the learner
         // had to correct how its bars were found (P5-18).
-        ...scoreFor(
-          item.format,
-          item.bytes,
-          item.song,
-          item.settings.transpose,
-          item.sheet?.map && !item.sheet.map.edited ? item.sheet.map.score : undefined,
-        ),
+        ...scoreFor(item.format, item.bytes, item.song, item.settings.transpose, hints),
+        engraved: item.format === 'midi' ? { hints } : undefined,
         title: item.title,
         progressKey: `library:${id}`,
         sheet:
@@ -228,16 +229,21 @@ export function Practice({
 
 function PracticeView({
   source,
-  song,
+  song: loadedSong,
   title,
   subtitle,
   progressKey,
-  notation,
+  notation: loadedNotation,
   drill,
   sheet,
+  engraved,
   prefs: savedPrefs,
 }: Loaded & { prefs: PracticePrefs }) {
   const settings = useAppSettings();
+  // The score engraved again once the learner's PDF has been read (P5-18).
+  const [written, setWritten] = useState<{ song: Song; notation: NotationSource } | null>(null);
+  const song = written?.song ?? loadedSong;
+  const notation = written?.notation ?? loadedNotation;
   // A drill starts in wait mode with both hands, shows the score and nothing that gives the notes
   // away (no falling notes, no overview), and keeps the learner's choices for pieces as they are.
   const prefs = useMemo<PracticePrefs>(
@@ -277,6 +283,37 @@ function PracticeView({
   );
   const [session] = useState(() => new PracticeSession(prepared.played, now));
   const [status, setStatus] = useState<SessionStatus>(() => session.status());
+
+  // A MIDI piece with the learner's PDF: the PDF is read in the background whichever view is
+  // open, and the score then follows how it writes the notes (P5-18). Only before anything has
+  // been played on this visit, since a new score restarts the run; otherwise next time.
+  useEffect(() => {
+    if (!sheet || !engraved) return;
+    const abort = new AbortController();
+    const { views, itemId, attachment } = sheet;
+    views
+      .ensureSheetMap(
+        itemId,
+        attachment,
+        loadedSong,
+        async () => {
+          const opened = await views.openPdf(attachment.bytes);
+          return { ...opened, done: () => void opened.doc.loadingTask.destroy() };
+        },
+        { signal: abort.signal },
+      )
+      .then(({ map }) => {
+        const hints = map.edited ? undefined : map.score;
+        if (!hints || JSON.stringify(hints) === JSON.stringify(engraved.hints)) return;
+        const s = session.status();
+        if (s.playing || s.finished || s.stepIndex > 0 || s.correct + s.wrong > 0) return;
+        setWritten(scoreFor('midi', undefined, loadedSong, 0, hints));
+      })
+      .catch(() => {
+        // Not read: the score stays as the writer engraves it.
+      });
+    return () => abort.abort();
+  }, [sheet, engraved, loadedSong, session]);
   const [mode, setMode] = useState<PracticeMode>(prefs.mode);
   // A remembered hand the piece has no notes for (the left hand of a melody level) is not used here
   // and not forgotten either.

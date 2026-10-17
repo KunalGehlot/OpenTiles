@@ -3,6 +3,7 @@
 // e2e/sheet-import-fixtures.ts (CC0).
 import { expect, test } from '@playwright/test';
 import type { Locator, Page } from '@playwright/test';
+import { notationMidi, notationPdf } from './notation-pair';
 import { tinyMidi, tinyPdf } from './sheet-import-fixtures';
 
 const midi = (name: string) => ({ name, mimeType: 'audio/midi', buffer: tinyMidi() });
@@ -245,4 +246,30 @@ test('the library with sheet music fits a ⅓-width iPad window', async ({ page 
     const box = await button.boundingBox();
     expect((box?.x ?? 0) + (box?.width ?? 0)).toBeLessThanOrEqual(viewportWidth);
   }
+});
+
+test('the Score tab of a MIDI piece follows how its PDF spells the notes (P5-18)', async ({
+  page,
+}) => {
+  test.setTimeout(60_000);
+  await pickFiles(page, [
+    { name: 'Notation Study.mid', mimeType: 'audio/midi', buffer: notationMidi() },
+    { name: 'Notation Study.pdf', mimeType: 'application/pdf', buffer: await notationPdf() },
+  ]);
+  await page.getByRole('button', { name: 'Save to my library' }).click();
+  await expect(page).toHaveURL(/#\/practice\/library\//);
+  // Straight to the Score tab: the PDF is read in the background without the Sheet view.
+  await page.getByRole('group', { name: 'View' }).getByRole('button', { name: 'Score' }).click();
+  const strip = page.locator('[data-testid="score-strip"]');
+  await expect(strip.locator('> svg')).toBeVisible({ timeout: 20_000 });
+  // The writer alone spells the piece's black keys as sharps in C major; the PDF writes D flat 5
+  // and C flat 5 in bar 2, so flats (SMuFL E260) appear once it has been read, without a reload.
+  const flats = strip.locator('g.accid use[*|href^="#E260"]');
+  await expect.poll(() => flats.count(), { timeout: 20_000 }).toBeGreaterThanOrEqual(2);
+
+  // Opened again, the score is engraved from the stored hints at once.
+  await page.reload();
+  await page.getByRole('group', { name: 'View' }).getByRole('button', { name: 'Score' }).click();
+  await expect(strip.locator('> svg')).toBeVisible({ timeout: 20_000 });
+  await expect(flats).not.toHaveCount(0);
 });
