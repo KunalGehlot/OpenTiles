@@ -70,6 +70,26 @@ test('a short drill ends with the reading speed and starts the next one', async 
   await expect(page.locator('.stats')).toContainText('Step 1/32');
 });
 
+test('an endless drill starts the next one by itself after showing the result', async ({
+  page,
+}) => {
+  await page.goto('./#/drills');
+  await page.getByRole('checkbox', { name: 'Endless' }).check();
+  // The choice is kept; a one-bar drill (four notes around middle C in C major) is opened directly.
+  await page.goto('./#/drills');
+  await expect(page.getByRole('checkbox', { name: 'Endless' })).toBeChecked();
+  await page.goto('./#/practice/drill/treble.0.1.notes.1.123');
+  await expect(page.locator('.stats')).toContainText('Step 1/4');
+  for (let i = 0; i < 4; i++) await playStep(page);
+  await expect(page.getByTestId('drill-speed')).toContainText(/\d+ notes a minute/);
+  await expect(page.getByText('The next drill starts in a moment.')).toBeVisible();
+  // No click: a new drill with the chosen settings follows.
+  await expect(page).not.toHaveURL(/\.123$/, { timeout: 10_000 });
+  await expect(page).toHaveURL(/#\/practice\/drill\/treble\.\d+\.\d+\.notes\.\d+\.\d+$/);
+  await expect(page.locator('.summary')).toHaveCount(0);
+  await expect(page.locator('.stats')).toContainText('Step 1/');
+});
+
 test('showing the key to press lights it up', async ({ page }) => {
   await page.goto('./#/drills');
   await page.getByRole('checkbox', { name: /Show the key to press/ }).check();
