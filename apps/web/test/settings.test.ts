@@ -1,4 +1,5 @@
 import 'fake-indexeddb/auto';
+import { pageTurn } from '../src/settings/pedal';
 import { describe, expect, it } from 'vitest';
 import {
   DEFAULT_APP_SETTINGS,
@@ -78,6 +79,29 @@ describe('settings model', () => {
     expect(pedalAction({ ...pedal, enabled: false }, { key: 'PageDown' })).toBeNull();
     expect(pedalKeyLabel(' ')).toBe('Space');
     expect(pedalKeyLabel('b')).toBe('B');
+  });
+
+  it('turns pages with the pedal’s own keys while it is on, and always with the usual ones', () => {
+    const key = (k: string, extra: Partial<KeyboardEvent> = {}) => ({
+      key: k,
+      code: k === ' ' ? 'Space' : '',
+      repeat: false,
+      altKey: false,
+      ctrlKey: false,
+      metaKey: false,
+      ...extra,
+    });
+    const pedal = { enabled: true, nextKey: 'Enter', previousKey: 'b' };
+    expect(pageTurn(key('Enter'), pedal)).toBe(1);
+    expect(pageTurn(key('b'), pedal)).toBe(-1);
+    expect(pageTurn(key('Enter'), { ...pedal, enabled: false })).toBe(0);
+    // The usual keys, whatever the pedal; no turn with a modifier.
+    expect(pageTurn(key('PageDown'), pedal)).toBe(1);
+    expect(pageTurn(key(' '), pedal)).toBe(1);
+    expect(pageTurn(key('ArrowLeft'), pedal)).toBe(-1);
+    expect(pageTurn(key('ArrowRight', { metaKey: true }), pedal)).toBe(0);
+    // A pedal key that is also a usual key turns one page, not two.
+    expect(pageTurn(key('ArrowRight'), { ...pedal, nextKey: 'ArrowRight' })).toBe(1);
   });
 });
 

@@ -7,6 +7,8 @@ import type { NotationSource } from './notation';
 import { ScoreController } from './score-controller';
 import type { PageInfo, ScoreLayout } from './score-controller';
 import { createToolkit } from './verovio';
+import { pageTurn } from '../../settings/pedal';
+import { appSettings } from '../../settings/store';
 import { t } from '../../i18n';
 import './score.css';
 
@@ -33,10 +35,6 @@ interface Props {
   /** Playback measure indices to mark after a run (P1-24); empty while practising. */
   hardest: readonly number[];
 }
-
-/** Keys a Bluetooth page-turn pedal sends (P2-15), and the arrow keys. */
-const NEXT_KEYS = new Set(['PageDown', 'ArrowRight', 'Space']);
-const PREVIOUS_KEYS = new Set(['PageUp', 'ArrowLeft']);
 
 export function ScoreView({
   session,
@@ -136,7 +134,7 @@ export function ScoreView({
       const key = e.code === 'Space' ? 'Space' : e.key;
       // Space on a focused button presses it; elsewhere it is a pedal's "next page".
       if (key === 'Space' && (session.mode !== 'wait' || target?.closest('button'))) return;
-      const delta = NEXT_KEYS.has(key) ? 1 : PREVIOUS_KEYS.has(key) ? -1 : 0;
+      const delta = pageTurn(e, appSettings().pedal);
       if (delta === 0) return;
       e.preventDefault();
       controllerRef.current?.turn(delta);

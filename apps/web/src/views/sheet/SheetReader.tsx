@@ -6,11 +6,10 @@ import { ChevronLeft } from 'lucide-react';
 import { href } from '../../lib/router';
 import { SheetPager } from './SheetPager';
 import { useSheet } from './use-sheet';
+import { pageTurn } from '../../settings/pedal';
+import { appSettings } from '../../settings/store';
 import { t } from '../../i18n';
 import './sheet.css';
-
-const NEXT_KEYS = new Set(['PageDown', 'ArrowRight', 'Space']);
-const PREVIOUS_KEYS = new Set(['PageUp', 'ArrowLeft']);
 
 export function SheetReader({
   title,
@@ -37,8 +36,7 @@ export function SheetReader({
       const target = e.target as HTMLElement | null;
       if (target?.closest('input, select, textarea, button')) return;
       if (e.metaKey || e.ctrlKey || e.altKey) return;
-      const key = e.code === 'Space' ? 'Space' : e.key;
-      const delta = NEXT_KEYS.has(key) ? 1 : PREVIOUS_KEYS.has(key) ? -1 : 0;
+      const delta = pageTurn(e, appSettings().pedal);
       if (delta === 0) return;
       e.preventDefault();
       controller?.turn(delta);

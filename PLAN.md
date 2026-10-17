@@ -207,7 +207,7 @@ engines.
       language, German note names on the falling notes; a unit test fails on any untranslated string.
       Left: a native speaker's read-through.
 - [~] **P2-15** Accessibility: large print, high contrast, left-handed layout, keyboard shortcuts,
-  Bluetooth foot-pedal page turn. Done: settings for large print, high contrast, left-handed controls, reduced motion, shortcuts list, pedal key. Left: practice view reading the left-handed flag beyond CSS; pedal hook wired to the page score.
+  Bluetooth foot-pedal page turn. Done: settings for large print, high contrast, left-handed controls, reduced motion, shortcuts list, pedal key; the pedal's chosen keys turn every page view (engraved pages, the learner's sheet, the sheet reader) along with the usual ones (`settings/pedal.ts`, 2026-10-17). Left: practice view reading the left-handed flag beyond CSS.
 - [x] **P2-16** Licence scanner for third-party dependencies in CI.
 - [~] **P2-17** Privacy policy, Impressum with notice-and-takedown address, records of processing. Done: privacy policy and Impressum (EN/DE), records of processing; the Impressum gives the maintainer's website gehlot.site as a contact only (2026-10-10). Left: the postal address and the lawyer review (P2-18).
 - [ ] **P2-18** (human) Legal consultation with a German copyright lawyer (timing is an open
@@ -621,6 +621,8 @@ Record the outcome as an ADR in `docs/adr/` and tick it here.
 - [x] Engine exposes a plain C ABI instead of wasm-bindgen glue — ADR 0002.
 
 ## Changelog
+
+- **2026-10-17** — P2-15: the foot pedal's chosen keys turn the pages.
 
 - **2026-10-17** — P2-04: every catalogue score is rendered in CI; triplets in two pieces drawn right.
 
