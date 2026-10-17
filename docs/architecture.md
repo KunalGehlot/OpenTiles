@@ -269,6 +269,19 @@ moves the highlight and cursor from `requestAnimationFrame` and scrolls to keep 
 
 - **Private library:** IndexedDB via Dexie — original file bytes, the parsed `Song`, practice
   settings and progress. `navigator.storage.persist()` is requested on first import.
+- **Rows and files** (P6-04, database version 2). A library piece is split in two under one id:
+  its row in `library` (title, song, settings, tags, the sheet's name, size and bar map) and its
+  bytes in `files` (the original file and the PDF). The Library page and the Player list rows only,
+  so a library full of large PDFs lists as fast as an empty one; opening a piece, the backup and
+  sync read the files too. `storage/library.ts` reads and writes whole pieces, both tables in one
+  transaction. The upgrade from version 1 moves the bytes one piece at a time. The backup format
+  and the sync records are unchanged, and the sync signature is computed from the row, so nothing
+  is uploaded again after the upgrade.
+- **The Player's collection** (`player/collection.ts`, `player/load.ts`) is the catalogue (verified
+  pieces only in production) and the library rows in one list, with the last time each was played
+  from `progress`. A library piece's length comes from its song; a catalogue piece's is remembered
+  on this device (`device.catalogueSeconds`, kept out of backup and sync) the first time it loads,
+  since working it out needs the full score reader.
 - **Backup (phase 2):** an encrypted `.zip` the user keeps (`packages/vault`).
 - **Sync (phase 3):** a random 256-bit library key, wrapped with an Argon2id-derived key from the
   user's passphrase and again with a printable recovery code; every record (including titles)
