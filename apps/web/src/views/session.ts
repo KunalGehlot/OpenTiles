@@ -3,6 +3,7 @@
 import {
   accompanimentBetween,
   asPlayed,
+  buildPlayback,
   buildSteps,
   holdOverdueAfter,
   judgeHold,
@@ -13,6 +14,7 @@ import {
   normaliseLoop,
   PerformanceRecorder,
   PlayAlongScorer,
+  PlaybackCursor,
   polished,
   pulseAt,
   summarise,
@@ -168,6 +170,7 @@ export interface SessionStatus {
 }
 
 const LEAD_IN = 1.5;
+/** How far ahead notes and clicks are handed to the instrument; it may ask for less (lookAhead). */
 const SCHEDULE_AHEAD = 0.3;
 /** Pause between the end of a looped section and its next run in wait mode (seconds). */
 const LOOP_PAUSE = 0.6;
@@ -257,8 +260,8 @@ export class PracticeSession {
 
   private timeline: Timeline | null = null;
   private scorer: PlayAlongScorer | null = null;
-  private schedule: { note: SongNote; time: number }[] = [];
-  private scheduled = 0;
+  /** The notes this run plays (Listen, or the other hand in play-along; P6-03). */
+  private playback: PlaybackCursor | null = null;
   private startedAt = 0;
   private finishedAt = 0;
   /** After a run the display went back to the start (the notes, cursor and score all follow `beat`). */
@@ -827,14 +830,18 @@ export class PracticeSession {
     this.homed = false;
     this.homing = null;
     const tl = this.timeline;
-    const audible = this.song.notes.filter(
-      (n) =>
-        n.startBeat >= fromBeat - 1e-6 &&
-        n.startBeat < toBeat - 1e-6 &&
-        (this.mode === 'listen' || (this.accompany && !this.inHands(n))),
+    // Listen plays every note; play-along plays the other hand when the learner asks for it.
+    const events =
+      this.mode === 'listen'
+        ? buildPlayback(this.song, { fromBeat, toBeat })
+        : this.accompany
+          ? buildPlayback(this.song, { hands: this.hands, accompany: true, fromBeat, toBeat })
+          : [];
+    this.playback = new PlaybackCursor(
+      events,
+      { time: tl.startTime, seconds: tl.tempo.beatToSeconds(fromBeat) },
+      tl.factor,
     );
-    this.schedule = audible.map((note) => ({ note, time: tl.timeOf(note.startBeat) }));
-    this.scheduled = 0;
     this.cues = this.song.notes
       .filter(
         (n) => this.inHands(n) && n.startBeat >= fromBeat - 1e-6 && n.startBeat < toBeat - 1e-6,
@@ -863,7 +870,7 @@ export class PracticeSession {
   stop(): void {
     this.timeline = null;
     this.scorer = null;
-    this.schedule = [];
+    this.playback = null;
     this.clicks = [];
     // Notes already sent ahead to a MIDI keyboard would otherwise keep sounding.
     this.synth?.silence?.();
@@ -1013,13 +1020,12 @@ export class PracticeSession {
       this.clicked += 1;
       if (c.time >= t - 0.05) this.click(c.time, c.accent);
     }
-    if (!this.synth) return;
-    while (this.scheduled < this.schedule.length) {
-      const s = this.schedule[this.scheduled];
-      if (!s || s.time > t + SCHEDULE_AHEAD) break;
-      this.scheduled += 1;
-      if (s.time < t - 0.05) continue;
-      this.synth.play(s.note.pitch, s.time, this.secondsFor(s.note), s.note.velocity ?? 80);
+    const synth = this.synth;
+    if (!synth || !this.playback) return;
+    // A MIDI output that cannot drop stamped notes on Stop asks for a shorter look-ahead (P6-02).
+    const ahead = Math.min(SCHEDULE_AHEAD, synth.lookAhead ?? SCHEDULE_AHEAD);
+    for (const e of this.playback.take(t + ahead, t)) {
+      if (e.kind === 'note') synth.play(e.pitch, e.time, e.duration, e.velocity);
     }
   }
 

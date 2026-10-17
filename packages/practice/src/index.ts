@@ -14,6 +14,18 @@ export type {
 export { summarise } from './summary';
 export type { RunSummary } from './summary';
 export { Timeline, clampTempo, MIN_TEMPO, MAX_TEMPO } from './timeline';
+export { buildPlayback, DEFAULT_VELOCITY, PlaybackCursor } from './playback';
+export type {
+  PedalKind,
+  PedalState,
+  PlaybackEvent,
+  PlaybackNote,
+  PlaybackOptions,
+  PlaybackPedal,
+  TimedPlaybackEvent,
+  TimedPlaybackNote,
+  TimedPlaybackPedal,
+} from './playback';
 export { metronomeClicks, pulseAt, pulseOf, timeSignatureAt } from './metronome';
 export type { Click, Pulse } from './metronome';
 export {

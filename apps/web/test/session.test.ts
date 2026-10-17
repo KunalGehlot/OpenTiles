@@ -559,3 +559,71 @@ describe('last input', () => {
     expect(session.lastInputAt).toBe(clock.t);
   });
 });
+
+describe('playback through the shared scheduler (P6-03)', () => {
+  function playing(lookAhead?: number) {
+    const clock = { t: 0 };
+    const played: { pitch: number; when: number; duration: number; at: number }[] = [];
+    const synth: PianoSynth = {
+      volume: 1,
+      noteOn: () => ({ stop: () => {} }),
+      play: (pitch, when, duration) => {
+        played.push({ pitch, when, duration, at: clock.t });
+        return { stop: () => {} };
+      },
+      click: () => {},
+      ...(lookAhead === undefined ? {} : { lookAhead }),
+    };
+    const session = new PracticeSession(scale(1), () => clock.t, synth);
+    const run = (seconds: number) => {
+      const end = clock.t + seconds;
+      while (clock.t < end) {
+        clock.t += 1 / 60;
+        session.frame();
+      }
+    };
+    return { session, played, run };
+  }
+
+  it('plays every note of a listen run once, on time, at the practice tempo', () => {
+    const { session, played, run } = playing();
+    session.setMode('listen');
+    session.setTempo(0.5);
+    session.start();
+    run(1.5 + 4.5);
+    // After the 1.5 s lead-in, a beat lasts a second at half speed.
+    expect(played.map((p) => [p.pitch, p.when, p.duration])).toEqual(
+      [
+        [60, 1.5, 1],
+        [62, 2.5, 1],
+        [64, 3.5, 1],
+        [65, 4.5, 1],
+      ].map(([pitch, when, duration]) => [pitch, expect.closeTo(when ?? 0, 6), duration]),
+    );
+    // Handed over up to 0.3 s ahead.
+    expect(Math.max(...played.map((p) => p.when - p.at))).toBeLessThanOrEqual(0.3 + 1e-9);
+  });
+
+  it('hands notes over less far ahead to an instrument that asks for it', () => {
+    const { session, played, run } = playing(0.1);
+    session.setMode('listen');
+    session.start();
+    run(1.5 + 2);
+    expect(played).toHaveLength(4);
+    expect(Math.max(...played.map((p) => p.when - p.at))).toBeLessThanOrEqual(0.1 + 1e-9);
+  });
+
+  it('plays the other hand in play-along only when asked to', () => {
+    const { session, played, run } = playing();
+    session.setMode('play-along');
+    session.setHands('left');
+    session.accompany = false;
+    session.start();
+    run(1.5 + 2);
+    expect(played).toEqual([]);
+    session.accompany = true;
+    session.start();
+    run(1.5 + 2);
+    expect(played.map((p) => p.pitch)).toEqual([60, 62, 64, 65]);
+  });
+});
