@@ -35,6 +35,7 @@ import {
   pickOutput,
   startMidiInput,
 } from '../input/midi-input';
+import { nativeMidiAvailable, pairBluetoothKeyboard } from '../input/native-midi-input';
 import type { MidiKeyboardInput } from '../input/midi-input';
 import { labelStyleFor, noteLabel } from '../lib/notes';
 import { Setting, Toggle } from '../ui/SettingRow';
@@ -386,6 +387,18 @@ function MidiSection({
               <option value="both">{t('Both')}</option>
             </select>
           </Setting>
+          {nativeMidiAvailable() && (
+            <Setting
+              label={t('Bluetooth MIDI keyboard')}
+              hint={t(
+                'On the iPad, a Bluetooth MIDI keyboard is paired here, not in the iPad’s own Bluetooth settings. Once paired it works like a keyboard plugged in by USB.',
+              )}
+            >
+              <button onClick={() => void pairBluetoothKeyboard().catch(() => {})}>
+                {t('Pair a Bluetooth MIDI keyboard')}
+              </button>
+            </Setting>
+          )}
           <h3>{t('Test your keyboard')}</h3>
           <p className="muted">
             {t(

@@ -29,6 +29,20 @@ export interface SourcesResult {
   sources: MidiSource[];
 }
 
+/** A MIDI destination: a keyboard's input, where the app's notes go (P6-12). */
+export type MidiDestination = MidiSource;
+
+export interface DestinationsResult {
+  destinations: MidiDestination[];
+}
+
+/** A MIDI 1.0 channel voice message, and when to send it in seconds on getTime()'s clock. */
+export interface MidiOutMessage {
+  data: number[];
+  /** Omitted or in the past: now. */
+  time?: number;
+}
+
 export interface CoreMidiPlugin {
   /** The sources CoreMIDI can see right now, connected or not. */
   listSources(): Promise<SourcesResult>;
@@ -41,6 +55,16 @@ export interface CoreMidiPlugin {
   stop(): Promise<void>;
   /** The current time on the clock 'time' fields use, for mapping it onto the web clocks. */
   getTime(): Promise<{ time: number }>;
+  /** The destinations CoreMIDI can see right now (P6-12). */
+  listDestinations(): Promise<DestinationsResult>;
+  /** Sends a batch of messages to one destination, each at its time; `sent` is false if it is gone. */
+  send(options: { destination: number; messages: MidiOutMessage[] }): Promise<{ sent: boolean }>;
+  /** Drops messages still waiting to be sent, to one destination or to all. */
+  flush(options: { destination?: number }): Promise<void>;
+  /** Shows Apple's Bluetooth MIDI pairing screen; resolves when it is closed. */
+  pairBluetooth(): Promise<void>;
+  /** Keeps the screen on, or lets it sleep again. */
+  keepAwake(options: { on: boolean }): Promise<void>;
   /** Note-on with velocity above 0. */
   addListener(
     eventName: 'noteOn',
@@ -55,6 +79,11 @@ export interface CoreMidiPlugin {
   addListener(
     eventName: 'devicesChanged',
     listener: (event: SourcesResult) => void,
+  ): Promise<PluginListenerHandle>;
+  /** A destination came or went. */
+  addListener(
+    eventName: 'destinationsChanged',
+    listener: (event: DestinationsResult) => void,
   ): Promise<PluginListenerHandle>;
   removeAllListeners(): Promise<void>;
 }

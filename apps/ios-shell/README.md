@@ -48,6 +48,17 @@ PLAN.md task **P3-01**.
    every 5 s; the shortest round trip of the last eight wins). Each note is then placed on the
    audio clock exactly as Web MIDI notes are: audio "now" minus the note's age. A busy main thread
    or a slow bridge therefore does not make a note look late.
+5. **MIDI out** (P6-12). An output port sends the app's notes (Listen, the other hand, the Player)
+   to a keyboard: `listDestinations`, `destinationsChanged`, `send({ destination, messages })` with
+   each message's time in host seconds (CoreMIDI sends it when due, as MIDI 1.0 packets) and
+   `flush` to drop what is still waiting. `NativeMidiInput.output()` is the web side: it maps
+   `performance.now()` stamps onto host time with the same clock estimate and batches one bridge
+   call per scheduling tick.
+6. **Bluetooth MIDI.** Settings → MIDI keyboard → "Pair a Bluetooth MIDI keyboard" shows Apple's
+   pairing screen (`CABTMIDICentralViewController`); a paired keyboard is then a source and a
+   destination like a USB one. The iPad's own Bluetooth settings do not pair MIDI keyboards.
+7. **Screen.** `keepAwake` keeps the screen on while the Player plays, where the web view's Wake
+   Lock may not be there.
 
 ## Build and run
 
@@ -78,21 +89,25 @@ the app ID) when it runs in an interactive terminal.
 
 ### First-build checklist
 
-1. ✓ The app and the plugin compile (2026-10-09). The plugin tests (⌘U) are still to run.
+1. ✓ The app and the plugin compile (2026-10-09). The plugin and its tests compile for iOS with
+   MIDI out (2026-10-17, `xcodebuild build-for-testing`); the tests (⌘U) are still to run, on a
+   simulator runtime or an iPad.
 2. The app starts with no network (aeroplane mode) and the catalogue opens. The top bar sits
    below the status bar (`env(safe-area-inset-top)`), in both orientations.
 3. A USB MIDI keyboard (USB-C, or the Lightning to USB Camera Adapter) appears after
    **Connect MIDI keyboard**; notes advance wait mode; in play-along, notes played on the beat are
    judged on time (compare with the on-screen keys).
 4. Unplugging and replugging the keyboard updates the device list and notes resume.
-5. A Bluetooth MIDI keyboard that is already connected (see follow-ups) appears too.
-6. **Use microphone** shows the permission text from `Info.plist`, and detection works in the
+5. A Bluetooth MIDI keyboard paired from Settings → MIDI keyboard appears too.
+6. With "Plays on: My keyboard", Listen and the Player play on the keyboard's own sound, on time,
+   with its pedal; Stop leaves nothing sounding; unplugging it mid-piece pauses the Player.
+7. **Use microphone** shows the permission text from `Info.plist`, and detection works in the
    app's WebView.
-7. Sound starts after a tap; check it with the Ring/Silent switch on and off (see follow-ups).
-8. Split View at a third of the screen and rotation keep the practice screen usable.
-9. An imported piece is still in the library after quitting and reopening the app, and the "Add to
-   Home Screen" hint does not appear.
-10. Xcode → **Product → Generate Privacy Report** on an archive lists the plugin's manifest.
+8. Sound starts after a tap; check it with the Ring/Silent switch on and off (see follow-ups).
+9. Split View at a third of the screen and rotation keep the practice screen usable.
+10. An imported piece is still in the library after quitting and reopening the app, and the "Add to
+    Home Screen" hint does not appear.
+11. Xcode → **Product → Generate Privacy Report** on an archive lists the plugin's manifest.
 
 ## App Store notes (P3-02)
 

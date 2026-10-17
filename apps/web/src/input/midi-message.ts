@@ -48,10 +48,13 @@ export interface NativeSource {
 }
 
 /** Validates the source list in a plugin result or 'devicesChanged' payload. */
-export function parseNativeSources(payload: unknown): NativeSource[] {
+export function parseNativeSources(
+  payload: unknown,
+  key: 'sources' | 'destinations' = 'sources',
+): NativeSource[] {
   const sources: unknown =
     typeof payload === 'object' && payload !== null
-      ? (payload as { sources?: unknown }).sources
+      ? (payload as Record<string, unknown>)[key]
       : undefined;
   if (!Array.isArray(sources)) return [];
   const result: NativeSource[] = [];

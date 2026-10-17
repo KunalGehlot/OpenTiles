@@ -572,8 +572,13 @@ without a word when no MIDI output is found.
       counted from the end of the bar, a small variation fixed per note); MIDI velocities are kept;
       Settings → Practice → Touch (natural by default, plan Q4) for practice and the Player.
       Dynamics marks are not read yet, so they do not shape it.
-- [ ] **P6-12** (APP, iOS) MIDI out in the iPad app (CoreMIDI destinations, timed batched send,
-      flush) and Bluetooth MIDI pairing. Device test needs P3-01.
+- [~] **P6-12** (APP, iOS) MIDI out in the iPad app (CoreMIDI destinations, timed batched send,
+  flush) and Bluetooth MIDI pairing. Device test needs P3-01. Done: the plugin's output port,
+  `listDestinations`, `destinationsChanged`, `send` (host-time stamps, MIDI 1.0 packets) and
+  `flush`; the web side's `NativeMidiInput.output()` (clock mapping, one bridge call per tick,
+  `flush` as `clear()`), the Player through it, Apple's Bluetooth MIDI pairing screen from Settings,
+  and `keepAwake` while the Player plays. The plugin and its tests compile for iOS with Xcode 27.
+  Left: running the Swift tests (no simulator runtime here) and the device test (P3-01, P6-13).
 - [ ] **P6-13** (human) The maintainer's checks: their keyboard in Chrome, Edge and Firefox on the Mac;
       the Player over USB audio on the iPad, and whether the microphone hears the keyboard's USB
       audio; the iPad app; design approval.
@@ -604,6 +609,9 @@ Record the outcome as an ADR in `docs/adr/` and tick it here.
 - [x] Engine exposes a plain C ABI instead of wasm-bindgen glue — ADR 0002.
 
 ## Changelog
+
+- **2026-10-17** — P6-12 (code): MIDI out and Bluetooth MIDI pairing in the iPad app; not yet run
+  on an iPad.
 
 - **2026-10-17** — P6-11: natural touch for pieces without velocities (the catalogue): the melody
   and the strong beats brought out; "even" in Settings → Practice.
