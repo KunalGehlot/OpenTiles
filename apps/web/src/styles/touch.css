@@ -1,0 +1,100 @@
+/*
+ * Touch screens (P5-09): every control is at least 44 px either way where the pointer is a finger,
+ * Apple's smallest comfortable target (and WCAG 2.5.5's). A mouse keeps the denser sizes. Most
+ * controls take their size from --tap and --tap-sm; the rest are listed here. Loaded last, so it
+ * wins over the page stylesheets. e2e/touch.spec.ts measures every control on the main pages.
+ */
+
+@media (pointer: coarse) {
+  :root {
+    --tap: 2.75rem;
+    --tap-sm: 2.75rem;
+  }
+
+  /* Segments sit in a padded track; each segment is a full target of its own. */
+  .segmented button,
+  .bar .segmented button {
+    min-height: var(--tap);
+  }
+
+  .brand,
+  .back,
+  .topbar nav a,
+  .footer nav a,
+  .link-list li > a,
+  .level-chip {
+    display: inline-flex;
+    align-items: center;
+    min-height: var(--tap);
+  }
+
+  /* Short links ("About") are wide enough to hit too. */
+  .footer nav a {
+    justify-content: center;
+    min-width: var(--tap);
+  }
+
+  /* Buttons that show only their icon on a narrow screen. */
+  .bar button,
+  .bar .button {
+    min-width: var(--tap-sm);
+  }
+
+  .footer nav {
+    gap: 0 var(--space-3);
+  }
+
+  button.copy-link {
+    min-width: var(--tap);
+    min-height: var(--tap);
+  }
+
+  /* A switch or checkbox is tapped anywhere on its row; the row is the target. */
+  label.toggle,
+  label.check {
+    display: inline-flex;
+    align-items: center;
+    min-height: var(--tap);
+  }
+
+  summary {
+    padding-block: 0.75rem;
+  }
+
+  /* A slider's thumb is found by height as much as by width. */
+  input[type='range'],
+  .bar input[type='range'] {
+    min-height: var(--tap);
+  }
+}
+
+/* On a phone the finger-sized links wrap to several rows: the bar scrolls away with the page
+   rather than cover a quarter of it, as it does in a short window (shell.css). */
+@media (pointer: coarse) and (max-width: 600px) {
+  .topbar {
+    position: static;
+  }
+}
+
+/* ⅓ of an iPad and phones (the compact practice layout, practice.css): finger-sized controls in
+   fewer rows, so the falling notes keep most of the height. Segments sit closer, with their track
+   flush around them. */
+@media (pointer: coarse) and (max-width: 640px) {
+  .bar .segmented {
+    padding: 0;
+  }
+
+  .bar .segmented button {
+    padding-inline: 0.45rem;
+  }
+
+  .session-controls {
+    column-gap: 0.4rem;
+  }
+
+  /* Each control wraps on its own rather than with its group (the groups have no role), so a
+     wider system font costs no extra row. */
+  .session-controls > .group {
+    display: contents;
+  }
+}
