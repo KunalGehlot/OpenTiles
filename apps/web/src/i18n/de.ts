@@ -313,6 +313,9 @@ export const de: Readonly<Record<string, string>> = {
   'Large print': 'Große Schrift',
   'Bigger text, buttons and keyboard labels.':
     'Größere Schrift, Schaltflächen und Tastenbeschriftungen.',
+  Appearance: 'Darstellung',
+  Light: 'Hell',
+  Dark: 'Dunkel',
   'High contrast': 'Hoher Kontrast',
   'Reduce motion': 'Bewegung reduzieren',
   'Left-handed layout': 'Linkshänder-Anordnung',

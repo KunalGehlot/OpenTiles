@@ -411,7 +411,9 @@ images, sounds or fonts, and credit the inspiration in [CREDITS.md](CREDITS.md).
   Done (2026-10-17): 44 px touch targets where the pointer is a finger (`styles/touch.css`; a
   mouse keeps the denser sizes), measured on every main page, a library card and the practice
   Options panel by `e2e/touch.spec.ts`; on an iPad in landscape the falling notes lose about 65 px
-  of height to the taller bars. Left: the rest of the list, and checking the changes in the
+  of height to the taller bars. A manual light/dark switch (Settings → Accessibility → Appearance:
+  same as this device, light or dark), the practice canvas and form controls following it and no
+  flash of the other theme on load. Left: the rest of the list, and checking the changes in the
   maintainer's Chrome.
 - [ ] **P5-10** (human) Release gate: frame time on an older iPad, a MIDI keyboard on an iPad through
       the iPad app (Safari has no Web MIDI; Firefox confirmed working 2026-10-09), legal consultation (P2-18), trademark (the domain
@@ -625,6 +627,8 @@ Record the outcome as an ADR in `docs/adr/` and tick it here.
 - [x] Engine exposes a plain C ABI instead of wasm-bindgen glue — ADR 0002.
 
 ## Changelog
+
+- **2026-10-17** — P5-09: light or dark chosen in Settings, whatever the device's mode.
 
 - **2026-10-17** — P5-09: 44 px touch targets on touch screens.
 

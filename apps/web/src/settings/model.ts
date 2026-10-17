@@ -13,6 +13,9 @@ export type TriState = 'system' | 'on' | 'off';
 
 export type Language = 'en' | 'de';
 
+/** Light or dark colours, or as the device has it (P5-09). */
+export type Appearance = 'system' | 'light' | 'dark';
+
 export interface PedalSettings {
   enabled: boolean;
   /** `KeyboardEvent.key` the pedal sends to go forward. */
@@ -55,6 +58,8 @@ export type FingeringDisplay = 'suggested' | 'written' | 'off';
 
 export interface AppSettings {
   language: Language;
+  /** Light or dark colours, or as the device has it (P5-09). */
+  appearance: Appearance;
   /** Bigger UI text and keyboard labels. */
   largePrint: boolean;
   highContrast: TriState;
@@ -79,6 +84,7 @@ export interface AppSettings {
 
 export const DEFAULT_APP_SETTINGS: Readonly<AppSettings> = Object.freeze({
   language: 'en',
+  appearance: 'system',
   largePrint: false,
   highContrast: 'system',
   reducedMotion: 'system',
@@ -150,6 +156,7 @@ export function normaliseSettings(value: unknown): AppSettings {
     typeof v.pedal === 'object' && v.pedal !== null ? (v.pedal as Record<string, unknown>) : {};
   return {
     language: v.language === 'de' ? 'de' : 'en',
+    appearance: v.appearance === 'light' || v.appearance === 'dark' ? v.appearance : 'system',
     largePrint: bool(v.largePrint, d.largePrint),
     highContrast: tri(v.highContrast, d.highContrast),
     reducedMotion: tri(v.reducedMotion, d.reducedMotion),

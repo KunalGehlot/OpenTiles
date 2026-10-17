@@ -47,6 +47,13 @@ describe('settings model', () => {
     expect('evil' in s).toBe(false);
   });
 
+  it('keeps light or dark as chosen, and follows the device otherwise (P5-09)', () => {
+    expect(normaliseSettings(undefined).appearance).toBe('system');
+    expect(normaliseSettings({ appearance: 'dark' }).appearance).toBe('dark');
+    expect(normaliseSettings({ appearance: 'light' }).appearance).toBe('light');
+    expect(normaliseSettings({ appearance: 'sepia' }).appearance).toBe('system');
+  });
+
   it('resolves "system" against prefers-contrast and prefers-reduced-motion', () => {
     const s = normaliseSettings({ highContrast: 'system', reducedMotion: 'off' });
     const media = { prefersMoreContrast: true, prefersReducedMotion: true };
