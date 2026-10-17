@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest';
 import { libraryNames } from '../src/crash/reporter';
 import { buildScrubbedReport, coarsePlatform, scrubCrashText } from '../src/crash/scrub';
 import { db } from '../src/storage/db';
+import { addLibraryItem } from '../src/storage/library';
 
 const ORIGIN = 'https://opentiles.example';
 
@@ -94,7 +95,8 @@ describe('crash report scrubbing', () => {
 describe('names kept out of crash reports', () => {
   it('include the file name of a piece’s sheet music', async () => {
     await db.library.clear();
-    await db.library.add({
+    await db.files.clear();
+    await addLibraryItem({
       title: 'Secret Study',
       fileName: 'secret-study.mid',
       format: 'midi',

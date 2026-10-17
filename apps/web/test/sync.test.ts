@@ -9,6 +9,12 @@ import {
 } from '@opentiles/sync-api';
 import { SyncController, syncDb } from '../src/sync/local';
 import { db } from '../src/storage/db';
+import {
+  addLibraryItem,
+  allLibraryItems,
+  deleteLibraryItem,
+  setLibrarySheet,
+} from '../src/storage/library';
 import type { LibraryItem } from '../src/storage/db';
 
 const KDF = { algorithm: 'argon2id', memoryKiB: 256, iterations: 1, parallelism: 1 } as const;
@@ -68,6 +74,7 @@ function item(title: string): LibraryItem {
 async function wipeDevice() {
   await Promise.all([
     db.library.clear(),
+    db.files.clear(),
     db.progress.clear(),
     db.days.clear(),
     db.settings.clear(),
@@ -96,7 +103,7 @@ describe('encrypted sync from the web app', () => {
     expect(code).toMatch(/^[0-9A-Z]{4}(-[0-9A-Z]{4}){8}$/);
     expect(a.state.phase).toBe('ready');
 
-    const id = await db.library.add(item('A Secret Study'));
+    const id = await addLibraryItem(item('A Secret Study'));
     await db.progress.put({
       key: `library:${id}`,
       bestAccuracy: 0.8,
@@ -126,7 +133,7 @@ describe('encrypted sync from the web app', () => {
 
     // Device B: empty, with one item of its own, so local ids differ.
     await wipeDevice();
-    const own = await db.library.add(item('Device B piece'));
+    const own = await addLibraryItem(item('Device B piece'));
     const b = s.controller();
     await b.init();
     await b.startEmailSignIn('pianist@example.org');
@@ -136,9 +143,9 @@ describe('encrypted sync from the web app', () => {
     expect(await b.unlock({ passphrase: PASS })).toBe(true);
     await b.syncNow();
 
-    const titles = (await db.library.toArray()).map((i) => i.title).sort();
+    const titles = (await allLibraryItems()).map((i) => i.title).sort();
     expect(titles).toEqual(['A Secret Study', 'Device B piece']);
-    const study = (await db.library.toArray()).find((i) => i.title === 'A Secret Study');
+    const study = (await allLibraryItems()).find((i) => i.title === 'A Secret Study');
     expect(study?.id).not.toBe(own);
     expect(await db.progress.get(`library:${study?.id}`)).toMatchObject({ bestAccuracy: 0.8 });
     expect(await db.progress.get('catalogue:ode-to-joy')).toMatchObject({ runs: 2 });
@@ -146,7 +153,7 @@ describe('encrypted sync from the web app', () => {
     expect((await db.settings.get('app'))?.value).toMatchObject({ largePrint: true });
 
     // A deletion on B reaches the server and a recovery-code unlock still works.
-    await db.library.delete(study?.id ?? -1);
+    await deleteLibraryItem(study?.id ?? -1);
     await b.syncNow();
     await b.signOut();
     expect(b.state.phase).toBe('signed-out');
@@ -159,7 +166,7 @@ describe('encrypted sync from the web app', () => {
     await c.finishEmailSignIn({ token: s.lastToken() });
     expect(await c.unlock({ recoveryCode: code ?? '' })).toBe(true);
     await c.syncNow();
-    expect((await db.library.toArray()).map((i) => i.title)).toEqual(['Device B piece']);
+    expect((await allLibraryItems()).map((i) => i.title)).toEqual(['Device B piece']);
 
     await c.deleteAccount();
     expect(c.state.phase).toBe('signed-out');
@@ -177,12 +184,10 @@ describe('encrypted sync from the web app', () => {
     };
     const a = await signIn();
     await a.createLibraryKey(PASS);
-    const id = await db.library.add(item('Sheet Piece'));
+    const id = await addLibraryItem(item('Sheet Piece'));
     await a.syncNow();
     // Adding a PDF later is a change to upload, and only the PDF's piece goes up.
-    await db.library.update(id, {
-      sheet: { fileName: 'private-edition.pdf', bytes: PDF, addedAt: 7 },
-    });
+    await setLibrarySheet(id, { fileName: 'private-edition.pdf', bytes: PDF, addedAt: 7 });
     expect((await a.syncNow()).pushed).toBe(1);
     for (const body of s.bodies) {
       expect(contains(body, 'private-edition')).toBe(false);
@@ -193,17 +198,17 @@ describe('encrypted sync from the web app', () => {
     const b = await signIn();
     expect(await b.unlock({ passphrase: PASS })).toBe(true);
     await b.syncNow();
-    const [onB] = await db.library.toArray();
+    const [onB] = await allLibraryItems();
     expect(onB?.sheet).toEqual({ fileName: 'private-edition.pdf', bytes: PDF, addedAt: 7 });
     expect((await b.syncNow()).pushed).toBe(0);
-    await db.library.update(onB?.id ?? -1, { sheet: undefined });
+    await setLibrarySheet(onB?.id ?? -1, undefined);
     expect((await b.syncNow()).pushed).toBe(1);
 
     await wipeDevice();
     const c = await signIn();
     expect(await c.unlock({ passphrase: PASS })).toBe(true);
     await c.syncNow();
-    const [onC] = await db.library.toArray();
+    const [onC] = await allLibraryItems();
     expect(onC?.title).toBe('Sheet Piece');
     expect(onC && 'sheet' in onC).toBe(false);
   });

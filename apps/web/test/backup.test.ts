@@ -9,6 +9,7 @@ import {
   restoreBackupFile,
 } from '../src/backup/backup';
 import { db } from '../src/storage/db';
+import { addLibraryItem, allLibraryItems, getLibraryItem } from '../src/storage/library';
 import type { LibraryItem } from '../src/storage/db';
 import type { Song } from '@opentiles/song-model';
 import type { SheetMap } from '@opentiles/sheet';
@@ -48,6 +49,7 @@ function item(title: string, bytes: number[], addedAt: number): LibraryItem {
 async function clearAll() {
   await Promise.all([
     db.library.clear(),
+    db.files.clear(),
     db.progress.clear(),
     db.days.clear(),
     db.settings.clear(),
@@ -58,8 +60,8 @@ beforeEach(clearAll);
 
 describe('encrypted backup', () => {
   it('round-trips library, progress, days and settings without duplicates', async () => {
-    const a = await db.library.add(item('Little Scale', [1, 2, 3], 1000));
-    const b = await db.library.add(item('Second Study', [4, 5, 6, 7], 2000));
+    const a = await addLibraryItem(item('Little Scale', [1, 2, 3], 1000));
+    const b = await addLibraryItem(item('Second Study', [4, 5, 6, 7], 2000));
     await db.progress.bulkPut([
       { key: `library:${a}`, bestAccuracy: 0.7, runs: 2, lastPlayedAt: 10, secondsPractised: 60 },
       { key: `library:${b}`, bestAccuracy: 0.9, runs: 1, lastPlayedAt: 20, secondsPractised: 30 },
@@ -95,11 +97,11 @@ describe('encrypted backup', () => {
 
     // A fresh device, where ids start elsewhere: one unrelated item first.
     await clearAll();
-    const other = await db.library.add(item('Unrelated', [9], 3000));
+    const other = await addLibraryItem(item('Unrelated', [9], 3000));
     const summary = await restoreBackupFile(file, { passphrase: PASS });
     expect(summary).toMatchObject({ added: 2, skipped: 0, days: 1, settings: 2 });
 
-    const restored = await db.library.toArray();
+    const restored = await allLibraryItems();
     expect(restored.map((i) => i.title).sort()).toEqual([
       'Little Scale',
       'Second Study',
@@ -125,7 +127,7 @@ describe('encrypted backup', () => {
   });
 
   it('refuses the wrong passphrase and leaves the device unchanged', async () => {
-    await db.library.add(item('Only One', [1], 1));
+    await addLibraryItem(item('Only One', [1], 1));
     const file = await createBackupFile(PASS, weak);
     await clearAll();
     await expect(restoreBackupFile(file, { passphrase: 'not the right one' })).rejects.toSatisfy(
@@ -198,14 +200,14 @@ function withSheet(title: string, addedAt: number): LibraryItem {
 
 describe('backup with sheet music', () => {
   it('keeps the PDF and its map, encrypted, and brings them back', async () => {
-    await db.library.add(withSheet('Sheet Study', 5000));
+    await addLibraryItem(withSheet('Sheet Study', 5000));
     const sheetOnly: LibraryItem = {
       ...item('Only The Sheet', [], 6000),
       fileName: 'Only The Sheet.pdf',
       format: 'pdf',
       sheet: { fileName: 'Only The Sheet.pdf', bytes: PDF, addedAt: 6000 },
     };
-    await db.library.add(sheetOnly);
+    await addLibraryItem(sheetOnly);
     const file = await createBackupFile(PASS, weak);
     const text = new TextDecoder('latin1').decode(file);
     expect(text).not.toContain('Private Sheet Name');
@@ -217,7 +219,7 @@ describe('backup with sheet music', () => {
       added: 2,
       sheets: 0,
     });
-    const restored = await db.library.toArray();
+    const restored = await allLibraryItems();
     const study = restored.find((i) => i.title === 'Sheet Study');
     expect(study?.sheet).toEqual({
       fileName: 'Private Sheet Name.pdf',
@@ -245,7 +247,7 @@ describe('backup with sheet music', () => {
       settings: [],
     });
     expect(summary).toMatchObject({ added: 1, sheets: 0 });
-    const [restored] = await db.library.toArray();
+    const [restored] = await allLibraryItems();
     expect(restored?.title).toBe('Old Piece');
     expect(restored && 'sheet' in restored).toBe(false);
   });
@@ -275,7 +277,7 @@ describe('backup with sheet music', () => {
       settings: null,
     });
     expect(summary.added).toBe(3);
-    const all = await db.library.toArray();
+    const all = await allLibraryItems();
     const byTitle = (title: string) => all.find((i) => i.title === title);
     expect(byTitle('Damaged Sheet')).toBeDefined();
     expect(byTitle('Damaged Sheet')?.sheet).toBeUndefined();
@@ -288,8 +290,8 @@ describe('backup with sheet music', () => {
     // Device B restored the pieces before they had sheets; device A then added them.
     const plain = item('Shared Piece', [3, 1, 4], 100);
     const other = item('Other Piece', [2, 7], 200);
-    const here = await db.library.add(plain);
-    await db.library.add({
+    const here = await addLibraryItem(plain);
+    await addLibraryItem({
       ...other,
       sheet: { fileName: 'Kept Here.pdf', bytes: PDF, addedAt: 1 },
     });
@@ -302,8 +304,8 @@ describe('backup with sheet music', () => {
       settings: null,
     });
     expect(summary).toMatchObject({ added: 0, skipped: 2, sheets: 1 });
-    expect((await db.library.get(here))?.sheet?.fileName).toBe('Private Sheet Name.pdf');
-    const kept = (await db.library.toArray()).find((i) => i.title === 'Other Piece');
+    expect((await getLibraryItem(here))?.sheet?.fileName).toBe('Private Sheet Name.pdf');
+    const kept = (await allLibraryItems()).find((i) => i.title === 'Other Piece');
     expect(kept?.sheet?.fileName).toBe('Kept Here.pdf');
   });
 });
