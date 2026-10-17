@@ -130,7 +130,8 @@ Switch the view with the buttons at the top right of the practice area.
 
 - **Falling notes** — bars fall toward the keys, like a rhythm game. Colours show the hand. The
   letter is the note name; the number is the finger.
-- **Score** — a scrolling line of engraved sheet music with a cursor.
+- **Score** — a scrolling line of engraved sheet music with a cursor. For a MIDI file the score is
+  written from the notes, with the sustain pedal marked where the file uses it.
 - **Sheet** — the music in pages, which suits reading ahead: your own PDF if the piece has one
   (see [Sheet music PDFs](#sheet-music-pdfs)), otherwise the engraved score. A Bluetooth page-turn
   foot pedal works here (see [Settings](#settings)).
@@ -155,8 +156,10 @@ Open **My library** and press **Import a file…**.
 | Sheet PDF  | `.pdf`                              | Kept with a piece as your sheet music; no notes are read |
 
 After choosing a file you see a **Check the import** step: the title, an estimated difficulty, the
-hand split point (for MIDI) and the tempo. Change what is wrong, then **Save to my library**. You can
-pick or drop several files at once; each piece is checked in turn.
+hand split point (for MIDI) and the tempo. You can also keep only some bars (**Bars to keep**,
+counted as the bars are played), to practise one part of a long piece, and add **Tags**: words,
+with commas between them, that the library's search finds the piece by. Change what is wrong, then
+**Save to my library**. You can pick or drop several files at once; each piece is checked in turn.
 
 - Files are converted **in your browser** and stored in its private storage. Nothing is uploaded and
   there is no way to share a library item.
@@ -183,6 +186,10 @@ notes come from the MIDI file, and the PDF is kept as the sheet music you read.
   score file with **Add the MIDI or score file** on its card.
 - Every piece's card can **Add sheet music (PDF)**, or **Replace** and **Remove** the one it has. A
   piece with sheet music has a **Sheet** badge.
+- For a MIDI file with its PDF, the **Score** tab follows how the PDF writes the music: the staff
+  each note is on, how it is spelt (F♯ or G♭) and where the clefs change. OpenTiles reads this from
+  the printed notes of the PDF, on your device, the first time the piece opens. Scanned PDFs, and
+  pieces whose bars you corrected with **Adjust bars**, keep OpenTiles' own engraving.
 - PDFs up to 60 MB are accepted. Like the rest of your library they stay on this device and go only
   into your own encrypted backup.
 
@@ -194,10 +201,14 @@ Open **Settings**; changes are kept on your device.
 - **Note names** — letters (C D E F G A B), German (with H), or fixed-do syllables; sharps or flats.
 - **Keyboard** — number of keys, lowest key, fit-to-piece, which fingerings to show.
 - **MIDI keyboard** — test it, and choose where the app's sound plays.
-- **Foot pedal page turn** — pick the keys your Bluetooth pedal sends (arrows and Page Up/Down are
-  offered) and press the pedal to try it.
-- **Accessibility** — high contrast, large print, reduced motion and a left-handed layout (practice
-  controls on the left).
+- **Foot pedal page turn** — pick the keys your Bluetooth pedal sends (arrows, Page Up/Down, Space
+  and Enter are offered, or press **Detect key** and then the pedal). They turn the pages in the
+  Sheet view, whether it shows your PDF or the engraved pages, and in a sheet-only piece; the
+  arrows, Page Up/Down and Space always do. While Listen or Play along runs, the pages follow the
+  music instead.
+- **Accessibility** — appearance (light or dark, or the same as this device), high contrast, large
+  print, reduced motion and a left-handed layout (practice controls on the left). On a touch screen
+  every button is at least a finger's width.
 - **Backup** — save an encrypted backup of your library (sheet music included) and progress, and
   restore it on another device. Optional encrypted sync needs a sync server; see [docs/sync.md](sync.md).
 - **Crash reports** — off unless you switch them on, and only if your copy has a server to send to.
