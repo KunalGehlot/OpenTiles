@@ -1,6 +1,7 @@
 // Detector Lab (PLAN.md P0-10): the Phase 0 tool for trying microphone recognition on a real
 // piano, recording the test set (P0-04) and measuring latency (P0-11).
 import { useEffect, useRef, useState } from 'react';
+import { stopPlayer } from '../player/browser';
 import type { DetectorEvent, DetectorMode, MicDetector, ThresholdName } from '@opentiles/engine';
 import { noteName } from '@opentiles/song-model';
 import { synthFor } from '../audio/synth';
@@ -48,6 +49,9 @@ export function DetectorLab() {
   const onsetTimes = useRef<number[]>([]);
 
   const expected = parseNoteNames(expectedText);
+
+  // The microphone must not hear the Player (P6-05: one owner of the sound).
+  useEffect(() => stopPlayer(), []);
 
   useEffect(
     () => () => {

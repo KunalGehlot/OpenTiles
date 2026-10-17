@@ -40,6 +40,8 @@ export interface CollectionParts {
   catalogue: readonly CataloguePiece[];
   library: readonly LibraryRow[];
   progress: readonly Progress[];
+  /** When the Player last played each piece, on this device (not a practice run). */
+  listened?: Readonly<Record<string, number>>;
   /** Catalogue lengths remembered on this device, by slug. */
   catalogueSeconds: Readonly<Record<string, number>>;
   /** Development and preview builds also list catalogue pieces awaiting review. */
@@ -49,6 +51,9 @@ export interface CollectionParts {
 /** The catalogue, then the library, each in its own order; the Player sorts as the learner asks. */
 export function buildCollection(parts: CollectionParts): CollectionEntry[] {
   const played = new Map(parts.progress.map((p) => [p.key, p.lastPlayedAt]));
+  for (const [key, at] of Object.entries(parts.listened ?? {})) {
+    played.set(key, Math.max(played.get(key) ?? 0, at));
+  }
   const catalogue = parts.catalogue
     .filter((p) => p.verified || parts.showUnverified)
     .map((p): CollectionEntry => {

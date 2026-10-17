@@ -333,6 +333,18 @@ describe('PianoSampler', () => {
     expect(ctx.sources[1]?.stoppedAt).toBe(scheduled);
   });
 
+  it('silences every note at once, and stops ones that have not started', () => {
+    const ctx = new FakeContext();
+    const s = new PianoSampler(asContext(ctx), fakeSamples());
+    s.play(60, 0, 4, 80);
+    s.play(64, 2, 1, 80);
+    ctx.currentTime = 0.5;
+    s.silence();
+    // The sounding one fades out now; the later one stops before it starts, so it never plays.
+    expect(ctx.sources[0]?.stoppedAt).toBeLessThan(0.7);
+    expect(ctx.sources[1]?.stoppedAt).toBe(0.5);
+  });
+
   it('forgets voices whose sample has ended', () => {
     const ctx = new FakeContext();
     const s = new PianoSampler(asContext(ctx), fakeSamples());

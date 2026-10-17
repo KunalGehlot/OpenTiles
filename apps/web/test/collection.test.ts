@@ -128,6 +128,15 @@ describe('the Player’s collection (P6-04)', () => {
     expect(buildCollection({ ...parts, showUnverified: true })).toHaveLength(5);
   });
 
+  it('counts listening in the Player as played, whichever was later', () => {
+    const entries = buildCollection({
+      ...parts,
+      listened: { 'catalogue:ode-to-joy': 90, 'library:1': 10 },
+    });
+    expect(entries.find((e) => e.key === 'catalogue:ode-to-joy')?.lastPlayedAt).toBe(90);
+    expect(entries.find((e) => e.key === 'library:1')?.lastPlayedAt).toBe(70);
+  });
+
   it('searches titles, composers, levels and tags', () => {
     const entries = buildCollection(parts);
     expect(searchCollection(entries, 'petzold').map((e) => e.title)).toEqual(['Minuet in G']);

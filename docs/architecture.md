@@ -277,6 +277,15 @@ moves the highlight and cursor from `requestAnimationFrame` and scrolls to keep 
   transaction. The upgrade from version 1 moves the bytes one piece at a time. The backup format
   and the sync records are unchanged, and the sync signature is computed from the row, so nothing
   is uploaded again after the upgrade.
+- **The Player's transport** (P6-05, `player/transport.ts`, `player/browser.ts`). One transport
+  for the app, so the music goes on between pages; practice, drills and the Detector Lab stop it.
+  It keeps time on the page's clock (`performance.now()`), which runs whether or not sound has
+  started; this device's piano gets the times converted to the audio clock through
+  `getOutputTimestamp()`, a MIDI keyboard gets them as time stamps. A dedicated worker posts a
+  tick every 25 ms, since a hidden tab stops animation frames and throttles the page's timers; on
+  each tick notes are handed over about 120 ms ahead (less for a MIDI output without `clear()`),
+  1.5 s while the page is hidden. The queue (`player/queue.ts`) shuffles so that every piece plays
+  once per round.
 - **The Player's collection** (`player/collection.ts`, `player/load.ts`) is the catalogue (verified
   pieces only in production) and the library rows in one list, with the last time each was played
   from `progress`. A library piece's length comes from its song; a catalogue piece's is remembered

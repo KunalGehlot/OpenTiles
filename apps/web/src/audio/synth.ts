@@ -89,6 +89,11 @@ export class Piano implements Instrument {
   click(when: number, accent = false): void {
     playClick(this.ctx, this.out, when, accent);
   }
+
+  /** Stops the sampled piano's notes at once; the stand-in synth's are short anyway. */
+  silence(): void {
+    this.sampler?.silence();
+  }
 }
 
 const pianos = new WeakMap<BaseAudioContext, Piano>();
