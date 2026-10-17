@@ -43,6 +43,11 @@ export interface MidiSetting {
   playback: MidiPlayback;
   /** The MIDI output to play on; empty for the keyboard that is connected. */
   output: string;
+  /**
+   * Outputs found to send the app's notes back to the app ("MIDI thru"; the Settings test note
+   * finds them), whose copies practice ignores as input (P6-02).
+   */
+  thru: string[];
 }
 
 /** Which fingers to show (P4-08): suggested ones fill the gaps the score leaves. */
@@ -83,7 +88,7 @@ export const DEFAULT_APP_SETTINGS: Readonly<AppSettings> = Object.freeze({
   noteNames: true,
   noteLabels: 'auto',
   noteSpelling: 'key',
-  midi: Object.freeze({ echo: false, playback: 'device', output: '' }),
+  midi: Object.freeze({ echo: false, playback: 'device', output: '', thru: [] }),
 }) as Readonly<AppSettings>;
 
 /** Keys most Bluetooth page-turn pedals send, in the order the settings list offers them. */
@@ -167,6 +172,9 @@ function normaliseMidi(value: unknown): MidiSetting {
     echo: bool(v.echo, false),
     playback: v.playback === 'keyboard' || v.playback === 'both' ? v.playback : 'device',
     output: typeof v.output === 'string' && v.output.length <= 200 ? v.output : '',
+    thru: Array.isArray(v.thru)
+      ? v.thru.filter((n): n is string => typeof n === 'string' && n.length <= 200).slice(0, 20)
+      : [],
   };
 }
 

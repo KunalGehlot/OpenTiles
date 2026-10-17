@@ -723,8 +723,8 @@ export const de: Readonly<Record<string, string>> = {
   'Plug in your keyboard and switch it on; it appears here by itself.':
     'Steck dein Keyboard an und schalte es ein; es erscheint hier von selbst.',
   // MIDI help (iPad and Safari)
-  'Web pages on iPad and iPhone cannot read MIDI keyboards: Safari and every other browser there use Apple’s WebKit engine, which has no Web MIDI. App Store apps such as Flowkey use Apple’s CoreMIDI instead, and so does the OpenTiles iPad app. In the browser, use the microphone: it listens to your piano.':
-    'Webseiten auf iPad und iPhone können keine MIDI-Keyboards lesen: Safari und alle anderen Browser dort nutzen Apples WebKit-Engine, die kein Web MIDI hat. Apps aus dem App Store wie Flowkey nutzen stattdessen Apples CoreMIDI, genau wie die OpenTiles-App für das iPad. Im Browser nimm das Mikrofon: Es hört deinem Klavier zu.',
+  'Web pages on iPad and iPhone cannot read MIDI keyboards: Safari and every other browser there use Apple’s WebKit engine, which has no Web MIDI. App Store apps such as Flowkey use Apple’s CoreMIDI instead, and so does the OpenTiles iPad app. In the browser, use the microphone: it listens to your piano. Many digital pianos also work as a USB audio interface: plugged in, they play the iPad’s sound, the app’s notes included, through their own speakers.':
+    'Webseiten auf iPad und iPhone können keine MIDI-Keyboards lesen: Safari und alle anderen Browser dort nutzen Apples WebKit-Engine, die kein Web MIDI hat. Apps aus dem App Store wie Flowkey nutzen stattdessen Apples CoreMIDI, genau wie die OpenTiles-App für das iPad. Im Browser nimm das Mikrofon: Es hört deinem Klavier zu. Viele Digitalpianos sind auch ein USB-Audio-Interface: Angesteckt spielen sie den Klang des iPads, auch die Noten der App, über ihre eigenen Lautsprecher.',
   'Safari cannot read MIDI keyboards: its WebKit engine has no Web MIDI (native apps use Apple’s CoreMIDI instead). Open OpenTiles in Chrome, Edge or Firefox on this Mac, or use the microphone.':
     'Safari kann keine MIDI-Keyboards lesen: Seine WebKit-Engine hat kein Web MIDI (Apps nutzen stattdessen Apples CoreMIDI). Öffne OpenTiles auf diesem Mac in Chrome, Edge oder Firefox oder nutze das Mikrofon.',
   // MIDI keyboard settings
@@ -736,12 +736,38 @@ export const de: Readonly<Record<string, string>> = {
     'Kein MIDI-Keyboard gefunden. Verbinde es und schalte es ein; es erscheint hier von selbst.',
   'App’s notes play on': 'Noten der App spielen auf',
   'This device': 'Diesem Gerät',
-  'My MIDI keyboard': 'Meinem MIDI-Keyboard',
+  'My keyboard': 'Meinem Keyboard',
   'Play my MIDI keys on this device': 'Meine MIDI-Tasten auf diesem Gerät spielen',
   'The notes you play on the keyboard also sound from this computer or tablet: for a keyboard without speakers, or to listen in headphones on this device. Turn the keyboard’s own volume down if you hear both.':
     'Die Noten, die du auf dem Keyboard spielst, klingen auch aus diesem Computer oder Tablet: für ein Keyboard ohne Lautsprecher oder zum Hören mit Kopfhörern an diesem Gerät. Dreh die Lautstärke des Keyboards herunter, wenn du beides hörst.',
-  'Listen mode, the other hand and listening back. “My MIDI keyboard” plays them with the keyboard’s own sound; the metronome stays on this device.':
-    'Anhören, die andere Hand und das Nachhören. „Meinem MIDI-Keyboard“ spielt sie mit dem Klang des Keyboards; das Metronom bleibt auf diesem Gerät.',
+  'Listen mode, the other hand and listening back; also under “Plays on” in practice. “My keyboard” plays them with the keyboard’s own sound; the metronome stays on this device.':
+    'Anhören, die andere Hand und das Nachhören; auch unter „Spielt auf“ beim Üben. „Meinem Keyboard“ spielt sie mit dem Klang des Keyboards; das Metronom bleibt auf diesem Gerät.',
+  'This keyboard sends the app’s notes back (MIDI thru). OpenTiles ignores those copies, so they don’t count as yours.':
+    'Dieses Keyboard schickt die Noten der App zurück (MIDI Thru). OpenTiles übergeht diese Kopien, damit sie nicht als deine zählen.',
+  // Plays on (P6-01)
+  'Plays on': 'Spielt auf',
+  Connect: 'Verbinden',
+  'The app’s notes play on {name}': 'Die Noten der App spielen auf {name}',
+  'The app’s notes play on this device': 'Die Noten der App spielen auf diesem Gerät',
+  'Your keyboard’s MIDI output': 'MIDI-Ausgang deines Keyboards',
+  'The metronome and count-in stay on this device.':
+    'Metronom und Einzählen bleiben auf diesem Gerät.',
+  'This browser cannot play on a MIDI keyboard, so the app’s notes play on this device.':
+    'Dieser Browser kann nicht auf einem MIDI-Keyboard spielen, deshalb spielen die Noten der App auf diesem Gerät.',
+  'Your keyboard isn’t connected, so the app’s notes play on this device.':
+    'Dein Keyboard ist nicht verbunden, deshalb spielen die Noten der App auf diesem Gerät.',
+  'No MIDI keyboard is connected, so the app’s notes play on this device. Plug it in and switch it on; the notes move to it by themselves.':
+    'Kein MIDI-Keyboard ist verbunden, deshalb spielen die Noten der App auf diesem Gerät. Steck es an und schalte es ein; die Noten wechseln von selbst dorthin.',
+  'Your keyboard sends notes but offers no MIDI output here, so the app’s notes play on this device.':
+    'Dein Keyboard sendet Noten, bietet hier aber keinen MIDI-Ausgang, deshalb spielen die Noten der App auf diesem Gerät.',
+  'Choose which MIDI output is your keyboard under “Plays on”; until then the app’s notes play on this device.':
+    'Wähl unter „Spielt auf“, welcher MIDI-Ausgang dein Keyboard ist; bis dahin spielen die Noten der App auf diesem Gerät.',
+  'Here the app’s notes play on this device. Many digital pianos also work as a USB audio interface: plugged into the iPad or iPhone, they play its sound, the app’s notes included, through their own speakers.':
+    'Hier spielen die Noten der App auf diesem Gerät. Viele Digitalpianos sind auch ein USB-Audio-Interface: Am iPad oder iPhone angesteckt, spielen sie dessen Klang, auch die Noten der App, über ihre eigenen Lautsprecher.',
+  'Here the app’s notes play on this device. To play them on a MIDI keyboard, open OpenTiles in Chrome, Edge or Firefox.':
+    'Hier spielen die Noten der App auf diesem Gerät. Um sie auf einem MIDI-Keyboard zu spielen, öffne OpenTiles in Chrome, Edge oder Firefox.',
+  'Here the app’s notes play on this device: this browser cannot reach MIDI keyboards.':
+    'Hier spielen die Noten der App auf diesem Gerät: Dieser Browser erreicht keine MIDI-Keyboards.',
   'Test your keyboard': 'Keyboard testen',
   'Connect the keyboard and switch it on, then press Test and play a key. The note shows here, so you can see that this browser hears it.':
     'Verbinde das Keyboard und schalte es ein, dann drück auf Testen und spiel eine Taste. Die Note erscheint hier – so siehst du, dass dieser Browser sie hört.',

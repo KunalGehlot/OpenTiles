@@ -72,7 +72,7 @@ export function midiUnavailableMessage(reason: MidiUnavailable): string {
   switch (reason) {
     case 'apple-mobile':
       return t(
-        'Web pages on iPad and iPhone cannot read MIDI keyboards: Safari and every other browser there use Apple’s WebKit engine, which has no Web MIDI. App Store apps such as Flowkey use Apple’s CoreMIDI instead, and so does the OpenTiles iPad app. In the browser, use the microphone: it listens to your piano.',
+        'Web pages on iPad and iPhone cannot read MIDI keyboards: Safari and every other browser there use Apple’s WebKit engine, which has no Web MIDI. App Store apps such as Flowkey use Apple’s CoreMIDI instead, and so does the OpenTiles iPad app. In the browser, use the microphone: it listens to your piano. Many digital pianos also work as a USB audio interface: plugged in, they play the iPad’s sound, the app’s notes included, through their own speakers.',
       );
     case 'safari':
       return t(
@@ -225,7 +225,14 @@ export class MidiInput implements MidiKeyboardInput {
     const port = outputs.find((o) => (o.name ?? 'MIDI device') === pick);
     if (!port) return null;
     return {
-      send: (data, timestamp) => port.send(data, timestamp),
+      send: (data, timestamp) => {
+        try {
+          port.send(data, timestamp);
+        } catch {
+          // Unplugged or switched off: the browser throws, and the screen moves the notes to this
+          // device as soon as it reports the change. Throwing here would stop the drawing loop.
+        }
+      },
       clear: () => (port as MIDIOutput & { clear?: () => void }).clear?.(),
     };
   }

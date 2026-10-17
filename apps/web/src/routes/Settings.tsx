@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { BackupSection } from '../backup/BackupSection';
 import { href } from '../lib/router';
 import { customKeyboard, KEYBOARD_PRESETS } from '@opentiles/practice';
@@ -251,6 +251,9 @@ function Practice({
   );
 }
 
+/** How long a "MIDI thru" keyboard may take to send the test note back, in seconds. */
+const THRU_WAIT_S = 0.2;
+
 /**
  * MIDI keyboard: where notes sound, which output to play on, and a live test that shows what the
  * keyboard sends, so a learner can tell at once whether this browser hears it.
@@ -270,6 +273,12 @@ function MidiSection({
   const [lastNote, setLastNote] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [waiting, setWaiting] = useState(false);
+  // The test note, while its copy may still come back from a "MIDI thru" keyboard (P6-02).
+  const probe = useRef<{ pitch: number; at: number; seen: boolean } | null>(null);
+  const [thruFound, setThruFound] = useState(false);
+  // The latest MIDI settings, for the answer that arrives after the test note.
+  const latest = useRef(m);
+  latest.current = m;
   useEffect(() => () => input?.stop(), [input]);
 
   const test = async () => {
@@ -277,7 +286,14 @@ function MidiSection({
     setWaiting(false);
     try {
       const next = createMidiInput();
-      next.onNote = (e) => setLastNote(`${noteLabel(e.pitch)} (${e.velocity ?? 0})`);
+      next.onNote = (e) => {
+        const p = probe.current;
+        if (p && e.pitch === p.pitch && e.time - p.at < THRU_WAIT_S) {
+          p.seen = true;
+          return;
+        }
+        setLastNote(`${noteLabel(e.pitch)} (${e.velocity ?? 0})`);
+      };
       next.onDevicesChanged = (names) => {
         setDevices(names);
         setOutputs(next.outputNames);
@@ -294,10 +310,23 @@ function MidiSection({
 
   const sendTestNote = async () => {
     const sink = input?.output(m.output);
-    if (!sink) return;
+    const name = chosen;
+    if (!sink || !name) return;
     await unlockAudio();
     const out = new MidiOutInstrument(sink, now);
+    probe.current = { pitch: 60, at: now(), seen: false };
     out.play(60, now(), 0.6, 90);
+    // A keyboard that sends what it receives back ("MIDI thru") returns the note at once. Practice
+    // then ignores such copies, or play-along would score the app's notes as the learner's.
+    window.setTimeout(() => {
+      const seen = probe.current?.seen ?? false;
+      probe.current = null;
+      setThruFound(seen);
+      const cur = latest.current;
+      const others = cur.thru.filter((n) => n !== name);
+      const thru = seen ? [...others, name] : others;
+      if (thru.join('\n') !== cur.thru.join('\n')) set({ midi: { ...cur, thru } });
+    }, THRU_WAIT_S * 1000);
   };
 
   const supported = midiSupported();
@@ -324,23 +353,23 @@ function MidiSection({
         checked={m.echo}
         onChange={(echo) => setMidi({ echo })}
       />
-      <Setting
-        label={t('App’s notes play on')}
-        hint={t(
-          'Listen mode, the other hand and listening back. “My MIDI keyboard” plays them with the keyboard’s own sound; the metronome stays on this device.',
-        )}
-      >
-        <select
-          value={m.playback}
-          onChange={(e) => setMidi({ playback: e.target.value as MidiPlayback })}
-        >
-          <option value="device">{t('This device')}</option>
-          <option value="keyboard">{t('My MIDI keyboard')}</option>
-          <option value="both">{t('Both')}</option>
-        </select>
-      </Setting>
       {supported && (
         <>
+          <Setting
+            label={t('App’s notes play on')}
+            hint={t(
+              'Listen mode, the other hand and listening back; also under “Plays on” in practice. “My keyboard” plays them with the keyboard’s own sound; the metronome stays on this device.',
+            )}
+          >
+            <select
+              value={m.playback}
+              onChange={(e) => setMidi({ playback: e.target.value as MidiPlayback })}
+            >
+              <option value="device">{t('This device')}</option>
+              <option value="keyboard">{t('My keyboard')}</option>
+              <option value="both">{t('Both')}</option>
+            </select>
+          </Setting>
           <h3>{t('Test your keyboard')}</h3>
           <p className="muted">
             {t(
@@ -357,6 +386,13 @@ function MidiSection({
             <ul className="muted" data-testid="midi-test">
               <li>{t('Keyboards: {names}', { names: devices.join(', ') || t('none found') })}</li>
               <li>{t('Last note: {note}', { note: lastNote ?? t('none yet — play a key') })}</li>
+              {thruFound && (
+                <li data-testid="midi-thru">
+                  {t(
+                    'This keyboard sends the app’s notes back (MIDI thru). OpenTiles ignores those copies, so they don’t count as yours.',
+                  )}
+                </li>
+              )}
             </ul>
           )}
           {input && outputs.length > 1 && (
