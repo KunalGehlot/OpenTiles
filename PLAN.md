@@ -604,8 +604,11 @@ without a word when no MIDI output is found.
 - [ ] **P6-13** (human) The maintainer's checks: their keyboard in Chrome, Edge and Firefox on the Mac;
       the Player over USB audio on the iPad, and whether the microphone hears the keyboard's USB
       audio; the iPad app; design approval.
-- [ ] **P6-14** (GOV) Docs: user guide, FAQ (MIDI on iPad), architecture (scheduler, transport, MIDI
-      out), README.
+- [~] **P6-14** (GOV) Docs: user guide, FAQ (MIDI on iPad), architecture (scheduler, transport, MIDI
+  out), README. Done: the FAQ on MIDI keyboards on an iPad, the architecture of the scheduler,
+  transport and MIDI out (P6-03, P6-05), and the user guide for this round's features (bars to
+  keep and tags, light or dark, the pedal's keys, the Score tab following a PDF, pedal marks).
+  Left: the Player in the user guide and the README, once its design is chosen (P6-06).
 
 ## Cross-cutting checklists
 
@@ -631,6 +634,8 @@ Record the outcome as an ADR in `docs/adr/` and tick it here.
 - [x] Engine exposes a plain C ABI instead of wasm-bindgen glue — ADR 0002.
 
 ## Changelog
+
+- **2026-10-17** — P6-14 (part): the user guide and FAQ for this round's features.
 
 - **2026-10-17** — P5-13: the score links its notes faster in long pieces.
 

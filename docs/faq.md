@@ -59,6 +59,15 @@ very welcome: use the
 Your keyboard makes sound itself and the app plays it too. Switch off **Play my MIDI keys on this
 device** in **Settings → MIDI keyboard**, or turn the keyboard's speakers down.
 
+### Can I use a MIDI keyboard on an iPad or iPhone?
+
+Not in a browser: no browser on an iPad or iPhone can reach MIDI keyboards, and Safari is not
+supported. Two things help in the meantime. Many digital pianos also work as a USB audio
+interface: plugged into an iPad, they play its sound through their own speakers, the app's notes
+included. And an acoustic or digital piano can be heard through the microphone. An OpenTiles iPad
+app that talks to MIDI keyboards over USB and Bluetooth is being built
+([`apps/ios-shell`](../apps/ios-shell/README.md)) but is not released yet.
+
 ### The timing feels off.
 
 Run **Calibrate timing** or **Measure keyboard delay** under **Options** on the practice screen.
@@ -72,8 +81,9 @@ your device, browser and piano type.
 
 ### Can I turn pages with a foot pedal?
 
-Yes. Enable **Settings → Foot pedal page turn** and press your pedal to teach OpenTiles which keys it
-sends.
+Yes. Most pedals send the arrow keys or Page Up/Down, which turn the pages of the Sheet view
+already. For a pedal that sends other keys, enable **Settings → Foot pedal page turn** and press
+your pedal to teach OpenTiles which keys it sends.
 
 ## Your music
 
@@ -83,6 +93,11 @@ MusicXML (`.musicxml`, `.xml`, `.mxl`), MuseScore (`.mscz`, `.mscx`), ABC (`.abc
 and recordings (`.wav`, `.mp3`, `.m4a`, `.ogg`, `.flac`). Notes from a recording are detected on your
 device and are only approximate. A sheet-music PDF (`.pdf`) is kept with a piece. See
 [Bringing your own music](user-guide.md#bringing-your-own-music).
+
+### Can I practise only part of a piece?
+
+Yes. Loop a few bars in practice (**Loop**), or keep only some bars when you import the piece
+(**Check the import → Bars to keep**).
 
 ### Can I import a PDF or a photo of sheet music?
 
