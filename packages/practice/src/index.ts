@@ -15,6 +15,8 @@ export { summarise } from './summary';
 export type { RunSummary } from './summary';
 export { Timeline, clampTempo, MIN_TEMPO, MAX_TEMPO } from './timeline';
 export { buildPlayback, DEFAULT_VELOCITY, PlaybackCursor } from './playback';
+export { EVEN_VELOCITY, touchVelocities } from './touch';
+export type { Touch } from './touch';
 export type {
   PedalKind,
   PedalState,

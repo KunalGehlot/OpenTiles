@@ -58,7 +58,8 @@ const notes = (events: readonly PlaybackEvent[]) =>
 
 describe('buildPlayback (P6-03)', () => {
   it('times every note in song seconds, with its velocity', () => {
-    const events = buildPlayback(piece);
+    // Even touch: a note without a velocity of its own plays mezzo-forte.
+    const events = buildPlayback(piece, { touch: 'even' });
     expect(pitches(events)).toEqual([48, 64, 67, 65, 62, 43, 64]);
     expect(events[0]).toEqual({
       kind: 'note',

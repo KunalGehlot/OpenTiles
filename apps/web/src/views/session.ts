@@ -260,6 +260,8 @@ export class PracticeSession {
 
   private timeline: Timeline | null = null;
   private scorer: PlayAlongScorer | null = null;
+  /** How notes without a velocity of their own are played (P6-11, Settings). */
+  touch: 'natural' | 'even' = 'natural';
   /** The notes this run plays (Listen, or the other hand in play-along; P6-03). */
   private playback: PlaybackCursor | null = null;
   private startedAt = 0;
@@ -834,7 +836,7 @@ export class PracticeSession {
     // The other hand plays without the file's pedal: it would hold the learner's notes too.
     const events =
       this.mode === 'listen'
-        ? buildPlayback(this.song, { fromBeat, toBeat })
+        ? buildPlayback(this.song, { fromBeat, toBeat, touch: this.touch })
         : this.accompany
           ? buildPlayback(this.song, {
               hands: this.hands,
@@ -842,6 +844,7 @@ export class PracticeSession {
               fromBeat,
               toBeat,
               pedals: false,
+              touch: this.touch,
             })
           : [];
     this.playback = new PlaybackCursor(

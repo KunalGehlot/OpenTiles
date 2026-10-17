@@ -744,6 +744,13 @@ export const de: Readonly<Record<string, string>> = {
     'Anhören, die andere Hand und das Nachhören; auch unter „Spielt auf“ beim Üben. „Meinem Keyboard“ spielt sie mit dem Klang des Keyboards; das Metronom bleibt auf diesem Gerät.',
   'This keyboard sends the app’s notes back (MIDI thru). OpenTiles ignores those copies, so they don’t count as yours.':
     'Dieses Keyboard schickt die Noten der App zurück (MIDI Thru). OpenTiles übergeht diese Kopien, damit sie nicht als deine zählen.',
+  // Touch (P6-11)
+  'How the app plays': 'Wie die App spielt',
+  Touch: 'Anschlag',
+  'For pieces whose file has no loudness of its own, such as the catalogue: natural brings out the melody and the strong beats, even plays every note alike. MIDI files keep their own.':
+    'Für Stücke, deren Datei keine eigene Lautstärke hat, etwa im Katalog: Natürlich hebt die Melodie und die betonten Zählzeiten hervor, gleichmäßig spielt jede Note gleich laut. MIDI-Dateien behalten ihre eigene.',
+  Natural: 'Natürlich',
+  Even: 'Gleichmäßig',
   // Plays on (P6-01)
   'Plays on': 'Spielt auf',
   Connect: 'Verbinden',

@@ -44,6 +44,8 @@ export interface TransportDeps {
   played?(key: CollectionKey): void;
   /** Keep the screen on, or let it sleep again. */
   awake?(on: boolean): void;
+  /** How notes without a velocity are played (P6-11); natural when not given. */
+  touch?(): 'natural' | 'even';
 }
 
 export type TransportStatus = 'idle' | 'loading' | 'playing' | 'paused' | 'between';
@@ -292,7 +294,7 @@ export class PlayerTransport {
   private startAt(seconds: number): void {
     const { piece, hands, tempo } = this.stateValue;
     if (!piece) return;
-    const events = buildPlayback(piece.song, { hands });
+    const events = buildPlayback(piece.song, { hands, touch: this.deps.touch?.() ?? 'natural' });
     this.endSeconds = events.reduce(
       (end, e) => (e.kind === 'note' ? Math.max(end, e.end) : end),
       0,

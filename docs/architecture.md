@@ -104,7 +104,9 @@ fromBeat, toBeat })` lists the notes (and, from P6-10, pedal events) in _song se
   `take(until, now)` hands out what is due before the caller's look-ahead and skips notes more than
   50 ms late (pedal events are never skipped), `seek(seconds, at)` returns the notes that would
   already be sounding there with what is left of them and the pedals' positions, and
-  `setTempo(factor, at)` re-anchors without a jump. The `Song` never holds seconds. How far ahead to
+  `setTempo(factor, at)` re-anchors without a jump. Notes without a velocity of their own (MusicXML,
+  ABC, the catalogue) get one from `touchVelocities` (P6-11): natural touch brings out the melody
+  and the strong beats, "even" plays them alike (Settings → Practice → Touch). The `Song` never holds seconds. How far ahead to
   schedule is the caller's choice: the practice session hands notes over 0.3 s ahead, or as little
   as its instrument asks for (`Instrument.lookAhead`; 0.1 s for a MIDI output without `clear()`).
 
