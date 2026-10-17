@@ -408,7 +408,11 @@ images, sounds or fonts, and credit the inspiration in [CREDITS.md](CREDITS.md).
   under the play bar from the start, so Play no longer jumps; under Reduce motion it jumps
   straight back. Every key press, and every note the piece plays in listen and play-along,
   dips its key for a moment, so a repeated note shows as a new press while the key stays lit.
-  Left: everything else on the list, and checking both changes in the maintainer's Chrome.
+  Done (2026-10-17): 44 px touch targets where the pointer is a finger (`styles/touch.css`; a
+  mouse keeps the denser sizes), measured on every main page, a library card and the practice
+  Options panel by `e2e/touch.spec.ts`; on an iPad in landscape the falling notes lose about 65 px
+  of height to the taller bars. Left: the rest of the list, and checking the changes in the
+  maintainer's Chrome.
 - [ ] **P5-10** (human) Release gate: frame time on an older iPad, a MIDI keyboard on an iPad through
       the iPad app (Safari has no Web MIDI; Firefox confirmed working 2026-10-09), legal consultation (P2-18), trademark (the domain
       opentiles.site was registered on 2026-10-10), a native German read-through, README
@@ -621,6 +625,8 @@ Record the outcome as an ADR in `docs/adr/` and tick it here.
 - [x] Engine exposes a plain C ABI instead of wasm-bindgen glue — ADR 0002.
 
 ## Changelog
+
+- **2026-10-17** — P5-09: 44 px touch targets on touch screens.
 
 - **2026-10-17** — P6-10: the score of a MIDI piece marks the sustain pedal.
 
