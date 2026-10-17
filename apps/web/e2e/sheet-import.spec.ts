@@ -273,3 +273,33 @@ test('the Score tab of a MIDI piece follows how its PDF spells the notes (P5-18)
   await expect(strip.locator('> svg')).toBeVisible({ timeout: 20_000 });
   await expect(flats).not.toHaveCount(0);
 });
+
+test('the review keeps the bars chosen and the tags, and the library finds the piece by a tag (P1-07)', async ({
+  page,
+}) => {
+  await pickFiles(page, [
+    { name: 'Eight Bars.mid', mimeType: 'audio/midi', buffer: notationMidi() },
+  ]);
+  await expect(page.getByRole('heading', { name: 'Check the import' })).toBeVisible();
+  await expect(page.getByText(/ in 8 bars /)).toBeVisible();
+  await page.getByRole('spinbutton', { name: 'From bar' }).fill('3');
+  await page.getByRole('spinbutton', { name: 'To bar' }).fill('5');
+  await expect(page.getByText(/ in 3 bars /)).toBeVisible();
+  await page.getByRole('textbox', { name: 'Tags' }).fill('exam, warm-up, Exam');
+  await page.getByRole('button', { name: 'Save to my library' }).click();
+  await expect(page).toHaveURL(/#\/practice\/library\//);
+
+  await page.goto('./#/library');
+  const piece = card(page, 'Eight Bars');
+  await expect(piece.locator('.library-item__tags')).toHaveText('exam · warm-up');
+  // A second piece without tags, so the library offers its search.
+  await pickFiles(page, [midi('Little Study.mid')]);
+  await page.getByRole('button', { name: 'Save to my library' }).click();
+  await expect(page).toHaveURL(/#\/practice\/library\//);
+  await page.goto('./#/library');
+  const search = page.getByRole('searchbox', { name: 'Search your library' });
+  await search.fill('warm');
+  await expect(page.locator('.library-item h3')).toHaveText(['Eight Bars']);
+  await search.fill('lullaby');
+  await expect(page.locator('.library-item')).toHaveCount(0);
+});

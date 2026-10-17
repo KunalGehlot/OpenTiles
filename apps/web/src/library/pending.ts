@@ -17,6 +17,8 @@ export interface Pending {
   approximate: boolean;
   /** The sheet-music PDF to keep with the piece (ADR 0018). */
   sheet?: SheetFile;
+  /** Words to find the piece by in the library (P1-07). */
+  tags?: string[];
 }
 
 /** Largest score file and recording the library accepts, so a huge file cannot hang the tab. */

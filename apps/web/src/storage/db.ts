@@ -12,6 +12,11 @@ export interface ImportSettings {
   splitPoint?: number;
   /** Base tempo override (quarter notes per minute). */
   baseBpm?: number;
+  /**
+   * The bars kept (P1-07), by their place in the order they are played, first and last included,
+   * counted from 0; every bar when absent.
+   */
+  trim?: { from: number; to: number };
 }
 
 /**
