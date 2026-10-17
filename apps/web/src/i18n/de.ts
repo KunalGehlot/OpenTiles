@@ -773,6 +773,10 @@ export const de: Readonly<Record<string, string>> = {
   Pause: 'Pause',
   'Next piece': 'Nächstes Stück',
   Repeat: 'Wiederholen',
+  'Repeat this piece': 'Dieses Stück wiederholen',
+  'Your keyboard was disconnected.': 'Dein Keyboard wurde getrennt.',
+  'Play on this device': 'Auf diesem Gerät spielen',
+  'This piece could not be loaded.': 'Dieses Stück konnte nicht geladen werden.',
   'Now playing': 'Läuft gerade',
   'Everything you can play, the catalogue and your library, played on this device or your keyboard.':
     'Alles, was du spielen kannst, der Katalog und deine Bibliothek – auf diesem Gerät oder auf deinem Keyboard.',

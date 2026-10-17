@@ -1,27 +1,58 @@
-// The Player (P6-06 design prototype for P6-07, ADR 0019): all the learner's music in one list,
-// and the piece playing. Two designs of "Now playing" sit side by side behind a switch until the
-// maintainer chooses: A, a record sleeve (a large generated cover, the piece's picture as the seek
-// bar, a slim keyboard below), and B, a stage (the notes rising from a wide keyboard behind frosted
-// glass). Until the transport exists (P6-05) the position is a stand-in clock, so the motion can be
-// judged; nothing sounds yet.
+// The Player (P6-07, ADR 0019): all the learner's music in one list, the piece playing, and what
+// comes next. It plays through the app's one transport (P6-05), so the music goes on while the
+// learner moves to other pages; practice stops it. Two designs of "Now playing" sit behind a
+// switch until the maintainer chooses one (P6-06): A, a record sleeve (a large generated cover, the
+// piece's picture as the seek bar, a slim keyboard below), and B, a stage (the notes rising from a
+// wide keyboard behind frosted glass).
 //
 // Everything that moves is drawn on canvases from one requestAnimationFrame loop that reads the
-// position through refs (docs/architecture.md); React lays out the page and the controls only.
-import { createContext, useContext, useEffect, useMemo, useRef, useState } from 'react';
-import { ListMusic, Pause, Play, Repeat, Shuffle, SkipBack, SkipForward } from 'lucide-react';
+// transport's position through refs (docs/architecture.md); React lays out the page and the
+// controls only.
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  useSyncExternalStore,
+} from 'react';
+import {
+  ListMusic,
+  Pause,
+  Play,
+  Repeat,
+  Repeat1,
+  Shuffle,
+  SkipBack,
+  SkipForward,
+} from 'lucide-react';
 import { TempoMap } from '@opentiles/song-model';
 import type { Song } from '@opentiles/song-model';
-import type { HandFilter } from '@opentiles/practice';
 import { playsOn, playsOnUnavailableHint } from '../audio/plays-on';
-import { midiSupported, midiUnavailableReason } from '../input/midi-input';
+import {
+  midiAccess,
+  midiAllowed,
+  midiSupported,
+  midiUnavailableReason,
+  pickOutput,
+  webMidiSupported,
+} from '../input/midi-input';
+import { nativeMidiAvailable } from '../input/native-midi-input';
 import { locale, t } from '../i18n';
 import { href } from '../lib/router';
 import { coverIndex, coverNotes, drawCover, initials } from '../player/art';
+import { playerTransport } from '../player/browser';
 import { searchCollection, sortCollection } from '../player/collection';
 import type { CollectionEntry, CollectionSort } from '../player/collection';
-import { loadCollection, loadPlayable } from '../player/load';
+import { loadCollection } from '../player/load';
+import { upNext } from '../player/queue';
+import type { Repeat as RepeatMode } from '../player/queue';
 import { drawKeys, drawSeekPicture, drawStage, soundingAt, stageLayout } from '../player/stage';
+import type { PlayerTransport, TransportState } from '../player/transport';
 import { PlaysOnControl } from '../practice/PlaysOnControl';
+import type { MidiPlayback } from '../settings/model';
 import { updateAppSettings, useAppSettings, useEffectiveAccessibility } from '../settings/store';
 import { SearchBox } from '../ui/SearchBox';
 import { parseColour } from '../views/colour';
@@ -93,21 +124,74 @@ function readVariant(): Variant {
   return /[?&]design=b\b/.test(window.location.hash) ? 'b' : 'a';
 }
 
+/** The app's Player transport as React state; the canvases read its position every frame. */
+function useTransport(): { transport: PlayerTransport; state: TransportState } {
+  const transport = useMemo(() => playerTransport(), []);
+  const state = useSyncExternalStore(
+    (onChange) => transport.subscribe(() => onChange()),
+    () => transport.state,
+  );
+  return { transport, state };
+}
+
+/**
+ * What "Plays on" needs to know about MIDI here: asked of the page's one MIDI access once the
+ * site may use MIDI (never prompting by itself), and again when keyboards come and go.
+ */
+function useMidiState(): {
+  connected: boolean;
+  inputs: string[];
+  outputs: string[];
+  connect: () => Promise<void>;
+} {
+  const [state, setState] = useState({
+    connected: false,
+    inputs: [] as string[],
+    outputs: [] as string[],
+  });
+  const accessRef = useRef<MIDIAccess | null>(null);
+  const read = useCallback(() => {
+    const access = accessRef.current;
+    if (!access) return;
+    const names = (ports: MIDIInputMap | MIDIOutputMap) =>
+      [...ports.values()].map((p) => p.name ?? 'MIDI device');
+    setState({ connected: true, inputs: names(access.inputs), outputs: names(access.outputs) });
+  }, []);
+  const attach = useCallback(async () => {
+    const access = await midiAccess();
+    if (accessRef.current !== access) {
+      accessRef.current?.removeEventListener('statechange', read);
+      accessRef.current = access;
+      access.addEventListener('statechange', read);
+    }
+    read();
+  }, [read]);
+  useEffect(() => {
+    let cancelled = false;
+    void midiAllowed().then((ok) => {
+      if (ok && !cancelled) void attach().catch(() => {});
+    });
+    return () => {
+      cancelled = true;
+      accessRef.current?.removeEventListener('statechange', read);
+    };
+  }, [attach, read]);
+  return { ...state, connect: attach };
+}
+
+const REPEAT_NEXT: Record<RepeatMode, RepeatMode> = { off: 'all', all: 'one', one: 'off' };
+
 export function Player() {
   const settings = useAppSettings();
   const { reducedMotion } = useEffectiveAccessibility();
+  const { transport, state } = useTransport();
+  const midi = useMidiState();
   const [entries, setEntries] = useState<CollectionEntry[] | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [query, setQuery] = useState('');
   const [filter, setFilter] = useState<Filter>('all');
   const [sort, setSort] = useState<CollectionSort>('title');
-  const [current, setCurrent] = useState<CollectionEntry | null>(null);
-  const [song, setSong] = useState<Song | null>(null);
-  const [playing, setPlaying] = useState(false);
-  const [tempo, setTempo] = useState(1);
-  const [hands, setHands] = useState<HandFilter>('both');
   const [variant, setVariant] = useState<Variant>(readVariant);
-  const seconds = useRef(0);
 
   useEffect(() => {
     loadCollection().then(setEntries, (e: unknown) =>
@@ -115,39 +199,38 @@ export function Player() {
     );
   }, []);
 
-  const pick = (entry: CollectionEntry) => {
-    setCurrent(entry);
-    setSong(null);
-    seconds.current = 0;
-    loadPlayable(entry.key).then(
-      (p) => setSong(p.song),
-      (e: unknown) => setError(e instanceof Error ? e.message : String(e)),
-    );
-  };
+  const byKey = useMemo(() => new Map((entries ?? []).map((e) => [e.key, e])), [entries]);
+  const current = state.key ? (byKey.get(state.key) ?? null) : null;
+  const song = state.piece?.song ?? null;
+  const playing = state.status === 'playing' || state.status === 'between';
 
-  // Something to show from the start: Ode to Joy if it is there, else the first piece.
+  // Something to show from the start, without playing: the list as first shown, at Ode to Joy
+  // if it is there. A queue the Player already has (from another visit) stays.
   useEffect(() => {
-    if (current || !entries) return;
-    const first =
-      entries.find((e) => e.key === 'catalogue:ode-to-joy') ?? entries.find((e) => e.playable);
-    if (first) pick(first);
-    // Once, when the collection arrives.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [entries]);
+    if (!entries || transport.state.key) return;
+    const keys = sortCollection(entries, 'title', locale())
+      .filter((e) => e.playable)
+      .map((e) => e.key);
+    void transport.cue(keys, Math.max(0, keys.indexOf('catalogue:ode-to-joy')));
+  }, [entries, transport]);
 
   const shown = useMemo(() => {
     const scoped = (entries ?? []).filter((e) => filter === 'all' || e.source === filter);
     return sortCollection(searchCollection(scoped, query), sort, locale());
   }, [entries, filter, query, sort]);
-  const upNext = useMemo(() => {
-    const at = shown.findIndex((e) => e.key === current?.key);
-    return shown
-      .slice(at + 1)
-      .filter((e) => e.playable)
-      .slice(0, 6);
-  }, [shown, current]);
+  const upNextEntries = useMemo(
+    () =>
+      upNext(state.queue).flatMap((k) => (byKey.get(k) ? [byKey.get(k) as CollectionEntry] : [])),
+    [state.queue, byKey],
+  );
 
-  // One loop for every canvas on the page.
+  /** Plays the list as shown, from `entry` on. */
+  const playFrom = (entry: CollectionEntry) => {
+    const keys = shown.filter((e) => e.playable).map((e) => e.key);
+    void transport.playQueue(keys, Math.max(0, keys.indexOf(entry.key)));
+  };
+
+  // One loop for every canvas on the page, reading the transport's position.
   const draws = useRef(new Set<Draw>());
   const register = useMemo(
     () => (draw: Draw) => {
@@ -156,49 +239,76 @@ export function Player() {
     },
     [],
   );
-  const playingRef = useRef(playing);
-  playingRef.current = playing;
-  const tempoRef = useRef(tempo);
-  tempoRef.current = tempo;
   useEffect(() => {
     if (!song) return;
     const map = new TempoMap(song.tempos);
-    const total = Math.max(0.1, map.beatToSeconds(song.lengthBeats));
-    let last = performance.now();
     let raf = 0;
-    const loop = (now: number) => {
-      const dt = Math.min(0.1, (now - last) / 1000);
-      last = now;
-      if (playingRef.current) {
-        seconds.current += dt * tempoRef.current;
-        // The stand-in clock goes round; the transport will move on to the next piece.
-        if (seconds.current > total + 1.5) seconds.current = 0;
-      }
-      const s = Math.min(total, seconds.current);
+    const loop = () => {
+      const total = Math.max(0.1, transport.state.duration);
+      const s = Math.min(total, transport.positionNow());
       const frame = { song, beat: map.secondsToBeat(s), fraction: s / total, seconds: s, total };
       for (const draw of draws.current) draw(frame);
       raf = requestAnimationFrame(loop);
     };
     raf = requestAnimationFrame(loop);
     return () => cancelAnimationFrame(raf);
-  }, [song]);
+  }, [song, transport]);
+
+  // Space plays and pauses, ← and → move 5 s, Shift with them goes to the piece before or after.
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if ((e.target as HTMLElement | null)?.closest('input, select, textarea, [role="slider"]')) {
+        return;
+      }
+      if (e.code === 'Space') {
+        e.preventDefault();
+        void transport.toggle();
+      } else if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
+        const forward = e.key === 'ArrowRight';
+        e.preventDefault();
+        if (e.shiftKey) void (forward ? transport.next() : transport.previous());
+        else transport.seek(transport.positionNow() + (forward ? 5 : -5));
+      }
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [transport]);
 
   const supported = midiSupported();
   const choice = settings.midi.playback;
-  const route = playsOn(choice, {
-    supported,
-    connected: false,
-    inputs: [],
-    outputs: [],
-    name: settings.midi.output,
-  });
+  // In the iPad app the keyboard is reached through CoreMIDI when Play is pressed.
+  const route = nativeMidiAvailable()
+    ? playsOn(choice, {
+        supported: true,
+        connected: true,
+        inputs: [],
+        outputs: ['keyboard'],
+        name: '',
+      })
+    : playsOn(choice, {
+        supported,
+        connected: midi.connected,
+        inputs: midi.inputs,
+        outputs: midi.outputs,
+        name: settings.midi.output,
+      });
+  const choosePlayback = (playback: MidiPlayback) => {
+    void updateAppSettings({ midi: { ...settings.midi, playback } }).then(() =>
+      transport.changeInstrument(),
+    );
+    if (playback !== 'device' && !midi.connected && webMidiSupported()) {
+      void midi.connect().catch(() => {});
+    }
+  };
   const playsOnControl = (
     <PlaysOnControl
       choice={choice}
       route={route}
       supported={supported}
-      keyboardName={null}
-      outputs={[]}
+      keyboardName={
+        nativeMidiAvailable() ? null : pickOutput(midi.outputs, midi.inputs, settings.midi.output)
+      }
+      outputs={midi.outputs}
       outputName={settings.midi.output}
       unavailableHint={playsOnUnavailableHint(
         midiUnavailableReason({
@@ -207,60 +317,73 @@ export function Player() {
           secure: window.isSecureContext,
         }),
       )}
-      onChoose={(playback) => void updateAppSettings({ midi: { ...settings.midi, playback } })}
-      onOutput={(output) => void updateAppSettings({ midi: { ...settings.midi, output } })}
+      onChoose={choosePlayback}
+      onOutput={(output) =>
+        void updateAppSettings({ midi: { ...settings.midi, output } }).then(() =>
+          transport.changeInstrument(),
+        )
+      }
     />
   );
 
-  const step = (by: number) => {
-    const at = shown.findIndex((e) => e.key === current?.key);
-    const next = shown.slice(Math.max(0, at + by)).find((e) => e.playable);
-    const prev = shown
-      .slice(0, Math.max(0, at))
-      .reverse()
-      .find((e) => e.playable);
-    const target = by > 0 ? next : prev;
-    if (target) pick(target);
-  };
-
-  const transport = (
+  const { repeat, shuffle } = state.queue;
+  const transportButtons = (
     <div className="np-transport" role="group" aria-label={t('Playback')}>
-      <button className="np-icon" aria-label={t('Shuffle')} aria-pressed={false}>
+      <button
+        className="np-icon"
+        aria-label={t('Shuffle')}
+        aria-pressed={shuffle}
+        onClick={() => transport.setShuffle(!shuffle)}
+      >
         <Shuffle />
       </button>
-      <button className="np-icon" aria-label={t('Previous piece')} onClick={() => step(-1)}>
+      <button
+        className="np-icon"
+        aria-label={t('Previous piece')}
+        onClick={() => void transport.previous()}
+      >
         <SkipBack />
       </button>
       <button
         className="np-play primary"
         aria-label={playing ? t('Pause') : t('Play')}
-        onClick={() => setPlaying((p) => !p)}
+        onClick={() => void transport.toggle()}
         disabled={!song}
+        aria-busy={state.status === 'loading'}
       >
         {playing ? <Pause /> : <Play />}
       </button>
-      <button className="np-icon" aria-label={t('Next piece')} onClick={() => step(1)}>
+      <button
+        className="np-icon"
+        aria-label={t('Next piece')}
+        onClick={() => void transport.next()}
+      >
         <SkipForward />
       </button>
-      <button className="np-icon" aria-label={t('Repeat')} aria-pressed={false}>
-        <Repeat />
+      <button
+        className="np-icon"
+        aria-label={repeat === 'one' ? t('Repeat this piece') : t('Repeat')}
+        aria-pressed={repeat !== 'off'}
+        onClick={() => transport.setRepeat(REPEAT_NEXT[repeat])}
+      >
+        {repeat === 'one' ? <Repeat1 /> : <Repeat />}
       </button>
     </div>
   );
 
   const controls = (
     <div className="np-controls">
-      <label className="tempo" title={t('Practice tempo')}>
+      <label className="tempo" title={t('Tempo')}>
         <span className="tempo__label">{t('Tempo')}</span>
         <input
           type="range"
           min={50}
           max={150}
           step={5}
-          value={Math.round(tempo * 100)}
-          onChange={(e) => setTempo(Number(e.target.value) / 100)}
+          value={Math.round(state.tempo * 100)}
+          onChange={(e) => transport.setTempo(Number(e.target.value) / 100)}
         />
-        <span className="tempo__value">{Math.round(tempo * 100)} %</span>
+        <span className="tempo__value">{Math.round(state.tempo * 100)} %</span>
       </label>
       <div className="segmented" role="group" aria-label={t('Hands')}>
         {(
@@ -270,7 +393,7 @@ export function Player() {
             ['right', t('Right')],
           ] as const
         ).map(([h, label]) => (
-          <button key={h} aria-pressed={hands === h} onClick={() => setHands(h)}>
+          <button key={h} aria-pressed={state.hands === h} onClick={() => transport.setHands(h)}>
             {label}
           </button>
         ))}
@@ -278,6 +401,26 @@ export function Player() {
       {playsOnControl}
     </div>
   );
+
+  const message =
+    state.message === 'disconnected' ? (
+      <p className="notice notice--warn player__message" role="status" data-testid="player-message">
+        {t('Your keyboard was disconnected.')}{' '}
+        <button
+          onClick={() => {
+            void updateAppSettings({ midi: { ...settings.midi, playback: 'device' } }).then(() =>
+              transport.play(),
+            );
+          }}
+        >
+          {t('Play on this device')}
+        </button>
+      </p>
+    ) : state.message === 'failed' ? (
+      <p className="error" role="status">
+        {t('This piece could not be loaded.')}
+      </p>
+    ) : null;
 
   const nowPlaying = current && (
     <section
@@ -288,18 +431,19 @@ export function Player() {
         <>
           <Cover entry={current} song={song} pulse={playing && !reducedMotion} />
           <NowPlayingText entry={current} />
-          <Seek />
-          {transport}
+          <Seek onSeek={(s) => transport.seek(s)} />
+          {transportButtons}
           {controls}
           {song && <KeyboardStrip />}
         </>
       ) : (
         <>
-          <Stage entry={current} transport={transport} />
-          <Seek />
+          <Stage entry={current} transport={transportButtons} />
+          <Seek onSeek={(s) => transport.seek(s)} />
           {controls}
         </>
       )}
+      {message}
     </section>
   );
 
@@ -391,7 +535,7 @@ export function Player() {
                       className="collection__row"
                       aria-current={e.key === current?.key ? 'true' : undefined}
                       disabled={!e.playable}
-                      onClick={() => pick(e)}
+                      onClick={() => playFrom(e)}
                     >
                       <InitialsTile entry={e} />
                       <span className="collection__text">
@@ -417,7 +561,7 @@ export function Player() {
               <ListMusic /> {t('Up next')}
             </h2>
             <ol>
-              {upNext.map((e) => (
+              {upNextEntries.slice(0, 8).map((e) => (
                 <li key={e.key}>
                   <InitialsTile entry={e} />
                   <span className="collection__text">
@@ -433,8 +577,8 @@ export function Player() {
           <MiniBar
             entry={current}
             playing={playing}
-            onToggle={() => setPlaying((p) => !p)}
-            onNext={() => step(1)}
+            onToggle={() => void transport.toggle()}
+            onNext={() => void transport.next()}
           />
         )}
       </div>
@@ -526,12 +670,16 @@ function Cover({
   );
 }
 
-/** The piece's picture as the seek bar, with the time played and the time left. */
-function Seek() {
+/**
+ * The piece's picture as the seek bar, with the time played and the time left: tap or drag to
+ * move, and the arrow keys move 5 s (a slider to assistive technology, "1:23 of 4:56").
+ */
+function Seek({ onSeek }: { onSeek: (seconds: number) => void }) {
   const canvas = useRef<HTMLCanvasElement>(null);
   const elapsed = useRef<HTMLSpanElement>(null);
   const remaining = useRef<HTMLSpanElement>(null);
   const palette = useRef<{ p: Palette; unplayed: string } | null>(null);
+  const last = useRef({ seconds: 0, total: 0 });
   useFrame(({ song, fraction, seconds, total }) => {
     const c = canvas.current;
     if (!c) return;
@@ -542,8 +690,14 @@ function Seek() {
       unplayed: getComputedStyle(c).getPropertyValue('--line-strong').trim() || '#888',
     };
     drawSeekPicture(f.ctx, song, f.w, f.h, fraction, palette.current.p, palette.current.unplayed);
+    if (Math.round(seconds) === Math.round(last.current.seconds) && total === last.current.total) {
+      return;
+    }
+    last.current = { seconds, total };
     if (elapsed.current) elapsed.current.textContent = formatTime(seconds);
     if (remaining.current) remaining.current.textContent = `−${formatTime(total - seconds)}`;
+    c.setAttribute('aria-valuemax', String(Math.round(total)));
+    c.setAttribute('aria-valuenow', String(Math.round(seconds)));
     c.setAttribute(
       'aria-valuetext',
       t('{at} of {total}', { at: formatTime(seconds), total: formatTime(total) }),
@@ -555,9 +709,45 @@ function Seek() {
     scheme.addEventListener('change', reset);
     return () => scheme.removeEventListener('change', reset);
   }, []);
+  const seekTo = (clientX: number) => {
+    const c = canvas.current;
+    if (!c) return;
+    const box = c.getBoundingClientRect();
+    const fraction = Math.min(1, Math.max(0, (clientX - box.left) / Math.max(1, box.width)));
+    onSeek(fraction * last.current.total);
+  };
   return (
     <div className="np-seek">
-      <canvas ref={canvas} role="slider" aria-label={t('Position')} tabIndex={0} />
+      <canvas
+        ref={canvas}
+        role="slider"
+        aria-label={t('Position')}
+        aria-valuemin={0}
+        tabIndex={0}
+        onPointerDown={(e) => {
+          e.currentTarget.setPointerCapture?.(e.pointerId);
+          seekTo(e.clientX);
+        }}
+        onPointerMove={(e) => {
+          if (e.buttons) seekTo(e.clientX);
+        }}
+        onKeyDown={(e) => {
+          const { seconds, total } = last.current;
+          const to =
+            e.key === 'ArrowRight' || e.key === 'ArrowUp'
+              ? seconds + 5
+              : e.key === 'ArrowLeft' || e.key === 'ArrowDown'
+                ? seconds - 5
+                : e.key === 'Home'
+                  ? 0
+                  : e.key === 'End'
+                    ? total
+                    : null;
+          if (to === null) return;
+          e.preventDefault();
+          onSeek(to);
+        }}
+      />
       <div className="np-seek__times">
         <span ref={elapsed}>0:00</span>
         <span ref={remaining}>−0:00</span>

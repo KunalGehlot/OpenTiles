@@ -491,3 +491,8 @@
 html[data-reduced-motion] .np-cover__glow {
   display: none;
 }
+
+.player__message {
+  width: 100%;
+  margin: 0;
+}

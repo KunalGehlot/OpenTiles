@@ -139,6 +139,15 @@ export class PlayerTransport {
     );
   }
 
+  /** Sets `keys` as the queue, at the piece at `start`, without playing (the Player opening). */
+  async cue(keys: readonly CollectionKey[], start = 0): Promise<void> {
+    const { repeat, shuffle } = this.stateValue.queue;
+    await this.open(
+      createQueue(keys, start, { repeat, shuffle }, () => this.random()),
+      false,
+    );
+  }
+
   /** Adds a piece to play next or at the end; with nothing playing, it is opened. */
   async add(key: CollectionKey, next = false): Promise<void> {
     const queue = enqueue(this.stateValue.queue, key, next);
