@@ -568,9 +568,12 @@ without a word when no MIDI output is found.
   clock with this device's piano converted to the audio clock, output-only MIDI access, wake
   lock, `pagehide`; practice, drills and the Detector Lab stop it); this device's piano can now
   be silenced at once, so Stop in practice cuts its notes too. "Recently played" from the Player
-  is kept on the device, apart from practice progress. Left: the timing check in real browsers
-  (jitter, and 10 minutes in a hidden tab in Chrome, Edge and Firefox), once the Player page plays
-  through it (P6-07).
+  is kept on the device, apart from practice progress. Timing checked in real Chrome, Edge and
+  Firefox through the Player page (2026-10-17, a virtual CoreMIDI destination, `send()` wrapped
+  in the page): over 30 s every note-on was handed over at least 58 ms before it was due (median
+  85–106 ms), none late, and the notes of a chord arrived together. Left: 10 minutes in a hidden
+  tab: automated browsers keep their pages visible (Playwright's focus emulation, even with a
+  window and a minimised one), so it is a person's check (P6-13).
 - [ ] **P6-06** (APP, human) Design the Player with the maintainer in their dark-mode Chrome: a
       prototype with two variants, generated cover art, the piece's picture as the seek bar.
 - [ ] **P6-07** (APP) The Player page (`#/player`): search, filters and sorting over all music, Now
