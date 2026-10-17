@@ -67,3 +67,11 @@
     min-height: var(--tap);
   }
 }
+
+/* On a phone the finger-sized links wrap to several rows: the bar scrolls away with the page
+   rather than cover a quarter of it, as it does in a short window (shell.css). */
+@media (pointer: coarse) and (max-width: 600px) {
+  .topbar {
+    position: static;
+  }
+}
