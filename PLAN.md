@@ -121,9 +121,11 @@ Goal: Journeys A and B from spec §3 work end to end, offline, on iPad Safari an
 - [x] **P1-05** MIDI quantiser: coarsest grid that keeps ≥ 95 % of onsets within ±30 ms.
 - [x] **P1-06** MIDI hand split: two tracks → lower average pitch is the left hand; one track →
       split around middle C with smoothing; user-movable split point.
-- [~] **P1-07** Import review screen: swap staves / move split point, base tempo, transpose, trim
-  bars, title and tags. Done: title, tempo, transpose, swap hands, MIDI split point. Left:
-  trim bars and tags in the UI (`trimMeasures` exists in song-model).
+- [x] **P1-07** Import review screen: swap staves / move split point, base tempo, transpose, trim
+      bars, title and tags. Done: title, tempo, transpose, swap hands, MIDI split point, the bars
+      to keep (first and last, as played; `ImportSettings.trim`, applied with `trimMeasures` and to
+      pedals read later from the kept file) and tags (shown on the library card and found by its
+      search).
 
 ### Practice engine (PRAC)
 
@@ -167,9 +169,9 @@ Goal: Journeys A and B from spec §3 work end to end, offline, on iPad Safari an
       and hardest bars. Left: early/late shown live, hardest bars marked on the score (needs
       P1-15).
 - [x] **P1-25** Progress: per-piece best score, practice minutes per day, streaks.
-- [~] **P1-26** Playwright end-to-end tests on Chromium, Firefox and WebKit in CI. Done: suite
-  and CI job for Chromium, Firefox, WebKit and an iPad profile; passing on Chromium. Left:
-  confirm Firefox and WebKit runs in CI.
+- [x] **P1-26** Playwright end-to-end tests on Chromium, Firefox and WebKit in CI. Done: suite
+      and CI job for Chromium, Firefox, WebKit and an iPad profile; every pull request runs all four
+      (confirmed 2026-10-17: 373 tests across the four profiles in the "End-to-end" job).
 - [~] **P1-27** Safari checklist (spec §5): split view, rotation, score usable at ⅓ width. Done: compact layout at 320–400 px, rotation, score views at ⅓ width, covered by Chromium e2e. Left: real iPad Split View / Slide Over check.
 
 **G1 criteria:** Journey A and Journey B pass on iPad Safari (microphone) and desktop Chrome (MIDI)
@@ -621,6 +623,8 @@ Record the outcome as an ADR in `docs/adr/` and tick it here.
 - [x] Engine exposes a plain C ABI instead of wasm-bindgen glue — ADR 0002.
 
 ## Changelog
+
+- **2026-10-17** — P1-07: the import review keeps the bars chosen and takes tags.
 
 - **2026-10-17** — P6-10: the score of a MIDI piece marks the sustain pedal.
 

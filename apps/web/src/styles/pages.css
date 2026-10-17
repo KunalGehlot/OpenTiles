@@ -443,6 +443,11 @@ button.copy-link--done {
   background: var(--accent-soft);
 }
 
+.library-item__tags {
+  display: block;
+  font-size: var(--text-sm);
+}
+
 .library-item__meta {
   display: flex;
   flex-wrap: wrap;

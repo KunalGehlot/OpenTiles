@@ -1,6 +1,7 @@
 import { FileText } from 'lucide-react';
 import { estimateDifficulty } from '@opentiles/song-model';
-import { applySettings, handCounts } from '../lib/import-settings';
+import { useState } from 'react';
+import { applySettings, handCounts, parseTags, trimFor } from '../lib/import-settings';
 import { noteLabel } from '../lib/notes';
 import type { ImportSettings } from '../storage/db';
 import { t } from '../i18n';
@@ -52,6 +53,17 @@ export function ImportReview({
   const difficulty = estimateDifficulty(song);
   const set = (s: Partial<ImportSettings>) =>
     onChange({ ...pending, settings: { ...pending.settings, ...s } });
+  // Every bar, as played, before any is left out (P1-07).
+  const { trim, ...untrimmed } = pending.settings;
+  const bars = sheetOnly ? 0 : applySettings(pending.base, untrimmed).measures.length;
+  const first = trim?.from ?? 0;
+  const last = trim?.to ?? Math.max(0, bars - 1);
+  const keep = (from: number, to: number) => {
+    const next = trimFor(from, to, bars);
+    onChange({ ...pending, settings: next ? { ...untrimmed, trim: next } : untrimmed });
+  };
+  // What the learner types, kept as typed until it is read as tags.
+  const [tagText, setTagText] = useState((pending.tags ?? []).join(', '));
   const { sheet } = pending;
   return (
     <div className="panel stack" aria-labelledby="review-title">
@@ -167,6 +179,42 @@ export function ImportReview({
               </button>
             </div>
           </div>
+          {bars > 1 && (
+            <div className="field">
+              <span className="field__label" id="review-bars">
+                {t('Bars to keep')}
+              </span>
+              <span className="row" role="group" aria-labelledby="review-bars">
+                <label className="row">
+                  <span>{t('From bar')}</span>
+                  <input
+                    type="number"
+                    min={1}
+                    max={bars}
+                    value={first + 1}
+                    onChange={(e) =>
+                      keep(Number(e.target.value) - 1, Math.max(last, Number(e.target.value) - 1))
+                    }
+                    style={{ width: '5em' }}
+                  />
+                </label>
+                <label className="row">
+                  <span>{t('To bar')}</span>
+                  <input
+                    type="number"
+                    min={1}
+                    max={bars}
+                    value={last + 1}
+                    onChange={(e) =>
+                      keep(Math.min(first, Number(e.target.value) - 1), Number(e.target.value) - 1)
+                    }
+                    style={{ width: '5em' }}
+                  />
+                </label>
+                <span className="muted">{t('of {n}, as played', { n: bars })}</span>
+              </span>
+            </div>
+          )}
           {song.format === 'midi' && (
             <label className="field">
               <span className="field__label">{t('Hand split point')}</span>
@@ -184,6 +232,21 @@ export function ImportReview({
           )}
         </>
       )}
+      <label className="field">
+        <span className="field__label">{t('Tags')}</span>
+        <input
+          type="text"
+          value={tagText}
+          placeholder={t('For example: exam, warm-up')}
+          onChange={(e) => {
+            setTagText(e.target.value);
+            onChange({ ...pending, tags: parseTags(e.target.value) });
+          }}
+        />
+        <span className="muted">
+          {t('Words to find the piece by in your library, with commas between them.')}
+        </span>
+      </label>
       <div className="row">
         <button className="primary" onClick={onSave}>
           {t('Save to my library')}

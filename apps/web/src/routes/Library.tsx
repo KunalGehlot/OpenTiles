@@ -247,7 +247,7 @@ export function Library() {
     try {
       id = await addLibraryItem({
         ...notes,
-        tags: [],
+        tags: pending.tags ?? [],
         addedAt: Date.now(),
         ...(pending.sheet ? { sheet: sheetAttachment(pending.sheet) } : {}),
       });
@@ -502,6 +502,9 @@ function LibraryCard({
             })}
             {item.sheet && <span className="badge">{t('Sheet')}</span>}
           </span>
+          {item.tags.length > 0 && (
+            <span className="muted library-item__tags">{item.tags.join(' · ')}</span>
+          )}
         </div>
       </div>
       {sheetOnly && (

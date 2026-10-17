@@ -1,6 +1,6 @@
 import 'fake-indexeddb/auto';
 import { describe, expect, it } from 'vitest';
-import { applySettings, handCounts } from '../src/lib/import-settings';
+import { applySettings, handCounts, parseTags, trimFor } from '../src/lib/import-settings';
 import { db, getSetting, localDay, recordRun, setSetting, streak } from '../src/storage/db';
 import type { Song } from '@opentiles/song-model';
 
@@ -51,6 +51,49 @@ describe('import settings', () => {
     ]);
     expect(s.tempos[0]?.bpm).toBe(80);
     expect(handCounts(s)).toEqual({ left: 1, right: 1 });
+  });
+});
+
+describe('bars kept and tags (P1-07)', () => {
+  // Four one-beat bars, a note at each beat.
+  const four: Song = {
+    ...song,
+    notes: [0, 1, 2, 3].map((b) => ({
+      ...song.notes[1]!,
+      id: `n${b}`,
+      startBeat: b,
+      measureIndex: b,
+    })),
+    measures: [0, 1, 2, 3].map((i) => ({
+      index: i,
+      number: String(i + 1),
+      sourceIndex: i,
+      startBeat: i,
+      lengthBeats: 1,
+    })),
+    lengthBeats: 4,
+  };
+
+  it('keeps the bars chosen, after the other settings', () => {
+    const s = applySettings(four, { transpose: 1, swapHands: false, trim: { from: 1, to: 2 } });
+    expect(s.measures.map((m) => m.number)).toEqual(['2', '3']);
+    expect(s.notes.map((n) => [n.startBeat, n.pitch])).toEqual([
+      [0, 71],
+      [1, 71],
+    ]);
+  });
+
+  it('keeps no range when every bar is kept, and keeps the range inside the piece', () => {
+    expect(trimFor(0, 3, 4)).toBeUndefined();
+    expect(trimFor(1, 3, 4)).toEqual({ from: 1, to: 3 });
+    expect(trimFor(-2, 9, 4)).toBeUndefined();
+    expect(trimFor(3, 1, 4)).toEqual({ from: 3, to: 3 });
+  });
+
+  it('reads tags typed with commas: trimmed, each once, at most ten', () => {
+    expect(parseTags(' exam,  warm-up ,Exam,, Grade   2 ')).toEqual(['exam', 'warm-up', 'Grade 2']);
+    expect(parseTags(Array.from({ length: 12 }, (_, i) => `t${i}`).join(','))).toHaveLength(10);
+    expect(parseTags('x'.repeat(50))[0]).toHaveLength(40);
   });
 });
 

@@ -130,6 +130,12 @@ export const de: Readonly<Record<string, string>> = {
   '{n} semitones': '{n} Halbtöne',
   Hands: 'Hände',
   'Swap hands': 'Hände tauschen',
+  'Bars to keep': 'Behaltene Takte',
+  'of {n}, as played': 'von {n}, in Spielreihenfolge',
+  Tags: 'Stichwörter',
+  'For example: exam, warm-up': 'Zum Beispiel: Prüfung, Aufwärmen',
+  'Words to find the piece by in your library, with commas between them.':
+    'Wörter, unter denen du das Stück in deiner Bibliothek findest, durch Kommas getrennt.',
   'Hand split point': 'Teilungspunkt der Hände',
   'Save to my library': 'In meiner Bibliothek speichern',
   // Import messages from the shared packages
