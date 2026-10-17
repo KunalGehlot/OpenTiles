@@ -465,9 +465,10 @@ images, sounds or fonts, and credit the inspiration in [CREDITS.md](CREDITS.md).
   where a later key or time change shows them. Checked on the maintainer's MuseScore exports
   (local only): identical notes after writing and reading back. The sustain pedal is marked
   (P6-10). Linking glyphs to notes asks Verovio for a pitch only where it decides something
-  (2026-10-17: Für Elise, complete, asks for 373 of 902). Left: dynamics and slurs (MIDI has
-  none), grace notes, a Verovio worker for long pieces (opening one still holds the page for about
-  half a second on a fast Mac), re-importing MIDI pieces already in a library, an iPad check.
+  (2026-10-17: Für Elise, complete, asks for 373 of 902), and Verovio runs in a worker of its own
+  (opening a long score held the page for 0.4–0.6 s on a fast Mac, now under 0.1 s). Left: dynamics
+  and slurs (MIDI has none), grace notes, re-importing MIDI pieces already in a library, an iPad
+  check.
 - [~] **P5-14** (APP) The learner's own sheet-music PDF as a "Sheet" view (ADR 0018, proposed).
   Done: `packages/sheet` finds staves, systems, barlines, repeats and endings in pdf.js's drawing
   (a simple reader for scanned pages) and matches the song's measures to the written bars; the
@@ -631,6 +632,8 @@ Record the outcome as an ADR in `docs/adr/` and tick it here.
 - [x] Engine exposes a plain C ABI instead of wasm-bindgen glue — ADR 0002.
 
 ## Changelog
+
+- **2026-10-17** — P5-13: scores are engraved in a worker, so long pieces no longer hold the page.
 
 - **2026-10-17** — P5-13: the score links its notes faster in long pieces.
 

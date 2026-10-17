@@ -422,6 +422,50 @@ test('a foot pedal’s own key, chosen in Settings, turns the engraved pages (P2
   await expect(pager).toContainText('Page 1 of');
 });
 
+test('every score opened in the engraver is closed again (P5-13)', async ({ page }) => {
+  // The engraver's own messages to its worker carry a score number: count opens and closes.
+  await page.addInitScript(() => {
+    const w = window as unknown as { __engraved: { open: number; close: number } };
+    w.__engraved = { open: 0, close: 0 };
+    const post = Worker.prototype.postMessage as (this: Worker, ...args: unknown[]) => void;
+    Worker.prototype.postMessage = function (this: Worker, ...args: unknown[]) {
+      const m = args[0] as { type?: string; score?: unknown } | null;
+      if (m && typeof m.score === 'number') {
+        if (m.type === 'open') w.__engraved.open += 1;
+        if (m.type === 'close') w.__engraved.close += 1;
+      }
+      post.apply(this, args);
+    };
+  });
+  const counts = () =>
+    page.evaluate(
+      () => (window as unknown as { __engraved: { open: number; close: number } }).__engraved,
+    );
+  const view = page.getByRole('group', { name: 'View' });
+  const drawn = page.locator('[data-testid="score-strip"] g.note').first();
+
+  await page.goto('./#/practice/catalogue/ode-to-joy');
+  await view.getByRole('button', { name: 'Score' }).click();
+  await expect(drawn).toBeVisible({ timeout: 20_000 });
+  // Away from the score and back, then two drills one after the other.
+  await view.getByRole('button', { name: 'Falling notes' }).click();
+  await view.getByRole('button', { name: 'Score' }).click();
+  await expect(drawn).toBeVisible({ timeout: 20_000 });
+  await page.evaluate(() => (location.hash = '#/practice/drill/treble.0.1.notes.1.123'));
+  await expect(drawn).toBeVisible({ timeout: 20_000 });
+  await page.evaluate(() => (location.hash = '#/practice/drill/treble.0.1.notes.1.124'));
+  await expect(drawn).toBeVisible({ timeout: 20_000 });
+  expect((await counts()).open).toBeGreaterThanOrEqual(4);
+  // Leaving practice closes the last one: none is left open in the worker.
+  await page.evaluate(() => (location.hash = '#/library'));
+  await expect
+    .poll(async () => {
+      const c = await counts();
+      return c.open - c.close;
+    })
+    .toBe(0);
+});
+
 test('the piece can be shifted by semitones during practice (P5-04)', async ({ page }) => {
   await page.goto('./#/practice/catalogue/ode-to-joy');
   await page.getByRole('button', { name: 'Right', exact: true }).click();

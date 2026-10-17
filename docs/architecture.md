@@ -196,7 +196,10 @@ numbers come from a synthesiser, not a piano in a room; the G0 gate is judged on
 `apps/web/src/views/score/` draws the original MusicXML or ABC file with Verovio (LGPL-3.0,
 lazy-loaded WebAssembly, precached for offline use; ADR 0009) in two layouts: a scrolling score
 (one long system under a fixed cursor, P1-15) and a page view with page turns (P2-11), which is
-the Sheet tab of a piece without a PDF of its own (P5-17). Each `Song`
+the Sheet tab of a piece without a PDF of its own (P5-17). Verovio runs in a worker of its own
+(`engraver.ts`, `engrave.worker.ts`, P5-13): it loads the score, lays out and draws the pages as
+SVG strings and links the notes there, so a long piece never holds the page; the page only puts the
+SVG in place and measures it. Each `Song`
 note is linked to its glyph by source measure, onset and pitch (`glyph-map.ts`), so both passes of
 a repeat share a glyph. `ScoreController` colours glyphs from `PracticeSession.marks` (expected,
 correct, wrong, passed), moves the cursor from per-bar anchors (`cursor-map.ts`), turns pages and

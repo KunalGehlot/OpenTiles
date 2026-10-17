@@ -1,29 +1,20 @@
-// Draws the score with Verovio and keeps it in step with the practice session: cursor, note
-// colours, page turns, hardest bars (PLAN.md P1-15, P1-24, P2-11, P2-12). Plain DOM work from
-// requestAnimationFrame; React only mounts the host elements (docs/development.md: timing-critical drawing
-// bypasses React).
+// Shows the score Verovio engraved (in the engraver worker, P5-13) and keeps it in step with the
+// practice session: cursor, note colours, page turns, hardest bars (PLAN.md P1-15, P1-24, P2-11,
+// P2-12). Plain DOM work from requestAnimationFrame; React only mounts the host elements
+// (docs/development.md: timing-critical drawing bypasses React).
 import type { Song, SongNote } from '@opentiles/song-model';
 import type { PracticeSession } from '../session';
 import { beatAt, buildAnchors, positionAt } from './cursor-map';
 import type { Anchor, MeasureBox } from './cursor-map';
-import {
-  glyphsFromTimemap,
-  linkByRefs,
-  linkNotes,
-  measureOrderFromSvg,
-  noteIdsFromSvg,
-} from './glyph-map';
-import type { ScoreLinks, TimemapEntry } from './glyph-map';
+import { layoutOptions } from './engrave-core';
+import type { DrawnScore, ScoreLayout } from './engrave-core';
+import type { Engraver } from './engraver';
+import type { ScoreLinks } from './glyph-map';
 import { fingersToAdd, glyphStates, nearestByBeat, noteStates } from './note-states';
 import type { NoteState } from './note-states';
-import type { Toolkit } from './verovio';
 
-/** The widest the engraved page gets (CSS px); wider windows centre it. */
-const MAX_PAGE_WIDTH = 1100;
-
-import { sanitiseSvg } from './sanitise';
-
-export type ScoreLayout = 'scroll' | 'page';
+export type { ScoreLayout } from './engrave-core';
+export { scaleFor } from './engrave-core';
 
 const STATE_CLASSES: Record<NoteState, string> = {
   expected: 'ot-expected',
@@ -34,12 +25,6 @@ const STATE_CLASSES: Record<NoteState, string> = {
 };
 const ALL_STATE_CLASSES = Object.values(STATE_CLASSES);
 const SVG_NS = 'http://www.w3.org/2000/svg';
-
-/** Verovio scale (percent) for a view width: smaller on narrow screens (⅓ iPad, P1-27). */
-export function scaleFor(width: number, layout: ScoreLayout): number {
-  if (layout === 'scroll') return width < 500 ? 32 : width < 1000 ? 40 : width < 1600 ? 52 : 64;
-  return width < 500 ? 26 : width < 900 ? 32 : width < 1600 ? 42 : 52;
-}
 
 export interface PageInfo {
   page: number;
@@ -86,87 +71,77 @@ export class ScoreController {
   private readonly detach: () => void;
   /** Called when the shown page or the page count changes. */
   onPage: (info: PageInfo) => void = () => {};
+  /** Each layout asked for after a resize gets a number; only the newest is shown. */
+  private layouts = 0;
+  private destroyed = false;
 
-  constructor(
-    private readonly tk: Toolkit,
+  /**
+   * Engraves the score for the host's size and links its notes (both in the engraver worker),
+   * then shows it. The engraver is closed with the controller.
+   */
+  static async create(
+    engraver: Engraver,
+    song: Song,
+    session: PracticeSession,
+    layout: ScoreLayout,
+    host: HTMLElement,
+    strip: HTMLElement,
+    cursor: HTMLElement,
+    /** Ids of notes whose finger was suggested rather than written (P4-08). */
+    suggested: ReadonlySet<string> = new Set(),
+    /** The score was written from the song, whose refs are the glyph ids (P5-13). */
+    generated = false,
+  ): Promise<ScoreController> {
+    const size = { width: host.clientWidth, height: host.clientHeight };
+    const drawn = await engraver.layout(layoutOptions(size.width, size.height, layout));
+    const links = await engraver.links(song, generated);
+    return new ScoreController(
+      engraver,
+      song,
+      session,
+      layout,
+      host,
+      strip,
+      cursor,
+      size,
+      drawn,
+      links,
+      suggested,
+    );
+  }
+
+  private constructor(
+    private readonly engraver: Engraver,
     private readonly song: Song,
     private readonly session: PracticeSession,
     readonly layout: ScoreLayout,
     private readonly host: HTMLElement,
     private readonly strip: HTMLElement,
     private readonly cursor: HTMLElement,
-    /** Ids of notes whose finger was suggested rather than written (P4-08). */
-    private readonly suggested: ReadonlySet<string> = new Set(),
-    /** The score was written from the song, whose refs are the glyph ids (P5-13). */
-    generated = false,
+    size: { width: number; height: number },
+    drawn: DrawnScore,
+    links: ScoreLinks,
+    private readonly suggested: ReadonlySet<string>,
   ) {
     this.startOf = new Map(song.notes.map((n) => [n.id, n.startBeat]));
     this.noteById = new Map(song.notes.map((n) => [n.id, n]));
-    this.size = { width: host.clientWidth, height: host.clientHeight };
+    this.size = size;
     this.mover = strip.parentElement ?? host;
     this.boundaries = [
       ...new Set(song.notes.flatMap((n) => [n.startBeat, n.startBeat + n.durationBeats])),
     ].sort((a, b) => a - b);
     this.detach = layout === 'scroll' ? this.listen() : () => {};
     this.padStrip();
-    this.layoutPages();
-    if (generated) {
-      this.links = linkByRefs(song, noteIdsFromSvg(this.pages));
-    } else {
-      const timemap = tk.renderToTimemap({ includeMeasures: true, includeRests: false });
-      const glyphs = glyphsFromTimemap(
-        Array.isArray(timemap) ? (timemap as TimemapEntry[]) : [],
-        this.measureIds,
-        (id) => tk.getMIDIValuesForElement(id)?.pitch,
-      );
-      this.links = linkNotes(song, glyphs);
-    }
+    this.setPages(drawn);
+    this.links = links;
     this.showPage(1);
   }
 
-  /** Renders every page to SVG strings and indexes which page each measure is on. */
-  private layoutPages(): void {
-    const { width, height } = this.size;
-    const scale = scaleFor(width, this.layout);
-    const units = (px: number) => Math.round((px * 100) / scale);
-    if (this.layout === 'scroll') {
-      this.tk.setOptions({
-        scale,
-        breaks: 'none',
-        adjustPageHeight: true,
-        adjustPageWidth: true,
-        pageMarginLeft: 0,
-        pageMarginRight: 0,
-        pageMarginTop: 40,
-        pageMarginBottom: 40,
-      });
-    } else {
-      this.tk.setOptions({
-        scale,
-        breaks: 'auto',
-        adjustPageHeight: false,
-        adjustPageWidth: false,
-        // A page, not the whole window: on a wide screen it is centred instead of stretched.
-        pageWidth: Math.max(units(Math.min(width, MAX_PAGE_WIDTH)), 600),
-        pageHeight: Math.max(units(height), 600),
-        pageMarginLeft: 60,
-        pageMarginRight: 60,
-        pageMarginTop: 60,
-        pageMarginBottom: 60,
-      });
-    }
-    this.tk.redoLayout();
-    const count = Math.max(1, this.tk.getPageCount());
-    this.pages = Array.from({ length: count }, (_, i) => sanitiseSvg(this.tk.renderToSVG(i + 1)));
-    this.measurePage.clear();
-    this.measureIds = measureOrderFromSvg(this.pages);
-    const order = new Map(this.measureIds.map((id, i) => [id, i]));
-    this.pages.forEach((svg, i) => {
-      for (const id of measureOrderFromSvg([svg])) {
-        const index = order.get(id);
-        if (index !== undefined && !this.measurePage.has(index)) this.measurePage.set(index, i + 1);
-      }
-    });
+  /** The drawn pages, and which page each measure is on. */
+  private setPages(drawn: DrawnScore): void {
+    this.pages = drawn.pages;
+    this.measureIds = drawn.measureIds;
+    this.measurePage = drawn.measurePage;
   }
 
   get pageCount(): number {
@@ -211,9 +186,19 @@ export class ScoreController {
     }
     if (Math.abs(width - this.size.width) < 24 && Math.abs(height - this.size.height) < 24) return;
     this.size = { width, height };
-    this.layoutPages();
-    this.cursorPage = 0;
-    this.showPage(Math.min(this.shown, this.pages.length));
+    // The old pages stay until the new ones are drawn; a later resize wins over an earlier one.
+    const layout = ++this.layouts;
+    this.engraver
+      .layout(layoutOptions(width, height, this.layout))
+      .then((drawn) => {
+        if (this.destroyed || layout !== this.layouts) return;
+        this.setPages(drawn);
+        this.cursorPage = 0;
+        this.showPage(Math.min(this.shown, this.pages.length));
+      })
+      .catch(() => {
+        // The engraver stopped: the pages already shown stay.
+      });
   }
 
   /** Measure and note positions on the shown page, in pixels relative to the strip. */
@@ -553,6 +538,7 @@ export class ScoreController {
     this.mover.style.transform = '';
     this.strip.style.paddingInline = '';
     this.strip.innerHTML = '';
-    this.tk.destroy();
+    this.destroyed = true;
+    this.engraver.close();
   }
 }

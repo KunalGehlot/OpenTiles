@@ -58,6 +58,9 @@ test('the service worker precaches the engine, the worklet and the catalogue', a
   }
   expect(sw).toMatch(/"assets\/engine-[\w-]+\.wasm"/);
   expect(sw).toMatch(/"assets\/detector-worklet-[\w-]+\.js"/);
+  // The score engraver's worker and Verovio (P5-13).
+  expect(sw).toMatch(/"assets\/engrave\.worker-[\w-]+\.js"/);
+  expect(sw).toMatch(/"assets\/verovio-module-[\w-]+\.js"/);
   expect(sw).not.toMatch(/\.map"/);
 });
 
@@ -99,6 +102,12 @@ test('practice works offline after the first visit', async ({ page, context, bro
       .getByRole('button', { name: 'Skip', exact: true })
       .click({ timeout: 10_000 });
     await expect(page.getByText('Microphone listening')).toBeVisible({ timeout: 10_000 });
+
+    // The score is engraved offline too, in its worker (P5-13).
+    await page.getByRole('group', { name: 'View' }).getByRole('button', { name: 'Score' }).click();
+    await expect(page.locator('[data-testid="score-strip"] g.note').first()).toBeVisible({
+      timeout: 20_000,
+    });
   } finally {
     await context.setOffline(false);
   }
