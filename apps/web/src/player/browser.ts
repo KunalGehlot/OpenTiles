@@ -15,6 +15,10 @@ import type { CollectionKey } from './collection';
 import { loadPlayable } from './load';
 import { onPageClock, pageNow } from './page-clock';
 import { PlayerTransport } from './transport';
+import type { Song } from '@opentiles/song-model';
+import { coverIndex, coverNotes, drawCover } from './art';
+import { parseColour } from '../views/colour';
+import type { Rgb } from '../views/colour';
 
 /** The Player's own "recently played", on this device only: listening is not practising. */
 const PLAYED_KEY = 'device.playerPlayed';
@@ -64,6 +68,15 @@ function wakeLock() {
 }
 
 let transport: PlayerTransport | null = null;
+const madeListeners = new Set<() => void>();
+
+/** Tells `listener` when the Player's transport is made (the mini player waits for it). */
+export function watchPlayer(listener: () => void): () => void {
+  madeListeners.add(listener);
+  return () => {
+    madeListeners.delete(listener);
+  };
+}
 
 /** The app's one Player transport, made on first use. */
 export function playerTransport(): PlayerTransport {
@@ -115,11 +128,100 @@ export function playerTransport(): PlayerTransport {
   });
   // Leaving or reloading the page: nothing may keep sounding on the keyboard.
   window.addEventListener('pagehide', () => t.pause());
+  mediaSession(t);
   transport = t;
+  for (const listener of madeListeners) listener();
   return t;
 }
 
 /** Practice, a drill or the Detector Lab takes the sound over: the Player stops, if it ever ran. */
 export function stopPlayer(): void {
-  transport?.stop();
+  transport?.stop('practice');
+}
+
+/** The Player's transport if one was made on this page, without making one (the mini player). */
+export function existingPlayer(): PlayerTransport | null {
+  return transport;
+}
+
+/**
+ * The piece playing for the device's own media controls (Media Session, P6-09): title, composer,
+ * the generated cover, and play, pause, previous, next and seek. Browsers show these controls only
+ * for some kinds of sound; where they do not, nothing happens. The title goes to this device's own
+ * controls only.
+ */
+function mediaSession(t: PlayerTransport): void {
+  const session = (navigator as Navigator & { mediaSession?: MediaSession }).mediaSession;
+  if (!session || typeof MediaMetadata === 'undefined') return;
+  const handle = (action: MediaSessionAction, run: (d: MediaSessionActionDetails) => void) => {
+    try {
+      session.setActionHandler(action, run);
+    } catch {
+      // An action this browser does not know.
+    }
+  };
+  // Where the piece is, so the controls can show and move it: song seconds go by at the tempo.
+  const position = () => {
+    const { duration, tempo } = t.state;
+    if (!session.setPositionState || duration <= 0 || tempo <= 0) return;
+    try {
+      session.setPositionState({
+        duration,
+        playbackRate: tempo,
+        position: Math.min(duration, t.positionNow()),
+      });
+    } catch {
+      // A position the browser will not take: the controls show none.
+    }
+  };
+  // A play from the lock screen may not count as a gesture: if the sound cannot start, nothing
+  // plays and nothing breaks (unlockAudio waits only a moment).
+  handle('play', () => void t.play());
+  handle('pause', () => t.pause());
+  handle('previoustrack', () => void t.previous());
+  handle('nexttrack', () => void t.next());
+  handle('seekto', (d) => {
+    if (d.seekTime === undefined) return;
+    t.seek(d.seekTime);
+    position();
+  });
+  let shown: Song | null = null;
+  t.subscribe((state) => {
+    session.playbackState =
+      state.status === 'playing' || state.status === 'between' ? 'playing' : 'paused';
+    position();
+    const piece = state.piece;
+    if (!piece || piece.song === shown) return;
+    shown = piece.song;
+    session.metadata = new MediaMetadata({
+      title: piece.title,
+      artist: piece.composer ?? '',
+      artwork: coverArtwork(piece),
+    });
+  });
+}
+
+/** The generated cover as a picture for the media controls; none where a canvas is not there. */
+function coverArtwork(piece: { song: Song; title: string; composer?: string }): MediaImage[] {
+  try {
+    const canvas = document.createElement('canvas');
+    canvas.width = canvas.height = 256;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return [];
+    const css = getComputedStyle(document.documentElement);
+    const name = piece.composer ?? piece.title;
+    const read = (token: string, fallback: Rgb) =>
+      parseColour(css.getPropertyValue(token).trim())?.rgb ?? fallback;
+    drawCover(
+      ctx,
+      256,
+      coverNotes(piece.song),
+      read(`--cover-${coverIndex(name)}`, [45, 91, 138]),
+      read('--on-cover', [255, 255, 255]),
+      0,
+    );
+    return [{ src: canvas.toDataURL('image/png'), sizes: '256x256', type: 'image/png' }];
+  } catch {
+    return [];
+  }
 }
