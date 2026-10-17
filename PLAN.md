@@ -32,6 +32,12 @@ P5-01 to P5-05 and P5-07 are in `main` (merged 2026-10-10); left are P5-06 (free
 smoothness pass with the maintainer), P5-10 (the human release gate) and P5-11 (going live on
 opentiles.site). The repository is public; the maintainer decided not to recreate it (P5-00).
 
+**Next: [Phase 6 — The Player](#phase-6--the-player-from-2026-10-11)** (planned 2026-10-11, not
+started). A Player page that plays the whole library and catalogue on the learner's own keyboard, and
+a visible "Plays on" choice in practice so Listen can play on the keyboard only. The full plan, with
+files, acceptance criteria and lanes for parallel work, is
+[docs/phase-6/player.md](docs/phase-6/player.md); P6-01 is the first, small task.
+
 ## Phases and gates
 
 v1.0 is planned for August 2027 at roughly 8–10 hours a week, with December 2026 kept light. Each
@@ -203,7 +209,7 @@ engines.
 - [~] **P2-15** Accessibility: large print, high contrast, left-handed layout, keyboard shortcuts,
   Bluetooth foot-pedal page turn. Done: settings for large print, high contrast, left-handed controls, reduced motion, shortcuts list, pedal key. Left: practice view reading the left-handed flag beyond CSS; pedal hook wired to the page score.
 - [x] **P2-16** Licence scanner for third-party dependencies in CI.
-- [~] **P2-17** Privacy policy, Impressum with notice-and-takedown address, records of processing. Done: privacy policy and Impressum (EN/DE), records of processing; the postal address is the maintainer's own Impressum at gehlot.site, linked rather than repeated (2026-10-10). Left: lawyer review (P2-18).
+- [~] **P2-17** Privacy policy, Impressum with notice-and-takedown address, records of processing. Done: privacy policy and Impressum (EN/DE), records of processing; the Impressum gives the maintainer's website gehlot.site as a contact only (2026-10-10). Left: the postal address and the lawyer review (P2-18).
 - [ ] **P2-18** (human) Legal consultation with a German copyright lawyer (timing is an open
       decision). Also ask: Bella Ciao (P4-14), the LLM disclosure and the Sightread credit wording
       (P5-01), and whether MIDI export of a user's own free-play recording breaks guardrail 1 (P5-06).
@@ -412,9 +418,12 @@ images, sounds or fonts, and credit the inspiration in [CREDITS.md](CREDITS.md).
   privacy policy (English and German) names GitHub Pages and the transfer basis, and mentions
   sync and crash reports only in a build with a sync server, which the public site has not; the
   same goes for the crash-report setting; records of processing §1 and `docs/deploying.md` updated;
-  the Impressum links the maintainer's own at gehlot.site for the postal address; Pages enabled
-  with the domain `opentiles.site` set (2026-10-10). Left: the DNS at Cloudflare ("DNS only", no
-  parking record) and the domain verification, the first deploy, HTTPS enforced and a header
+  the Impressum gives gehlot.site as a contact (it has no postal address yet, P2-18); Pages enabled
+  with the domain `opentiles.site` set (2026-10-10); `main` deploys there since 2026-10-11. Left:
+  the DNS at Cloudflare ("DNS only", no parking record) and the domain verification. On
+  2026-10-17 the site was still served through Cloudflare's proxy, which adds its bot-check script
+  to every page and an error-report (NEL) header, so visitors' browsers can contact Cloudflare
+  (hard rule 5), and GitHub has no certificate for the domain yet. Then HTTPS enforced, a header
   check of the live site, and the lawyer's view of hosting in the USA (P2-18).
 - [~] **P5-12** (APP) A MIDI keyboard in Firefox stays connected. Reason (maintainer's report,
   2026-10-10): in Firefox the keyboard worked for a while, then fell silent after moving around the
@@ -480,6 +489,57 @@ images, sounds or fonts, and credit the inspiration in [CREDITS.md](CREDITS.md).
 Left out on purpose: 128 General MIDI instruments (a piano trainer, and extra sample licences and
 size), Sightread's song library and assets, and any analytics.
 
+## Phase 6 — The Player (from 2026-10-11)
+
+Goal: the learner picks any piece they have, library and catalogue together, and it plays on their
+own piano or keyboard, from an elegant Player page and from practice's Listen mode. Asked for by the
+maintainer on 2026-10-11. Every task's detail (reason, today's code, files, done-when, tests, what to
+watch out for) is in [docs/phase-6/player.md](docs/phase-6/player.md); the decisions are in ADR 0019
+(proposed), with open questions Q1–Q9 in §7 of the plan.
+
+Two facts shape it. **iPad browsers have no Web MIDI** (all use WebKit), so on an iPad the keyboard is
+reached by USB audio in the browser (the maintainer found on 2026-10-11 that the app's notes already
+come out of their Yamaha's speakers that way, in Edge) or by MIDI through the iPad app. **Keyboard-only
+playback mostly exists** (P4-19), but the choice is hidden in Options and falls back to the device
+without a word when no MIDI output is found.
+
+- [x] **P6-00** (GOV) The plan ([docs/phase-6/player.md](docs/phase-6/player.md)) and ADR 0019
+      (proposed).
+- [ ] **P6-01** (APP) A "Plays on" control (this device, my keyboard, both) in the practice session
+      bar; no silent fallback to the device (say so, offer Connect, move to the keyboard when it
+      appears); choosing the keyboard connects MIDI; a USB audio tip where there is no Web MIDI.
+      Quick win, ship first.
+- [ ] **P6-02** (APP) Clean MIDI out: output-only access from the shared `midiAccess()`; on stop,
+      seek, mode change, leaving and `pagehide` send note-offs, pedal up and All Notes Off; check
+      `MIDIOutput.clear()` in Chrome, Edge and Firefox; handle an unplugged keyboard; ignore notes a
+      keyboard echoes back.
+- [ ] **P6-03** (PRAC, APP) One playback scheduler in `packages/practice` (notes and pedal as timed
+      events, seek, tempo change), used by Listen, play-along's accompaniment and the Player.
+- [ ] **P6-04** (STORE, APP) All the music in one fast list: file and PDF bytes in their own table
+      (Dexie version 2, the P5-15 leftover), durations, and a collection of catalogue plus library.
+- [ ] **P6-05** (APP) The Player transport: a singleton with a worker clock that keeps playing in a
+      hidden tab, the queue model, auto-advance, wake lock, pause when the keyboard disappears.
+- [ ] **P6-06** (APP, human) Design the Player with the maintainer in their dark-mode Chrome: a
+      prototype with two variants, generated cover art, the piece's picture as the seek bar.
+- [ ] **P6-07** (APP) The Player page (`#/player`): search, filters and sorting over all music, Now
+      playing, transport, tempo, hands, transpose, "Plays on", live keyboard strip, ⅓ iPad and 320 px
+      layouts, German strings, shortcuts.
+- [ ] **P6-08** (APP) Queue: play all, shuffle, repeat, reorder by drag and keyboard, kept on the
+      device.
+- [ ] **P6-09** (APP) Mini player on other pages and media keys (Media Session where it works without
+      tricks); practice, drills and the Detector Lab stop the Player.
+- [ ] **P6-10** (SONG) The sustain pedal in the `Song` from MIDI (CC 64) and MusicXML, sent to the
+      keyboard and honoured by the sampler (ADR 0020, amending ADR 0003).
+- [ ] **P6-11** (PRAC) Natural touch for pieces without velocities (beat strength, melody, dynamics),
+      with an "even" option.
+- [ ] **P6-12** (APP, iOS) MIDI out in the iPad app (CoreMIDI destinations, timed batched send,
+      flush) and Bluetooth MIDI pairing. Device test needs P3-01.
+- [ ] **P6-13** (human) The maintainer's checks: their keyboard in Chrome, Edge and Firefox on the Mac;
+      the Player over USB audio on the iPad, and whether the microphone hears the keyboard's USB
+      audio; the iPad app; design approval.
+- [ ] **P6-14** (GOV) Docs: user guide, FAQ (MIDI on iPad), architecture (scheduler, transport, MIDI
+      out), README.
+
 ## Cross-cutting checklists
 
 These are tracked in their own documents and must be green before the gate named.
@@ -504,6 +564,14 @@ Record the outcome as an ADR in `docs/adr/` and tick it here.
 - [x] Engine exposes a plain C ABI instead of wasm-bindgen glue — ADR 0002.
 
 ## Changelog
+
+- **2026-10-17** — Phase 6 started: the maintainer accepted the recommended answers to the plan's
+  open questions Q1–Q8 (ADR 0019). P2-17 and P5-11 no longer say that gehlot.site holds the postal
+  address; P5-11 notes that the site is still served through Cloudflare's proxy.
+
+- **2026-10-11** — Phase 6 planned (P6-00): a Player page for the whole library and catalogue on the
+  learner's own keyboard, and a visible "Plays on" choice in practice. Plan in
+  `docs/phase-6/player.md`, decisions in ADR 0019 (proposed).
 
 - **2026-10-11** — P5-13, P5-14, P5-15: a MIDI file gets a printed score written from its notes,
   and a sheet-music PDF can be kept with a piece (paired with its MIDI file on import) and shown as
