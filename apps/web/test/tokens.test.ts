@@ -151,6 +151,8 @@ const TEXT_PAIRS: [fg: string, bg: string][] = [
   ['--on-hand', '--hand-right'],
   ['--on-hand', '--hand-left'],
   ['--on-hand', '--warn'],
+  // The initials on the Player's generated covers (P6-06).
+  ...[1, 2, 3, 4, 5, 6, 7, 8].map((n): [string, string] => ['--on-cover', `--cover-${n}`]),
 ];
 
 /** Marks that must be seen but are not text: control outlines, focus ring, notes on the canvas. */

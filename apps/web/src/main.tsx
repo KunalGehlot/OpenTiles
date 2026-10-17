@@ -14,6 +14,7 @@ import './styles/components.css';
 import './styles/shell.css';
 import './styles/pages.css';
 import './styles/practice.css';
+import './styles/player.css';
 
 /** Re-renders every screen when the language changes, so plain t() calls pick it up. */
 function Localised({ children }: { children: React.ReactNode }) {

@@ -123,6 +123,20 @@
   --now-line: rgba(19, 26, 24, 0.55);
   --loop-band: rgba(31, 111, 92, 0.1);
   --glow: rgba(31, 111, 92, 0.07);
+
+  /*
+   * ---- Colour: generated covers in the Player (P6-06). Each piece gets one by its composer, so
+   * covers are CC0 by construction and need no images; --on-cover is the initials on them. ----
+   */
+  --cover-1: #2d5b8a;
+  --cover-2: #5b3f8f;
+  --cover-3: #8a3456;
+  --cover-4: #8a4d1f;
+  --cover-5: #1f6f5c;
+  --cover-6: #3f6b2a;
+  --cover-7: #8a2f2f;
+  --cover-8: #2f4a8a;
+  --on-cover: #ffffff;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -171,6 +185,16 @@
     --now-line: rgba(232, 238, 236, 0.55);
     --loop-band: rgba(76, 194, 161, 0.12);
     --glow: rgba(76, 194, 161, 0.1);
+
+    --cover-1: #24476b;
+    --cover-2: #47326f;
+    --cover-3: #6b2943;
+    --cover-4: #6b3c18;
+    --cover-5: #185747;
+    --cover-6: #315321;
+    --cover-7: #6b2525;
+    --cover-8: #253a6b;
+    --on-cover: #f2f5f4;
   }
 }
 
