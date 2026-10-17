@@ -103,29 +103,39 @@ async function addPiece(
           request.onerror = () =>
             request.error?.name === 'AbortError' ? resolve(null) : reject(request.error);
         });
+      // The app's database at version 2 (P6-04): rows in `library`, their bytes in `files`.
       let db = await open();
-      for (let i = 0; i < 50 && !db?.objectStoreNames.contains('library'); i++) {
+      for (let i = 0; i < 50 && !db?.objectStoreNames.contains('files'); i++) {
         db?.close();
         await new Promise((r) => setTimeout(r, 100));
         db = await open();
       }
       if (!db) throw new Error('The app did not create its database');
-      const store = db.transaction('library', 'readwrite').objectStore('library');
-      const item: Record<string, unknown> = {
+      const tx = db.transaction(['library', 'files'], 'readwrite');
+      const row: Record<string, unknown> = {
         title,
         fileName: `${title}.mid`,
         format,
-        bytes: new Uint8Array(0),
         song,
         settings: { transpose: 0, swapHands: false },
         tags: [],
         addedAt: Date.now(),
+        size: 0,
       };
-      if (pdf) item.sheet = { fileName: `${title}.pdf`, bytes: new Uint8Array(pdf), addedAt: 1 };
+      if (pdf) row.sheet = { fileName: `${title}.pdf`, addedAt: 1, size: pdf.length };
       const id = await new Promise<number>((resolve, reject) => {
-        const request = store.add(item);
+        const request = tx.objectStore('library').add(row);
         request.onsuccess = () => resolve(request.result as number);
         request.onerror = () => reject(request.error);
+      });
+      tx.objectStore('files').put({
+        id,
+        bytes: new Uint8Array(0),
+        ...(pdf ? { sheetBytes: new Uint8Array(pdf) } : {}),
+      });
+      await new Promise<void>((resolve, reject) => {
+        tx.oncomplete = () => resolve();
+        tx.onerror = () => reject(tx.error);
       });
       db.close();
       return id;
