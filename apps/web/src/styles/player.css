@@ -654,11 +654,49 @@ button.programme__play:hover:not(:disabled) {
   list-style: none;
 }
 
+.upnext__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+}
+
+.upnext ol {
+  max-height: min(60vh, 34rem);
+  overflow-y: auto;
+}
+
 .upnext li {
   display: flex;
   align-items: center;
-  gap: var(--space-3);
+  gap: var(--space-1);
   min-width: 0;
+  border-radius: var(--radius);
+}
+
+.upnext li .collection__row {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+/* The handle: grabbed by a mouse or a finger, without scrolling the list. */
+button.upnext__handle {
+  cursor: grab;
+  touch-action: none;
+  color: var(--muted);
+}
+
+.upnext__item--moving {
+  background: var(--surface-2);
+  box-shadow: var(--shadow-2);
+}
+
+.upnext__item--moving button.upnext__handle {
+  cursor: grabbing;
+}
+
+.upnext__empty {
+  margin: 0;
 }
 
 /* ---- The mini bar (narrow screens) ---- */

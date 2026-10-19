@@ -601,8 +601,13 @@ without a word when no MIDI output is found.
   the keys are drawn; without an output timestamp the reported latency is taken off. The touch
   test covers `#/player` (the position line's target is 44 px tall on touch screens). Left:
   composer dates from the catalogue (it has only death years).
-- [ ] **P6-08** (APP) Queue: play all, shuffle, repeat, reorder by drag and keyboard, kept on the
-      device.
+- [x] **P6-08** (APP) Queue: play all, shuffle, repeat, reorder by drag and keyboard, kept on the
+      device. Done: Up next (a panel on wide windows, over the page on narrower ones) plays a piece
+      now on a tap, moves one by dragging its handle or with ↑ ↓ on the handle (Alt + ↑ ↓ anywhere
+      on its row, announced to screen readers), takes one out with ×, and clears; the queue is
+      kept on this device (`device.playerQueue`, not in the backup) and comes back after a reload,
+      without pieces deleted since. Play all and Let it play, shuffle and repeat came with P6-05
+      and P6-06.
 - [x] **P6-09** (APP) Mini player on other pages and media keys (Media Session where it works without
       tricks); practice, drills and the Detector Lab stop the Player. Done: a bar on every page but
       the Player and practice (tile, title, play or pause, next; a tap opens the Player), "Stopped
@@ -685,6 +690,9 @@ Record the outcome as an ADR in `docs/adr/` and tick it here.
 - [x] Engine exposes a plain C ABI instead of wasm-bindgen glue — ADR 0002.
 
 ## Changelog
+
+- **2026-10-19** — P6-08: Up next can be reordered, trimmed and cleared, and is still there after a
+  reload.
 
 - **2026-10-19** — P6-07: "Listen" on the Home and Library cards and in practice, "Practise this"
   in the Player.

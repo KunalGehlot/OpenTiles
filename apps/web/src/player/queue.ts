@@ -109,3 +109,72 @@ export function enqueue(q: Queue, key: CollectionKey, next = false): Queue {
     : [...q.order, index];
   return { ...q, keys, order };
 }
+
+/** Up next with the piece at `from` moved to `to` (both counted from the next piece, 0). */
+export function moveUpNext(q: Queue, from: number, to: number): Queue {
+  const head = q.order.slice(0, q.at + 1);
+  const rest = q.order.slice(q.at + 1);
+  if (from < 0 || from >= rest.length || from === to) return q;
+  const [moved] = rest.splice(from, 1);
+  rest.splice(Math.max(0, Math.min(rest.length, to)), 0, moved as number);
+  return { ...q, order: [...head, ...rest] };
+}
+
+/** The queue without the pieces whose indices `drop` says, the rest kept in their places. */
+function without(q: Queue, drop: (index: number) => boolean): Queue {
+  const kept: number[] = [];
+  const newIndex = new Map<number, number>();
+  q.keys.forEach((_, i) => {
+    if (drop(i)) return;
+    newIndex.set(i, kept.length);
+    kept.push(i);
+  });
+  const current = q.order[q.at];
+  const order = q.order.flatMap((i) => (newIndex.has(i) ? [newIndex.get(i) as number] : []));
+  const at = current === undefined ? 0 : Math.max(0, order.indexOf(newIndex.get(current) ?? -1));
+  return { ...q, keys: kept.map((i) => q.keys[i] as CollectionKey), order, at };
+}
+
+/** Up next without the piece at `place` (counted from the next piece, 0). */
+export function removeUpNext(q: Queue, place: number): Queue {
+  const index = q.order[q.at + 1 + place];
+  return index === undefined ? q : without(q, (i) => i === index);
+}
+
+/** Nothing up next: the piece playing (and those already heard) stay. */
+export function clearUpNext(q: Queue): Queue {
+  const coming = new Set(q.order.slice(q.at + 1));
+  return without(q, (i) => coming.has(i));
+}
+
+/** The queue moved on to the piece at `place` in Up next (counted from the next piece, 0). */
+export function skipTo(q: Queue, place: number): Queue {
+  return q.at + 1 + place < q.order.length ? { ...q, at: q.at + 1 + place } : q;
+}
+
+/** Only the pieces `known` accepts (a library piece deleted since); the piece playing if it can. */
+export function keepKnown(q: Queue, known: (key: CollectionKey) => boolean): Queue {
+  return without(q, (i) => !known(q.keys[i] as CollectionKey));
+}
+
+/** A queue read back from storage, if it is one (P6-08: the queue is kept on this device). */
+export function readQueue(value: unknown): Queue | null {
+  if (typeof value !== 'object' || value === null) return null;
+  const v = value as Record<string, unknown>;
+  const keys = Array.isArray(v.keys) ? v.keys : null;
+  const order = Array.isArray(v.order) ? v.order : null;
+  if (!keys || !order || keys.length === 0 || order.length !== keys.length) return null;
+  if (!keys.every((k) => typeof k === 'string' && /^(catalogue:.+|library:\d+)$/.test(k))) {
+    return null;
+  }
+  const sorted = [...order].sort((a, b) => Number(a) - Number(b));
+  if (!sorted.every((n, i) => n === i)) return null;
+  const at = typeof v.at === 'number' && Number.isInteger(v.at) ? v.at : 0;
+  return {
+    keys: keys as CollectionKey[],
+    order: order as number[],
+    at: Math.max(0, Math.min(keys.length - 1, at)),
+    repeat: v.repeat === 'all' || v.repeat === 'one' ? v.repeat : 'off',
+    shuffle: v.shuffle === true,
+  };
+}

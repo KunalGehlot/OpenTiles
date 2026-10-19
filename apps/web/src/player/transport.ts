@@ -20,6 +20,7 @@ import {
   retreat,
   setRepeat as queueRepeat,
   setShuffle as queueShuffle,
+  skipTo,
 } from './queue';
 import type { Queue, Repeat } from './queue';
 
@@ -175,6 +176,28 @@ export class PlayerTransport {
       createQueue(keys, start, { repeat, shuffle }, () => this.random()),
       false,
     );
+  }
+
+  /** A queue kept from an earlier visit (P6-08), shown at its piece without playing. */
+  async restore(queue: Queue): Promise<void> {
+    await this.open(queue, false);
+  }
+
+  /**
+   * Up next changed by the learner (P6-08): reordered, a piece removed, or cleared. The piece
+   * playing goes on; what follows the gap is worked out again.
+   */
+  editUpNext(edit: (queue: Queue) => Queue): void {
+    const queue = edit(this.stateValue.queue);
+    if (queue === this.stateValue.queue) return;
+    this.set({ queue });
+    this.refreshFollowing();
+  }
+
+  /** Plays the piece at `place` in Up next now (P6-08). */
+  async playUpNext(place: number): Promise<void> {
+    const queue = skipTo(this.stateValue.queue, place);
+    if (queue !== this.stateValue.queue) await this.open(queue, true);
   }
 
   /** Adds a piece to play next or at the end; with nothing playing, it is opened. */

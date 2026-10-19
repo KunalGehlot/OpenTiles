@@ -799,6 +799,12 @@ export const de: Readonly<Record<string, string>> = {
   'Nothing matches.': 'Nichts gefunden.',
   'Import a piece': 'Ein Stück importieren',
   'Up next': 'Als Nächstes',
+  'Nothing more to play.': 'Danach kommt nichts mehr.',
+  'Move {title}': '{title} verschieben',
+  'Drag, or use ↑ and ↓': 'Ziehen oder ↑ und ↓ verwenden',
+  'Play now': 'Jetzt spielen',
+  'Remove {title} from Up next': '{title} aus „Als Nächstes“ entfernen',
+  '{title}: place {n} in Up next': '{title}: Platz {n} in „Als Nächstes“',
   // The music room and the programme (P6-06, player-piano.md)
   'Let it play': 'Einfach spielen lassen',
   'Play all': 'Alle spielen',
