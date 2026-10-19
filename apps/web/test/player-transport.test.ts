@@ -1,6 +1,7 @@
 // The Player's queue and transport (P6-05) with a fake clock, a hand-driven ticker and an
 // instrument that writes down what it is asked to play. Songs are generated here (CC0).
 import { describe, expect, it } from 'vitest';
+import { playbackLength } from '@opentiles/practice';
 import type { Song, SongNote } from '@opentiles/song-model';
 import type { Instrument } from '../src/audio/instrument';
 import type { CollectionKey } from '../src/player/collection';
@@ -488,8 +489,9 @@ describe('expressive playing through the transport (P6-16)', () => {
     expect(h.transport.state.status).toBe('between');
     expect(sustain(h.log)[0]).toBe('sustain 127');
     expect(sustain(h.log).at(-1)).toBe('sustain 0');
-    // The first note rings on under the pedal to the end of the bar.
-    expect(h.played[0]?.held).toBeCloseTo(2, 6);
+    // The first note rings on under the pedal to the end of the bar, which the ending holds.
+    expect(h.played[0]?.held).toBeCloseTo(playbackLength(arpeggio, true), 6);
+    expect(h.transport.state.duration).toBeCloseTo(playbackLength(arpeggio, true), 6);
   });
 
   it('plays as written without it, as practice does', async () => {

@@ -122,6 +122,43 @@ export function expressiveVelocities(song: Song): Map<string, number> {
   return out;
 }
 
+// ---- The ending ----
+
+/** The slowest the ending gets, as a share of the tempo (brief §5.3: at most 10 % slower). */
+const RIT_FLOOR = 0.9;
+/** The last chord sounds this much longer than written, with what follows it. */
+const LAST_CHORD_HOLD = 1.5;
+
+/**
+ * The ending a pianist plays (P6-16): from the start of the bar before the last chord the tempo
+ * eases to 90 %, and the last chord is held half as long again. Returns the map from song seconds
+ * as written to song seconds as played; before the slowing it changes nothing.
+ */
+export function endingWarp(song: Song): (seconds: number) => number {
+  const notes = song.notes;
+  const last = notes[notes.length - 1];
+  if (!last) return (t) => t;
+  const tempo = new TempoMap(song.tempos);
+  const lastOnset = Math.max(...notes.map((n) => n.startBeat));
+  // The bar holding the last onset, or the one before when the last chord starts its bar.
+  let bar = song.measures.findIndex(
+    (m) => lastOnset >= m.startBeat - EPS && lastOnset < m.startBeat + m.lengthBeats - EPS,
+  );
+  if (bar > 0 && lastOnset - (song.measures[bar]?.startBeat ?? 0) < 1 - EPS) bar -= 1;
+  const from = tempo.beatToSeconds(song.measures[bar]?.startBeat ?? Math.max(0, lastOnset - 4));
+  const to = tempo.beatToSeconds(lastOnset);
+  const span = to - from;
+  const k = 1 - RIT_FLOOR;
+  // Over the slowing the tempo falls in a straight line, so time stretches by the integral of
+  // 1 / (1 − k·x/span); at its end it has run (−span/k)·ln(1 − k) seconds.
+  const slowed = span > EPS ? (-span / k) * Math.log(1 - k) : 0;
+  return (t) => {
+    if (t <= from) return t;
+    if (t <= to) return from - (span / k) * Math.log(1 - (k * (t - from)) / span);
+    return from + slowed + (t - to) * LAST_CHORD_HOLD;
+  };
+}
+
 // ---- Pedal ----
 
 /** How long after a new harmony the pedal goes down again, so the old one is cleared (seconds). */

@@ -668,8 +668,10 @@ without a word when no MIDI output is found.
   automatic sustain pedal where the file has none (a legato pedal at each new harmony, changed
   where it would smear a step, up in rests, at the end and in passages too fast to pedal); every
   pedal lifted as a piece ends. Over the catalogue: no semitone smeared by the pedal, the pedal
-  down 79 % of the time on average, velocities about 39–106 (59–89 before). Left: the slowing at
-  the end and the held last chord (timing), dynamics marks and hairpins from imported MusicXML.
+  down 79 % of the time on average, velocities about 39–106 (59–89 before). The ending: from the
+  bar before the last chord the tempo eases to 90 %, and the last chord is held half as long
+  again; the transport, seek line and media controls take the longer length. Left: dynamics marks
+  and hairpins from imported MusicXML (none of the catalogue's scores has any).
 - [ ] **P6-17** (APP) Sound on this device: a soft room sound from an impulse response made in code
       (Player only), and a richer piano with more Salamander loudness layers as the default sound
       (maintainer, 2026-10-18), loaded after the current set and kept for offline use.
@@ -698,6 +700,8 @@ Record the outcome as an ADR in `docs/adr/` and tick it here.
 - [x] Engine exposes a plain C ABI instead of wasm-bindgen glue — ADR 0002.
 
 ## Changelog
+
+- **2026-10-19** — P6-16: the Player eases into the last chord and holds it.
 
 - **2026-10-19** — P6-14: the Player in the user guide, the README and the shortcut list.
 

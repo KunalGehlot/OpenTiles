@@ -42,6 +42,11 @@ is new.
     the control changes for a keyboard, seeking and the pedal light all work unchanged.
 - **Endings:** a lift exactly where the played range ends is now sent, and the transport lifts every
   pedal as a piece ends, so nothing is held into the gap or the next piece.
+- **The ending** (`endingWarp`): from the start of the bar before the last chord (or of its own bar,
+  when it is not on the downbeat) the tempo eases in a straight line to 90 %, and the last chord
+  and anything after it last half as long again. It is a map from written to played song seconds,
+  applied to every note and pedal event, so the keys, the roll and the sound stay together;
+  `playbackLength` gives the transport the longer length.
 - Applied at playback, never stored (ADR 0003).
 
 Measured over the catalogue with the rules above (2026-10-19): no piece has a semitone that only
@@ -58,9 +63,7 @@ about 30 steps between the 10th and 90th percentile (39–106 in all), against 5
   a per-piece hint could come later.
 - A file's own pedal marks or recorded velocities always win, so imported performances are not
   touched.
-- The slowing at the end, the held last chord and dynamics marks from imported MusicXML (the rest
-  of §5.3) are still to do: they change the timing, which the transport, the seek bar and the media
-  controls all read.
+- Dynamics marks and hairpins from imported MusicXML (the rest of §5.3) are still to do.
 
 ## Alternatives considered
 
