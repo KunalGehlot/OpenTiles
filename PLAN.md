@@ -575,21 +575,27 @@ without a word when no MIDI output is found.
   85–106 ms), none late, and the notes of a chord arrived together. Left: 10 minutes in a hidden
   tab: automated browsers keep their pages visible (Playwright's focus emulation, even with a
   window and a minimised one), so it is a person's check (P6-13).
-- [~] **P6-06** (APP, human) Design the Player with the maintainer in their dark-mode Chrome: a
-  prototype with two variants, generated cover art, the piece's picture as the seek bar. Done: the
-  maintainer chose a third design on 2026-10-18, a player piano
-  ([docs/phase-6/player-piano.md](docs/phase-6/player-piano.md), ADR 0019): a paper roll moving
-  down onto a drawn grand keyboard whose keys go down by themselves, the next title printed on
-  the roll's leader between pieces (the transport loads the next piece during the gap), a
-  programme of works grouped by composer with "Let it play", and stand mode's layout. After the
-  maintainer's first review (2026-10-19, brief §4.8): a black lacquer stage with gold in every
-  theme, the roll as fine lines of light, 88 keys where they fit, keys that go down before their
-  note and spring back, a pedal light instead of pedals, a hairline for the position, one options
-  menu, and HDR light (WebGPU, extended tone mapping) and Display P3 gold where the screen shows
-  them. Left: the maintainer's approval of the built page.
-- [ ] **P6-07** (APP) The Player page (`#/player`): search, filters and sorting over all music, Now
-      playing, transport, tempo, hands, transpose, "Plays on", live keyboard strip, ⅓ iPad and 320 px
-      layouts, German strings, shortcuts.
+- [x] **P6-06** (APP, human) Design the Player with the maintainer in their dark-mode Chrome: a
+      prototype with two variants, generated cover art, the piece's picture as the seek bar. Done: the
+      maintainer chose a third design on 2026-10-18, a player piano
+      ([docs/phase-6/player-piano.md](docs/phase-6/player-piano.md), ADR 0019): a paper roll moving
+      down onto a drawn grand keyboard whose keys go down by themselves, the next title printed on
+      the roll's leader between pieces (the transport loads the next piece during the gap), a
+      programme of works grouped by composer with "Let it play", and stand mode's layout. After the
+      maintainer's first review (2026-10-19, brief §4.8): a black lacquer stage with gold in every
+      theme, the roll as fine lines of light, 88 keys where they fit, keys that go down before their
+      note and spring back, a pedal light instead of pedals, a hairline for the position, one options
+      menu, and HDR light (WebGPU, extended tone mapping) and Display P3 gold where the screen shows
+      them. Published at the maintainer's request on 2026-10-19.
+- [~] **P6-07** (APP) The Player page (`#/player`): search, filters and sorting over all music, Now
+  playing, transport, tempo, hands, transpose, "Plays on", live keyboard strip, ⅓ iPad and 320 px
+  layouts, German strings, shortcuts. Done: the page plays through the transport (a row plays the
+  list from that piece; play, pause, previous, next, shuffle, repeat, tempo, hands); "Plays on"
+  moves a playing piece to the new choice and says when the keyboard goes away; seeking by tap,
+  drag and keys; Space and the arrow keys; German strings; e2e in the 320 and 1,180 px layouts.
+  Left: entry points (Play on Home and Library cards, "Open in Player" in practice, "Practise
+  this"), keeping "Show hands", keys at the heard time (output latency, brief §5.4), composer dates
+  from the catalogue, the touch test on `#/player`.
 - [ ] **P6-08** (APP) Queue: play all, shuffle, repeat, reorder by drag and keyboard, kept on the
       device.
 - [ ] **P6-09** (APP) Mini player on other pages and media keys (Media Session where it works without
@@ -660,6 +666,9 @@ Record the outcome as an ADR in `docs/adr/` and tick it here.
 - [x] Engine exposes a plain C ABI instead of wasm-bindgen glue — ADR 0002.
 
 ## Changelog
+
+- **2026-10-19** — P6-06: the Player's music room (black lacquer, the roll as light, keys that move
+  like a piano's, HDR and Display P3 where the screen shows them) is published; P6-07 in progress.
 
 - **2026-10-19** — P6-01: "Plays on" gains "Automatic", the default: the keyboard's own sound
   whenever one is connected (the maintainer's request); the Player offers "Play on your piano".
