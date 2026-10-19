@@ -6,7 +6,14 @@ one sample every minor third from A0 to C8, and writes short mono MP3s that ever
 (Safari included) can decode with Web Audio. See docs/adr/0007-piano-samples.md for why.
 
 Usage:
-  build_piano_samples.py SOURCE OUT_DIR
+  build_piano_samples.py SOURCE OUT_DIR [--layer N] [--max-seconds S] [--plan-only]
+
+Layer 10 is the app's original set (public/samples/piano/); layers 5 and 14 are the softer and
+louder ones (soft/, loud/, P6-17). Each layer is normalised on its own; the script prints its
+level (the median loudness of the attacks as written), and the app takes the difference to layer
+10 off again, so loudness follows the velocity curve and the layer changes only the tone.
+--plan-only measures without writing anything (how layer 10's level was found without rebuilding
+its files).
 
 SOURCE is either the release archive SalamanderGrandPianoV3_44.1khz16bit.tar.bz2 (its SHA-1 is
 checked) or the directory it extracts to. Download the archive from
@@ -36,7 +43,8 @@ ARCHIVE_SHA1 = "ec5a179a1218a590d2f88728f56b583e79876896"
 WAV_DIR = "SalamanderGrandPianoV3_44.1khz16bit/44.1khz16bit"
 
 # Layer 10 of 16 covers MIDI velocities 73-80 in the release's .sfz: the middle of what the
-# practice session plays (70 for accompaniment, 80 for playback, 90 for touch).
+# practice session plays (70 for accompaniment, 80 for playback, 90 for touch). Layer n covers
+# velocities 8n-7 to 8n.
 LAYER = 10
 FIRST_PITCH = 21  # A0
 LAST_PITCH = 108  # C8
@@ -96,11 +104,11 @@ def sha256(path: Path) -> str:
     return hashlib.sha256(path.read_bytes()).hexdigest()
 
 
-def extract(archive: Path, into: Path) -> Path:
+def extract(archive: Path, into: Path, layer: int) -> Path:
     digest = sha1(archive)
     if digest != ARCHIVE_SHA1:
         sys.exit(f"{archive}: SHA-1 {digest} does not match the release ({ARCHIVE_SHA1})")
-    wanted = {f"{WAV_DIR}/{pitch_name(p, RELEASE_NAMES)}v{LAYER}.wav" for p in pitches()}
+    wanted = {f"{WAV_DIR}/{pitch_name(p, RELEASE_NAMES)}v{layer}.wav" for p in pitches()}
     with tarfile.open(archive, "r:bz2") as tar:
         members = [m for m in tar.getmembers() if m.name in wanted and m.isfile()]
         tar.extractall(into, members=members, filter="data")
@@ -156,11 +164,11 @@ def smooth(plans: list[Plan]) -> None:
         p.correction = max(-MAX_CORRECTION_DB, min(MAX_CORRECTION_DB, target - p.loudness))
 
 
-def plan(pitch: int, root: Path) -> Plan:
-    src = root / WAV_DIR / f"{pitch_name(pitch, RELEASE_NAMES)}v{LAYER}.wav"
+def plan(pitch: int, root: Path, layer: int, max_seconds: float) -> Plan:
+    src = root / WAV_DIR / f"{pitch_name(pitch, RELEASE_NAMES)}v{layer}.wav"
     rate, signal = mono(src)
     start = max(0, onset(signal, rate) - int(PRE_ROLL * rate))
-    length = min(len(signal) - start, int(MAX_SECONDS * rate))
+    length = min(len(signal) - start, int(max_seconds * rate))
     return Plan(
         pitch=pitch,
         src=src,
@@ -173,7 +181,7 @@ def plan(pitch: int, root: Path) -> Plan:
     )
 
 
-def encode(p: Plan, gain_db: float, dest: Path) -> None:
+def encode(p: Plan, gain_db: float, dest: Path, layer: int) -> None:
     fade = LONG_FADE if p.truncated else SHORT_FADE
     seconds = p.length / p.rate
     filters = ",".join(
@@ -185,7 +193,7 @@ def encode(p: Plan, gain_db: float, dest: Path) -> None:
             f"afade=t=out:st={seconds - fade:.4f}:d={fade}:curve=exp",
         ]
     )
-    title = f"Salamander Grand Piano V3, {pitch_name(p.pitch, RELEASE_NAMES)} layer {LAYER}"
+    title = f"Salamander Grand Piano V3, {pitch_name(p.pitch, RELEASE_NAMES)} layer {layer}"
     subprocess.run(
         ["ffmpeg", "-hide_banner", "-loglevel", "error", "-y", "-i", str(p.src)]
         + ["-af", filters, "-c:a", "libmp3lame", "-q:a", VBR_QUALITY]
@@ -201,24 +209,30 @@ def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawTextHelpFormatter)
     ap.add_argument("source", type=Path)
     ap.add_argument("out", type=Path)
+    ap.add_argument("--layer", type=int, default=LAYER, choices=range(1, 17))
+    ap.add_argument("--max-seconds", type=float, default=MAX_SECONDS)
+    ap.add_argument("--plan-only", action="store_true")
     args = ap.parse_args()
     if shutil.which("ffmpeg") is None:
         sys.exit("ffmpeg is not on PATH")
 
     with tempfile.TemporaryDirectory() as tmp:
-        root = extract(args.source, Path(tmp)) if args.source.is_file() else args.source
-        plans = [plan(p, root) for p in pitches()]
+        root = extract(args.source, Path(tmp), args.layer) if args.source.is_file() else args.source
+        plans = [plan(p, root, args.layer, args.max_seconds) for p in pitches()]
         smooth(plans)
         loudest = max(p.peak * 10 ** (p.correction / 20) for p in plans)
         gain_db = PEAK_DBFS - 20 * math.log10(loudest / 32768)
-        print(f"overall gain {gain_db:+.2f} dB")
+        level = statistics.median(p.loudness + p.correction + gain_db for p in plans)
+        print(f"layer {args.layer}: overall gain {gain_db:+.2f} dB, level {level:.2f} LUFS")
+        if args.plan_only:
+            return 0
 
         args.out.mkdir(parents=True, exist_ok=True)
         sums = []
         for p in plans:
             name = f"{pitch_name(p.pitch, NAMES)}.mp3"
             dest = args.out / name
-            encode(p, gain_db, dest)
+            encode(p, gain_db, dest, args.layer)
             sums.append(f"{sha256(dest)}  {name}")
             print(
                 f"{name:8} {p.length / p.rate:4.1f} s  {p.loudness:6.1f} LUFS  "

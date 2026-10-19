@@ -48,6 +48,18 @@ never Web MIDI output). The constraints:
    offline first visit), the synth keeps playing and loading is retried at most every 30 s. The
    count-in click stays an oscillator in both cases, so the latency test is unaffected.
 
+6. **Amended 2026-10-19 (P6-17, the maintainer's Q11: the richer piano by default).** Two more
+   layers beside layer 10: layer 5 in `soft/` (velocities 33–40, cut at 5 s) and layer 14 in
+   `loud/` (105–112, 8 s), built by the same script (`--layer`, `--max-seconds`); layer 10's
+   files are unchanged. Each layer is normalised on its own and the script prints its level; the
+   app takes the difference to layer 10 off (`SampleLayer.levelDb`), so loudness still follows
+   `velocityGain` and the layer changes only the tone. A note plays with the layer recorded nearest
+   its velocity (soft up to 55, layer 10 from 56 to 91, loud from 92), and the low-pass darkens it
+   only below that layer. Rendered offline in Chromium, a note one velocity either side of a
+   boundary differs from the curve by at most 0.9 dB (C2 to C6), so no crossfade is needed. The
+   original set loads first and plays at once; the soft layer, then the loud one, follow and join
+   as they arrive. The service worker precaches all three (its glob takes every `.mp3`).
+
 ## Consequences
 
 - The practice session and Detector Lab needed no change: `PianoSynth` is now the `Instrument`
@@ -62,6 +74,11 @@ never Web MIDI output). The constraints:
   for a grand.
 - Anyone redistributing the app must keep the credit and licence file, which ship in the build
   output next to the samples.
+
+- With the 2026-10-19 layers: about 4.7 MB of samples in all (1.2 MB soft, 1.6 MB loud), and
+  about 70 MB more once decoded at 48 kHz (some 110 MB for all three), which matters on an iPad,
+  the one device where this piano is what the learner hears through a keyboard's speakers. The
+  soft layer is cut at 5 s to keep it smaller.
 
 ## Alternatives considered
 
