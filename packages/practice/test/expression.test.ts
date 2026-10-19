@@ -244,15 +244,17 @@ describe('expressive touch (P6-16)', () => {
   });
 
   it("keeps a performance's own velocities, and reshapes a file that gives every note one", () => {
+    // Chords struck unevenly, as a hand does.
     const performed = song(
       [
         [60, 0, 1, 'right'],
-        [64, 1, 1, 'right'],
+        [64, 0, 1, 'right'],
+        [62, 1, 1, 'right'],
+        [65, 1, 1, 'right'],
       ],
       1,
     );
-    performed.notes[0] = { ...(performed.notes[0] as SongNote), velocity: 40 };
-    performed.notes[1] = { ...(performed.notes[1] as SongNote), velocity: 90 };
+    performed.notes = performed.notes.map((n, i) => ({ ...n, velocity: [52, 61, 70, 58][i] }));
     expect(expressiveVelocities(performed).size).toBe(0);
     const typed = song(
       [
@@ -309,12 +311,15 @@ describe('the ending (P6-16)', () => {
 });
 
 describe('a recorded performance (ADR 0021)', () => {
-  // Velocities that vary, as a pianist's recording has, and no pedal of its own.
+  // Chords struck unevenly, as a pianist's recording has them, and no pedal of its own.
   const performed = song(
-    [60, 64, 67, 72, 71, 67, 64, 60].map((p, i): Spec => [p, i, 1, 'right']),
+    [60, 64, 67, 72, 71, 67, 64, 60].flatMap((p, i): Spec[] => [
+      [p, i, 1, 'right'],
+      [p - 12, i, 1, 'left'],
+    ]),
     2,
   );
-  performed.notes = performed.notes.map((n, i) => ({ ...n, velocity: 50 + i * 5 }));
+  performed.notes = performed.notes.map((n, i) => ({ ...n, velocity: 50 + ((i * 7) % 23) }));
 
   it('is played as it is: its own touch, no added pedal, its own ending', () => {
     expect(isPerformance(performed)).toBe(true);
@@ -335,5 +340,37 @@ describe('a recorded performance (ADR 0021)', () => {
       100,
     );
     expect(isPerformance(typed)).toBe(false);
+  });
+});
+
+describe('a MIDI file written out by notation software (ADR 0021)', () => {
+  // A p section, then an f one, each chord at one velocity, and no pedal: an export, not a hand.
+  const exported = song(
+    [0, 1, 2, 3, 4, 5, 6, 7].flatMap((b): Spec[] => [
+      [60 + b, b, 1, 'right'],
+      [48, b, 1, 'left'],
+      [55, b, 1, 'left'],
+    ]),
+    2,
+  );
+  exported.notes = exported.notes.map((n) => ({ ...n, velocity: n.startBeat < 4 ? 49 : 96 }));
+
+  it('is not taken for a performance, so it is pedalled and eased into its end', () => {
+    expect(isPerformance(exported)).toBe(false);
+    const events = buildPlayback(exported, { expressive: true });
+    expect(events.some((e) => e.kind === 'pedal' && e.value >= 64)).toBe(true);
+    expect(playbackLength(exported, true)).toBeGreaterThan(playbackLength(exported));
+  });
+
+  it('is shaped around its own dynamics: p stays soft and f loud', () => {
+    const v = expressiveVelocities(exported);
+    const mean = (from: number, to: number) => {
+      const xs = exported.notes
+        .filter((n) => n.startBeat >= from && n.startBeat < to)
+        .map((n) => v.get(n.id) ?? 0);
+      return xs.reduce((a, b) => a + b, 0) / xs.length;
+    };
+    expect(mean(4, 8) - mean(0, 4)).toBeGreaterThan(35);
+    expect(new Set(v.values()).size).toBeGreaterThan(4);
   });
 });
