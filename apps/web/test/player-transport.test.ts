@@ -54,7 +54,10 @@ function seeded(seed = 7): () => number {
   };
 }
 
-function harness(songs: Song[], options: { hidden?: boolean; lookAhead?: number } = {}) {
+function harness(
+  songs: Song[],
+  options: { hidden?: boolean; lookAhead?: number; expressive?: () => boolean } = {},
+) {
   const clock = { t: 100 };
   let tick: (() => void) | null = null;
   const played: { pitch: number; when: number; duration: number; at: number; held?: number }[] = [];
@@ -100,6 +103,7 @@ function harness(songs: Song[], options: { hidden?: boolean; lookAhead?: number 
     random: seeded(),
     played: (k) => started.push(k),
     awake: (on) => awake.push(on),
+    ...(options.expressive ? { expressive: options.expressive } : {}),
   });
   const flush = async () => {
     for (let i = 0; i < 10; i++) await Promise.resolve();
@@ -429,5 +433,69 @@ describe('the pedals through the transport (P6-10)', () => {
     h.transport.seek(2.25);
     // Every key is up at 2.25 s, but the pedal still holds all four notes.
     expect(h.log).toEqual(['sustain 127', 'note 60', 'note 61', 'note 62', 'note 63']);
+  });
+});
+
+describe('expressive playing through the transport (P6-16)', () => {
+  // A C major arpeggio over one bar, with no pedal marks: 2 s at 120 bpm.
+  const arpeggio: Song = {
+    ...piece(1),
+    notes: [60, 64, 67, 72].map((pitch, i): SongNote => ({
+      id: `n${i}`,
+      pitch,
+      startBeat: i,
+      durationBeats: 1,
+      hand: 'right',
+      staff: 1,
+      voice: 1,
+      part: 0,
+      measureIndex: 0,
+      sourceRefs: [],
+    })),
+    measures: [{ index: 0, number: '1', sourceIndex: 0, startBeat: 0, lengthBeats: 4 }],
+    lengthBeats: 4,
+  };
+  const sustain = (log: string[]) => log.filter((l) => l.startsWith('sustain'));
+
+  it('pedals a piece without pedal marks, and lifts the pedal where it ends', async () => {
+    const h = harness([arpeggio], { expressive: () => true });
+    await h.transport.playQueue([key(0)]);
+    await h.run(2.5);
+    expect(h.transport.state.status).toBe('between');
+    expect(sustain(h.log)[0]).toBe('sustain 127');
+    expect(sustain(h.log).at(-1)).toBe('sustain 0');
+    // The first note rings on under the pedal to the end of the bar.
+    expect(h.played[0]?.held).toBeCloseTo(2, 6);
+  });
+
+  it('plays as written without it, as practice does', async () => {
+    const h = harness([arpeggio]);
+    await h.transport.playQueue([key(0)]);
+    await h.run(1);
+    expect(sustain(h.log)).toEqual([]);
+  });
+
+  it('goes on from the same place when it is switched while playing', async () => {
+    let on = true;
+    const h = harness([arpeggio], { expressive: () => on });
+    await h.transport.playQueue([key(0)]);
+    await h.run(0.6);
+    const silenced = h.silenced();
+    on = false;
+    h.log.length = 0;
+    h.transport.reshape();
+    expect(h.silenced()).toBe(silenced + 1);
+    await h.run(1);
+    // The note still sounding at once, then the rest of the bar, with no pedal now.
+    expect(h.log.filter((l) => l.startsWith('note'))).toEqual(['note 64', 'note 67', 'note 72']);
+    expect(sustain(h.log)).toEqual([]);
+  });
+
+  it("lifts every pedal before the gap, when a file's own pedal is still down at its end", async () => {
+    const h = harness([{ ...piece(2), pedals: [{ beat: 0, pedal: 'sustain', value: 127 }] }]);
+    await h.transport.playQueue([key(0)]);
+    await h.run(1.5);
+    expect(h.transport.state.status).toBe('between');
+    expect(h.log.slice(-3)).toEqual(['sustain 0', 'soft 0', 'sostenuto 0']);
   });
 });

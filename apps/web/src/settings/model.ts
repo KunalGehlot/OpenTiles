@@ -65,6 +65,17 @@ export interface MidiSetting {
 /** Which fingers to show (P4-08): suggested ones fill the gaps the score leaves. */
 export type FingeringDisplay = 'suggested' | 'written' | 'off';
 
+/** The Player's own choices, kept between visits (P6-07, P6-16). */
+export interface PlayerSettings {
+  /**
+   * Expressive playing: shaped touch and phrases, and the sustain pedal where the file has none
+   * (P6-16, ADR 0021). On by default in the Player (plan Q12); practice never uses it.
+   */
+  expressive: boolean;
+  /** Colour the notes by hand in the music room (plan Q10: off). */
+  showHands: boolean;
+}
+
 export interface AppSettings {
   language: Language;
   /** Light or dark colours, or as the device has it (P5-09). */
@@ -89,6 +100,7 @@ export interface AppSettings {
   /** How the app plays notes whose file has no velocities (P6-11, plan Q4). */
   touch: 'natural' | 'even';
   midi: MidiSetting;
+  player: PlayerSettings;
 }
 
 export const DEFAULT_APP_SETTINGS: Readonly<AppSettings> = Object.freeze({
@@ -113,6 +125,7 @@ export const DEFAULT_APP_SETTINGS: Readonly<AppSettings> = Object.freeze({
     output: '',
     thru: [],
   }),
+  player: Object.freeze({ expressive: true, showHands: false }),
 }) as Readonly<AppSettings>;
 
 /** Keys most Bluetooth page-turn pedals send, in the order the settings list offers them. */
@@ -189,6 +202,16 @@ export function normaliseSettings(value: unknown): AppSettings {
     noteSpelling: SPELLING_SETTINGS.find((s) => s === v.noteSpelling) ?? d.noteSpelling,
     touch: v.touch === 'even' ? 'even' : 'natural',
     midi: normaliseMidi(v.midi),
+    player: normalisePlayer(v.player),
+  };
+}
+
+function normalisePlayer(value: unknown): PlayerSettings {
+  const v = typeof value === 'object' && value !== null ? (value as Record<string, unknown>) : {};
+  const d = DEFAULT_APP_SETTINGS.player;
+  return {
+    expressive: bool(v.expressive, d.expressive),
+    showHands: bool(v.showHands, d.showHands),
   };
 }
 

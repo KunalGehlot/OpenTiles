@@ -106,7 +106,12 @@ fromBeat, toBeat })` lists the notes (and, from P6-10, pedal events) in _song se
   already be sounding there with what is left of them and the pedals' positions, and
   `setTempo(factor, at)` re-anchors without a jump. Notes without a velocity of their own (MusicXML,
   ABC, the catalogue) get one from `touchVelocities` (P6-11): natural touch brings out the melody
-  and the strong beats, "even" plays them alike (Settings → Practice → Touch). The `Song` never holds seconds. How far ahead to
+  and the strong beats, "even" plays them alike (Settings → Practice → Touch). The Player alone
+  can ask for `expressive` playing (P6-16, ADR 0021): `expressiveVelocities` shapes each phrase
+  and the balance of melody and accompaniment, and `autoPedal` adds a sustain pedal (as ordinary
+  pedal events) where the file has none: a legato pedal at each new harmony, changed where it
+  would smear a step, up in rests and fast passages. A file's own velocities and pedal win. The
+  `Song` never holds seconds. How far ahead to
   schedule is the caller's choice: the practice session hands notes over 0.3 s ahead, or as little
   as its instrument asks for (`Instrument.lookAhead`; 0.1 s for a MIDI output without `clear()`).
 

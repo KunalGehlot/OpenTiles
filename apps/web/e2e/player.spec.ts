@@ -87,6 +87,45 @@ test('plays on the keyboard’s own sound by default once it is connected', asyn
   await page.keyboard.press('Space');
 });
 
+test('plays expressively on the keyboard: its sustain pedal and a range of touch', async ({
+  page,
+}) => {
+  const pedalDowns = (messages: number[][]) =>
+    messages.filter((m) => (m[0] ?? 0) >> 4 === 0xb && m[1] === 64 && (m[2] ?? 0) >= 64).length;
+  await fakeKeyboard(page);
+  await page.goto('./#/player');
+  await expect(title(page)).toHaveText('Ode to Joy (full tune)');
+  await page.getByRole('button', { name: 'Play on your piano' }).click();
+  await playButton(page).click();
+  // The catalogue has no pedal marks: the Player pedals it, and the touch varies.
+  await expect
+    .poll(async () => pedalDowns(await sent(page)), { timeout: 10_000 })
+    .toBeGreaterThan(1);
+  await expect.poll(() => noteOns(page), { timeout: 10_000 }).toBeGreaterThan(12);
+  const velocities = (await sent(page)).filter((m) => m[0] === 0x90).map((m) => m[2] ?? 0);
+  expect(Math.max(...velocities) - Math.min(...velocities)).toBeGreaterThanOrEqual(15);
+
+  // Pause: nothing sounding, and the pedal is up.
+  await page.keyboard.press('Space');
+  await page.waitForTimeout(400);
+  const paused = await sent(page);
+  expect(unendedNotes(paused)).toEqual([]);
+  const lastPedal = paused.filter((m) => (m[0] ?? 0) >> 4 === 0xb && m[1] === 64).at(-1);
+  expect(lastPedal?.[2]).toBe(0);
+
+  // Switched off in the options, the piece plays as written: no pedal of its own.
+  await page.getByRole('button', { name: 'Playback options' }).click();
+  await page.getByRole('checkbox', { name: 'Play expressively' }).uncheck();
+  await page.keyboard.press('Escape');
+  await page.keyboard.press('Space');
+  const from = paused.length;
+  await expect
+    .poll(async () => (await sent(page)).length - from, { timeout: 10_000 })
+    .toBeGreaterThan(20);
+  expect(pedalDowns((await sent(page)).slice(from))).toBe(0);
+  await page.keyboard.press('Space');
+});
+
 test('plays on this device where there is no MIDI', async ({ page }) => {
   await page.addInitScript(() => {
     Object.defineProperty(navigator, 'requestMIDIAccess', { value: undefined });
