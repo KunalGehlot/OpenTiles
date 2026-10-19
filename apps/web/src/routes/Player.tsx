@@ -24,6 +24,7 @@ import {
   Maximize2,
   Minimize2,
   Pause,
+  Piano,
   Play,
   Repeat,
   Repeat1,
@@ -451,6 +452,12 @@ export function Player() {
         outputs: midi.outputs,
         name: settings.midi.output,
       });
+  // A keyboard connected or chosen while the Player plays takes the notes over at once.
+  const target = `${route.effective}/${route.output ?? ''}`;
+  useEffect(() => {
+    void transport.changeInstrument();
+  }, [target, transport]);
+  const connectPiano = () => void midi.connect().catch(() => {});
   const choosePlayback = (playback: MidiPlayback) => {
     void updateAppSettings({ midi: { ...settings.midi, playback } }).then(() =>
       transport.changeInstrument(),
@@ -616,6 +623,11 @@ export function Player() {
         </button>
         <RoomTitle entry={current} />
         <div className="room__actions">
+          {route.connect && (
+            <button className="room__connect" onClick={connectPiano}>
+              <Piano /> {t('Play on your piano')}
+            </button>
+          )}
           {playsOnControl}
           {options}
           <button

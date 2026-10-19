@@ -16,12 +16,38 @@ describe('Plays on (P6-01)', () => {
       effective: 'keyboard',
       output: 'Digital Keyboard',
       problem: null,
+      connect: false,
     });
     expect(playsOn('both', connected).effective).toBe('both');
     expect(playsOn('device', connected)).toEqual({
       effective: 'device',
       output: null,
       problem: null,
+      connect: false,
+    });
+  });
+
+  it('plays automatically on the keyboard’s own sound when one is connected (2026-10-19)', () => {
+    expect(playsOn('auto', connected)).toEqual({
+      effective: 'keyboard',
+      output: 'Digital Keyboard',
+      problem: null,
+      connect: false,
+    });
+    const auto = (midi: Partial<MidiState>) => playsOn('auto', { ...connected, ...midi });
+    // No keyboard: this device, with nothing to warn about.
+    expect(auto({ supported: false })).toEqual({
+      effective: 'device',
+      output: null,
+      problem: null,
+      connect: false,
+    });
+    expect(auto({ inputs: [], outputs: [] })).toMatchObject({ effective: 'device', problem: null });
+    // MIDI not connected on this screen yet: this device, and Connect is offered.
+    expect(auto({ connected: false })).toMatchObject({
+      effective: 'device',
+      problem: null,
+      connect: true,
     });
   });
 
@@ -44,6 +70,7 @@ describe('Plays on (P6-01)', () => {
       effective: 'keyboard',
       output: 'Synth',
       problem: null,
+      connect: false,
     });
   });
 

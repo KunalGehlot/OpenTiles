@@ -193,3 +193,21 @@ describe('touch (P6-11)', () => {
     expect(normaliseSettings({ touch: 'loud' }).touch).toBe('natural');
   });
 });
+
+describe('where the app’s notes play (2026-10-19)', () => {
+  const midi = (value: Record<string, unknown>) => normaliseSettings({ midi: value }).midi.playback;
+
+  it('plays on the keyboard’s own sound automatically by default', () => {
+    expect(DEFAULT_APP_SETTINGS.midi.playback).toBe('auto');
+    expect(midi({})).toBe('auto');
+  });
+
+  it('reads "This device" saved before "Automatic" existed as the old default it was', () => {
+    expect(midi({ playback: 'device' })).toBe('auto');
+    // Chosen since: kept.
+    expect(midi({ playback: 'device', playbackVersion: 2 })).toBe('device');
+    expect(midi({ playback: 'keyboard' })).toBe('keyboard');
+    expect(midi({ playback: 'both' })).toBe('both');
+    expect(normaliseSettings({ midi: { playback: 'device' } }).midi.playbackVersion).toBe(2);
+  });
+});

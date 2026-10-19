@@ -202,7 +202,8 @@ describe('MIDI out', () => {
   it('keeps the MIDI settings and defaults damaged ones', () => {
     expect(normaliseSettings(undefined).midi).toEqual({
       echo: false,
-      playback: 'device',
+      playback: 'auto',
+      playbackVersion: 2,
       output: '',
       thru: [],
     });
@@ -212,11 +213,12 @@ describe('MIDI out', () => {
     ).toEqual({
       echo: true,
       playback: 'both',
+      playbackVersion: 2,
       output: 'X',
       thru: ['X'],
     });
     expect(normaliseSettings({ midi: { playback: 'loud', echo: 'yes' } }).midi.playback).toBe(
-      'device',
+      'auto',
     );
   });
 });

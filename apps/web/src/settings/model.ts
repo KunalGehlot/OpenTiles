@@ -36,14 +36,23 @@ export interface KeyboardSetting {
   keys: number;
 }
 
-/** Where the app's own notes play: this device, the MIDI keyboard's sound, or both. */
-export type MidiPlayback = 'device' | 'keyboard' | 'both';
+/**
+ * Where the app's own notes play: automatically on the MIDI keyboard's own sound whenever one is
+ * connected and on this device otherwise (the default, 2026-10-19), or always this device, the
+ * keyboard, or both.
+ */
+export type MidiPlayback = 'auto' | 'device' | 'keyboard' | 'both';
 
 export interface MidiSetting {
   /** Play the keys pressed on a MIDI keyboard through this device too. */
   echo: boolean;
   /** Where the app's notes (listen mode, the other hand, listening back) play. */
   playback: MidiPlayback;
+  /**
+   * 2 once `playback` was saved with "Automatic" on offer. Before that "This device" was the
+   * default, so a saved "This device" without it reads as "Automatic".
+   */
+  playbackVersion: 2;
   /** The MIDI output to play on; empty for the keyboard that is connected. */
   output: string;
   /**
@@ -97,7 +106,13 @@ export const DEFAULT_APP_SETTINGS: Readonly<AppSettings> = Object.freeze({
   noteLabels: 'auto',
   noteSpelling: 'key',
   touch: 'natural',
-  midi: Object.freeze({ echo: false, playback: 'device', output: '', thru: [] }),
+  midi: Object.freeze({
+    echo: false,
+    playback: 'auto',
+    playbackVersion: 2,
+    output: '',
+    thru: [],
+  }),
 }) as Readonly<AppSettings>;
 
 /** Keys most Bluetooth page-turn pedals send, in the order the settings list offers them. */
@@ -181,7 +196,13 @@ function normaliseMidi(value: unknown): MidiSetting {
   const v = typeof value === 'object' && value !== null ? (value as Record<string, unknown>) : {};
   return {
     echo: bool(v.echo, false),
-    playback: v.playback === 'keyboard' || v.playback === 'both' ? v.playback : 'device',
+    playback:
+      v.playback === 'keyboard' || v.playback === 'both'
+        ? v.playback
+        : v.playback === 'device' && v.playbackVersion === 2
+          ? 'device'
+          : 'auto',
+    playbackVersion: 2,
     output: typeof v.output === 'string' && v.output.length <= 200 ? v.output : '',
     thru: Array.isArray(v.thru)
       ? v.thru.filter((n): n is string => typeof n === 'string' && n.length <= 200).slice(0, 20)

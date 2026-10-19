@@ -74,6 +74,19 @@ test('plays on the keyboard: play, pause and next send notes there, and none on 
   await expect.poll(() => noteOns(page), { timeout: 10_000 }).toBeGreaterThan(before);
 });
 
+test('plays on the keyboard’s own sound by default once it is connected', async ({ page }) => {
+  await fakeKeyboard(page);
+  await page.goto('./#/player');
+  await expect(title(page)).toHaveText('Ode to Joy (full tune)');
+  await page.getByRole('button', { name: 'Play on your piano' }).click();
+  await expect(page.getByRole('button', { name: 'Plays on: Test Keyboard' })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Play on your piano' })).toHaveCount(0);
+  await playButton(page).click();
+  await expect.poll(() => noteOns(page), { timeout: 10_000 }).toBeGreaterThan(2);
+  expect(await deviceNotes(page)).toBe(0);
+  await page.keyboard.press('Space');
+});
+
 test('plays on this device where there is no MIDI', async ({ page }) => {
   await page.addInitScript(() => {
     Object.defineProperty(navigator, 'requestMIDIAccess', { value: undefined });

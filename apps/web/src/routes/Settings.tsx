@@ -375,13 +375,14 @@ function MidiSection({
           <Setting
             label={t('App’s notes play on')}
             hint={t(
-              'Listen mode, the other hand and listening back; also under “Plays on” in practice. “My keyboard” plays them with the keyboard’s own sound; the metronome stays on this device.',
+              'Listen mode, the other hand, listening back and the Player; also under “Plays on”. “Automatic” plays them with the keyboard’s own sound whenever it is connected, and on this device otherwise; the metronome stays on this device.',
             )}
           >
             <select
               value={m.playback}
               onChange={(e) => setMidi({ playback: e.target.value as MidiPlayback })}
             >
+              <option value="auto">{t('Automatic: the keyboard when it is connected')}</option>
               <option value="device">{t('This device')}</option>
               <option value="keyboard">{t('My keyboard')}</option>
               <option value="both">{t('Both')}</option>

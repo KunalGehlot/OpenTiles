@@ -349,6 +349,17 @@ button.programme__play:hover:not(:disabled) {
   gap: var(--space-1);
 }
 
+.room__connect {
+  --btn-bg: transparent;
+  gap: var(--space-2);
+  border-color: var(--accent-line);
+  color: var(--accent);
+}
+
+.room__connect:hover:not(:disabled) {
+  --btn-bg: var(--room-hover);
+}
+
 .room__actions .popover__panel {
   color: var(--text);
 }

@@ -547,7 +547,7 @@ function PracticeView({
       keyboard.sent = thru.includes(kept.output) ? (keyboard.sent ?? new SentNotes()) : null;
     }
     echoes.current = keyboard?.sent ?? null;
-    session.setSynth(playbackInstrument(device, keyboard, midiPlayback));
+    session.setSynth(playbackInstrument(device, keyboard, route.effective));
     session.midiEcho = midiEcho ? device : null;
   };
 
