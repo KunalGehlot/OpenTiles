@@ -8,6 +8,7 @@ import {
   expressivePedals,
   expressiveVelocities,
   harmonyChanges,
+  isPerformance,
 } from '../src/expression';
 import { buildPlayback, playbackLength } from '../src/playback';
 import type { PlaybackNote } from '../src/playback';
@@ -304,5 +305,35 @@ describe('the ending (P6-16)', () => {
 
   it('leaves practice as written', () => {
     expect(written.at(-1)?.end).toBeCloseTo(4, 9);
+  });
+});
+
+describe('a recorded performance (ADR 0021)', () => {
+  // Velocities that vary, as a pianist's recording has, and no pedal of its own.
+  const performed = song(
+    [60, 64, 67, 72, 71, 67, 64, 60].map((p, i): Spec => [p, i, 1, 'right']),
+    2,
+  );
+  performed.notes = performed.notes.map((n, i) => ({ ...n, velocity: 50 + i * 5 }));
+
+  it('is played as it is: its own touch, no added pedal, its own ending', () => {
+    expect(isPerformance(performed)).toBe(true);
+    const asIs = buildPlayback(performed, { expressive: true });
+    expect(asIs).toEqual(buildPlayback(performed));
+    expect(asIs.some((e) => e.kind === 'pedal')).toBe(false);
+    expect(playbackLength(performed, true)).toBe(playbackLength(performed));
+  });
+
+  it('is not a file typed in with one velocity for every note', () => {
+    const typed = song(
+      [
+        [60, 0, 1, 'right'],
+        [64, 1, 1, 'right'],
+      ],
+      1,
+      120,
+      100,
+    );
+    expect(isPerformance(typed)).toBe(false);
   });
 });

@@ -22,6 +22,7 @@ export {
   expressivePedals,
   expressiveVelocities,
   harmonyChanges,
+  isPerformance,
 } from './expression';
 export type { Touch } from './touch';
 export type {

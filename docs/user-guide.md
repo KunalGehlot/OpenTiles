@@ -157,8 +157,9 @@ On a MIDI keyboard it plays the keyboard's own piano.
   keyboard**, or **Both**. **Play on your piano** connects a keyboard (the browser asks once).
 - **Play expressively** (in the options, on by default) shapes each phrase and lets the melody sing
   over the accompaniment, and uses the sustain pedal where a piece has no pedal marks of its own,
-  as a pianist would: changed with each new harmony, and lifted where it would blur. Pieces you
-  import keep their own pedal and touch. Practice always plays exactly what is written.
+  as a pianist would: changed with each new harmony, and lifted where it would blur, and eases
+  into the last chord. A piece's own pedal marks are kept, and a MIDI recording of a pianist plays
+  exactly as recorded. Practice always plays exactly what is written.
 - **Up next** shows what comes after this piece. Tap one to play it now, drag it by its handle (or
   use ↑ and ↓ on the handle, or Alt with them anywhere on its row) to move it, and × to take it
   out. The queue is kept on this device, so it is still there next time.

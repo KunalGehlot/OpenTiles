@@ -26,7 +26,10 @@ is new.
   `splitPhrases`) rises from −8 to +12 at its highest melody note and falls to −12 at its end, the
   accompaniment following at 0.6. A phrase sung higher than the piece's average is a little louder.
   Clamped to 24–112. A performance's own velocities are kept.
-- **Pedal** (`autoPedal`), only when the file has no sustain pedal of its own:
+- **A recorded performance** (velocities that vary, as a MIDI recording of a pianist has) is played
+  as it is: no added pedal, its own touch, its own ending (`isPerformance`).
+- **Pedal** (`autoPedal`), only when the file has no sustain pedal of its own and is not a recorded
+  performance:
   - Harmony changes are read over whole pulses of at least 0.4 s within a bar: the bass moving to
     another note at or below where it was, or two new pitch classes in the accompaniment (three in
     all). An Alberti or waltz bass stays one harmony.
