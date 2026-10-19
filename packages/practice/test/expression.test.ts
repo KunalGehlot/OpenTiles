@@ -4,11 +4,13 @@ import type { PedalEvent, Song, SongNote } from '@opentiles/song-model';
 import { describe, expect, it } from 'vitest';
 import {
   autoPedal,
+  endingWarp,
   expressivePedals,
   expressiveVelocities,
   harmonyChanges,
+  isPerformance,
 } from '../src/expression';
-import { buildPlayback } from '../src/playback';
+import { buildPlayback, playbackLength } from '../src/playback';
 import type { PlaybackNote } from '../src/playback';
 import { touchVelocities } from '../src/touch';
 
@@ -117,7 +119,8 @@ describe('automatic sustain pedal (P6-16)', () => {
 
   it('sends the lift at the end, so the keyboard is not left with the pedal down', () => {
     const pedals = buildPlayback(cToG7, { expressive: true }).filter((e) => e.kind === 'pedal');
-    expect(pedals.at(-1)).toMatchObject({ pedal: 'sustain', value: 0, start: 4 });
+    expect(pedals.at(-1)).toMatchObject({ pedal: 'sustain', value: 0 });
+    expect(pedals.at(-1)?.start).toBeCloseTo(playbackLength(cToG7, true), 9);
   });
 
   it('changes the pedal for each step of a slow scale over a held chord', () => {
@@ -262,5 +265,75 @@ describe('expressive touch (P6-16)', () => {
     );
     expect(expressiveVelocities(typed).size).toBe(2);
     expect(notesOf(typed).every((n) => n.velocity !== 100)).toBe(true);
+  });
+});
+
+describe('the ending (P6-16)', () => {
+  // C D E F | G A B, and the last C on beat 4 of bar 2: quarter notes at 120 bpm.
+  const scale = song(
+    [60, 62, 64, 65, 67, 69, 71, 72].map((p, i): Spec => [p, i, 1, 'right']),
+    2,
+  );
+  const played = notesOf(scale);
+  const written = buildPlayback(scale).filter((e): e is PlaybackNote => e.kind === 'note');
+
+  it('plays as written until the bar before the last note', () => {
+    for (let i = 0; i < 4; i++) expect(played[i]?.start).toBeCloseTo(written[i]?.start ?? -1, 9);
+  });
+
+  it('eases the tempo into the last note by at most 10 %', () => {
+    for (let i = 4; i < 7; i++) {
+      const gap = (played[i + 1]?.start ?? 0) - (played[i]?.start ?? 0);
+      expect(gap).toBeGreaterThan(0.5);
+      expect(gap).toBeLessThanOrEqual(0.5 / 0.9 + 1e-9);
+    }
+  });
+
+  it('holds the last note half as long again, and the piece lasts that much longer', () => {
+    const last = played.at(-1);
+    expect((last?.end ?? 0) - (last?.start ?? 0)).toBeCloseTo(0.75, 9);
+    expect(playbackLength(scale, true)).toBeCloseTo(last?.end ?? 0, 9);
+    expect(playbackLength(scale)).toBeCloseTo(4, 9);
+  });
+
+  it('is the same every time, and a straight line where nothing slows', () => {
+    expect(notesOf(scale)).toEqual(played);
+    const warp = endingWarp(scale);
+    expect(warp(1.25)).toBe(1.25);
+    expect(warp(3)).toBeGreaterThan(3);
+  });
+
+  it('leaves practice as written', () => {
+    expect(written.at(-1)?.end).toBeCloseTo(4, 9);
+  });
+});
+
+describe('a recorded performance (ADR 0021)', () => {
+  // Velocities that vary, as a pianist's recording has, and no pedal of its own.
+  const performed = song(
+    [60, 64, 67, 72, 71, 67, 64, 60].map((p, i): Spec => [p, i, 1, 'right']),
+    2,
+  );
+  performed.notes = performed.notes.map((n, i) => ({ ...n, velocity: 50 + i * 5 }));
+
+  it('is played as it is: its own touch, no added pedal, its own ending', () => {
+    expect(isPerformance(performed)).toBe(true);
+    const asIs = buildPlayback(performed, { expressive: true });
+    expect(asIs).toEqual(buildPlayback(performed));
+    expect(asIs.some((e) => e.kind === 'pedal')).toBe(false);
+    expect(playbackLength(performed, true)).toBe(playbackLength(performed));
+  });
+
+  it('is not a file typed in with one velocity for every note', () => {
+    const typed = song(
+      [
+        [60, 0, 1, 'right'],
+        [64, 1, 1, 'right'],
+      ],
+      1,
+      120,
+      100,
+    );
+    expect(isPerformance(typed)).toBe(false);
   });
 });

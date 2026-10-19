@@ -26,7 +26,10 @@ is new.
   `splitPhrases`) rises from −8 to +12 at its highest melody note and falls to −12 at its end, the
   accompaniment following at 0.6. A phrase sung higher than the piece's average is a little louder.
   Clamped to 24–112. A performance's own velocities are kept.
-- **Pedal** (`autoPedal`), only when the file has no sustain pedal of its own:
+- **A recorded performance** (velocities that vary, as a MIDI recording of a pianist has) is played
+  as it is: no added pedal, its own touch, its own ending (`isPerformance`).
+- **Pedal** (`autoPedal`), only when the file has no sustain pedal of its own and is not a recorded
+  performance:
   - Harmony changes are read over whole pulses of at least 0.4 s within a bar: the bass moving to
     another note at or below where it was, or two new pitch classes in the accompaniment (three in
     all). An Alberti or waltz bass stays one harmony.
@@ -42,6 +45,11 @@ is new.
     the control changes for a keyboard, seeking and the pedal light all work unchanged.
 - **Endings:** a lift exactly where the played range ends is now sent, and the transport lifts every
   pedal as a piece ends, so nothing is held into the gap or the next piece.
+- **The ending** (`endingWarp`): from the start of the bar before the last chord (or of its own bar,
+  when it is not on the downbeat) the tempo eases in a straight line to 90 %, and the last chord
+  and anything after it last half as long again. It is a map from written to played song seconds,
+  applied to every note and pedal event, so the keys, the roll and the sound stay together;
+  `playbackLength` gives the transport the longer length.
 - Applied at playback, never stored (ADR 0003).
 
 Measured over the catalogue with the rules above (2026-10-19): no piece has a semitone that only
@@ -58,9 +66,7 @@ about 30 steps between the 10th and 90th percentile (39–106 in all), against 5
   a per-piece hint could come later.
 - A file's own pedal marks or recorded velocities always win, so imported performances are not
   touched.
-- The slowing at the end, the held last chord and dynamics marks from imported MusicXML (the rest
-  of §5.3) are still to do: they change the timing, which the transport, the seek bar and the media
-  controls all read.
+- Dynamics marks and hairpins from imported MusicXML (the rest of §5.3) are still to do.
 
 ## Alternatives considered
 

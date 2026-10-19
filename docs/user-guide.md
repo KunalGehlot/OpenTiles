@@ -15,6 +15,7 @@ use the tools that make hard bars easier. For quick answers see the [FAQ](faq.md
 - [Practice tools](#practice-tools)
 - [Falling notes, score and sheet views](#falling-notes-score-and-sheet-views)
 - [Sight-reading drills](#sight-reading-drills)
+- [The Player](#the-player)
 - [Bringing your own music](#bringing-your-own-music)
 - [Settings](#settings)
 - [Keyboard shortcuts](#keyboard-shortcuts)
@@ -142,6 +143,44 @@ The **Sight-reading** page generates endless note-reading practice: pick a clef 
 middle C, choose single notes or short phrases, and play what you see. Optional helps are note
 names under the notes and a lit key to press. The next drill starts as soon as one ends.
 
+## The Player
+
+The **Player** plays your music to you, the catalogue and your own pieces, like a self-playing
+grand piano: the notes come down a dark roll as lines of light, and the keys go down by themselves.
+On a MIDI keyboard it plays the keyboard's own piano.
+
+- **The programme.** Everything you can play, grouped by composer like a concert programme. Search
+  it, or show only your library or the catalogue. Tap a piece to play it and everything after it;
+  **Play all** plays one composer; **Let it play** shuffles everything, round and round.
+- **Where it plays.** **Plays on** chooses: **Automatic** (the default) uses your MIDI keyboard's own
+  sound whenever one is connected and this device otherwise; or always **This device**, **My
+  keyboard**, or **Both**. **Play on your piano** connects a keyboard (the browser asks once).
+- **Play expressively** (in the options, on by default) shapes each phrase and lets the melody sing
+  over the accompaniment, and uses the sustain pedal where a piece has no pedal marks of its own,
+  as a pianist would: changed with each new harmony, and lifted where it would blur, and eases
+  into the last chord. A piece's own pedal marks are kept, and a MIDI recording of a pianist plays
+  exactly as recorded. Practice always plays exactly what is written.
+- **Up next** shows what comes after this piece. Tap one to play it now, drag it by its handle (or
+  use ↑ and ↓ on the handle, or Alt with them anywhere on its row) to move it, and × to take it
+  out. The queue is kept on this device, so it is still there next time.
+- **Stand mode** (**F** or the button) fills the window with the piano, full screen where the
+  browser allows. The controls fade after a few seconds and come back on any touch or key.
+- **On other pages** the Player keeps playing, with a small bar to pause it or skip; practice stops
+  it. While this device's piano plays, the media keys and the system's "Now playing" control it
+  too (Chrome and Edge; with only a MIDI keyboard sounding, browsers offer no such control).
+- **Listen** on a piece's card (and in practice's options) opens the Player playing it;
+  **Practise this** in the Player's options goes the other way.
+
+What you hear depends on the device:
+
+| Device and connection                                    | What you hear                                                |
+| -------------------------------------------------------- | ------------------------------------------------------------ |
+| Mac or PC with Chrome, Edge or Firefox, USB or Bluetooth | your keyboard plays the piece itself (MIDI), its pedal too   |
+| iPad, any browser, keyboard on USB                       | the app's piano, through the keyboard's speakers (USB audio) |
+| iPad app (coming later), USB or Bluetooth                | your keyboard plays the piece itself (MIDI)                  |
+
+No browser on the iPad can send MIDI to a keyboard yet; see the [FAQ](faq.md).
+
 ## Bringing your own music
 
 Open **My library** and press **Import a file…**.
@@ -222,6 +261,16 @@ Open **Settings**; changes are kept on your device.
 | `A W S E D F T G Y H U J K O L P ;` | Play notes from C upwards, like piano keys  |
 | `Z` / `X`                           | Move the computer-keyboard octave down / up |
 | `Tab` / `Shift`+`Tab`               | Move between buttons and controls           |
+
+In the Player:
+
+| Keys                             | Action                                                           |
+| -------------------------------- | ---------------------------------------------------------------- |
+| `Space`                          | Play or pause                                                    |
+| `←` / `→`                        | Back or forward 5 seconds                                        |
+| `Shift`+`←` / `Shift`+`→`        | The piece before or after                                        |
+| `F`, `Escape`                    | Stand mode on or off; `Escape` leaves it                         |
+| `↑` / `↓` on a handle in Up next | Move that piece up or down (`Alt` with them anywhere on its row) |
 
 The full, current list is in **Settings → Keyboard shortcuts**.
 

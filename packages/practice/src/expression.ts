@@ -40,6 +40,17 @@ const REGISTER_CAP = 5;
 const SOFTEST = 24;
 const LOUDEST = 112;
 
+/**
+ * A recorded performance: its notes carry velocities that vary. Its touch, timing and pedal are the
+ * pianist's own, so expressive playing leaves it as it is (ADR 0021).
+ */
+export function isPerformance(song: Song): boolean {
+  const velocities = new Set(
+    song.notes.flatMap((n) => (n.velocity === undefined ? [] : [n.velocity])),
+  );
+  return velocities.size > 1;
+}
+
 /** True when the file gives every note one velocity: it says nothing about touch. */
 function uniformVelocities(song: Song): boolean {
   let only: number | undefined;
@@ -120,6 +131,44 @@ export function expressiveVelocities(song: Song): Map<string, number> {
     out.set(n.id, Math.max(SOFTEST, Math.min(LOUDEST, Math.round(v))));
   }
   return out;
+}
+
+// ---- The ending ----
+
+/** The slowest the ending gets, as a share of the tempo (brief §5.3: at most 10 % slower). */
+const RIT_FLOOR = 0.9;
+/** The last chord sounds this much longer than written, with what follows it. */
+const LAST_CHORD_HOLD = 1.5;
+
+/**
+ * The ending a pianist plays (P6-16): from the start of the bar before the last chord the tempo
+ * eases to 90 %, and the last chord is held half as long again. Returns the map from song seconds
+ * as written to song seconds as played; before the slowing it changes nothing, and a recorded
+ * performance keeps its own ending.
+ */
+export function endingWarp(song: Song): (seconds: number) => number {
+  const notes = song.notes;
+  const last = notes[notes.length - 1];
+  if (!last || isPerformance(song)) return (t) => t;
+  const tempo = new TempoMap(song.tempos);
+  const lastOnset = Math.max(...notes.map((n) => n.startBeat));
+  // The bar holding the last onset, or the one before when the last chord starts its bar.
+  let bar = song.measures.findIndex(
+    (m) => lastOnset >= m.startBeat - EPS && lastOnset < m.startBeat + m.lengthBeats - EPS,
+  );
+  if (bar > 0 && lastOnset - (song.measures[bar]?.startBeat ?? 0) < 1 - EPS) bar -= 1;
+  const from = tempo.beatToSeconds(song.measures[bar]?.startBeat ?? Math.max(0, lastOnset - 4));
+  const to = tempo.beatToSeconds(lastOnset);
+  const span = to - from;
+  const k = 1 - RIT_FLOOR;
+  // Over the slowing the tempo falls in a straight line, so time stretches by the integral of
+  // 1 / (1 − k·x/span); at its end it has run (−span/k)·ln(1 − k) seconds.
+  const slowed = span > EPS ? (-span / k) * Math.log(1 - k) : 0;
+  return (t) => {
+    if (t <= from) return t;
+    if (t <= to) return from - (span / k) * Math.log(1 - (k * (t - from)) / span);
+    return from + slowed + (t - to) * LAST_CHORD_HOLD;
+  };
 }
 
 // ---- Pedal ----
@@ -302,11 +351,13 @@ export function autoPedal(song: Song): PedalEvent[] {
 }
 
 /**
- * The pedal events to play: the file's own when it has a sustain pedal, otherwise the file's
- * other pedals with the automatic sustain pedal, sorted by beat.
+ * The pedal events to play: the file's own when it has a sustain pedal or is a recorded
+ * performance, otherwise the file's other pedals with the automatic sustain pedal, sorted by beat.
  */
 export function expressivePedals(song: Song): PedalEvent[] {
   const own = song.pedals ?? [];
-  if (own.some((e) => e.pedal === 'sustain' && e.value >= PEDAL_DOWN)) return own;
+  if (isPerformance(song) || own.some((e) => e.pedal === 'sustain' && e.value >= PEDAL_DOWN)) {
+    return own;
+  }
   return [...own, ...autoPedal(song)].sort((a, b) => a.beat - b.beat);
 }

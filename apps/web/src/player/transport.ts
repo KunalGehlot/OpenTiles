@@ -6,9 +6,8 @@
 // Notes come from the shared playback scheduler (P6-03), handed to the instrument a little ahead
 // of the clock on every tick: about 120 ms while the page is visible (less for a MIDI output that
 // cannot drop stamped notes), 1.5 s while it is hidden, since a hidden page's ticks come late.
-import { buildPlayback, PlaybackCursor } from '@opentiles/practice';
+import { buildPlayback, PlaybackCursor, playbackLength } from '@opentiles/practice';
 import type { HandFilter } from '@opentiles/practice';
-import { TempoMap } from '@opentiles/song-model';
 import type { Song } from '@opentiles/song-model';
 import type { Instrument } from '../audio/instrument';
 import type { CollectionKey } from './collection';
@@ -227,13 +226,9 @@ export class PlayerTransport {
       return;
     }
     if (load !== this.loads) return;
-    // The written length, or where the last note ends if it rings past it.
-    const lastEnd = piece.song.notes.reduce(
-      (end, n) => Math.max(end, n.startBeat + n.durationBeats),
-      0,
-    );
-    const map = new TempoMap(piece.song.tempos);
-    const duration = map.beatToSeconds(Math.max(piece.song.lengthBeats, lastEnd));
+    // The written length, or where the last note ends if it rings past it; an expressive ending
+    // takes a little longer (P6-16).
+    const duration = playbackLength(piece.song, this.deps.expressive?.() ?? false);
     this.set({ piece, duration, status: 'paused', message: null });
     if (play) await this.play();
   }
@@ -380,11 +375,15 @@ export class PlayerTransport {
   private startAt(seconds: number): void {
     const { piece, hands, tempo } = this.stateValue;
     if (!piece) return;
+    const expressive = this.deps.expressive?.() ?? false;
     const events = buildPlayback(piece.song, {
       hands,
       touch: this.deps.touch?.() ?? 'natural',
-      expressive: this.deps.expressive?.() ?? false,
+      expressive,
     });
+    // Expressive playing switched on or off changes how long the ending takes.
+    const duration = playbackLength(piece.song, expressive);
+    if (Math.abs(duration - this.stateValue.duration) > 1e-6) this.set({ duration });
     this.endSeconds = events.reduce(
       (end, e) => (e.kind === 'note' ? Math.max(end, e.end) : end),
       0,

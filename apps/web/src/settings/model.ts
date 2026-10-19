@@ -379,5 +379,9 @@ export function keyboardShortcuts(): { keys: string; action: string }[] {
       keys: t('Pedal keys'),
       action: t('Turn the page forward / back when the foot pedal is switched on'),
     },
+    { keys: '← / →', action: t('In the Player: back or forward 5 seconds') },
+    { keys: 'Shift+← / Shift+→', action: t('In the Player: the piece before or after') },
+    { keys: 'F / Esc', action: t('In the Player: the music stand view on or off') },
+    { keys: 'Alt+↑ / Alt+↓', action: t('In Up next: move a piece up or down') },
   ];
 }

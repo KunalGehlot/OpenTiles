@@ -10,7 +10,7 @@ import { PEDAL_DOWN, pedalsBefore, TempoMap } from '@opentiles/song-model';
 import type { Hand, PedalEvent, PedalKind, Song } from '@opentiles/song-model';
 import { includesHand } from './steps';
 import type { HandFilter } from './steps';
-import { expressivePedals, expressiveVelocities } from './expression';
+import { endingWarp, expressivePedals, expressiveVelocities } from './expression';
 import { touchVelocities } from './touch';
 import type { Touch } from './touch';
 
@@ -111,6 +111,8 @@ export function buildPlayback(song: Song, options: PlaybackOptions = {}): Playba
   const sustain = downSpans(pedalList, tempo, 'sustain');
   const sostenuto = downSpans(pedalList, tempo, 'sostenuto');
   const songEnd = tempo.beatToSeconds(song.lengthBeats);
+  // Expressive playing eases the tempo into the last chord and holds it (P6-16).
+  const played = expressive ? endingWarp(song) : (t: number) => t;
   const heldUntil = (start: number, end: number) => {
     let held = end;
     // The damper stays off the strings while the sustain pedal is down when the key goes up.
@@ -131,9 +133,9 @@ export function buildPlayback(song: Song, options: PlaybackOptions = {}): Playba
     events.push({
       kind: 'note',
       pitch: n.pitch,
-      start,
-      end,
-      held: heldUntil(start, end),
+      start: played(start),
+      end: played(end),
+      held: played(heldUntil(start, end)),
       // Expressive touch also reshapes a file that gives every note one velocity.
       velocity:
         (expressive ? shaped.get(n.id) : undefined) ??
@@ -149,7 +151,9 @@ export function buildPlayback(song: Song, options: PlaybackOptions = {}): Playba
     const from = tempo.beatToSeconds(fromBeat);
     const state = pedalsBefore(pedalList, fromBeat);
     for (const pedal of ['sustain', 'soft', 'sostenuto'] as const) {
-      if (state[pedal] > 0) events.push({ kind: 'pedal', start: from, pedal, value: state[pedal] });
+      if (state[pedal] > 0) {
+        events.push({ kind: 'pedal', start: played(from), pedal, value: state[pedal] });
+      }
     }
     for (const e of pedalList) {
       // A pedal lifted where the range ends is kept, so nothing stays held after it.
@@ -157,7 +161,7 @@ export function buildPlayback(song: Song, options: PlaybackOptions = {}): Playba
       if (e.beat < fromBeat - 1e-6 || (e.beat >= toBeat - 1e-6 && !atEnd)) continue;
       events.push({
         kind: 'pedal',
-        start: tempo.beatToSeconds(e.beat),
+        start: played(tempo.beatToSeconds(e.beat)),
         pedal: e.pedal,
         value: e.value,
       });
@@ -168,6 +172,16 @@ export function buildPlayback(song: Song, options: PlaybackOptions = {}): Playba
   // pressed with a note does not catch it, and a change of pedal does not cut the new note.
   const rank = (e: PlaybackEvent) => (e.kind === 'pedal' ? 0 : 1);
   return events.sort((a, b) => a.start - b.start || rank(a) - rank(b));
+}
+
+/**
+ * How long the song plays, in song seconds at 100 % tempo: to the end of its last bar or its last
+ * note, whichever is later, and with an expressive ending a little longer.
+ */
+export function playbackLength(song: Song, expressive = false): number {
+  const lastEnd = song.notes.reduce((end, n) => Math.max(end, n.startBeat + n.durationBeats), 0);
+  const seconds = new TempoMap(song.tempos).beatToSeconds(Math.max(song.lengthBeats, lastEnd));
+  return expressive ? endingWarp(song)(seconds) : seconds;
 }
 
 /** A note handed out by the cursor, on the caller's clock. */
