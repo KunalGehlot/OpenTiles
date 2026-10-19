@@ -629,6 +629,22 @@
     background: var(--bg);
   }
 
+  /* Stand mode keeps its band under the piano for the controls and "Next: …". */
+  .player--room-open .room--stand,
+  .room--stand {
+    padding-bottom: calc(max(var(--space-3), env(safe-area-inset-bottom)) + 5rem);
+  }
+
+  .room--stand .room__deck {
+    right: max(var(--space-3), env(safe-area-inset-right));
+    left: max(var(--space-3), env(safe-area-inset-left));
+    gap: var(--space-2);
+  }
+
+  .room--stand .np-seek {
+    display: none;
+  }
+
   .player--room-open .room__close {
     display: inline-grid;
     place-items: center;
@@ -636,6 +652,10 @@
 
   .player--room-open .room__piano canvas {
     height: clamp(16rem, 48vh, 30rem);
+  }
+
+  .player--room-open .room--stand .room__piano canvas {
+    height: 100%;
   }
 
   .collection__list {
@@ -686,6 +706,13 @@
     background: var(--accent);
     transform: scaleX(0);
     transform-origin: left;
+  }
+}
+
+/* A finger's size on touch screens (P5-09), which this smaller link-like button would miss. */
+@media (pointer: coarse) {
+  .programme__all {
+    min-height: 2.75rem;
   }
 }
 
