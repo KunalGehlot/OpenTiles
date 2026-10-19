@@ -433,30 +433,34 @@ export function Player() {
   }, [stand]);
 
   // Space plays and pauses, ← and → move 5 s, Shift with them goes to the piece before or after,
-  // F switches stand mode and Escape leaves it.
+  // F switches stand mode and Escape leaves it. One listener for the page's life, calling the
+  // latest handler: a key that wakes stand mode's controls re-renders the page while the key is
+  // still being handled, and a listener swapped then would miss it.
+  const onKey = useRef<(e: KeyboardEvent) => void>(() => {});
+  onKey.current = (e: KeyboardEvent) => {
+    if ((e.target as HTMLElement | null)?.closest('input, select, textarea, [role="slider"]')) {
+      return;
+    }
+    if (e.code === 'Space') {
+      e.preventDefault();
+      void transport.toggle();
+    } else if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
+      const forward = e.key === 'ArrowRight';
+      e.preventDefault();
+      if (e.shiftKey) void (forward ? transport.next() : transport.previous());
+      else transport.seek(transport.positionNow() + (forward ? 5 : -5));
+    } else if ((e.key === 'f' || e.key === 'F') && !e.metaKey && !e.ctrlKey && !e.altKey) {
+      if (stand) leaveStand();
+      else enterStand();
+    } else if (e.key === 'Escape' && stand) {
+      leaveStand();
+    }
+  };
   useEffect(() => {
-    const onKey = (e: KeyboardEvent) => {
-      if ((e.target as HTMLElement | null)?.closest('input, select, textarea, [role="slider"]')) {
-        return;
-      }
-      if (e.code === 'Space') {
-        e.preventDefault();
-        void transport.toggle();
-      } else if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
-        const forward = e.key === 'ArrowRight';
-        e.preventDefault();
-        if (e.shiftKey) void (forward ? transport.next() : transport.previous());
-        else transport.seek(transport.positionNow() + (forward ? 5 : -5));
-      } else if ((e.key === 'f' || e.key === 'F') && !e.metaKey && !e.ctrlKey && !e.altKey) {
-        if (stand) leaveStand();
-        else enterStand();
-      } else if (e.key === 'Escape' && stand) {
-        leaveStand();
-      }
-    };
-    window.addEventListener('keydown', onKey);
-    return () => window.removeEventListener('keydown', onKey);
-  });
+    const listen = (e: KeyboardEvent) => onKey.current(e);
+    window.addEventListener('keydown', listen);
+    return () => window.removeEventListener('keydown', listen);
+  }, []);
 
   const supported = midiSupported();
   const choice = settings.midi.playback;

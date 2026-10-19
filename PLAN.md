@@ -647,9 +647,14 @@ without a word when no MIDI output is found.
   keep and tags, light or dark, the pedal's keys, the Score tab following a PDF, pedal marks).
   Left: the Player in the user guide and the README, once its design is chosen (P6-06).
 
-- [ ] **P6-15** (APP) Stand mode: the music room alone in the window (full screen where offered),
-      controls that fade after 3 s and come back on any touch, "Next: …" under the piano, the wake
-      lock, Reduce motion. Shown in P6-06's prototype; left: tests, the iPad check and polish.
+- [~] **P6-15** (APP) Stand mode: the music room alone in the window (full screen where offered),
+  controls that fade after 3 s and come back on any touch, "Next: …" under the piano, the wake
+  lock, Reduce motion. Done: F or the button, full screen where offered (the browser's own Escape
+  leaves it too), the controls and the pointer fading after 3 s, "Next: …" under the piano, an e2e
+  test in Chromium, WebKit and the iPad profile. It found a bug: the key that woke the controls
+  re-rendered the page while it was being handled, so the Player's shortcuts missed it (Space did
+  nothing the first time); they now listen once for the page's life. Left: the check on a real iPad
+  (P6-13).
 - [~] **P6-16** (PRAC) Phrasing for the Player: phrases swell towards their high point and settle
   at the end, the last bar slows by at most 10 % and the final chord is held; dynamics marks and
   hairpins set the level when a file has them (none of the catalogue's scores has any). On in the
@@ -690,6 +695,8 @@ Record the outcome as an ADR in `docs/adr/` and tick it here.
 - [x] Engine exposes a plain C ABI instead of wasm-bindgen glue — ADR 0002.
 
 ## Changelog
+
+- **2026-10-19** — P6-15: stand mode tested; the first key after the controls fade works again.
 
 - **2026-10-19** — P6-08: Up next can be reordered, trimmed and cleared, and is still there after a
   reload.

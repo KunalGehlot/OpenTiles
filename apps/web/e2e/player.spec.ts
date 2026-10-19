@@ -326,6 +326,31 @@ test('Up next: reorder by keys and by dragging, remove, keep after a reload, pla
   await expect(panel.getByText('Nothing more to play.')).toBeVisible();
 });
 
+test('stand mode: the music room alone, controls that fade and come back on a key', async ({
+  page,
+}) => {
+  await page.goto('./#/player');
+  await expect(title(page)).toHaveText('Ode to Joy (full tune)');
+  const room = page.locator('section.room');
+  const deck = room.locator('.room__deck');
+  await page.keyboard.press('f');
+  await expect(room).toHaveClass(/room--stand/);
+  await expect(page.getByRole('button', { name: 'Leave the music stand view' })).toBeVisible();
+
+  // Nothing moves for 3 s: the controls fade and the pointer hides.
+  await expect(room).toHaveClass(/room--idle/, { timeout: 6_000 });
+  await expect(deck).toHaveCSS('opacity', '0');
+  // Any key brings them back, and Space still plays.
+  await page.keyboard.press('Space');
+  await expect(room).not.toHaveClass(/room--idle/);
+  await expect(playButton(page)).toHaveAttribute('aria-label', 'Pause');
+  await page.keyboard.press('Space');
+
+  // Escape leaves it.
+  await page.keyboard.press('Escape');
+  await expect(room).not.toHaveClass(/room--stand/);
+});
+
 test('moves with the seek picture and the arrow keys', async ({ page }) => {
   await page.goto('./#/player');
   await expect(title(page)).toBeVisible();
