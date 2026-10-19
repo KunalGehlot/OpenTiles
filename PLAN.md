@@ -592,9 +592,10 @@ without a word when no MIDI output is found.
   layouts, German strings, shortcuts. Done: the page plays through the transport (a row plays the
   list from that piece; play, pause, previous, next, shuffle, repeat, tempo, hands); "Plays on"
   moves a playing piece to the new choice and says when the keyboard goes away; seeking by tap,
-  drag and keys; Space and the arrow keys; German strings; e2e in the 320 and 1,180 px layouts.
+  drag and keys; Space and the arrow keys; German strings; e2e in the 320 and 1,180 px layouts;
+  "Show hands" kept between visits.
   Left: entry points (Play on Home and Library cards, "Open in Player" in practice, "Practise
-  this"), keeping "Show hands", keys at the heard time (output latency, brief §5.4), composer dates
+  this"), keys at the heard time (output latency, brief §5.4), composer dates
   from the catalogue, the touch test on `#/player`.
 - [ ] **P6-08** (APP) Queue: play all, shuffle, repeat, reorder by drag and keyboard, kept on the
       device.
@@ -640,10 +641,18 @@ without a word when no MIDI output is found.
 - [ ] **P6-15** (APP) Stand mode: the music room alone in the window (full screen where offered),
       controls that fade after 3 s and come back on any touch, "Next: …" under the piano, the wake
       lock, Reduce motion. Shown in P6-06's prototype; left: tests, the iPad check and polish.
-- [ ] **P6-16** (PRAC) Phrasing for the Player: phrases swell towards their high point and settle
-      at the end, the last bar slows by at most 10 % and the final chord is held; dynamics marks
-      and hairpins set the level when a file has them (none of the catalogue's scores has any).
-      On in the Player ("Expressive"), off in practice; applied at playback, never stored.
+- [~] **P6-16** (PRAC) Phrasing for the Player: phrases swell towards their high point and settle
+  at the end, the last bar slows by at most 10 % and the final chord is held; dynamics marks and
+  hairpins set the level when a file has them (none of the catalogue's scores has any). On in the
+  Player ("Expressive"), off in practice; applied at playback, never stored. Done (ADR 0021, after
+  the maintainer found the Player "very flat" on their piano, 2026-10-19): "Play expressively" in
+  the Player's options, on by default and kept; shaped touch (the melody over the accompaniment,
+  each phrase rising to its highest note and settling) for notes the file leaves unshaped; an
+  automatic sustain pedal where the file has none (a legato pedal at each new harmony, changed
+  where it would smear a step, up in rests, at the end and in passages too fast to pedal); every
+  pedal lifted as a piece ends. Over the catalogue: no semitone smeared by the pedal, the pedal
+  down 79 % of the time on average, velocities about 39–106 (59–89 before). Left: the slowing at
+  the end and the held last chord (timing), dynamics marks and hairpins from imported MusicXML.
 - [ ] **P6-17** (APP) Sound on this device: a soft room sound from an impulse response made in code
       (Player only), and a richer piano with more Salamander loudness layers as the default sound
       (maintainer, 2026-10-18), loaded after the current set and kept for offline use.
@@ -672,6 +681,9 @@ Record the outcome as an ADR in `docs/adr/` and tick it here.
 - [x] Engine exposes a plain C ABI instead of wasm-bindgen glue — ADR 0002.
 
 ## Changelog
+
+- **2026-10-19** — P6-16 (part): the Player plays expressively, with the sustain pedal and shaped
+  touch where a piece has none of its own (ADR 0021); "Show hands" is kept between visits (P6-07).
 
 - **2026-10-19** — P6-09: the Player on other pages (a bar with play, pause and next) and the
   device's media controls; practice stopping it says so.

@@ -123,6 +123,7 @@ export function playerTransport(): PlayerTransport {
     },
     hidden: () => document.visibilityState === 'hidden',
     touch: () => appSettings().touch,
+    expressive: () => appSettings().player.expressive,
     played: (key) => void recordPlayed(key).catch(() => {}),
     awake,
   });

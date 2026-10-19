@@ -46,6 +46,8 @@ export interface TransportDeps {
   awake?(on: boolean): void;
   /** How notes without a velocity are played (P6-11); natural when not given. */
   touch?(): 'natural' | 'even';
+  /** Expressive playing: shaped touch and an automatic sustain pedal (P6-16); off when not given. */
+  expressive?(): boolean;
 }
 
 export type TransportStatus = 'idle' | 'loading' | 'playing' | 'paused' | 'between';
@@ -306,6 +308,15 @@ export class PlayerTransport {
     }
   }
 
+  /** How the notes are played changed (expressive playing): go on from the same place. */
+  reshape(): void {
+    if (this.stateValue.status !== 'playing' || !this.instrument) return;
+    const at = this.positionNow();
+    this.instrument.silence?.();
+    this.startAt(at);
+    this.tick();
+  }
+
   setRepeat(repeat: Repeat): void {
     this.set({ queue: queueRepeat(this.stateValue.queue, repeat) });
     this.refreshFollowing();
@@ -346,7 +357,11 @@ export class PlayerTransport {
   private startAt(seconds: number): void {
     const { piece, hands, tempo } = this.stateValue;
     if (!piece) return;
-    const events = buildPlayback(piece.song, { hands, touch: this.deps.touch?.() ?? 'natural' });
+    const events = buildPlayback(piece.song, {
+      hands,
+      touch: this.deps.touch?.() ?? 'natural',
+      expressive: this.deps.expressive?.() ?? false,
+    });
     this.endSeconds = events.reduce(
       (end, e) => (e.kind === 'note' ? Math.max(end, e.end) : end),
       0,
@@ -382,6 +397,9 @@ export class PlayerTransport {
       } else instrument.pedal?.(e.pedal, e.value, e.time);
     }
     if (cursor.done && now >= cursor.timeOf(this.endSeconds)) {
+      // Nothing held into the gap: a file's own pedal may still be down where it ends.
+      for (const pedal of ['sustain', 'soft', 'sostenuto'] as const)
+        instrument.pedal?.(pedal, 0, now);
       this.cursor = null;
       this.position = this.stateValue.duration;
       this.betweenUntil = now + this.stateValue.gap;

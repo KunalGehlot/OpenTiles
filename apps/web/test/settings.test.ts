@@ -194,6 +194,20 @@ describe('touch (P6-11)', () => {
   });
 });
 
+describe('the Player’s own choices (P6-16, P6-07)', () => {
+  it('plays expressively and leaves hand colours off unless changed', () => {
+    expect(normaliseSettings(undefined).player).toEqual({ expressive: true, showHands: false });
+    expect(normaliseSettings({ player: { expressive: false, showHands: true } }).player).toEqual({
+      expressive: false,
+      showHands: true,
+    });
+    expect(normaliseSettings({ player: { expressive: 'yes', extra: 1 } }).player).toEqual({
+      expressive: true,
+      showHands: false,
+    });
+  });
+});
+
 describe('where the app’s notes play (2026-10-19)', () => {
   const midi = (value: Record<string, unknown>) => normaliseSettings({ midi: value }).midi.playback;
 

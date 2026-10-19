@@ -255,7 +255,7 @@ export function Player() {
   const [query, setQuery] = useState('');
   const [filter, setFilter] = useState<Filter>('all');
   const [sort, setSort] = useState<CollectionSort>('composer');
-  const [showHands, setShowHands] = useState(false);
+  const { showHands, expressive } = settings.player;
   /** Lights brighter than white on an HDR screen; offered only where the screen can show them. */
   const [hdr, setHdr] = useState(true);
   const [queueOpen, setQueueOpen] = useState(false);
@@ -569,11 +569,29 @@ export function Player() {
           </button>
         ))}
       </div>
+      <label
+        className="check"
+        title={t('Shape each phrase, and use the sustain pedal where the piece has none')}
+      >
+        <input
+          type="checkbox"
+          checked={expressive}
+          onChange={(e) => {
+            const on = e.target.checked;
+            void updateAppSettings({ player: { ...settings.player, expressive: on } }).then(() =>
+              transport.reshape(),
+            );
+          }}
+        />
+        {t('Play expressively')}
+      </label>
       <label className="check">
         <input
           type="checkbox"
           checked={showHands}
-          onChange={(e) => setShowHands(e.target.checked)}
+          onChange={(e) =>
+            void updateAppSettings({ player: { ...settings.player, showHands: e.target.checked } })
+          }
         />
         {t('Show hands')}
       </label>
@@ -657,6 +675,7 @@ export function Player() {
           transport={transport}
           hands={state.hands}
           touch={settings.touch}
+          expressive={expressive}
           showHands={showHands}
           still={reducedMotion}
           active={state.status === 'playing'}
@@ -888,14 +907,20 @@ function RoomTitle({ entry }: { entry: CollectionEntry }) {
   );
 }
 
-/** A piece's roll, kept while its song, hands and touch stay the same. */
-function useRollCache(): (song: Song, hands: HandFilter, touch: 'natural' | 'even') => RollData {
+/** A piece's roll, kept while its song, hands and way of playing stay the same. */
+function useRollCache(): (
+  song: Song,
+  hands: HandFilter,
+  touch: 'natural' | 'even',
+  expressive: boolean,
+) => RollData {
   const cache = useRef(new Map<Song, { key: string; data: RollData }>());
-  return useCallback((song, hands, touch) => {
-    const key = `${hands}/${touch}`;
+  return useCallback((song, hands, touch, expressive) => {
+    const key = `${hands}/${touch}/${expressive}`;
     const known = cache.current.get(song);
     if (known?.key === key) return known.data;
-    const data = rollData(buildPlayback(song, { hands, touch }));
+    // The same events the transport plays, so the keys and the pedal light follow the sound.
+    const data = rollData(buildPlayback(song, { hands, touch, expressive }));
     // Two songs at most: the one playing and the one after the gap.
     if (cache.current.size > 2) cache.current.clear();
     cache.current.set(song, { key, data });
@@ -908,6 +933,7 @@ function MusicRoom({
   transport,
   hands,
   touch,
+  expressive,
   showHands,
   still,
   active,
@@ -917,6 +943,7 @@ function MusicRoom({
   transport: PlayerTransport;
   hands: HandFilter;
   touch: 'natural' | 'even';
+  expressive: boolean;
   showHands: boolean;
   still: boolean;
   active: boolean;
@@ -963,7 +990,7 @@ function MusicRoom({
     const f = fit(el, wide ? { colorSpace: 'display-p3' } : undefined);
     if (!f || f.w < 1 || f.h < 1) return;
     colours.current ??= readRoomColours(el, wide);
-    const data = roll(st.piece.song, hands, touch);
+    const data = roll(st.piece.song, hands, touch, expressive);
     const key = `${f.w}x${f.h}/${data.low}-${data.high}`;
     if (geometry.current?.key !== key) {
       geometry.current = { key, g: roomGeometry(f.w, f.h, data) };
@@ -975,7 +1002,7 @@ function MusicRoom({
       // the tracker bar as the gap ends.
       const end = st.duration + st.gap * st.tempo;
       const upcoming = transport.upcoming;
-      if (upcoming) next = { data: roll(upcoming.song, hands, touch), offset: end };
+      if (upcoming) next = { data: roll(upcoming.song, hands, touch, expressive), offset: end };
       const label = upcoming ?? nextTitle;
       if (label) {
         leader = {

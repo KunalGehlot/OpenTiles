@@ -805,6 +805,9 @@ export const de: Readonly<Record<string, string>> = {
   Traditional: 'Traditionell',
   'Other pieces': 'Weitere Stücke',
   'Show hands': 'Hände zeigen',
+  'Play expressively': 'Ausdrucksvoll spielen',
+  'Shape each phrase, and use the sustain pedal where the piece has none':
+    'Jede Phrase formen und das Haltepedal nutzen, wo das Stück keines angibt',
   'Playback options': 'Wiedergabe-Optionen',
   'HDR highlights': 'HDR-Glanzlichter',
   'Play on your piano': 'Auf deinem Klavier spielen',
