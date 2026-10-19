@@ -53,7 +53,16 @@ import { playerTransport } from '../player/browser';
 import { searchCollection, sortCollection } from '../player/collection';
 import type { CollectionEntry, CollectionSort } from '../player/collection';
 import { loadCollection } from '../player/load';
-import { LEADER_SECONDS, drawRoom, readRoomColours, roomGeometry, rollData } from '../player/piano';
+import { createHdrLayer, hdrPossible } from '../player/hdr';
+import type { HdrLayer } from '../player/hdr';
+import {
+  LEADER_SECONDS,
+  drawRoom,
+  readRoomColours,
+  roomGeometry,
+  roomLights,
+  rollData,
+} from '../player/piano';
 import type { RollData, RoomColours, RoomGeometry } from '../player/piano';
 import { origin, programme, TRADITIONAL, worksOf } from '../player/programme';
 import type { ComposerGroup, Work } from '../player/programme';
@@ -95,8 +104,9 @@ function useFrame(draw: Draw): void {
 /** Sizes a canvas to its box at the device's pixel ratio; returns the box in CSS px. */
 function fit(
   canvas: HTMLCanvasElement,
+  settings?: CanvasRenderingContext2DSettings,
 ): { ctx: CanvasRenderingContext2D; w: number; h: number } | null {
-  const ctx = canvas.getContext('2d');
+  const ctx = canvas.getContext('2d', settings);
   if (!ctx) return null;
   const w = canvas.clientWidth;
   const h = canvas.clientHeight;
@@ -107,6 +117,11 @@ function fit(
   }
   ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
   return { ctx, w, h };
+}
+
+/** A wide-gamut screen: the music room is drawn in Display P3, so its gold can be richer. */
+function wideScreen(): boolean {
+  return typeof matchMedia === 'function' && matchMedia('(color-gamut: p3)').matches;
 }
 
 /** Calls `onChange` when the colours may have changed: light or dark, a theme or high contrast. */
@@ -240,6 +255,8 @@ export function Player() {
   const [filter, setFilter] = useState<Filter>('all');
   const [sort, setSort] = useState<CollectionSort>('composer');
   const [showHands, setShowHands] = useState(false);
+  /** Lights brighter than white on an HDR screen; offered only where the screen can show them. */
+  const [hdr, setHdr] = useState(true);
   const [queueOpen, setQueueOpen] = useState(false);
   /** On a narrow screen, the music room open over the programme. */
   const [roomOpen, setRoomOpen] = useState(false);
@@ -553,6 +570,12 @@ export function Player() {
         />
         {t('Show hands')}
       </label>
+      {hdrPossible() && (
+        <label className="check">
+          <input type="checkbox" checked={hdr} onChange={(e) => setHdr(e.target.checked)} />
+          {t('HDR highlights')}
+        </label>
+      )}
     </Popover>
   );
 
@@ -621,6 +644,7 @@ export function Player() {
           showHands={showHands}
           still={reducedMotion}
           active={state.status === 'playing'}
+          hdr={hdr}
           nextTitle={nextEntry ? { title: nextEntry.title, composer: nextEntry.composer } : null}
         />
       )}
@@ -871,6 +895,7 @@ function MusicRoom({
   showHands,
   still,
   active,
+  hdr,
   nextTitle,
 }: {
   transport: PlayerTransport;
@@ -879,22 +904,49 @@ function MusicRoom({
   showHands: boolean;
   still: boolean;
   active: boolean;
+  /** Draw the lights again, brighter than white, where the screen and browser can show it. */
+  hdr: boolean;
   nextTitle: { title: string; composer?: string } | null;
 }) {
   const canvas = useRef<HTMLCanvasElement>(null);
+  const hdrCanvas = useRef<HTMLCanvasElement>(null);
+  const layer = useRef<HdrLayer | null>(null);
+  const wide = useMemo(wideScreen, []);
   const colours = useRef<RoomColours | null>(null);
   const geometry = useRef<{ key: string; g: RoomGeometry } | null>(null);
   const roll = useRollCache();
   useThemeChange(() => {
     colours.current = null;
   });
+  // The HDR layer, made again when the window moves between an HDR screen and another.
+  const [hdrScreen, setHdrScreen] = useState(hdrPossible);
+  useEffect(() => {
+    const media = matchMedia('(dynamic-range: high)');
+    const update = () => setHdrScreen(hdrPossible());
+    media.addEventListener('change', update);
+    return () => media.removeEventListener('change', update);
+  }, []);
+  useEffect(() => {
+    const el = hdrCanvas.current;
+    if (!hdr || !hdrScreen || !el) return;
+    let cancelled = false;
+    void createHdrLayer(el).then((made) => {
+      if (cancelled) made?.destroy();
+      else layer.current = made;
+    });
+    return () => {
+      cancelled = true;
+      layer.current?.destroy();
+      layer.current = null;
+    };
+  }, [hdr, hdrScreen]);
   useFrame(({ roll: seconds }) => {
     const el = canvas.current;
     const st = transport.state;
     if (!el || !st.piece) return;
-    const f = fit(el);
+    const f = fit(el, wide ? { colorSpace: 'display-p3' } : undefined);
     if (!f || f.w < 1 || f.h < 1) return;
-    colours.current ??= readRoomColours(el);
+    colours.current ??= readRoomColours(el, wide);
     const data = roll(st.piece.song, hands, touch);
     const key = `${f.w}x${f.h}/${data.low}-${data.high}`;
     if (geometry.current?.key !== key) {
@@ -917,16 +969,23 @@ function MusicRoom({
         };
       }
     }
-    drawRoom(
-      f.ctx,
-      geometry.current.g,
-      { data, seconds, active, next, leader, hands: showHands, still },
-      colours.current,
-    );
+    const frame = { data, seconds, active, next, leader, hands: showHands, still };
+    drawRoom(f.ctx, geometry.current.g, frame, colours.current);
+    const light = layer.current;
+    const top = hdrCanvas.current;
+    if (light && top) {
+      const dpr = window.devicePixelRatio || 1;
+      if (top.width !== Math.round(f.w * dpr) || top.height !== Math.round(f.h * dpr)) {
+        top.width = Math.round(f.w * dpr);
+        top.height = Math.round(f.h * dpr);
+      }
+      light.draw(roomLights(geometry.current.g, frame, colours.current), f.w, f.h);
+    }
   });
   return (
     <div className="room__piano">
       <canvas ref={canvas} aria-hidden="true" />
+      {hdr && hdrScreen && <canvas ref={hdrCanvas} className="room__hdr" aria-hidden="true" />}
     </div>
   );
 }

@@ -116,7 +116,7 @@ button.programme__play:hover:not(:disabled) {
 }
 
 .programme__play .icon {
-  color: var(--brass);
+  color: var(--brass-wide);
 }
 
 .collection__tools {
@@ -286,13 +286,13 @@ button.programme__play:hover:not(:disabled) {
   --line: var(--room-line);
   --line-strong: var(--room-line);
   --control: var(--room-muted);
-  --accent: var(--brass);
-  --accent-hover: var(--brass-hover);
+  --accent: var(--brass-wide);
+  --accent-hover: var(--brass-hover-wide);
   --accent-text: var(--room-on-gold);
   --accent-soft: var(--room-hover);
-  --accent-ink: var(--brass);
-  --accent-line: var(--brass);
-  --focus: var(--brass);
+  --accent-ink: var(--brass-wide);
+  --accent-line: var(--brass-wide);
+  --focus: var(--brass-wide);
   display: flex;
   flex-direction: column;
   gap: var(--space-4);
@@ -335,7 +335,7 @@ button.programme__play:hover:not(:disabled) {
 
 .room__composer {
   margin: var(--space-2) 0 0;
-  color: var(--brass);
+  color: var(--brass-wide);
   font-family: var(--font-serif);
   font-size: var(--text-sm);
   letter-spacing: 0.18em;
@@ -351,6 +351,18 @@ button.programme__play:hover:not(:disabled) {
 
 .room__actions .popover__panel {
   color: var(--text);
+}
+
+.room__piano {
+  position: relative;
+}
+
+/* The HDR lights (player/hdr.ts) lie exactly over the room's canvas. */
+.room__piano .room__hdr {
+  position: absolute;
+  inset: 0;
+  height: 100%;
+  pointer-events: none;
 }
 
 .room__piano canvas {

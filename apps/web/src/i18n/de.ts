@@ -800,6 +800,7 @@ export const de: Readonly<Record<string, string>> = {
   'Other pieces': 'Weitere Stücke',
   'Show hands': 'Hände zeigen',
   'Playback options': 'Wiedergabe-Optionen',
+  'HDR highlights': 'HDR-Glanzlichter',
   'Music stand view': 'Notenpult-Ansicht',
   'Leave the music stand view': 'Notenpult-Ansicht verlassen',
   'Next: {title}': 'Danach: {title}',

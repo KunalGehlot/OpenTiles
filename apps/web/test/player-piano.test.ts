@@ -10,8 +10,10 @@ import {
   pedalsAt,
   rollData,
   roomGeometry,
+  roomLights,
   roomRange,
 } from '../src/player/piano';
+import type { RoomColours } from '../src/player/piano';
 
 const note = (pitch: number, start: number, end: number, velocity = 80): PlaybackEvent => ({
   kind: 'note',
@@ -129,5 +131,53 @@ describe('where the music room puts things (P6-06)', () => {
     const g = roomGeometry(1200, 300, { low: 60, high: 72 });
     expect(g.keysHeight).toBeGreaterThanOrEqual(64);
     expect(g.trackerY).toBeGreaterThan(0);
+  });
+});
+
+describe('the HDR lights over the music room (P6-06)', () => {
+  const colours: RoomColours = {
+    stage: [13, 13, 15],
+    hole: [191, 167, 120],
+    lit: [255, 243, 214],
+    ink: '#c9ae78',
+    gold: [200, 169, 106],
+    keyLit: [240, 200, 120],
+    ivory: [242, 237, 227],
+    ebony: [17, 17, 19],
+    left: [180, 90, 28],
+    right: [43, 120, 184],
+    plain: false,
+    wide: true,
+    serif: 'serif',
+  };
+  const data = rollData([note(60, 0, 1, 100), note(64, 0.5, 2, 40), pedal(0, 127)]);
+  const g = roomGeometry(1200, 600, data);
+  const frame = { data, seconds: 0.75, active: true, hands: false, still: false };
+
+  it('lights the gold bar, each hole at it and its glow, each key that plays and the pedal', () => {
+    const lights = roomLights(g, frame, colours);
+    // Bar + 2 × (hole + glow) + 2 keys + pedal.
+    expect(lights).toHaveLength(8);
+    expect(lights.every((l) => l.w > 0 && l.h > 0)).toBe(true);
+    // The holes are well past white; the bar only a little brighter than its gold (0.79 in P3).
+    const brightest = (l: { colour: readonly number[] }) => Math.max(...l.colour);
+    expect(brightest(lights[1] as (typeof lights)[number])).toBeGreaterThan(1.3);
+    expect(brightest(lights[0] as (typeof lights)[number])).toBeGreaterThan(0.85);
+  });
+
+  it('lights a louder note’s key more', () => {
+    const lights = roomLights(g, frame, colours);
+    const keyLights = lights.filter((l) => l.fade && l.y >= g.keysTop);
+    expect(keyLights).toHaveLength(2);
+    const [c4, e4] = keyLights.sort((a, b) => a.x - b.x) as [
+      (typeof lights)[number],
+      (typeof lights)[number],
+    ];
+    expect(Math.max(...c4.colour)).toBeGreaterThan(Math.max(...e4.colour));
+  });
+
+  it('leaves only the bar lit while paused, and nothing under high contrast', () => {
+    expect(roomLights(g, { ...frame, active: false }, colours)).toHaveLength(1);
+    expect(roomLights(g, frame, { ...colours, plain: true })).toEqual([]);
   });
 });

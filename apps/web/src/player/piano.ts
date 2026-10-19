@@ -15,6 +15,8 @@ import { BLACK_HEIGHT, layoutKeyboard, rangeFor } from '../views/keyboard';
 import type { KeyboardLayout, KeyRect } from '../views/keyboard';
 import { mix, parseColour, rgba } from '../views/colour';
 import type { Rgb } from '../views/colour';
+import type { Light } from './hdr';
+import { hdrColour, p3Colour } from './wide';
 
 /** Song seconds of the roll shown above the tracker bar. */
 export const ROLL_SECONDS = 4;
@@ -27,6 +29,8 @@ export const RETURN_SECONDS = 0.08;
 export const MIN_WHITE_WIDTH = 14;
 /** Song seconds the leader's printed title takes up on the roll. */
 export const LEADER_SECONDS = 1.1;
+/** How much richer the gold and the warm light are on a Display P3 screen. */
+export const WARM_BOOST = 1.3;
 
 /** A piece's notes and pedals, sorted for quick lookups each frame. */
 export interface RollData {
@@ -220,10 +224,17 @@ export interface RoomColours {
   right: Rgb;
   /** High contrast: no glow, solid shapes. */
   plain: boolean;
+  /** A Display P3 screen and canvas: the gold and the warm light are drawn richer than sRGB. */
+  wide: boolean;
   serif: string;
 }
 
-export function readRoomColours(el: Element): RoomColours {
+/** The gold and the warm light as canvas colours: richer on a wide-gamut screen. */
+function warm(c: RoomColours, rgb: Rgb, alpha: number): string {
+  return c.wide ? p3Colour(rgb, alpha, WARM_BOOST) : rgba(rgb, alpha);
+}
+
+export function readRoomColours(el: Element, wide = false): RoomColours {
   const css = getComputedStyle(el);
   const v = (name: string, fallback: string) => css.getPropertyValue(name).trim() || fallback;
   const rgb = (name: string, fallback: Rgb): Rgb => parseColour(v(name, ''))?.rgb ?? fallback;
@@ -239,6 +250,7 @@ export function readRoomColours(el: Element): RoomColours {
     left: rgb('--hand-left', [180, 90, 28]),
     right: rgb('--hand-right', [43, 120, 184]),
     plain: document.documentElement.hasAttribute('data-high-contrast'),
+    wide: wide && !document.documentElement.hasAttribute('data-high-contrast'),
     serif: v('--font-serif', 'Georgia, serif'),
   };
 }
@@ -295,7 +307,7 @@ export function drawRoom(
 /** Faint lines above every C, so the eye can tell where on the keyboard a note will land. */
 function drawGuides(ctx: CanvasRenderingContext2D, g: RoomGeometry, c: RoomColours): void {
   if (c.plain) return;
-  ctx.fillStyle = rgba(c.gold, 0.07);
+  ctx.fillStyle = warm(c, c.gold, 0.07);
   for (const k of g.layout.keys) {
     if (k.pitch % 12 === 0) ctx.fillRect(Math.round(k.x), 0, 1, g.trackerY);
   }
@@ -339,12 +351,12 @@ function drawHoles(
       // The light coming through the hole meets the bar and spreads a little along it.
       const glowRadius = w * 7;
       const glow = ctx.createRadialGradient(x + r, bar, 0, x + r, bar, glowRadius);
-      glow.addColorStop(0, rgba(f.hands ? hand : c.keyLit, 0.55));
-      glow.addColorStop(1, rgba(f.hands ? hand : c.keyLit, 0));
+      glow.addColorStop(0, f.hands ? rgba(hand, 0.55) : warm(c, c.keyLit, 0.55));
+      glow.addColorStop(1, f.hands ? rgba(hand, 0) : warm(c, c.keyLit, 0));
       ctx.fillStyle = glow;
       ctx.fillRect(x + r - glowRadius, bar - glowRadius, glowRadius * 2, glowRadius);
     }
-    ctx.fillStyle = rgba(light, sounding ? 1 : f.hands ? 0.8 : 0.72);
+    ctx.fillStyle = f.hands ? rgba(light, sounding ? 1 : 0.8) : warm(c, light, sounding ? 1 : 0.72);
     ctx.beginPath();
     ctx.roundRect(x, top, w, Math.max(w, bottom - top), r);
     ctx.fill();
@@ -403,12 +415,12 @@ function drawTrackerBar(ctx: CanvasRenderingContext2D, g: RoomGeometry, c: RoomC
   const w = g.paperRight - g.paperLeft;
   if (!c.plain) {
     const glow = ctx.createLinearGradient(0, g.trackerY - 18, 0, g.trackerY);
-    glow.addColorStop(0, rgba(c.gold, 0));
-    glow.addColorStop(1, rgba(c.gold, 0.12));
+    glow.addColorStop(0, warm(c, c.gold, 0));
+    glow.addColorStop(1, warm(c, c.gold, 0.12));
     ctx.fillStyle = glow;
     ctx.fillRect(x, g.trackerY - 18, w, 18);
   }
-  ctx.fillStyle = rgba(c.gold, 0.9);
+  ctx.fillStyle = warm(c, c.gold, 0.9);
   ctx.fillRect(x, g.trackerY, w, 1.5);
 }
 
@@ -443,10 +455,11 @@ function drawKeys(
     if (s && s.depth > 0) {
       // A warm light gathers towards the front of the key, where a finger would be.
       const alpha = (f.hands ? 0.85 : 0.3 + 0.45 * Math.min(1, s.velocity / 110)) * s.depth;
-      const warm = ctx.createLinearGradient(0, top, 0, top + surface);
-      warm.addColorStop(0, rgba(lightOf(s), f.hands ? alpha : 0));
-      warm.addColorStop(1, rgba(lightOf(s), alpha));
-      ctx.fillStyle = c.plain ? rgba(lightOf(s), 1) : warm;
+      const light = (a: number) => (f.hands ? rgba(lightOf(s), a) : warm(c, c.keyLit, a));
+      const glow = ctx.createLinearGradient(0, top, 0, top + surface);
+      glow.addColorStop(0, light(f.hands ? alpha : 0));
+      glow.addColorStop(1, light(alpha));
+      ctx.fillStyle = c.plain ? rgba(lightOf(s), 1) : glow;
       ctx.fillRect(x, top, w, surface);
     }
     // The key's front edge: shorter while it is down.
@@ -483,7 +496,7 @@ function drawKeys(
       ctx.fill();
     }
     if (s && s.depth > 0) {
-      ctx.fillStyle = rgba(lightOf(s), (f.hands ? 0.9 : 0.55) * s.depth);
+      ctx.fillStyle = f.hands ? rgba(lightOf(s), 0.9 * s.depth) : warm(c, c.keyLit, 0.55 * s.depth);
       ctx.beginPath();
       ctx.roundRect(k.x + inset, top, k.width - inset * 2, faceHeight, [0, 0, 2, 2]);
       ctx.fill();
@@ -510,14 +523,112 @@ function drawPedalLight(
   const w = Math.min(160, (g.paperRight - g.paperLeft) * 0.14);
   const x = (g.paperLeft + g.paperRight) / 2 - w / 2;
   const y = g.footTop + g.footHeight / 2 - 1;
-  ctx.fillStyle = rgba(c.gold, down ? 0.95 : 0.1);
+  ctx.fillStyle = warm(c, c.gold, down ? 0.95 : 0.1);
   ctx.beginPath();
   ctx.roundRect(x, y, w, 2, 1);
   ctx.fill();
   if (down && !c.plain) {
-    ctx.fillStyle = rgba(c.gold, 0.14);
+    ctx.fillStyle = warm(c, c.gold, 0.14);
     ctx.beginPath();
     ctx.roundRect(x - 6, y - 4, w + 12, 10, 5);
     ctx.fill();
   }
+}
+
+/** How bright the HDR lights are, as multiples of the screen's white. */
+const HDR = { hole: 3, bar: 1.4, key: 1.15, keyLoud: 0.6, pedal: 2.2, tracker: 1.3 };
+
+/**
+ * The lights the HDR layer adds over the room for this frame, in the room's CSS px: each hole at
+ * the tracker bar and its light along the bar, the front of each key that plays (brighter for a
+ * louder note), the sustain pedal's light and the gold bar itself. Empty under high contrast.
+ */
+export function roomLights(g: RoomGeometry, f: RoomFrame, c: RoomColours): Light[] {
+  if (c.plain) return [];
+  const lights: Light[] = [];
+  const colourOf = (rgb: Rgb, intensity: number, hand?: Hand, boost = WARM_BOOST) =>
+    f.hands && hand
+      ? hdrColour(hand === 'left' ? c.left : c.right, intensity)
+      : hdrColour(rgb, intensity, boost);
+  // A key that plays shines as brighter ivory with a warm cast, not as coloured light.
+  const keyLight = mix(c.keyLit, c.ivory, 0.45);
+  lights.push({
+    x: g.paperLeft,
+    y: g.trackerY,
+    w: g.paperRight - g.paperLeft,
+    h: 1.5,
+    radius: 0,
+    soft: 0.75,
+    colour: colourOf(c.gold, HDR.tracker),
+  });
+  if (!f.active) return lights;
+  const keyOf = new Map(g.layout.keys.map((k) => [k.pitch, k]));
+  const w = g.hole;
+  const bar = g.trackerY;
+  const from = firstFrom(f.data.notes, f.seconds - f.data.longest);
+  for (let i = from; i < f.data.notes.length; i++) {
+    const n = f.data.notes[i] as PlaybackNote;
+    if (n.start > f.seconds) break;
+    if (n.end <= f.seconds) continue;
+    const k = keyOf.get(n.pitch);
+    if (!k) continue;
+    const x = centre(k);
+    const top = Math.max(bar - (n.end - f.seconds) * g.pxPerSecond, bar - w * 12);
+    lights.push({
+      x: x - w / 2,
+      y: top,
+      w,
+      h: bar - top,
+      radius: w / 2,
+      soft: 1,
+      colour: colourOf(c.lit, HDR.hole, n.hand),
+      fade: true,
+    });
+    lights.push({
+      x: x - w * 2,
+      y: bar - w,
+      w: w * 4,
+      h: w * 1.5,
+      radius: w,
+      soft: w * 4,
+      colour: colourOf(c.keyLit, HDR.bar, n.hand),
+    });
+  }
+  const keys = keysAt(f.data, f.seconds);
+  const blackHeight = g.keysHeight * BLACK_HEIGHT;
+  for (const k of g.layout.keys) {
+    const s = keys.get(k.pitch);
+    if (!s || s.depth <= 0) continue;
+    const loud = Math.min(1, s.velocity / 110);
+    const intensity = (HDR.key + HDR.keyLoud * loud) * s.depth;
+    const dip = f.still ? 0 : s.depth * g.front * (0.35 + 0.45 * loud);
+    const height = k.black ? blackHeight * 0.55 : (g.keysHeight - g.front + dip) * 0.5;
+    const bottom = k.black
+      ? g.keysTop + blackHeight * 0.85 + dip * 0.7
+      : g.keysTop + g.keysHeight - g.front + dip;
+    const inset = k.black ? k.width * 0.18 : 1.5;
+    lights.push({
+      x: k.x + inset,
+      y: bottom - height,
+      w: k.width - inset * 2,
+      h: height,
+      radius: 2,
+      soft: 2,
+      colour: colourOf(keyLight, intensity, s.hand, 1),
+      fade: true,
+    });
+  }
+  if (pedalsAt(f.data, f.seconds).sustain >= 64) {
+    const pw = Math.min(160, (g.paperRight - g.paperLeft) * 0.14);
+    lights.push({
+      x: (g.paperLeft + g.paperRight) / 2 - pw / 2,
+      y: g.footTop + g.footHeight / 2 - 1,
+      w: pw,
+      h: 2,
+      radius: 1,
+      soft: 5,
+      colour: colourOf(c.gold, HDR.pedal),
+    });
+  }
+  return lights;
 }
