@@ -44,6 +44,11 @@
     gap: 0 var(--space-3);
   }
 
+  /* The Player's position line stays a hairline; the strip around it is the target. */
+  .np-seek__track {
+    height: var(--tap);
+  }
+
   button.copy-link,
   button.listen-link {
     min-width: var(--tap);

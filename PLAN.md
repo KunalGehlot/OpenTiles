@@ -595,9 +595,12 @@ without a word when no MIDI output is found.
   drag and keys; Space and the arrow keys; German strings; e2e in the 320 and 1,180 px layouts;
   "Show hands" kept between visits.
   Entry points: "Listen" on the Home and Library cards and in practice's options plays the piece
-  in the Player, then the programme after it; "Practise this" in the Player's options. Left: keys
-  at the heard time (output latency, brief §5.4), composer dates from the catalogue (it has only
-  death years), the touch test on `#/player`.
+  in the Player, then the programme after it; "Practise this" in the Player's options. Keys at the
+  heard time (brief §5.4): this device's notes are scheduled through the output timestamp, which
+  includes the output latency, and a MIDI keyboard plays at its time stamps, so both sound when
+  the keys are drawn; without an output timestamp the reported latency is taken off. The touch
+  test covers `#/player` (the position line's target is 44 px tall on touch screens). Left:
+  composer dates from the catalogue (it has only death years).
 - [ ] **P6-08** (APP) Queue: play all, shuffle, repeat, reorder by drag and keyboard, kept on the
       device.
 - [x] **P6-09** (APP) Mini player on other pages and media keys (Media Session where it works without

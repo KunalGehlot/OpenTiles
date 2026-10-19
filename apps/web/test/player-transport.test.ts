@@ -405,6 +405,30 @@ describe('this device’s piano on the page’s clock (P6-05)', () => {
   });
 });
 
+describe('keys in step with the sound (P6-07, brief §5.4)', () => {
+  it('without an output timestamp, schedules early by the latency the context reports', () => {
+    const calls: number[] = [];
+    const inner: Instrument = {
+      volume: 1,
+      noteOn: () => ({ stop: () => {} }),
+      play: (_pitch, when) => {
+        calls.push(when);
+        return { stop: () => {} };
+      },
+      click: () => {},
+    };
+    const ctx = {
+      currentTime: 10,
+      baseLatency: 0.01,
+      outputLatency: 0.03,
+    } as unknown as BaseAudioContext;
+    const at = performance.now() / 1000 + 1;
+    onPageClock(inner, ctx).play(60, at, 0.5);
+    // Heard 1 s from now: started 40 ms before the audio clock reaches 11 s.
+    expect(calls[0]).toBeCloseTo(10.96, 2);
+  });
+});
+
 describe('the pedals through the transport (P6-10)', () => {
   // Four notes under the sustain pedal until beat 6 (3 s).
   const pedalled: Song = {
