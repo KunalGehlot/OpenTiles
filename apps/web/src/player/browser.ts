@@ -14,11 +14,21 @@ import { getSetting, setSetting } from '../storage/db';
 import type { CollectionKey } from './collection';
 import { loadPlayable } from './load';
 import { onPageClock, pageNow } from './page-clock';
+import { readQueue } from './queue';
+import type { Queue } from './queue';
 import { PlayerTransport } from './transport';
 import type { Song } from '@opentiles/song-model';
 import { coverIndex, coverNotes, drawCover } from './art';
 import { parseColour } from '../views/colour';
 import type { Rgb } from '../views/colour';
+
+/** The Player's queue, kept on this device so it is still there after a reload (P6-08). */
+const QUEUE_KEY = 'device.playerQueue';
+
+/** The queue kept from an earlier visit, if there is one. */
+export async function savedQueue(): Promise<Queue | null> {
+  return readQueue(await getSetting<unknown>(QUEUE_KEY, null).catch(() => null));
+}
 
 /** The Player's own "recently played", on this device only: listening is not practising. */
 const PLAYED_KEY = 'device.playerPlayed';
@@ -126,6 +136,13 @@ export function playerTransport(): PlayerTransport {
     expressive: () => appSettings().player.expressive,
     played: (key) => void recordPlayed(key).catch(() => {}),
     awake,
+  });
+  // The queue as it changes, so a reload finds it again.
+  let kept: Queue | null = null;
+  t.subscribe(({ queue }) => {
+    if (queue === kept || queue.keys.length === 0) return;
+    kept = queue;
+    void setSetting(QUEUE_KEY, queue).catch(() => {});
   });
   // Leaving or reloading the page: nothing may keep sounding on the keyboard.
   window.addEventListener('pagehide', () => t.pause());

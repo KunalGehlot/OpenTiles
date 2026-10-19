@@ -18,9 +18,11 @@ import {
   useState,
   useSyncExternalStore,
 } from 'react';
+import type { PointerEvent as ReactPointerEvent } from 'react';
 import {
   ChevronDown,
   GraduationCap,
+  GripVertical,
   ListMusic,
   Maximize2,
   Minimize2,
@@ -33,6 +35,7 @@ import {
   SkipBack,
   SkipForward,
   SlidersHorizontal,
+  X,
 } from 'lucide-react';
 import { buildPlayback } from '@opentiles/practice';
 import type { HandFilter } from '@opentiles/practice';
@@ -51,7 +54,7 @@ import { nativeMidiAvailable } from '../input/native-midi-input';
 import { locale, t } from '../i18n';
 import { href } from '../lib/router';
 import { coverIndex, initials } from '../player/art';
-import { playerTransport } from '../player/browser';
+import { playerTransport, savedQueue } from '../player/browser';
 import { practiceRoute, searchCollection, sortCollection } from '../player/collection';
 import type { CollectionEntry, CollectionSort } from '../player/collection';
 import { loadCollection } from '../player/load';
@@ -68,7 +71,7 @@ import {
 import type { RollData, RoomColours, RoomGeometry } from '../player/piano';
 import { origin, programme, TRADITIONAL, worksOf } from '../player/programme';
 import type { ComposerGroup, Work } from '../player/programme';
-import { upNext } from '../player/queue';
+import { clearUpNext, keepKnown, moveUpNext, removeUpNext, upNext } from '../player/queue';
 import type { Repeat as RepeatMode } from '../player/queue';
 import type { PlayerTransport, TransportState } from '../player/transport';
 import { PlaysOnControl } from '../practice/PlaysOnControl';
@@ -294,24 +297,44 @@ export function Player() {
     [scoped, sort],
   );
   const shownWorks = useMemo(() => groups.flatMap((g) => g.works), [groups]);
-  const upNextEntries = useMemo(
+  /** What comes after this piece, each with its place in the queue's Up next. */
+  const upNextItems = useMemo(
     () =>
-      upNext(state.queue).flatMap((k) => (byKey.get(k) ? [byKey.get(k) as CollectionEntry] : [])),
+      upNext(state.queue).flatMap((k, place) => {
+        const entry = byKey.get(k);
+        return entry ? [{ place, entry }] : [];
+      }),
     [state.queue, byKey],
   );
 
-  // Something to show from the start, without playing: the programme, at Ode to Joy if it is
-  // there. A queue the Player already has (from another visit) stays.
+  // Something to show from the start, without playing: the queue kept from the last visit (P6-08),
+  // or else the programme, at Ode to Joy if it is there. A queue the Player already has on this
+  // page stays.
   useEffect(() => {
     if (!entries || transport.state.key) return;
-    const works = programme(entries, locale())
-      .flatMap((g) => g.works)
-      .filter((w) => w.entry.playable);
-    const start = works.findIndex((w) => w.versions.some((v) => v.key === 'catalogue:ode-to-joy'));
-    void transport.cue(
-      works.map((w) => w.entry.key),
-      Math.max(0, start),
-    );
+    let cancelled = false;
+    void savedQueue().then((saved) => {
+      if (cancelled || transport.state.key) return;
+      const playable = new Set(entries.filter((e) => e.playable).map((e) => e.key));
+      const kept = saved && keepKnown(saved, (k) => playable.has(k));
+      if (kept && kept.keys.length > 0) {
+        void transport.restore(kept);
+        return;
+      }
+      const works = programme(entries, locale())
+        .flatMap((g) => g.works)
+        .filter((w) => w.entry.playable);
+      const start = works.findIndex((w) =>
+        w.versions.some((v) => v.key === 'catalogue:ode-to-joy'),
+      );
+      void transport.cue(
+        works.map((w) => w.entry.key),
+        Math.max(0, start),
+      );
+    });
+    return () => {
+      cancelled = true;
+    };
   }, [entries, transport]);
 
   const playableKeys = (works: readonly Work[]) =>
@@ -410,30 +433,34 @@ export function Player() {
   }, [stand]);
 
   // Space plays and pauses, ← and → move 5 s, Shift with them goes to the piece before or after,
-  // F switches stand mode and Escape leaves it.
+  // F switches stand mode and Escape leaves it. One listener for the page's life, calling the
+  // latest handler: a key that wakes stand mode's controls re-renders the page while the key is
+  // still being handled, and a listener swapped then would miss it.
+  const onKey = useRef<(e: KeyboardEvent) => void>(() => {});
+  onKey.current = (e: KeyboardEvent) => {
+    if ((e.target as HTMLElement | null)?.closest('input, select, textarea, [role="slider"]')) {
+      return;
+    }
+    if (e.code === 'Space') {
+      e.preventDefault();
+      void transport.toggle();
+    } else if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
+      const forward = e.key === 'ArrowRight';
+      e.preventDefault();
+      if (e.shiftKey) void (forward ? transport.next() : transport.previous());
+      else transport.seek(transport.positionNow() + (forward ? 5 : -5));
+    } else if ((e.key === 'f' || e.key === 'F') && !e.metaKey && !e.ctrlKey && !e.altKey) {
+      if (stand) leaveStand();
+      else enterStand();
+    } else if (e.key === 'Escape' && stand) {
+      leaveStand();
+    }
+  };
   useEffect(() => {
-    const onKey = (e: KeyboardEvent) => {
-      if ((e.target as HTMLElement | null)?.closest('input, select, textarea, [role="slider"]')) {
-        return;
-      }
-      if (e.code === 'Space') {
-        e.preventDefault();
-        void transport.toggle();
-      } else if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
-        const forward = e.key === 'ArrowRight';
-        e.preventDefault();
-        if (e.shiftKey) void (forward ? transport.next() : transport.previous());
-        else transport.seek(transport.positionNow() + (forward ? 5 : -5));
-      } else if ((e.key === 'f' || e.key === 'F') && !e.metaKey && !e.ctrlKey && !e.altKey) {
-        if (stand) leaveStand();
-        else enterStand();
-      } else if (e.key === 'Escape' && stand) {
-        leaveStand();
-      }
-    };
-    window.addEventListener('keydown', onKey);
-    return () => window.removeEventListener('keydown', onKey);
-  });
+    const listen = (e: KeyboardEvent) => onKey.current(e);
+    window.addEventListener('keydown', listen);
+    return () => window.removeEventListener('keydown', listen);
+  }, []);
 
   const supported = midiSupported();
   const choice = settings.midi.playback;
@@ -634,7 +661,7 @@ export function Player() {
       </p>
     ) : null;
 
-  const nextEntry = upNextEntries[0];
+  const nextEntry = upNextItems[0]?.entry;
   const room = current && (
     <section
       ref={roomRef}
@@ -787,22 +814,13 @@ export function Player() {
             )}
           </section>
           {room}
-          <aside className="upnext" aria-label={t('Up next')}>
-            <h2>
-              <ListMusic /> {t('Up next')}
-            </h2>
-            <ol>
-              {upNextEntries.slice(0, 12).map((e) => (
-                <li key={e.key}>
-                  <InitialsTile entry={e} />
-                  <span className="collection__text">
-                    <span className="collection__title">{e.title}</span>
-                    <span className="collection__meta">{e.composer}</span>
-                  </span>
-                </li>
-              ))}
-            </ol>
-          </aside>
+          <UpNext
+            items={upNextItems}
+            onPlay={(place) => void transport.playUpNext(place)}
+            onMove={(from, to) => transport.editUpNext((q) => moveUpNext(q, from, to))}
+            onRemove={(place) => transport.editUpNext((q) => removeUpNext(q, place))}
+            onClear={() => transport.editUpNext(clearUpNext)}
+          />
         </div>
         {current && (
           <MiniBar
@@ -815,6 +833,163 @@ export function Player() {
         )}
       </div>
     </FrameContext.Provider>
+  );
+}
+
+interface UpNextItem {
+  /** Its place in the queue's Up next (0 plays next). */
+  place: number;
+  entry: CollectionEntry;
+}
+
+/**
+ * Up next (P6-08): what plays after this piece. A tap plays one now; its handle moves it, by
+ * dragging or with ↑ and ↓ (Alt with them anywhere on its row); × takes it out.
+ */
+function UpNext({
+  items,
+  onPlay,
+  onMove,
+  onRemove,
+  onClear,
+}: {
+  items: readonly UpNextItem[];
+  onPlay(place: number): void;
+  onMove(from: number, to: number): void;
+  onRemove(place: number): void;
+  onClear(): void;
+}) {
+  const list = useRef<HTMLOListElement>(null);
+  /** A drag in progress: the row's place and the slot it would land in. */
+  const [drag, setDrag] = useState<{ from: number; slot: number } | null>(null);
+  // The latest rows and handler, for a drag's window listeners.
+  const latest = useRef({ items, onMove });
+  latest.current = { items, onMove };
+  const [said, setSaid] = useState('');
+  /** After a move with the keys, the moved piece's handle keeps the focus. */
+  const focusSlot = useRef<number | null>(null);
+  useEffect(() => {
+    if (focusSlot.current === null) return;
+    const rows = list.current?.querySelectorAll<HTMLElement>('.upnext__handle');
+    rows?.[focusSlot.current]?.focus();
+    focusSlot.current = null;
+  });
+
+  // While dragging, the rows show the order it would make.
+  const fromIndex = drag ? items.findIndex((it) => it.place === drag.from) : -1;
+  const shown = [...items];
+  if (drag && fromIndex >= 0) {
+    const [moving] = shown.splice(fromIndex, 1);
+    if (moving) shown.splice(drag.slot, 0, moving);
+  }
+  /** The slot under the pointer: how many of the other rows have their middle above it. */
+  const slotAt = (y: number) =>
+    [...(list.current?.children ?? [])]
+      .filter((row) => !row.classList.contains('upnext__item--moving'))
+      .filter((row) => {
+        const r = row.getBoundingClientRect();
+        return y > r.top + r.height / 2;
+      }).length;
+  /**
+   * A drag by a row's handle. The rows show the new order as it goes, which moves the row in the
+   * page and loses the pointer's capture, so the window follows the pointer instead.
+   */
+  const startDrag = (e: ReactPointerEvent, from: number, slot: number) => {
+    e.preventDefault();
+    setDrag({ from, slot });
+    const follow = (ev: PointerEvent) => setDrag({ from, slot: slotAt(ev.clientY) });
+    const stop = () => {
+      window.removeEventListener('pointermove', follow);
+      window.removeEventListener('pointerup', drop);
+      window.removeEventListener('pointercancel', stop);
+      setDrag(null);
+    };
+    const drop = (ev: PointerEvent) => {
+      const target = latest.current.items[slotAt(ev.clientY)];
+      if (target && target.place !== from) latest.current.onMove(from, target.place);
+      stop();
+    };
+    window.addEventListener('pointermove', follow);
+    window.addEventListener('pointerup', drop);
+    window.addEventListener('pointercancel', stop);
+  };
+
+  const move = (index: number, by: number) => {
+    const item = items[index];
+    const target = items[index + by];
+    if (!item || !target) return;
+    onMove(item.place, target.place);
+    focusSlot.current = index + by;
+    setSaid(t('{title}: place {n} in Up next', { title: item.entry.title, n: index + by + 1 }));
+  };
+
+  return (
+    <aside className="upnext" aria-label={t('Up next')}>
+      <div className="upnext__head">
+        <h2>
+          <ListMusic /> {t('Up next')}
+        </h2>
+        {items.length > 0 && (
+          <button className="quiet" onClick={onClear}>
+            {t('Clear')}
+          </button>
+        )}
+      </div>
+      {items.length === 0 ? (
+        <p className="muted upnext__empty">{t('Nothing more to play.')}</p>
+      ) : (
+        <ol ref={list}>
+          {shown.map(({ place, entry }, slot) => (
+            <li
+              key={`${place}:${entry.key}`}
+              className={
+                drag?.from === place ? 'upnext__item upnext__item--moving' : 'upnext__item'
+              }
+              onKeyDown={(e) => {
+                if (!e.altKey || (e.key !== 'ArrowUp' && e.key !== 'ArrowDown')) return;
+                e.preventDefault();
+                move(slot, e.key === 'ArrowUp' ? -1 : 1);
+              }}
+            >
+              <button
+                className="np-icon quiet upnext__handle"
+                aria-label={t('Move {title}', { title: entry.title })}
+                title={t('Drag, or use ↑ and ↓')}
+                onPointerDown={(e) => startDrag(e, place, slot)}
+                onKeyDown={(e) => {
+                  if (e.altKey || (e.key !== 'ArrowUp' && e.key !== 'ArrowDown')) return;
+                  e.preventDefault();
+                  move(slot, e.key === 'ArrowUp' ? -1 : 1);
+                }}
+              >
+                <GripVertical />
+              </button>
+              <button
+                className="collection__row"
+                onClick={() => onPlay(place)}
+                title={t('Play now')}
+              >
+                <InitialsTile entry={entry} />
+                <span className="collection__text">
+                  <span className="collection__title">{entry.title}</span>
+                  <span className="collection__meta">{entry.composer}</span>
+                </span>
+              </button>
+              <button
+                className="np-icon quiet"
+                aria-label={t('Remove {title} from Up next', { title: entry.title })}
+                onClick={() => onRemove(place)}
+              >
+                <X />
+              </button>
+            </li>
+          ))}
+        </ol>
+      )}
+      <span className="visually-hidden" aria-live="polite">
+        {said}
+      </span>
+    </aside>
   );
 }
 

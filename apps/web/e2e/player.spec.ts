@@ -261,6 +261,96 @@ test('listens to a library piece from its card', async ({ page }) => {
   await page.keyboard.press('Space');
 });
 
+test('Up next: reorder by keys and by dragging, remove, keep after a reload, play now, clear', async ({
+  page,
+}) => {
+  await page.goto('./#/player');
+  await expect(title(page)).toHaveText('Ode to Joy (full tune)');
+  const panel = page.getByRole('complementary', { name: 'Up next' });
+  const open = async () => {
+    await page.getByRole('button', { name: 'Up next' }).click();
+    await expect(panel).toBeVisible();
+  };
+  const titles = () => panel.locator('.collection__title').allTextContents();
+  const handle = (n: number) => panel.locator('.upnext__handle').nth(n);
+  /** `list` with the item at `from` moved to `to`. */
+  const moved = (list: string[], from: number, to: number) => {
+    const out = [...list];
+    const [item] = out.splice(from, 1);
+    out.splice(to, 0, item ?? '');
+    return out;
+  };
+  await open();
+  const start = await titles();
+  expect(start.length).toBeGreaterThan(4);
+
+  // ↓ on a handle moves its piece down, and the handle keeps the focus; Alt + ↑ moves it back.
+  await handle(0).focus();
+  await page.keyboard.press('ArrowDown');
+  await expect.poll(titles).toEqual(moved(start, 0, 1));
+  await expect(handle(1)).toBeFocused();
+  await page.keyboard.press('Alt+ArrowUp');
+  await expect.poll(titles).toEqual(start);
+
+  // Dragged by its handle onto the third row.
+  const grip = await handle(0).boundingBox();
+  const third = await panel.locator('li').nth(2).boundingBox();
+  if (!grip || !third) throw new Error('no rows');
+  await page.mouse.move(grip.x + grip.width / 2, grip.y + grip.height / 2);
+  await page.mouse.down();
+  await page.mouse.move(grip.x + grip.width / 2, third.y + third.height - 2, { steps: 8 });
+  await page.mouse.up();
+  await expect(panel.locator('.upnext__item--moving')).toHaveCount(0);
+  const dragged = moved(start, 0, 2);
+  await expect.poll(titles).toEqual(dragged);
+
+  // × takes one out; the order is still there after a reload.
+  await panel
+    .locator('li')
+    .nth(0)
+    .getByRole('button', { name: /^Remove / })
+    .click();
+  const kept = dragged.slice(1);
+  await expect.poll(titles).toEqual(kept);
+  await page.reload();
+  await expect(title(page)).toHaveText('Ode to Joy (full tune)');
+  await open();
+  await expect.poll(titles).toEqual(kept);
+
+  // A tap plays it now; Clear leaves nothing after it.
+  await panel.locator('.collection__row').nth(1).click();
+  await expect(title(page)).toHaveText(kept[1] ?? '');
+  await expect(playButton(page)).toHaveAttribute('aria-label', 'Pause');
+  await page.keyboard.press('Space');
+  await panel.getByRole('button', { name: 'Clear' }).click();
+  await expect(panel.getByText('Nothing more to play.')).toBeVisible();
+});
+
+test('stand mode: the music room alone, controls that fade and come back on a key', async ({
+  page,
+}) => {
+  await page.goto('./#/player');
+  await expect(title(page)).toHaveText('Ode to Joy (full tune)');
+  const room = page.locator('section.room');
+  const deck = room.locator('.room__deck');
+  await page.keyboard.press('f');
+  await expect(room).toHaveClass(/room--stand/);
+  await expect(page.getByRole('button', { name: 'Leave the music stand view' })).toBeVisible();
+
+  // Nothing moves for 3 s: the controls fade and the pointer hides.
+  await expect(room).toHaveClass(/room--idle/, { timeout: 6_000 });
+  await expect(deck).toHaveCSS('opacity', '0');
+  // Any key brings them back, and Space still plays.
+  await page.keyboard.press('Space');
+  await expect(room).not.toHaveClass(/room--idle/);
+  await expect(playButton(page)).toHaveAttribute('aria-label', 'Pause');
+  await page.keyboard.press('Space');
+
+  // Escape leaves it.
+  await page.keyboard.press('Escape');
+  await expect(room).not.toHaveClass(/room--stand/);
+});
+
 test('moves with the seek picture and the arrow keys', async ({ page }) => {
   await page.goto('./#/player');
   await expect(title(page)).toBeVisible();
