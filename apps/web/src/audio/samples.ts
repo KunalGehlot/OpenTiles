@@ -8,6 +8,52 @@ export const SAMPLE_PITCHES: readonly number[] = Array.from({ length: 30 }, (_, 
 /** The samples are the release's velocity layer 10, which it plays for velocities 73–80. */
 export const SAMPLE_VELOCITY = 76;
 
+/** A velocity layer of the release, and how the app plays it (ADR 0007, P6-17). */
+export interface SampleLayer {
+  /** Its folder under samples/piano/: '' for the original set. */
+  readonly dir: string;
+  /** The release's layer (of 16; it plays layer n for velocities 8n − 7 to 8n). */
+  readonly layer: number;
+  /** The velocity it was recorded at: the middle of its range. */
+  readonly velocity: number;
+  /**
+   * Its files' level against the original set's, in dB, as the build measured it. It is taken off
+   * again, so loudness follows `velocityGain` whichever layer plays, and the layer changes only the
+   * tone: a soft hammer blow sounds soft, not just quieter.
+   */
+  readonly levelDb: number;
+}
+
+/** The original set, layer 10: loaded first, and all the app has until the others arrive. */
+export const ORIGINAL_LAYER: SampleLayer = Object.freeze({
+  dir: '',
+  layer: 10,
+  velocity: SAMPLE_VELOCITY,
+  levelDb: 0,
+});
+
+/** Every layer, softest first (levels from tools/samples/build_piano_samples.py, 2026-10-19). */
+export const SAMPLE_LAYERS: readonly SampleLayer[] = Object.freeze([
+  Object.freeze({ dir: 'soft/', layer: 5, velocity: 36, levelDb: -0.54 }),
+  ORIGINAL_LAYER,
+  Object.freeze({ dir: 'loud/', layer: 14, velocity: 108, levelDb: -0.54 }),
+]);
+
+/** The layer to play `velocity` with, of those loaded: the one recorded nearest; ties go louder. */
+export function layerFor(
+  velocity: number,
+  loaded: readonly SampleLayer[],
+): SampleLayer | undefined {
+  const v = clampVelocity(velocity);
+  let best: SampleLayer | undefined;
+  for (const l of loaded) {
+    const d = Math.abs(l.velocity - v);
+    const bestD = best ? Math.abs(best.velocity - v) : Infinity;
+    if (!best || d < bestD || (d === bestD && l.velocity > best.velocity)) best = l;
+  }
+  return best;
+}
+
 const NAMES = ['C', 'Cs', 'D', 'Ds', 'E', 'F', 'Fs', 'G', 'Gs', 'A', 'As', 'B'];
 
 /** File name of the sample for a MIDI pitch: 21 → "A0.mp3", 63 → "Ds4.mp3". */
@@ -15,9 +61,9 @@ export function sampleFileName(pitch: number): string {
   return `${NAMES[pitch % 12] ?? ''}${Math.floor(pitch / 12) - 1}.mp3`;
 }
 
-/** Every sample file, for callers that cache them (the service worker). */
-export function sampleFileNames(): string[] {
-  return SAMPLE_PITCHES.map(sampleFileName);
+/** Every sample file of a layer (the original set by default), as paths under samples/piano/. */
+export function sampleFileNames(layer: SampleLayer = ORIGINAL_LAYER): string[] {
+  return SAMPLE_PITCHES.map((p) => layer.dir + sampleFileName(p));
 }
 
 /**
@@ -56,15 +102,20 @@ export function velocityGain(velocity: number): number {
 }
 
 /**
- * Low-pass cutoff in Hz that darkens notes played softer than the recorded layer, as a softer
- * hammer blow has weaker upper partials. Never below the fourth harmonic, so the note keeps its
- * pitch and body. `null` at or above the recorded velocity: no filter needed.
+ * Low-pass cutoff in Hz that darkens notes played softer than the layer they are played with
+ * (`recorded`, the original set's velocity by default), as a softer hammer blow has weaker upper
+ * partials. Never below the fourth harmonic, so the note keeps its pitch and body. `null` at or
+ * above the recorded velocity: no filter needed.
  */
-export function velocityCutoff(velocity: number, pitch: number): number | null {
+export function velocityCutoff(
+  velocity: number,
+  pitch: number,
+  recorded = SAMPLE_VELOCITY,
+): number | null {
   const v = clampVelocity(velocity);
-  if (v >= SAMPLE_VELOCITY) return null;
+  if (v >= recorded) return null;
   const f0 = 440 * 2 ** ((pitch - 69) / 12);
-  const cutoff = 18000 * 2 ** (-(SAMPLE_VELOCITY - v) / 16);
+  const cutoff = 18000 * 2 ** (-(recorded - v) / 16);
   return Math.min(20000, Math.max(4 * f0, cutoff));
 }
 

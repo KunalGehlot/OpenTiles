@@ -7,6 +7,7 @@ import { unlockAudio } from '../audio/context';
 import type { Instrument } from '../audio/instrument';
 import { MidiOutInstrument, playbackInstrument } from '../audio/midi-out';
 import { synthFor } from '../audio/synth';
+import type { Piano } from '../audio/synth';
 import { midiAllowed, midiOutputPort } from '../input/midi-input';
 import { keepScreenAwake, nativeMidiAvailable } from '../input/native-midi-input';
 import { appSettings } from '../settings/store';
@@ -94,6 +95,13 @@ export function playerTransport(): PlayerTransport {
   let worker: Worker | null = null;
   let unwatch: (() => void) | null = null;
   const awake = wakeLock();
+  // The room around this device's piano (P6-17): on only while the Player plays it, so practice,
+  // the Detector Lab and a keyboard's own sound stay dry.
+  let devicePiano: Piano | null = null;
+  const updateRoom = () => {
+    const { status } = t.state;
+    devicePiano?.setRoom(status === 'playing' || status === 'between');
+  };
   const t = new PlayerTransport({
     now: pageNow,
     ticker(tick) {
@@ -122,9 +130,17 @@ export function playerTransport(): PlayerTransport {
       }
       // The keyboard's own sound when it is there ("Automatic" or "My keyboard"); with it out of
       // reach this device plays (plan Q2), and "Plays on" says so when it was chosen.
-      if ((playback === 'keyboard' || playback === 'auto') && keyboard) return keyboard;
+      if ((playback === 'keyboard' || playback === 'auto') && keyboard) {
+        devicePiano?.setRoom(false);
+        devicePiano = null;
+        return keyboard;
+      }
       const ctx = await unlockAudio();
-      const device = onPageClock(synthFor(ctx), ctx);
+      const piano = synthFor(ctx);
+      if (devicePiano !== piano) devicePiano?.setRoom(false);
+      devicePiano = piano;
+      queueMicrotask(updateRoom);
+      const device = onPageClock(piano, ctx);
       return playbackInstrument(
         device,
         keyboard,
@@ -137,6 +153,7 @@ export function playerTransport(): PlayerTransport {
     played: (key) => void recordPlayed(key).catch(() => {}),
     awake,
   });
+  t.subscribe(updateRoom);
   // The queue as it changes, so a reload finds it again.
   let kept: Queue | null = null;
   t.subscribe(({ queue }) => {

@@ -672,9 +672,17 @@ without a word when no MIDI output is found.
   bar before the last chord the tempo eases to 90 %, and the last chord is held half as long
   again; the transport, seek line and media controls take the longer length. Left: dynamics marks
   and hairpins from imported MusicXML (none of the catalogue's scores has any).
-- [ ] **P6-17** (APP) Sound on this device: a soft room sound from an impulse response made in code
+- [x] **P6-17** (APP) Sound on this device: a soft room sound from an impulse response made in code
       (Player only), and a richer piano with more Salamander loudness layers as the default sound
-      (maintainer, 2026-10-18), loaded after the current set and kept for offline use.
+      (maintainer, 2026-10-18), loaded after the current set and kept for offline use. Done (ADR
+      0007 amended): layers 5 (`soft/`, cut at 5 s) and 14 (`loud/`) beside layer 10, built by the
+      same script (layer 10 unchanged); each note plays with the layer recorded nearest its
+      velocity, loudness on the same curve (within 0.9 dB at the boundaries, rendered offline), the
+      layer changing the tone; the soft, then the loud layer load after the original set, and the
+      service worker precaches them (+2.8 MB, about 70 MB more decoded). The room: a 1.8 s impulse
+      response made in code (decaying noise, darker as it fades), on only while the Player plays
+      on this device; off on pause, in practice and in the Detector Lab. Not heard on a real iPad
+      yet (P6-13).
 
 ## Cross-cutting checklists
 
@@ -700,6 +708,8 @@ Record the outcome as an ADR in `docs/adr/` and tick it here.
 - [x] Engine exposes a plain C ABI instead of wasm-bindgen glue — ADR 0002.
 
 ## Changelog
+
+- **2026-10-19** — P6-17: this device's piano gains a soft and a loud layer, and the Player a room.
 
 - **2026-10-19** — P6-16: the Player eases into the last chord and holds it.
 

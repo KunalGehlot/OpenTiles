@@ -1,8 +1,11 @@
 import { describe, expect, it } from 'vitest';
 import {
+  ORIGINAL_LAYER,
+  SAMPLE_LAYERS,
   SAMPLE_PITCHES,
   SAMPLE_VELOCITY,
   findOnset,
+  layerFor,
   nearestSample,
   playbackRate,
   releaseTime,
@@ -13,6 +16,7 @@ import {
 } from '../src/audio/samples';
 import { loadPianoSamples, PianoSampler, type PianoSample } from '../src/audio/sampler';
 import { Piano } from '../src/audio/synth';
+import { ROOM_SECONDS, roomImpulseData } from '../src/audio/room';
 
 describe('sample set', () => {
   it('has one sample every minor third from A0 to C8', () => {
@@ -235,6 +239,16 @@ class FakeContext {
       stop() {},
     });
   }
+  convolvers: (FakeNode & { buffer: unknown })[] = [];
+  createConvolver() {
+    const c = Object.assign(new FakeNode(), { buffer: null as unknown });
+    this.convolvers.push(c);
+    return c;
+  }
+  createBuffer(channels: number, length: number, sampleRate: number) {
+    const data = Array.from({ length: channels }, () => new Float32Array(length));
+    return { sampleRate, length, getChannelData: (i: number) => data[i] } as unknown as AudioBuffer;
+  }
   createDynamicsCompressor() {
     return Object.assign(new FakeNode(), {
       threshold: new FakeParam(-24),
@@ -448,5 +462,113 @@ describe('Piano', () => {
     expect(piano.volume).toBeCloseTo(0.5, 9);
     piano.volume = 3;
     expect(piano.volume).toBeCloseTo(1, 9);
+  });
+});
+
+describe('velocity layers (P6-17)', () => {
+  const [soft, , loud] = SAMPLE_LAYERS;
+  if (!soft || !loud) throw new Error('layers');
+
+  it('plays each velocity with the layer recorded nearest to it, of those loaded', () => {
+    expect(layerFor(20, SAMPLE_LAYERS)).toBe(soft);
+    expect(layerFor(55, SAMPLE_LAYERS)).toBe(soft);
+    // Halfway between two layers goes to the louder.
+    expect(layerFor(56, SAMPLE_LAYERS)).toBe(ORIGINAL_LAYER);
+    expect(layerFor(91, SAMPLE_LAYERS)).toBe(ORIGINAL_LAYER);
+    expect(layerFor(92, SAMPLE_LAYERS)).toBe(loud);
+    // Before the others arrive, the original set plays everything.
+    expect(layerFor(20, [ORIGINAL_LAYER])).toBe(ORIGINAL_LAYER);
+    expect(layerFor(60, [])).toBeUndefined();
+  });
+
+  it('names the layers’ files in their folders', () => {
+    expect(sampleFileNames(soft)[0]).toBe('soft/A0.mp3');
+    expect(sampleFileNames(loud).at(-1)).toBe('loud/C8.mp3');
+    expect(sampleFileNames()[0]).toBe('A0.mp3');
+  });
+
+  it('darkens a note only below the layer it is played with', () => {
+    expect(velocityCutoff(40, 60, soft.velocity)).toBeNull();
+    expect(velocityCutoff(30, 60, soft.velocity)).not.toBeNull();
+    expect(velocityCutoff(100, 60, loud.velocity)).not.toBeNull();
+  });
+
+  it('keeps loudness on the velocity curve whichever layer plays, and changes the sample', () => {
+    const ctx = new FakeContext();
+    const s = new PianoSampler(asContext(ctx), fakeSamples());
+    const softSamples = fakeSamples().map((x) => ({ ...x, buffer: { soft: x.pitch } as never }));
+    s.addLayer(soft, softSamples);
+    const level = () => {
+      const env = ctx.gains.at(-1);
+      return env?.gain.calls.find((c) => c.method === 'linearRampToValueAtTime')?.args[0] ?? 0;
+    };
+    s.noteOn(60, 40, 0);
+    expect(ctx.sources.at(-1)?.buffer).toEqual({ soft: 60 });
+    const softLevel = level();
+    expect(softLevel).toBeCloseTo(velocityGain(40) * 0.7 * 10 ** (-soft.levelDb / 20), 9);
+    s.noteOn(60, 76, 0);
+    expect(ctx.sources.at(-1)?.buffer).toEqual({ pitch: 60 });
+    expect(level()).toBeCloseTo(velocityGain(76) * 0.7, 9);
+  });
+
+  it('loads the other layers after the original set, which plays at once', async () => {
+    const ctx = new FakeContext();
+    const asked: (string | undefined)[] = [];
+    const piano = new Piano(
+      asContext(ctx),
+      async (_c, layer) => {
+        asked.push(layer?.dir);
+        return fakeSamples();
+      },
+      undefined,
+      [soft, loud],
+    );
+    expect(await piano.load()).toBe(true);
+    await new Promise((r) => setTimeout(r, 0));
+    expect(asked).toEqual([undefined, 'soft/', 'loud/']);
+  });
+});
+
+describe('the room (P6-17)', () => {
+  const [left, right] = roomImpulseData(8000);
+  if (!left || !right) throw new Error('channels');
+  const rms = (a: Float32Array, from: number, to: number) => {
+    let sum = 0;
+    for (let i = from; i < to; i++) sum += (a[i] ?? 0) ** 2;
+    return Math.sqrt(sum / (to - from));
+  };
+
+  it('rings for its time and dies away by 60 dB, the same every time', () => {
+    expect(left.length).toBe(Math.round(ROOM_SECONDS * 8000));
+    const n = left.length;
+    const early = rms(left, Math.round(0.015 * 8000), Math.round(0.115 * 8000));
+    const late = rms(left, n - 800, n);
+    expect(20 * Math.log10(late / early)).toBeLessThan(-45);
+    expect(roomImpulseData(8000)[0]).toEqual(left);
+  });
+
+  it('starts after a short gap, with two different sides', () => {
+    expect(left.slice(0, 90).every((x) => x === 0)).toBe(true);
+    expect(left).not.toEqual(right);
+  });
+
+  it('is off until the Player turns it on, and off again after', () => {
+    const ctx = new FakeContext();
+    const piano = new Piano(asContext(ctx), async () => fakeSamples());
+    expect(piano.roomOn).toBe(false);
+    expect(ctx.convolvers).toHaveLength(0);
+    piano.setRoom(true);
+    expect(piano.roomOn).toBe(true);
+    expect(ctx.convolvers).toHaveLength(1);
+    const send = ctx.gains.find((g) =>
+      g.connections.some((c) => ctx.convolvers.includes(c as never)),
+    );
+    expect(send?.gain.calls.at(-1)).toMatchObject({
+      method: 'setTargetAtTime',
+      args: [0.22, 0, 0.05],
+    });
+    piano.setRoom(false);
+    expect(piano.roomOn).toBe(false);
+    expect(send?.gain.calls.at(-1)?.args[0]).toBe(0);
   });
 });

@@ -4,7 +4,9 @@
 
 import { AdditiveSynth } from './additive';
 import { playClick, type Instrument, type Voice } from './instrument';
+import { roomImpulse } from './room';
 import { loadPianoSamples, PianoSampler, type PianoSample } from './sampler';
+import { ORIGINAL_LAYER, SAMPLE_LAYERS, type SampleLayer } from './samples';
 
 export type { Instrument, Voice };
 
@@ -14,11 +16,19 @@ export type PianoSynth = Instrument;
 /** After a failed load, wait this long before trying again (every tap asks for the piano). */
 const RETRY_MS = 30_000;
 
-export type SampleLoader = (ctx: BaseAudioContext) => Promise<PianoSample[]>;
+/** Loads a velocity layer's samples (the original set when `layer` is not given). */
+export type SampleLoader = (ctx: BaseAudioContext, layer?: SampleLayer) => Promise<PianoSample[]>;
+
+/** How much of the piano goes into the room when it is on (P6-17): a soft room, not a church. */
+const ROOM_LEVEL = 0.22;
 
 export class Piano implements Instrument {
   private readonly out: GainNode;
+  private readonly compressor: DynamicsCompressorNode;
   private readonly synth: AdditiveSynth;
+  /** The send into the room, made the first time the room is wanted. */
+  private room: GainNode | null = null;
+  private roomWanted = false;
   private sampler: PianoSampler | null = null;
   private loading: Promise<boolean> | null = null;
   private failedAt = -Infinity;
@@ -28,10 +38,13 @@ export class Piano implements Instrument {
     private readonly loadSamples: SampleLoader,
     /** Passed to the sampler; see PianoSampler. */
     private readonly maxVoices?: number,
+    /** Velocity layers loaded after the original set, in this order (P6-17). */
+    private readonly moreLayers: readonly SampleLayer[] = [],
   ) {
     const compressor = ctx.createDynamicsCompressor();
     compressor.threshold.value = -18;
     compressor.ratio.value = 4;
+    this.compressor = compressor;
     this.out = ctx.createGain();
     this.out.gain.value = 0.35;
     this.out.connect(compressor);
@@ -63,6 +76,7 @@ export class Piano implements Instrument {
     this.loading = this.loadSamples(this.ctx).then(
       (samples) => {
         this.sampler = new PianoSampler(this.ctx, samples, this.out, this.maxVoices);
+        void this.loadMoreLayers(this.sampler);
         return true;
       },
       () => {
@@ -72,6 +86,42 @@ export class Piano implements Instrument {
       },
     );
     return this.loading;
+  }
+
+  /** The softer and louder layers, after the original set; a layer that fails is left out. */
+  private async loadMoreLayers(sampler: PianoSampler): Promise<void> {
+    for (const layer of this.moreLayers) {
+      try {
+        sampler.addLayer(layer, await this.loadSamples(this.ctx, layer));
+      } catch {
+        // The layers loaded so far play on; the next visit tries again.
+      }
+    }
+  }
+
+  /** True while the room is on. */
+  get roomOn(): boolean {
+    return this.roomWanted;
+  }
+
+  /**
+   * A soft room around the piano (P6-17): the Player turns it on while it plays here, and it is
+   * off everywhere else. Practice and the Detector Lab want the dry sound and exact onsets.
+   */
+  setRoom(on: boolean): void {
+    if (on === this.roomWanted) return;
+    this.roomWanted = on;
+    if (!this.room) {
+      if (!on) return;
+      const convolver = this.ctx.createConvolver();
+      convolver.buffer = roomImpulse(this.ctx);
+      this.room = this.ctx.createGain();
+      this.room.gain.value = 0;
+      this.out.connect(this.room);
+      this.room.connect(convolver);
+      convolver.connect(this.compressor);
+    }
+    this.room.gain.setTargetAtTime(on ? ROOM_LEVEL : 0, this.ctx.currentTime, 0.05);
   }
 
   private get active(): Instrument {
@@ -111,7 +161,13 @@ export function synthFor(ctx: AudioContext): Piano {
   let piano = pianos.get(ctx);
   if (!piano) {
     const base = pianoSampleBase();
-    piano = new Piano(ctx, (c) => loadPianoSamples(c, base));
+    piano = new Piano(
+      ctx,
+      (c, layer) => loadPianoSamples(c, base, undefined, layer),
+      undefined,
+      // The softer layer first: accompaniment and quiet passages use it most.
+      SAMPLE_LAYERS.filter((l) => l !== ORIGINAL_LAYER),
+    );
     pianos.set(ctx, piano);
   }
   void piano.load();
