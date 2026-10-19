@@ -6,6 +6,7 @@ import { TempoMap } from '@opentiles/song-model';
 import type { Song } from '@opentiles/song-model';
 import type { CataloguePiece } from '../catalogue/catalogue';
 import { matchesQuery } from '../catalogue/search';
+import type { Route } from '../lib/router';
 import type { LibraryRow, Progress } from '../storage/db';
 
 export type CollectionKey = `catalogue:${string}` | `library:${number}`;
@@ -139,4 +140,11 @@ export function sortCollection(
     length: missingLast((e) => e.seconds, false),
   }[by];
   return [...entries].sort(compare);
+}
+
+/** Practice for a piece in the Player's collection ("Practise this", P6-07). */
+export function practiceRoute(key: CollectionKey): Route {
+  return key.startsWith('library:')
+    ? { name: 'practice', source: 'library', id: key.slice('library:'.length) }
+    : { name: 'practice', source: 'catalogue', id: key.slice('catalogue:'.length) };
 }

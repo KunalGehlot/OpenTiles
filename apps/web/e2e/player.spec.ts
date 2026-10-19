@@ -221,6 +221,46 @@ test('a page where the Player was never opened shows no bar and makes no Player'
   if (controls) expect(await handlers()).toBeGreaterThan(0);
 });
 
+test('listens from a Home card, practises from the Player, and listens again from practice', async ({
+  page,
+}) => {
+  await page.goto('./#/');
+  const listen = page.getByRole('button', { name: /^Listen to .+ in the Player$/ }).first();
+  const label = (await listen.getAttribute('aria-label')) ?? '';
+  const piece = label.replace(/^Listen to /, '').replace(/ in the Player$/, '');
+  await listen.click();
+  await expect(page).toHaveURL(/#\/player$/);
+  await expect(title(page)).toHaveText(piece);
+  await expect(playButton(page)).toHaveAttribute('aria-label', 'Pause');
+
+  // "Practise this" opens the piece playing in practice, which stops the Player.
+  await page.getByRole('button', { name: 'Playback options' }).click();
+  await page.getByRole('link', { name: 'Practise this' }).click();
+  await expect(page).toHaveURL(/#\/practice\/catalogue\//);
+  await expect(page.locator('.session-title__name')).toHaveText(piece);
+
+  // And back: practice's options play it in the Player again.
+  await page.getByRole('button', { name: 'Options' }).click();
+  await page.getByRole('button', { name: 'Listen in the Player' }).click();
+  await expect(page).toHaveURL(/#\/player$/);
+  await expect(title(page)).toHaveText(piece);
+  await expect(playButton(page)).toHaveAttribute('aria-label', 'Pause');
+  await page.keyboard.press('Space');
+});
+
+test('listens to a library piece from its card', async ({ page }) => {
+  await importTinyMidi(page, 'my-tune.mid');
+  await page.goto('./#/library');
+  await page
+    .getByRole('button', { name: /^Listen to .+ in the Player$/ })
+    .first()
+    .click();
+  await expect(page).toHaveURL(/#\/player$/);
+  await expect(page.locator('.np-text p').first()).toContainText('My library');
+  await expect(playButton(page)).toHaveAttribute('aria-label', 'Pause');
+  await page.keyboard.press('Space');
+});
+
 test('moves with the seek picture and the arrow keys', async ({ page }) => {
   await page.goto('./#/player');
   await expect(title(page)).toBeVisible();

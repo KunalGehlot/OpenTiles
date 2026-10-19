@@ -331,6 +331,20 @@ button.copy-link:hover:not(:disabled) {
   color: var(--accent-ink);
 }
 
+/* Under the copy button: the piece in the Player (P6-07). */
+button.listen-link {
+  position: absolute;
+  top: calc(var(--space-2) + 2.25rem);
+  right: var(--space-2);
+  min-height: 2rem;
+  padding: 0.25rem;
+  color: var(--muted);
+}
+
+button.listen-link:hover:not(:disabled) {
+  color: var(--accent-ink);
+}
+
 button.copy-link--done {
   padding: 0.25rem 0.6rem;
   color: var(--accent-ink);

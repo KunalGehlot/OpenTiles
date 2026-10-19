@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   ChevronLeft,
   Gauge,
+  Headphones,
   Mic,
   Minus,
   Piano,
@@ -48,6 +49,8 @@ import { LiveStatsStrip } from '../practice/LiveStatsStrip';
 import { OverviewStrip } from '../practice/OverviewStrip';
 import { PlaysOnControl } from '../practice/PlaysOnControl';
 import { stopPlayer } from '../player/browser';
+import type { CollectionKey } from '../player/collection';
+import { listenInPlayer } from '../player/listen';
 import { SectionBar } from '../practice/SectionBar';
 import {
   shiftLabel,
@@ -954,6 +957,14 @@ function PracticeView({
                 'The on-screen keys and the computer keys A–; always play. Pieces are moved by octaves to fit the keyboard you choose.',
               )}
             </p>
+            {(progressKey.startsWith('catalogue:') || progressKey.startsWith('library:')) && (
+              <button
+                className="quiet"
+                onClick={() => void listenInPlayer(progressKey as CollectionKey)}
+              >
+                <Headphones /> {t('Listen in the Player')}
+              </button>
+            )}
             <a href={href({ name: 'settings' })}>{t('All settings')}</a>
           </Popover>
         </div>

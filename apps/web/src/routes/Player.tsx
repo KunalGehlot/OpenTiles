@@ -20,6 +20,7 @@ import {
 } from 'react';
 import {
   ChevronDown,
+  GraduationCap,
   ListMusic,
   Maximize2,
   Minimize2,
@@ -51,7 +52,7 @@ import { locale, t } from '../i18n';
 import { href } from '../lib/router';
 import { coverIndex, initials } from '../player/art';
 import { playerTransport } from '../player/browser';
-import { searchCollection, sortCollection } from '../player/collection';
+import { practiceRoute, searchCollection, sortCollection } from '../player/collection';
 import type { CollectionEntry, CollectionSort } from '../player/collection';
 import { loadCollection } from '../player/load';
 import { createHdrLayer, hdrPossible } from '../player/hdr';
@@ -600,6 +601,11 @@ export function Player() {
           <input type="checkbox" checked={hdr} onChange={(e) => setHdr(e.target.checked)} />
           {t('HDR highlights')}
         </label>
+      )}
+      {state.key && (
+        <a className="button quiet" href={href(practiceRoute(state.key))}>
+          <GraduationCap /> {t('Practise this')}
+        </a>
       )}
     </Popover>
   );

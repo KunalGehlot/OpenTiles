@@ -44,9 +44,14 @@
     gap: 0 var(--space-3);
   }
 
-  button.copy-link {
+  button.copy-link,
+  button.listen-link {
     min-width: var(--tap);
     min-height: var(--tap);
+  }
+
+  button.listen-link {
+    top: calc(var(--space-2) + var(--tap) + var(--space-1));
   }
 
   /* A switch or checkbox is tapped anywhere on its row; the row is the target. */

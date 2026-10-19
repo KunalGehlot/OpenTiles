@@ -594,9 +594,10 @@ without a word when no MIDI output is found.
   moves a playing piece to the new choice and says when the keyboard goes away; seeking by tap,
   drag and keys; Space and the arrow keys; German strings; e2e in the 320 and 1,180 px layouts;
   "Show hands" kept between visits.
-  Left: entry points (Play on Home and Library cards, "Open in Player" in practice, "Practise
-  this"), keys at the heard time (output latency, brief §5.4), composer dates
-  from the catalogue, the touch test on `#/player`.
+  Entry points: "Listen" on the Home and Library cards and in practice's options plays the piece
+  in the Player, then the programme after it; "Practise this" in the Player's options. Left: keys
+  at the heard time (output latency, brief §5.4), composer dates from the catalogue (it has only
+  death years), the touch test on `#/player`.
 - [ ] **P6-08** (APP) Queue: play all, shuffle, repeat, reorder by drag and keyboard, kept on the
       device.
 - [x] **P6-09** (APP) Mini player on other pages and media keys (Media Session where it works without
@@ -681,6 +682,9 @@ Record the outcome as an ADR in `docs/adr/` and tick it here.
 - [x] Engine exposes a plain C ABI instead of wasm-bindgen glue — ADR 0002.
 
 ## Changelog
+
+- **2026-10-19** — P6-07: "Listen" on the Home and Library cards and in practice, "Practise this"
+  in the Player.
 
 - **2026-10-19** — P6-16 (part): the Player plays expressively, with the sustain pedal and shaped
   touch where a piece has none of its own (ADR 0021); "Show hands" is kept between visits (P6-07).
