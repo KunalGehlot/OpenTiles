@@ -673,6 +673,9 @@ Record the outcome as an ADR in `docs/adr/` and tick it here.
 
 ## Changelog
 
+- **2026-10-19** — P6-09: the Player on other pages (a bar with play, pause and next) and the
+  device's media controls; practice stopping it says so.
+
 - **2026-10-19** — P6-06: the Player's music room (black lacquer, the roll as light, keys that move
   like a piano's, HDR and Display P3 where the screen shows them) is published; P6-07 in progress.
 
