@@ -32,11 +32,12 @@ P5-01 to P5-05 and P5-07 are in `main` (merged 2026-10-10); left are P5-06 (free
 smoothness pass with the maintainer), P5-10 (the human release gate) and P5-11 (going live on
 opentiles.site). The repository is public; the maintainer decided not to recreate it (P5-00).
 
-**Next: [Phase 6 — The Player](#phase-6--the-player-from-2026-10-11)** (planned 2026-10-11, not
-started). A Player page that plays the whole library and catalogue on the learner's own keyboard, and
-a visible "Plays on" choice in practice so Listen can play on the keyboard only. The full plan, with
-files, acceptance criteria and lanes for parallel work, is
-[docs/phase-6/player.md](docs/phase-6/player.md); P6-01 is the first, small task.
+**Now: [Phase 6 — The Player](#phase-6--the-player-from-2026-10-11)** (started 2026-10-17). A Player
+page that plays the whole library and catalogue on the learner's own keyboard, and a visible "Plays
+on" choice in practice so Listen can play on the keyboard only. The full plan is
+[docs/phase-6/player.md](docs/phase-6/player.md); on 2026-10-18 the maintainer chose to make the
+Player a self-playing grand piano, described in
+[docs/phase-6/player-piano.md](docs/phase-6/player-piano.md).
 
 ## Phases and gates
 
@@ -574,8 +575,14 @@ without a word when no MIDI output is found.
   85–106 ms), none late, and the notes of a chord arrived together. Left: 10 minutes in a hidden
   tab: automated browsers keep their pages visible (Playwright's focus emulation, even with a
   window and a minimised one), so it is a person's check (P6-13).
-- [ ] **P6-06** (APP, human) Design the Player with the maintainer in their dark-mode Chrome: a
-      prototype with two variants, generated cover art, the piece's picture as the seek bar.
+- [~] **P6-06** (APP, human) Design the Player with the maintainer in their dark-mode Chrome: a
+  prototype with two variants, generated cover art, the piece's picture as the seek bar. Done: the
+  maintainer chose a third design on 2026-10-18, a player piano
+  ([docs/phase-6/player-piano.md](docs/phase-6/player-piano.md), ADR 0019): a paper roll moving
+  down onto a drawn grand keyboard whose keys go down by themselves, pedals that move, the next
+  title printed on the roll's leader between pieces (the transport loads the next piece during
+  the gap), a programme of works grouped by composer with "Let it play", and stand mode's layout.
+  Left: the maintainer's approval of the built page.
 - [ ] **P6-07** (APP) The Player page (`#/player`): search, filters and sorting over all music, Now
       playing, transport, tempo, hands, transpose, "Plays on", live keyboard strip, ⅓ iPad and 320 px
       layouts, German strings, shortcuts.
@@ -614,6 +621,17 @@ without a word when no MIDI output is found.
   keep and tags, light or dark, the pedal's keys, the Score tab following a PDF, pedal marks).
   Left: the Player in the user guide and the README, once its design is chosen (P6-06).
 
+- [ ] **P6-15** (APP) Stand mode: the music room alone in the window (full screen where offered),
+      controls that fade after 3 s and come back on any touch, "Next: …" under the piano, the wake
+      lock, Reduce motion. Shown in P6-06's prototype; left: tests, the iPad check and polish.
+- [ ] **P6-16** (PRAC) Phrasing for the Player: phrases swell towards their high point and settle
+      at the end, the last bar slows by at most 10 % and the final chord is held; dynamics marks
+      and hairpins set the level when a file has them (none of the catalogue's scores has any).
+      On in the Player ("Expressive"), off in practice; applied at playback, never stored.
+- [ ] **P6-17** (APP) Sound on this device: a soft room sound from an impulse response made in code
+      (Player only), and a richer piano with more Salamander loudness layers as the default sound
+      (maintainer, 2026-10-18), loaded after the current set and kept for offline use.
+
 ## Cross-cutting checklists
 
 These are tracked in their own documents and must be green before the gate named.
@@ -638,6 +656,9 @@ Record the outcome as an ADR in `docs/adr/` and tick it here.
 - [x] Engine exposes a plain C ABI instead of wasm-bindgen glue — ADR 0002.
 
 ## Changelog
+
+- **2026-10-18** — P6-06: the Player becomes a self-playing grand piano (the maintainer's choice);
+  P6-15 to P6-17 added.
 
 - **2026-10-17** — P6-14 (part): the user guide and FAQ for this round's features.
 

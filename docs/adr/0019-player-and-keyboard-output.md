@@ -74,7 +74,22 @@ The maintainer accepted the plan's recommendations (§7 of the plan) for Q1 to Q
 - **Q7:** no programme change at the start, so the voice chosen on the keyboard stays.
 - **Q8:** the German name of the page is "Wiedergabe", pending the native read-through.
 
-Q9, the Player's design, is chosen in P6-06.
+### The Player's design, and what it added (2026-10-18)
+
+The maintainer asked for the Player to "work like one of those self playing grand pianos" and
+answered the design brief ([docs/phase-6/player-piano.md](../phase-6/player-piano.md), §7):
+
+- **Q9:** the Player is a **player piano**: a paper roll moving down onto a drawn grand keyboard
+  whose keys go down by themselves, pedals that move, the next title printed on the roll's leader
+  between pieces, and a programme grouped by composer. Prototype variants A and B are dropped.
+- **Q10:** hand colours are off in the Player, with a "Show hands" switch.
+- **Q11:** a richer piano sound (more of the Salamander loudness layers, same licence as ADR 0007)
+  becomes **the default sound**, with a soft room sound in the Player (P6-17).
+- **Q12:** phrasing (expressive playback) is built now and is on in the Player, off in practice
+  (P6-16).
+- **Q13:** on the iPad the browser plays through the keyboard's speakers over USB audio; the iPad
+  app (real MIDI) is installed together later.
+- **Q14:** stand mode, the music room alone with controls that fade (P6-15).
 
 ## Consequences
 
