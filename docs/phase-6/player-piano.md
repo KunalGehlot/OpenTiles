@@ -252,6 +252,39 @@ keys, sounding notes, the seek picture) is the starting point for the roll. The 
 on" wiring, the transport hook and the one drawing loop in `routes/Player.tsx` all stay. So do the
 fake MIDI output and `e2e/player.spec.ts`.
 
+### 4.8 After the first review (2026-10-19)
+
+The maintainer saw the first build in their own Chrome (a 1200 px window, light) and found it
+crude: a beige paper roll with thick black bars, pill-shaped pedals, a jagged seek picture and two
+accents fighting. The idea stayed; the look changed. Where this section and §4.2 to §4.6 differ,
+this section holds.
+
+- **A black lacquer stage in every theme.** The music room is a grand piano's black lacquer in a
+  light room or a dark one, with gold as its one accent and ivory and ebony keys. The app's tokens
+  are pointed at the room's inside it, so its controls and menus take the stage's colours. The
+  programme keeps the app's theme; "Let it play" is a lacquer button with a gold play mark.
+- **The roll is light, not paper.** Each hole is a fine line of light (3 to 4 px), coming out of
+  the dark at the top of the room. At the gold hairline of the tracker bar a hole brightens and its
+  light spreads along the bar. Faint lines stand above every C.
+- **A grand where it fits.** The keyboard widens from the piece's octaves to all 88 keys as long as
+  the white keys stay at least 14 px wide, so a 1200 px window shows a grand.
+- **Keys move like a piano's.** A key goes down before its note, gathering speed, and is down as it
+  sounds (40 ms for a soft note, 22 ms for a loud one), then springs back over 120 ms. A pressed
+  white key's front edge slides away, it tips into the fallboard's shadow and its neighbours shade
+  its sides; a black key's sloped front shortens and its sheen fades. Keys move only while playing.
+- **No pill pedals.** A thin gold light under the keys comes on with the sustain pedal.
+- **A hairline for the position** instead of the overview picture, with the times either side; tap,
+  drag or the arrow keys still seek.
+- **One options menu** holds tempo, hands, "Show hands" and "HDR highlights", so the deck is the
+  line and five buttons and the room fits the window.
+- **HDR and wide colour.** On an HDR screen, where the browser's WebGPU canvas confirms "extended"
+  tone mapping (Chrome 129 and later), a second canvas over the room draws the holes at the bar
+  (three times paper white), their light along the bar, the gold bar and the pedal's light brighter
+  than white (`player/hdr.ts`, plain WebGPU). The keys are not lit: their going down is shown by
+  shade and movement. On a Display P3 screen the gold and warm light are richer than sRGB
+  (`player/wide.ts`). Elsewhere the room looks the same without them. In the maintainer's Chrome on
+  a MacBook Pro the room runs at 120 frames a second with the HDR layer.
+
 ## 5. Making it sound played
 
 ### 5.1 Already there

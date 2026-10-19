@@ -579,10 +579,14 @@ without a word when no MIDI output is found.
   prototype with two variants, generated cover art, the piece's picture as the seek bar. Done: the
   maintainer chose a third design on 2026-10-18, a player piano
   ([docs/phase-6/player-piano.md](docs/phase-6/player-piano.md), ADR 0019): a paper roll moving
-  down onto a drawn grand keyboard whose keys go down by themselves, pedals that move, the next
-  title printed on the roll's leader between pieces (the transport loads the next piece during
-  the gap), a programme of works grouped by composer with "Let it play", and stand mode's layout.
-  Left: the maintainer's approval of the built page.
+  down onto a drawn grand keyboard whose keys go down by themselves, the next title printed on
+  the roll's leader between pieces (the transport loads the next piece during the gap), a
+  programme of works grouped by composer with "Let it play", and stand mode's layout. After the
+  maintainer's first review (2026-10-19, brief §4.8): a black lacquer stage with gold in every
+  theme, the roll as fine lines of light, 88 keys where they fit, keys that go down before their
+  note and spring back, a pedal light instead of pedals, a hairline for the position, one options
+  menu, and HDR light (WebGPU, extended tone mapping) and Display P3 gold where the screen shows
+  them. Left: the maintainer's approval of the built page.
 - [ ] **P6-07** (APP) The Player page (`#/player`): search, filters and sorting over all music, Now
       playing, transport, tempo, hands, transpose, "Plays on", live keyboard strip, ⅓ iPad and 320 px
       layouts, German strings, shortcuts.
