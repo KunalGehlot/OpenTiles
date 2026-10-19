@@ -2,6 +2,7 @@ import { About } from './routes/About';
 import { DetectorLab } from './routes/DetectorLab';
 import { Home } from './routes/Home';
 import { Library } from './routes/Library';
+import { Player } from './routes/Player';
 import { Practice } from './routes/Practice';
 import { Impressum, Privacy } from './legal/LegalPages';
 import { lazy, Suspense } from 'react';
@@ -23,6 +24,7 @@ function nav(): { route: Route; label: string }[] {
   return [
     { route: { name: 'home' }, label: t('Pieces') },
     { route: { name: 'library' }, label: t('My library') },
+    { route: { name: 'player' }, label: t('Player') },
     { route: { name: 'drills' }, label: t('Sight-reading') },
     { route: { name: 'sheet-music' }, label: t('Find sheet music') },
     { route: { name: 'lab' }, label: t('Detector Lab') },
@@ -34,8 +36,13 @@ function nav(): { route: Route; label: string }[] {
 export function App() {
   const route = useRoute();
   const practising = route.name === 'practice';
+  const className = practising
+    ? 'app app--practice'
+    : route.name === 'player'
+      ? 'app app--player'
+      : 'app';
   return (
-    <div className={practising ? 'app app--practice' : 'app'}>
+    <div className={className}>
       {/* The practice screen has its own slim header (routes/Practice.tsx): the canvas needs the room. */}
       {!practising && (
         <header className="topbar">
@@ -60,6 +67,7 @@ export function App() {
         <ErrorBoundary resetKey={JSON.stringify(route)}>
           {route.name === 'home' && <Home />}
           {route.name === 'library' && <Library />}
+          {route.name === 'player' && <Player />}
           {route.name === 'practice' && <Practice source={route.source} id={route.id} />}
           {route.name === 'drills' && <Drills />}
           {route.name === 'lab' && <DetectorLab />}

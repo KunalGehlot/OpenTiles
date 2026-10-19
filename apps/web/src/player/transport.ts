@@ -73,6 +73,18 @@ export const DEFAULT_GAP = 2;
 /** The first notes are handed over this far ahead, so they are not late. */
 const START_DELAY = 0.06;
 
+/**
+ * What comes after the gap between two pieces, worked out as the gap starts: the queue moved on
+ * (so shuffle decides only once) and the next piece loading. The Player draws that piece's roll
+ * arriving during the gap, and it starts without a wait.
+ */
+interface Following {
+  queue: Queue | null;
+  key: CollectionKey | null;
+  load: Promise<Playable> | null;
+  piece: Playable | null;
+}
+
 export class PlayerTransport {
   private stateValue: TransportState;
   private readonly listeners = new Set<(s: TransportState) => void>();
@@ -86,6 +98,7 @@ export class PlayerTransport {
   private betweenUntil = 0;
   /** Each load gets a number; a newer one wins over one still loading. */
   private loads = 0;
+  private following: Following | null = null;
 
   constructor(private readonly deps: TransportDeps) {
     this.stateValue = {
@@ -130,6 +143,17 @@ export class PlayerTransport {
     return this.position;
   }
 
+  /** Seconds left of the gap between two pieces, while in it. */
+  gapLeft(): number {
+    if (this.stateValue.status !== 'between') return 0;
+    return Math.max(0, this.betweenUntil - this.deps.now());
+  }
+
+  /** The piece that plays after the gap, once it has loaded. */
+  get upcoming(): Playable | null {
+    return this.following?.piece ?? null;
+  }
+
   /** Plays `keys` from the piece at `start`, keeping the shuffle and repeat choices. */
   async playQueue(keys: readonly CollectionKey[], start = 0): Promise<void> {
     const { repeat, shuffle } = this.stateValue.queue;
@@ -139,14 +163,26 @@ export class PlayerTransport {
     );
   }
 
+  /** Sets `keys` as the queue, at the piece at `start`, without playing (the Player opening). */
+  async cue(keys: readonly CollectionKey[], start = 0): Promise<void> {
+    const { repeat, shuffle } = this.stateValue.queue;
+    await this.open(
+      createQueue(keys, start, { repeat, shuffle }, () => this.random()),
+      false,
+    );
+  }
+
   /** Adds a piece to play next or at the end; with nothing playing, it is opened. */
   async add(key: CollectionKey, next = false): Promise<void> {
     const queue = enqueue(this.stateValue.queue, key, next);
     if (this.stateValue.key === null) await this.open(queue, false);
-    else this.set({ queue });
+    else {
+      this.set({ queue });
+      this.refreshFollowing();
+    }
   }
 
-  private async open(queue: Queue, play: boolean): Promise<void> {
+  private async open(queue: Queue, play: boolean, preloaded?: Following): Promise<void> {
     this.halt();
     const key = currentKey(queue) ?? null;
     const load = ++this.loads;
@@ -155,7 +191,9 @@ export class PlayerTransport {
     if (!key) return;
     let piece: Playable;
     try {
-      piece = await this.deps.load(key);
+      piece = await (preloaded?.key === key && preloaded.load
+        ? preloaded.load
+        : this.deps.load(key));
     } catch {
       if (load === this.loads) this.set({ status: 'paused', message: 'failed' });
       return;
@@ -263,10 +301,17 @@ export class PlayerTransport {
 
   setRepeat(repeat: Repeat): void {
     this.set({ queue: queueRepeat(this.stateValue.queue, repeat) });
+    this.refreshFollowing();
   }
 
   setShuffle(shuffle: boolean): void {
     this.set({ queue: queueShuffle(this.stateValue.queue, shuffle, () => this.random()) });
+    this.refreshFollowing();
+  }
+
+  /** The queue changed during the gap: what follows is worked out again. */
+  private refreshFollowing(): void {
+    if (this.stateValue.status === 'between') this.following = this.prepareNext();
   }
 
   setGap(seconds: number): void {
@@ -333,13 +378,36 @@ export class PlayerTransport {
       this.cursor = null;
       this.position = this.stateValue.duration;
       this.betweenUntil = now + this.stateValue.gap;
+      this.following = this.prepareNext();
       this.set({ status: 'between' });
       if (this.stateValue.gap <= 0) void this.moveOn(true);
     }
   }
 
+  /** Moves the queue on and starts loading the piece after the gap (see `Following`). */
+  private prepareNext(): Following {
+    const queue = advance(this.stateValue.queue, true, () => this.random());
+    const key = (queue && currentKey(queue)) ?? null;
+    const next: Following = { queue, key, load: null, piece: null };
+    if (key && key === this.stateValue.key) next.piece = this.stateValue.piece;
+    else if (key) {
+      next.load = this.deps.load(key);
+      next.load.then(
+        (piece) => {
+          if (this.following === next) next.piece = piece;
+        },
+        () => {},
+      );
+    }
+    return next;
+  }
+
   private async moveOn(auto: boolean): Promise<void> {
-    const queue = advance(this.stateValue.queue, auto, () => this.random());
+    const following = auto ? this.following : null;
+    this.following = null;
+    const queue = following
+      ? following.queue
+      : advance(this.stateValue.queue, auto, () => this.random());
     const playing =
       auto || this.stateValue.status === 'playing' || this.stateValue.status === 'between';
     if (!queue) {
@@ -358,12 +426,13 @@ export class PlayerTransport {
       if (playing) await this.play();
       return;
     }
-    await this.open(queue, playing);
+    await this.open(queue, playing, following ?? undefined);
   }
 
   /** Stops the sound and the ticker; the state is left to the caller. */
   private halt(): void {
     this.instrument?.silence?.();
+    this.following = null;
     this.cursor = null;
     this.stopTicker?.();
     this.stopTicker = null;

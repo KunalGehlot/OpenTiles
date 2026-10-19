@@ -746,11 +746,15 @@ export const de: Readonly<Record<string, string>> = {
   'App’s notes play on': 'Noten der App spielen auf',
   'This device': 'Diesem Gerät',
   'My keyboard': 'Meinem Keyboard',
+  Automatic: 'Automatisch',
+  'the keyboard when it is connected': 'dem Keyboard, sobald es angeschlossen ist',
+  'Automatic: the keyboard when it is connected':
+    'Automatisch: dem Keyboard, wenn es angeschlossen ist',
   'Play my MIDI keys on this device': 'Meine MIDI-Tasten auf diesem Gerät spielen',
   'The notes you play on the keyboard also sound from this computer or tablet: for a keyboard without speakers, or to listen in headphones on this device. Turn the keyboard’s own volume down if you hear both.':
     'Die Noten, die du auf dem Keyboard spielst, klingen auch aus diesem Computer oder Tablet: für ein Keyboard ohne Lautsprecher oder zum Hören mit Kopfhörern an diesem Gerät. Dreh die Lautstärke des Keyboards herunter, wenn du beides hörst.',
-  'Listen mode, the other hand and listening back; also under “Plays on” in practice. “My keyboard” plays them with the keyboard’s own sound; the metronome stays on this device.':
-    'Anhören, die andere Hand und das Nachhören; auch unter „Spielt auf“ beim Üben. „Meinem Keyboard“ spielt sie mit dem Klang des Keyboards; das Metronom bleibt auf diesem Gerät.',
+  'Listen mode, the other hand, listening back and the Player; also under “Plays on”. “Automatic” plays them with the keyboard’s own sound whenever it is connected, and on this device otherwise; the metronome stays on this device.':
+    'Anhören, die andere Hand, das Nachhören und die Wiedergabe; auch unter „Spielt auf“. „Automatisch“ spielt sie mit dem Klang des Keyboards, sobald es angeschlossen ist, und sonst auf diesem Gerät; das Metronom bleibt auf diesem Gerät.',
   'This keyboard sends the app’s notes back (MIDI thru). OpenTiles ignores those copies, so they don’t count as yours.':
     'Dieses Keyboard schickt die Noten der App zurück (MIDI Thru). OpenTiles übergeht diese Kopien, damit sie nicht als deine zählen.',
   // Touch (P6-11)
@@ -765,6 +769,49 @@ export const de: Readonly<Record<string, string>> = {
   'On the iPad, a Bluetooth MIDI keyboard is paired here, not in the iPad’s own Bluetooth settings. Once paired it works like a keyboard plugged in by USB.':
     'Auf dem iPad wird ein Bluetooth-MIDI-Keyboard hier gekoppelt, nicht in den Bluetooth-Einstellungen des iPads. Danach funktioniert es wie ein per USB angestecktes Keyboard.',
   'Pair a Bluetooth MIDI keyboard': 'Bluetooth-MIDI-Keyboard koppeln',
+  // The Player (P6-06, P6-07)
+  Player: 'Wiedergabe',
+  Playback: 'Wiedergabesteuerung',
+  Shuffle: 'Zufällige Reihenfolge',
+  'Previous piece': 'Vorheriges Stück',
+  Pause: 'Pause',
+  'Next piece': 'Nächstes Stück',
+  Repeat: 'Wiederholen',
+  'Repeat this piece': 'Dieses Stück wiederholen',
+  'Your keyboard was disconnected.': 'Dein Keyboard wurde getrennt.',
+  'Play on this device': 'Auf diesem Gerät spielen',
+  'This piece could not be loaded.': 'Dieses Stück konnte nicht geladen werden.',
+  'Now playing': 'Läuft gerade',
+  'Everything you can play, the catalogue and your library, played on this device or your keyboard.':
+    'Alles, was du spielen kannst, der Katalog und deine Bibliothek – auf diesem Gerät oder auf deinem Keyboard.',
+  'All music': 'Alle Musik',
+  'Search all music': 'Alle Musik durchsuchen',
+  Show: 'Anzeigen',
+  All: 'Alle',
+  Catalogue: 'Katalog',
+  'Sort by': 'Sortieren nach',
+  Composer: 'Komponist',
+  'Recently added': 'Zuletzt hinzugefügt',
+  'Recently played': 'Zuletzt gespielt',
+  Length: 'Länge',
+  'Nothing matches.': 'Nichts gefunden.',
+  'Import a piece': 'Ein Stück importieren',
+  'Up next': 'Als Nächstes',
+  // The music room and the programme (P6-06, player-piano.md)
+  'Let it play': 'Einfach spielen lassen',
+  'Play all': 'Alle spielen',
+  Traditional: 'Traditionell',
+  'Other pieces': 'Weitere Stücke',
+  'Show hands': 'Hände zeigen',
+  'Playback options': 'Wiedergabe-Optionen',
+  'HDR highlights': 'HDR-Glanzlichter',
+  'Play on your piano': 'Auf deinem Klavier spielen',
+  'Music stand view': 'Notenpult-Ansicht',
+  'Leave the music stand view': 'Notenpult-Ansicht verlassen',
+  'Next: {title}': 'Danach: {title}',
+  'Open the music room': 'Musikzimmer öffnen',
+  '{at} of {total}': '{at} von {total}',
+  Position: 'Position',
   // Plays on (P6-01)
   'Plays on': 'Spielt auf',
   Connect: 'Verbinden',

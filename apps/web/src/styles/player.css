@@ -1,0 +1,822 @@
+/*
+ * The Player (P6-06, P6-07, docs/phase-6/player-piano.md): the programme and the music room, a
+ * player piano. The programme follows the app's theme; the music room is a grand piano's black
+ * lacquer in every theme, with gold as its one accent (the --roll-*, --brass, --room-* tokens).
+ * Titles are set in the system's book serif (--font-serif), as a printed programme sets them.
+ */
+
+/* A wider column than other pages, so the piano can be a grand. The header lines up with it. */
+.app--player {
+  --page-width: 120rem;
+}
+
+.player {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+}
+
+.player__head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--space-2) var(--space-5);
+}
+
+.player__head h1 {
+  margin: 0;
+}
+
+.player__head p {
+  flex: 1 1 24rem;
+  margin: 0;
+}
+
+.player__body {
+  display: grid;
+  grid-template-columns: minmax(16rem, 21rem) minmax(0, 1fr);
+  gap: var(--space-5);
+  align-items: start;
+}
+
+.player--queue .player__body {
+  grid-template-columns: minmax(16rem, 21rem) minmax(0, 1fr) minmax(14rem, 18rem);
+}
+
+/* ---- Initials tiles ---- */
+
+.cover-1 {
+  --tile: var(--cover-1);
+}
+.cover-2 {
+  --tile: var(--cover-2);
+}
+.cover-3 {
+  --tile: var(--cover-3);
+}
+.cover-4 {
+  --tile: var(--cover-4);
+}
+.cover-5 {
+  --tile: var(--cover-5);
+}
+.cover-6 {
+  --tile: var(--cover-6);
+}
+.cover-7 {
+  --tile: var(--cover-7);
+}
+.cover-8 {
+  --tile: var(--cover-8);
+}
+
+.tile {
+  display: inline-grid;
+  flex: none;
+  place-items: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 0.6rem;
+  background: var(--tile);
+  color: var(--on-cover);
+  font-size: var(--text-sm);
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+/* ---- The programme ---- */
+
+.collection,
+.upnext {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding: var(--space-4);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  background: var(--surface);
+}
+
+/* "Let it play" is a piece of the piano: black lacquer, ivory letters, a gold play mark. */
+button.programme__play {
+  --btn-bg: var(--roll-paper);
+  justify-content: center;
+  gap: var(--space-2);
+  min-height: 3rem;
+  border-color: var(--room-line);
+  color: var(--room-text);
+  font-family: var(--font-serif);
+  font-size: var(--text-md);
+  font-weight: 500;
+  letter-spacing: 0.02em;
+}
+
+button.programme__play:hover:not(:disabled) {
+  --btn-bg: var(--roll-edge);
+}
+
+.programme__play .icon {
+  color: var(--brass-wide);
+}
+
+.collection__tools {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+}
+
+.collection__sort select {
+  min-height: var(--tap-sm);
+}
+
+.collection__list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  max-height: calc(100vh - 21rem);
+  max-height: calc(100dvh - 21rem);
+  min-height: 12rem;
+  margin: 0 calc(-1 * var(--space-2));
+  padding: 0 0 var(--space-2);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+.programme__group ul {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.programme__heading {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-2);
+  margin: 0 var(--space-2) var(--space-1);
+  padding: var(--space-2) 0 var(--space-1);
+  border-bottom: 1px solid var(--line);
+  background: var(--surface);
+}
+
+.programme__heading h3 {
+  min-width: 0;
+  margin: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--muted);
+  font-family: var(--font-serif);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.programme__all {
+  flex: none;
+  min-height: 0;
+  white-space: nowrap;
+  padding: var(--space-1) var(--space-2);
+  border-color: transparent;
+  background: transparent;
+  box-shadow: none;
+  color: var(--accent);
+  font-size: var(--text-sm);
+}
+
+.collection__row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  width: 100%;
+  padding: var(--space-2);
+  border: 0;
+  border-radius: var(--radius);
+  background: transparent;
+  box-shadow: none;
+  color: var(--text);
+  text-align: left;
+  white-space: normal;
+}
+
+.collection__row:hover:not(:disabled) {
+  --btn-bg: var(--surface-2);
+  background: var(--surface-2);
+}
+
+.collection__row[aria-current='true'] {
+  background: var(--accent-soft);
+  color: var(--accent-ink);
+}
+
+.collection__text {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.collection__title {
+  overflow: hidden;
+  font-weight: 500;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.collection__meta {
+  overflow: hidden;
+  color: var(--muted);
+  font-size: var(--text-sm);
+  font-weight: 400;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.collection__row[aria-current='true'] .collection__meta {
+  color: inherit;
+}
+
+.collection__length {
+  flex: none;
+  color: var(--muted);
+  font-size: var(--text-sm);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Three small bars beside the piece playing, rising and falling like keys. */
+.programme__playing {
+  display: inline-block;
+  flex: none;
+  width: 0.9rem;
+  height: 0.8rem;
+  background:
+    linear-gradient(currentColor, currentColor) 0 100% / 0.2rem 60% no-repeat,
+    linear-gradient(currentColor, currentColor) 50% 100% / 0.2rem 100% no-repeat,
+    linear-gradient(currentColor, currentColor) 100% 100% / 0.2rem 40% no-repeat;
+  animation: programme-playing 0.9s ease-in-out infinite alternate;
+}
+
+@keyframes programme-playing {
+  to {
+    background-size:
+      0.2rem 100%,
+      0.2rem 35%,
+      0.2rem 80%;
+  }
+}
+
+/* ---- The music room: black lacquer, gold, ivory ---- */
+
+.room {
+  /* The controls on the stage take its colours: the app's tokens, pointed at the room's. */
+  --text: var(--room-text);
+  --muted: var(--room-muted);
+  --surface: var(--roll-edge);
+  --surface-2: var(--room-hover);
+  --sunken: var(--roll-paper);
+  --line: var(--room-line);
+  --line-strong: var(--room-line);
+  --control: var(--room-muted);
+  --accent: var(--brass-wide);
+  --accent-hover: var(--brass-hover-wide);
+  --accent-text: var(--room-on-gold);
+  --accent-soft: var(--room-hover);
+  --accent-ink: var(--brass-wide);
+  --accent-line: var(--brass-wide);
+  --focus: var(--brass-wide);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  min-width: 0;
+  padding: var(--space-6) var(--space-6) var(--space-5);
+  border: 1px solid var(--room-line);
+  border-radius: var(--radius-lg);
+  background: var(--roll-paper);
+  box-shadow: var(--shadow-3);
+  color: var(--room-text);
+  color-scheme: dark;
+}
+
+.room__head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-3) var(--space-5);
+}
+
+.room__close {
+  display: none;
+}
+
+.room__title {
+  flex: 1 1 20rem;
+  min-width: 0;
+}
+
+.room__title h2 {
+  margin: 0;
+  overflow-wrap: anywhere;
+  font-family: var(--font-serif);
+  font-size: clamp(1.7rem, 1.2rem + 1.2vw, 2.7rem);
+  font-weight: 400;
+  line-height: var(--leading-tight);
+  letter-spacing: 0.005em;
+}
+
+.room__composer {
+  margin: var(--space-2) 0 0;
+  color: var(--brass-wide);
+  font-family: var(--font-serif);
+  font-size: var(--text-sm);
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+}
+
+.room__actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-1);
+}
+
+.room__connect {
+  --btn-bg: transparent;
+  gap: var(--space-2);
+  border-color: var(--accent-line);
+  color: var(--accent);
+}
+
+.room__connect:hover:not(:disabled) {
+  --btn-bg: var(--room-hover);
+}
+
+.room__actions .popover__panel {
+  color: var(--text);
+}
+
+.room__piano {
+  position: relative;
+}
+
+/* The HDR lights (player/hdr.ts) lie exactly over the room's canvas. */
+.room__piano .room__hdr {
+  position: absolute;
+  inset: 0;
+  height: 100%;
+  pointer-events: none;
+}
+
+.room__piano canvas {
+  display: block;
+  width: 100%;
+  /* The whole room, controls included, fits the window: the piano takes what is left. */
+  height: clamp(16rem, calc(100vh - 19rem), 46rem);
+  height: clamp(16rem, calc(100dvh - 19rem), 46rem);
+}
+
+.room__deck {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-3);
+  transition: opacity var(--dur-3) ease;
+}
+
+.room__next {
+  margin: 0;
+  color: var(--muted);
+  font-family: var(--font-serif);
+  font-style: italic;
+  text-align: center;
+}
+
+/* Where the piece is: a hairline, gold for the part played. */
+.np-seek {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  width: min(100%, 46rem);
+}
+
+.np-seek__track {
+  position: relative;
+  flex: 1 1 auto;
+  min-width: 0;
+  height: 1.5rem;
+  cursor: pointer;
+  touch-action: none;
+}
+
+.np-seek__track::before,
+.np-seek__fill {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  margin-top: -1px;
+  border-radius: 1px;
+  content: '';
+}
+
+.np-seek__track::before {
+  background: var(--line);
+}
+
+.np-seek__fill {
+  background: var(--accent);
+  transform: scaleX(0);
+  transform-origin: left;
+}
+
+/* Keyboard focus: the line itself turns gold and thickens, instead of a box around it. */
+.np-seek__track:focus {
+  outline: none;
+}
+
+.np-seek__track:focus-visible::before {
+  height: 4px;
+  margin-top: -2px;
+  background: color-mix(in srgb, var(--focus) 45%, transparent);
+}
+
+.np-seek__track:focus-visible .np-seek__fill {
+  height: 4px;
+  margin-top: -2px;
+}
+
+.np-seek__time {
+  flex: none;
+  min-width: 3.2em;
+  color: var(--muted);
+  font-size: var(--text-xs);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.04em;
+}
+
+.np-seek__time:last-child {
+  text-align: right;
+}
+
+.np-transport {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-4);
+}
+
+.np-icon {
+  width: 2.75rem;
+  height: 2.75rem;
+  min-height: 0;
+  padding: 0;
+  border-color: transparent;
+  border-radius: 50%;
+  background: transparent;
+  box-shadow: none;
+  color: var(--muted);
+}
+
+.np-icon:hover:not(:disabled) {
+  color: var(--text);
+}
+
+.np-icon[aria-pressed='true'],
+.np-icon[aria-expanded='true'] {
+  color: var(--accent);
+}
+
+.np-icon .btn-label {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+.np-play {
+  width: 3.5rem;
+  height: 3.5rem;
+  padding: 0;
+  border-radius: 50%;
+  box-shadow: none;
+}
+
+.np-play .icon {
+  width: 1.4rem;
+  height: 1.4rem;
+}
+
+.room .popover__panel .tempo {
+  display: flex;
+  flex: none;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.room .popover__panel .tempo input {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+/* ---- Stand mode: the music room alone, for a laptop or iPad on the music rest ---- */
+
+.room--stand {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  gap: var(--space-3);
+  padding: max(var(--space-5), env(safe-area-inset-top))
+    max(var(--space-6), env(safe-area-inset-right))
+    calc(max(var(--space-3), env(safe-area-inset-bottom)) + 5rem)
+    max(var(--space-6), env(safe-area-inset-left));
+  border: 0;
+  border-radius: 0;
+  background: var(--roll-paper);
+}
+
+.room--stand .room__head {
+  justify-content: center;
+  text-align: center;
+}
+
+.room--stand .room__title {
+  flex: 1 1 100%;
+  order: 1;
+}
+
+.room--stand .room__actions {
+  position: absolute;
+  top: max(var(--space-4), env(safe-area-inset-top));
+  right: max(var(--space-4), env(safe-area-inset-right));
+  transition: opacity var(--dur-3) ease;
+}
+
+.room--stand .room__title h2 {
+  font-size: clamp(2rem, 1.4rem + 1.6vw, 3.2rem);
+}
+
+.room--stand .room__piano {
+  display: flex;
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+.room--stand .room__piano canvas {
+  height: 100%;
+}
+
+.room--stand .player__message {
+  display: none;
+}
+
+.room--stand .room__composer {
+  font-size: var(--text-md);
+}
+
+/* The band under the piano holds the controls while they are wanted and "Next: …" otherwise. */
+.room--stand .room__deck {
+  position: absolute;
+  right: max(var(--space-6), env(safe-area-inset-right));
+  bottom: max(var(--space-3), env(safe-area-inset-bottom));
+  left: max(var(--space-6), env(safe-area-inset-left));
+  flex-direction: row;
+  justify-content: center;
+  gap: var(--space-5);
+}
+
+.room--stand .room__next {
+  position: absolute;
+  right: 0;
+  bottom: calc(max(var(--space-3), env(safe-area-inset-bottom)) + 1.25rem);
+  left: 0;
+  opacity: 0;
+  transition: opacity var(--dur-3) ease;
+}
+
+.room--idle {
+  cursor: none;
+}
+
+.room--idle .room__deck,
+.room--idle .room__actions {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.room--idle .room__next {
+  opacity: 1;
+}
+
+/* Whatever else is on the page stays out of the way under the stand. */
+.player--stand .minibar {
+  display: none;
+}
+
+/* ---- Up next ---- */
+
+.upnext {
+  display: none;
+}
+
+.player--queue .upnext {
+  display: flex;
+}
+
+.upnext h2 {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin: 0;
+  color: var(--muted);
+  font-size: var(--text-sm);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.upnext ol {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.upnext li {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  min-width: 0;
+}
+
+/* ---- The mini bar (narrow screens) ---- */
+
+.minibar {
+  display: none;
+}
+
+/* ---- Narrower windows ---- */
+
+@media (max-width: 1180px) {
+  .player__body,
+  .player--queue .player__body {
+    grid-template-columns: minmax(16rem, 21rem) minmax(0, 1fr);
+  }
+
+  .player--queue .upnext {
+    position: fixed;
+    top: var(--space-4);
+    right: max(var(--space-2), env(safe-area-inset-right));
+    bottom: var(--space-4);
+    z-index: 30;
+    width: min(20rem, calc(100vw - 2rem));
+    overflow-y: auto;
+    box-shadow: var(--shadow-3);
+  }
+
+  .room {
+    padding: var(--space-4) var(--space-3) var(--space-3);
+  }
+}
+
+/* ⅓ of an iPad and phones: the programme is the page, the piece playing a bar along the bottom;
+   the bar opens the music room over it. */
+@media (max-width: 760px) {
+  .player__body,
+  .player--queue .player__body {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .room {
+    display: none;
+  }
+
+  .player--room-open .room,
+  .room--stand {
+    position: fixed;
+    inset: 0;
+    z-index: 40;
+    display: flex;
+    overflow-y: auto;
+    padding: max(var(--space-3), env(safe-area-inset-top))
+      max(var(--space-3), env(safe-area-inset-right))
+      max(var(--space-3), env(safe-area-inset-bottom))
+      max(var(--space-3), env(safe-area-inset-left));
+    border: 0;
+    border-radius: 0;
+    background: var(--roll-paper);
+  }
+
+  /* Stand mode keeps its band under the piano for the controls and "Next: …". */
+  .player--room-open .room--stand,
+  .room--stand {
+    padding-bottom: calc(max(var(--space-3), env(safe-area-inset-bottom)) + 5rem);
+  }
+
+  .room--stand .room__deck {
+    right: max(var(--space-3), env(safe-area-inset-right));
+    left: max(var(--space-3), env(safe-area-inset-left));
+    gap: var(--space-2);
+  }
+
+  .room--stand .np-seek {
+    display: none;
+  }
+
+  .player--room-open .room__close {
+    display: inline-grid;
+    place-items: center;
+  }
+
+  .player--room-open .room__piano canvas {
+    height: clamp(16rem, 48vh, 30rem);
+  }
+
+  .player--room-open .room--stand .room__piano canvas {
+    height: 100%;
+  }
+
+  .collection__list {
+    max-height: none;
+  }
+
+  .player {
+    padding-bottom: 5rem;
+  }
+
+  .minibar {
+    position: fixed;
+    right: max(var(--space-2), env(safe-area-inset-right));
+    bottom: max(var(--space-2), env(safe-area-inset-bottom));
+    left: max(var(--space-2), env(safe-area-inset-left));
+    z-index: 20;
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    overflow: hidden;
+    padding: var(--space-2) var(--space-2) var(--space-2) var(--space-2);
+    border: 1px solid var(--line-strong);
+    border-radius: var(--radius-lg);
+    background: var(--surface);
+    box-shadow: var(--shadow-3);
+  }
+
+  .minibar__open {
+    display: flex;
+    flex: 1 1 auto;
+    align-items: center;
+    gap: var(--space-3);
+    min-width: 0;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    box-shadow: none;
+    color: var(--text);
+    text-align: left;
+  }
+
+  .minibar__progress {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 2px;
+    background: var(--accent);
+    transform: scaleX(0);
+    transform-origin: left;
+  }
+}
+
+/* A finger's size on touch screens (P5-09), which this smaller link-like button would miss. */
+@media (pointer: coarse) {
+  .programme__all {
+    min-height: 2.75rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .programme__playing {
+    animation: none;
+  }
+}
+
+html[data-reduced-motion] .programme__playing {
+  animation: none;
+}
+
+.player__message {
+  width: 100%;
+  margin: 0;
+}

@@ -21,11 +21,16 @@ export type PlaysOnProblem =
 
 export interface PlaysOn {
   /** Where the app's notes actually play. */
-  effective: MidiPlayback;
+  effective: 'device' | 'keyboard' | 'both';
   /** The MIDI output they play on, when it is the keyboard or both. */
   output: string | null;
   /** Why they play on this device only, although the learner chose the keyboard. */
   problem: PlaysOnProblem | null;
+  /**
+   * The keyboard could play them, but MIDI is not connected on this screen yet: offer Connect
+   * (the browser asks the learner once per site).
+   */
+  connect: boolean;
 }
 
 export interface MidiState {
@@ -40,16 +45,25 @@ export interface MidiState {
 }
 
 export function playsOn(choice: MidiPlayback, midi: MidiState): PlaysOn {
+  const connect = choice !== 'device' && midi.supported && !midi.connected;
   const device = (problem: PlaysOnProblem | null): PlaysOn => ({
     effective: 'device',
     output: null,
     problem,
+    connect,
   });
   if (choice === 'device') return device(null);
+  if (choice === 'auto') {
+    // The keyboard's own sound whenever one can be reached; this device, without a warning,
+    // when none is (most learners on an iPad or with a microphone have no MIDI keyboard).
+    if (!midi.supported || !midi.connected) return device(null);
+    const output = pickOutput(midi.outputs, midi.inputs, midi.name);
+    return output ? { effective: 'keyboard', output, problem: null, connect } : device(null);
+  }
   if (!midi.supported) return device('no-midi');
   if (!midi.connected) return device('not-connected');
   const output = pickOutput(midi.outputs, midi.inputs, midi.name);
-  if (output) return { effective: choice, output, problem: null };
+  if (output) return { effective: choice, output, problem: null, connect };
   if (midi.outputs.length > 1) return device('ambiguous');
   return device(midi.inputs.length === 0 ? 'no-keyboard' : 'no-output');
 }

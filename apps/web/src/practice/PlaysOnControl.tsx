@@ -38,15 +38,18 @@ export function PlaysOnControl({
   const shown: MidiPlayback = supported ? choice : 'device';
   const warn = supported && route.problem !== null;
   const names: Record<MidiPlayback, string> = {
+    auto: t('Automatic'),
     device: t('This device'),
     keyboard: t('My keyboard'),
     both: t('Both'),
   };
+  // "Automatic" shows where the notes go now: the keyboard by its name, or this device.
+  const value = shown === 'auto' ? (route.output ?? names.device) : names[shown];
   const icon = warn ? (
     <TriangleAlert />
-  ) : shown === 'device' ? (
+  ) : route.effective === 'device' ? (
     <Speaker />
-  ) : shown === 'keyboard' ? (
+  ) : route.effective === 'keyboard' ? (
     <Piano />
   ) : (
     <>
@@ -62,7 +65,7 @@ export function PlaysOnControl({
     <Popover
       label={label}
       icon={icon}
-      value={names[shown]}
+      value={value}
       className={warn ? 'plays-on--warn' : undefined}
       title={title}
       align="start"
@@ -71,17 +74,22 @@ export function PlaysOnControl({
         <>
           <fieldset className="plays-on__choices">
             <legend className="field__label">{t('App’s notes play on')}</legend>
-            {(['device', 'keyboard', 'both'] as const).map((value) => (
-              <label className="check" key={value}>
+            {(['auto', 'device', 'keyboard', 'both'] as const).map((option) => (
+              <label className="check" key={option}>
                 <input
                   type="radio"
                   name={group}
-                  value={value}
-                  checked={choice === value}
-                  onChange={() => onChoose(value)}
+                  value={option}
+                  checked={choice === option}
+                  onChange={() => onChoose(option)}
                 />
-                {names[value]}
-                {value === 'keyboard' && keyboardName && (
+                {names[option]}
+                {option === 'auto' && (
+                  <span className="plays-on__name">
+                    ({route.output ?? t('the keyboard when it is connected')})
+                  </span>
+                )}
+                {option === 'keyboard' && keyboardName && (
                   <span className="plays-on__name">({keyboardName})</span>
                 )}
               </label>

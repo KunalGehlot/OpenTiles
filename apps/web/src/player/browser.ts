@@ -7,8 +7,8 @@ import { unlockAudio } from '../audio/context';
 import type { Instrument } from '../audio/instrument';
 import { MidiOutInstrument, playbackInstrument } from '../audio/midi-out';
 import { synthFor } from '../audio/synth';
-import { midiOutputPort } from '../input/midi-input';
-import { keepScreenAwake } from '../input/native-midi-input';
+import { midiAllowed, midiOutputPort } from '../input/midi-input';
+import { keepScreenAwake, nativeMidiAvailable } from '../input/native-midi-input';
 import { appSettings } from '../settings/store';
 import { getSetting, setSetting } from '../storage/db';
 import type { CollectionKey } from './collection';
@@ -85,18 +85,28 @@ export function playerTransport(): PlayerTransport {
       unwatch?.();
       unwatch = null;
       let keyboard: Instrument | null = null;
-      if (playback !== 'device') {
+      // "Automatic" never asks for MIDI by itself: the browser's question comes from Connect.
+      const look =
+        playback === 'keyboard' ||
+        playback === 'both' ||
+        (playback === 'auto' && (nativeMidiAvailable() || (await midiAllowed())));
+      if (look) {
         const port = await midiOutputPort(output).catch(() => null);
         if (port) {
           keyboard = new MidiOutInstrument(port.sink, pageNow);
           unwatch = port.watch(() => t.outputLost());
         }
       }
-      // With the keyboard chosen but out of reach, this device plays (plan Q2); "Plays on" says so.
-      if (playback === 'keyboard' && keyboard) return keyboard;
+      // The keyboard's own sound when it is there ("Automatic" or "My keyboard"); with it out of
+      // reach this device plays (plan Q2), and "Plays on" says so when it was chosen.
+      if ((playback === 'keyboard' || playback === 'auto') && keyboard) return keyboard;
       const ctx = await unlockAudio();
       const device = onPageClock(synthFor(ctx), ctx);
-      return playbackInstrument(device, keyboard, keyboard ? playback : 'device');
+      return playbackInstrument(
+        device,
+        keyboard,
+        keyboard && playback === 'both' ? 'both' : 'device',
+      );
     },
     hidden: () => document.visibilityState === 'hidden',
     touch: () => appSettings().touch,

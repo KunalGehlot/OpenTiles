@@ -162,6 +162,19 @@ const TEXT_PAIRS: [fg: string, bg: string][] = [
   ['--on-hand', '--hand-right'],
   ['--on-hand', '--hand-left'],
   ['--on-hand', '--warn'],
+  // The initials on the Player's generated covers (P6-06).
+  ...[1, 2, 3, 4, 5, 6, 7, 8].map((n): [string, string] => ['--on-cover', `--cover-${n}`]),
+  // The Player's music room (P6-06): the title, the composer and the controls on the stage, and
+  // the title printed on the roll's leader.
+  ['--room-text', '--roll-paper'],
+  ['--room-text', '--roll-edge'],
+  ['--room-text', '--room-hover'],
+  ['--room-muted', '--roll-paper'],
+  ['--room-muted', '--roll-edge'],
+  ['--roll-ink', '--roll-paper'],
+  ['--brass', '--roll-paper'],
+  ['--room-on-gold', '--brass'],
+  ['--room-on-gold', '--brass-hover'],
 ];
 
 /** Marks that must be seen but are not text: control outlines, focus ring, notes on the canvas. */
@@ -177,6 +190,10 @@ const MARK_PAIRS: [fg: string, bg: string][] = [
   ['--bad', '--canvas-bg'],
   ['--warn', '--canvas-bg'],
   ['--now-line', '--canvas-bg'],
+  // The music room (P6-06): holes in the roll, the hole at the tracker bar, the keys on the stage.
+  ['--roll-hole', '--roll-paper'],
+  ['--roll-lit', '--roll-paper'],
+  ['--room-ivory', '--roll-paper'],
 ];
 
 describe('design tokens', () => {

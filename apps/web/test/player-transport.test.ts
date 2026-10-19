@@ -60,6 +60,7 @@ function harness(songs: Song[], options: { hidden?: boolean; lookAhead?: number 
   const played: { pitch: number; when: number; duration: number; at: number; held?: number }[] = [];
   const log: string[] = [];
   const started: CollectionKey[] = [];
+  const loaded: CollectionKey[] = [];
   const awake: boolean[] = [];
   let silenced = 0;
   const instrument: Instrument = {
@@ -88,6 +89,7 @@ function harness(songs: Song[], options: { hidden?: boolean; lookAhead?: number 
       };
     },
     load: async (k) => {
+      loaded.push(k);
       const n = Number(k.split('-').pop());
       const song = songs[n];
       if (!song) throw new Error('no such piece');
@@ -117,6 +119,7 @@ function harness(songs: Song[], options: { hidden?: boolean; lookAhead?: number 
     played,
     log,
     started,
+    loaded,
     awake,
     run,
     flush,
@@ -234,6 +237,37 @@ describe('the Player’s transport (P6-05)', () => {
     expect(h.ticking()).toBe(false);
   });
 
+  it('loads the next piece during the gap, so the Player can show it coming', async () => {
+    const h = harness([piece(2), piece(2, 70)]);
+    await h.transport.playQueue([key(0), key(1)]);
+    expect(h.transport.gapLeft()).toBe(0);
+    await h.run(1.2);
+    expect(h.transport.state.status).toBe('between');
+    expect(h.transport.gapLeft()).toBeGreaterThan(1.5);
+    expect(h.transport.gapLeft()).toBeLessThanOrEqual(2);
+    expect(h.transport.upcoming?.title).toBe('Piece 1');
+    await h.run(1);
+    expect(h.transport.gapLeft()).toBeLessThan(1.1);
+    await h.run(1.2);
+    expect(h.transport.state.key).toBe(key(1));
+    expect(h.transport.state.status).toBe('playing');
+    // Loaded once, during the gap, not again when it starts.
+    expect(h.loaded).toEqual([key(0), key(1)]);
+    expect(h.transport.upcoming).toBeNull();
+  });
+
+  it('works out the next piece again when the queue changes during the gap', async () => {
+    const h = harness([piece(2), piece(2, 70), piece(2, 80)]);
+    await h.transport.playQueue([key(0), key(1)]);
+    await h.run(1.2);
+    expect(h.transport.upcoming?.title).toBe('Piece 1');
+    await h.transport.add(key(2), true);
+    await h.flush();
+    expect(h.transport.upcoming?.title).toBe('Piece 2');
+    await h.run(2.2);
+    expect(h.transport.state.key).toBe(key(2));
+  });
+
   it('plays a piece again with repeat one, and the queue again with repeat all', async () => {
     const one = harness([piece(2), piece(2, 70)]);
     one.transport.setRepeat('one');
@@ -311,6 +345,16 @@ describe('the Player’s transport (P6-05)', () => {
     // The note at 1 s of the piece, 0.36 s away at full speed, now comes 0.72 s later.
     expect(h.played[0]!.pitch).toBe(62);
     expect(h.played[0]!.duration).toBeCloseTo(1, 6);
+  });
+
+  it('cues a queue without playing it, ready for Play and Next', async () => {
+    const h = harness([piece(2), piece(2, 70)]);
+    await h.transport.cue([key(0), key(1)]);
+    expect(h.transport.state).toMatchObject({ status: 'paused', key: key(0) });
+    expect(h.played).toEqual([]);
+    await h.transport.next();
+    expect(h.transport.state.key).toBe(key(1));
+    expect(h.transport.state.status).toBe('paused');
   });
 
   it('a piece that will not load leaves the transport paused with a message', async () => {

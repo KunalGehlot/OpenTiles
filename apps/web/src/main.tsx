@@ -14,6 +14,8 @@ import './styles/components.css';
 import './styles/shell.css';
 import './styles/pages.css';
 import './styles/practice.css';
+import './styles/player.css';
+// Last: finger-sized controls on touch screens override every page's sizes (P5-09).
 import './styles/touch.css';
 
 /** Re-renders every screen when the language changes, so plain t() calls pick it up. */
