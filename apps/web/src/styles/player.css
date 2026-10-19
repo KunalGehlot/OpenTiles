@@ -1,8 +1,8 @@
 /*
  * The Player (P6-06, P6-07, docs/phase-6/player-piano.md): the programme and the music room, a
- * player piano. Calm and dark-first, one accent; the room's paper, brass and ivory come from the
- * --roll-*, --brass and --key-* tokens, the initials tiles from --cover-1 … 8. Titles are set in
- * the system's book serif (--font-serif), as a printed programme sets them.
+ * player piano. The programme follows the app's theme; the music room is a grand piano's black
+ * lacquer in every theme, with gold as its one accent (the --roll-*, --brass, --room-* tokens).
+ * Titles are set in the system's book serif (--font-serif), as a printed programme sets them.
  */
 
 /* A wider column than other pages, so the piano can be a grand. The header lines up with it. */
@@ -34,13 +34,13 @@
 
 .player__body {
   display: grid;
-  grid-template-columns: minmax(18rem, 24rem) minmax(0, 1fr);
+  grid-template-columns: minmax(16rem, 21rem) minmax(0, 1fr);
   gap: var(--space-5);
   align-items: start;
 }
 
 .player--queue .player__body {
-  grid-template-columns: minmax(18rem, 24rem) minmax(0, 1fr) minmax(14rem, 18rem);
+  grid-template-columns: minmax(16rem, 21rem) minmax(0, 1fr) minmax(14rem, 18rem);
 }
 
 /* ---- Initials tiles ---- */
@@ -97,12 +97,26 @@
   background: var(--surface);
 }
 
-.programme__play {
+/* "Let it play" is a piece of the piano: black lacquer, ivory letters, a gold play mark. */
+button.programme__play {
+  --btn-bg: var(--roll-paper);
   justify-content: center;
   gap: var(--space-2);
   min-height: 3rem;
+  border-color: var(--room-line);
+  color: var(--room-text);
+  font-family: var(--font-serif);
   font-size: var(--text-md);
-  font-weight: 600;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+}
+
+button.programme__play:hover:not(:disabled) {
+  --btn-bg: var(--roll-edge);
+}
+
+.programme__play .icon {
+  color: var(--brass);
 }
 
 .collection__tools {
@@ -154,12 +168,16 @@
 }
 
 .programme__heading h3 {
+  min-width: 0;
   margin: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
   color: var(--muted);
   font-family: var(--font-serif);
   font-size: var(--text-sm);
   font-weight: 600;
-  letter-spacing: 0.12em;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
 }
 
@@ -256,23 +274,36 @@
   }
 }
 
-/* ---- The music room ---- */
+/* ---- The music room: black lacquer, gold, ivory ---- */
 
 .room {
+  /* The controls on the stage take its colours: the app's tokens, pointed at the room's. */
+  --text: var(--room-text);
+  --muted: var(--room-muted);
+  --surface: var(--roll-edge);
+  --surface-2: var(--room-hover);
+  --sunken: var(--roll-paper);
+  --line: var(--room-line);
+  --line-strong: var(--room-line);
+  --control: var(--room-muted);
+  --accent: var(--brass);
+  --accent-hover: var(--brass-hover);
+  --accent-text: var(--room-on-gold);
+  --accent-soft: var(--room-hover);
+  --accent-ink: var(--brass);
+  --accent-line: var(--brass);
+  --focus: var(--brass);
   display: flex;
   flex-direction: column;
   gap: var(--space-4);
   min-width: 0;
-  padding: var(--space-5) var(--space-5) var(--space-4);
-  border: 1px solid var(--line);
+  padding: var(--space-6) var(--space-6) var(--space-5);
+  border: 1px solid var(--room-line);
   border-radius: var(--radius-lg);
-  background:
-    radial-gradient(
-      70rem 26rem at 50% 0%,
-      color-mix(in srgb, var(--brass) 9%, transparent),
-      transparent 75%
-    ),
-    var(--surface);
+  background: var(--roll-paper);
+  box-shadow: var(--shadow-3);
+  color: var(--room-text);
+  color-scheme: dark;
 }
 
 .room__head {
@@ -296,18 +327,18 @@
   margin: 0;
   overflow-wrap: anywhere;
   font-family: var(--font-serif);
-  font-size: clamp(1.6rem, 1.2rem + 1.1vw, 2.6rem);
-  font-weight: 500;
+  font-size: clamp(1.7rem, 1.2rem + 1.2vw, 2.7rem);
+  font-weight: 400;
   line-height: var(--leading-tight);
   letter-spacing: 0.005em;
 }
 
 .room__composer {
   margin: var(--space-2) 0 0;
-  color: var(--muted);
+  color: var(--brass);
   font-family: var(--font-serif);
   font-size: var(--text-sm);
-  letter-spacing: 0.14em;
+  letter-spacing: 0.18em;
   text-transform: uppercase;
 }
 
@@ -315,15 +346,19 @@
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: var(--space-2);
+  gap: var(--space-1);
+}
+
+.room__actions .popover__panel {
+  color: var(--text);
 }
 
 .room__piano canvas {
   display: block;
   width: 100%;
   /* The whole room, controls included, fits the window: the piano takes what is left. */
-  height: clamp(16rem, calc(100vh - 27rem), 46rem);
-  height: clamp(16rem, calc(100dvh - 27rem), 46rem);
+  height: clamp(16rem, calc(100vh - 19rem), 46rem);
+  height: clamp(16rem, calc(100dvh - 19rem), 46rem);
 }
 
 .room__deck {
@@ -342,28 +377,68 @@
   text-align: center;
 }
 
+/* Where the piece is: a hairline, gold for the part played. */
 .np-seek {
   display: flex;
   align-items: center;
-  gap: var(--space-3);
-  width: min(100%, 52rem);
+  gap: var(--space-4);
+  width: min(100%, 46rem);
 }
 
-.np-seek canvas {
-  display: block;
+.np-seek__track {
+  position: relative;
   flex: 1 1 auto;
   min-width: 0;
-  height: 2.25rem;
-  border-radius: var(--radius-sm);
+  height: 1.5rem;
   cursor: pointer;
+  touch-action: none;
+}
+
+.np-seek__track::before,
+.np-seek__fill {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  margin-top: -1px;
+  border-radius: 1px;
+  content: '';
+}
+
+.np-seek__track::before {
+  background: var(--line);
+}
+
+.np-seek__fill {
+  background: var(--accent);
+  transform: scaleX(0);
+  transform-origin: left;
+}
+
+/* Keyboard focus: the line itself turns gold and thickens, instead of a box around it. */
+.np-seek__track:focus {
+  outline: none;
+}
+
+.np-seek__track:focus-visible::before {
+  height: 4px;
+  margin-top: -2px;
+  background: color-mix(in srgb, var(--focus) 45%, transparent);
+}
+
+.np-seek__track:focus-visible .np-seek__fill {
+  height: 4px;
+  margin-top: -2px;
 }
 
 .np-seek__time {
   flex: none;
   min-width: 3.2em;
   color: var(--muted);
-  font-size: var(--text-sm);
+  font-size: var(--text-xs);
   font-variant-numeric: tabular-nums;
+  letter-spacing: 0.04em;
 }
 
 .np-seek__time:last-child {
@@ -374,7 +449,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: var(--space-3);
+  gap: var(--space-4);
 }
 
 .np-icon {
@@ -398,36 +473,38 @@
   color: var(--accent);
 }
 
+.np-icon .btn-label {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
 .np-play {
-  width: 3.75rem;
-  height: 3.75rem;
+  width: 3.5rem;
+  height: 3.5rem;
   padding: 0;
   border-radius: 50%;
-  box-shadow: var(--shadow-2);
+  box-shadow: none;
 }
 
 .np-play .icon {
-  width: 1.5rem;
-  height: 1.5rem;
+  width: 1.4rem;
+  height: 1.4rem;
 }
 
-.np-controls {
+.room .popover__panel .tempo {
   display: flex;
-  flex-wrap: wrap;
+  flex: none;
   align-items: center;
-  justify-content: center;
-  gap: var(--space-3) var(--space-5);
-  width: 100%;
+  gap: var(--space-2);
 }
 
-.np-controls .tempo {
-  flex: 0 1 18rem;
-}
-
-.room__toggle[aria-pressed='true'] {
-  border-color: var(--accent-line);
-  background: var(--accent-soft);
-  color: var(--accent-ink);
+.room .popover__panel .tempo input {
+  flex: 1 1 auto;
+  min-width: 0;
 }
 
 /* ---- Stand mode: the music room alone, for a laptop or iPad on the music rest ---- */
@@ -443,13 +520,7 @@
     max(var(--space-6), env(safe-area-inset-left));
   border: 0;
   border-radius: 0;
-  background:
-    radial-gradient(
-      80rem 30rem at 50% 0%,
-      color-mix(in srgb, var(--brass) 10%, transparent),
-      transparent 75%
-    ),
-    var(--bg);
+  background: var(--roll-paper);
 }
 
 .room--stand .room__head {
@@ -500,10 +571,6 @@
   flex-direction: row;
   justify-content: center;
   gap: var(--space-5);
-}
-
-.room--stand .np-controls {
-  display: none;
 }
 
 .room--stand .room__next {
@@ -626,7 +693,7 @@
       max(var(--space-3), env(safe-area-inset-left));
     border: 0;
     border-radius: 0;
-    background: var(--bg);
+    background: var(--roll-paper);
   }
 
   /* Stand mode keeps its band under the piano for the controls and "Next: …". */

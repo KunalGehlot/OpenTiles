@@ -147,17 +147,27 @@
   --on-cover: #ffffff;
 
   /*
-   * ---- Colour: the Player's music room (P6-06), a player piano: the paper roll, its holes, the
-   * hole at the tracker bar, the title printed on the roll's leader, the brass of the tracker bar
-   * and pedals, and the light on a key that plays. ----
+   * ---- Colour: the Player's music room (P6-06): a grand piano's black lacquer in every theme,
+   * so it is the same stage in a light room or a dark one. The roll's holes are light coming
+   * through (--roll-hole, --roll-lit at the tracker bar), the leader's print and the fittings are
+   * gold (--roll-ink, --brass), and the keys are ivory and ebony. --room-* are the text, lines and
+   * surfaces of the controls on the stage. ----
    */
-  --roll-paper: #efe8d6;
-  --roll-edge: #ddd2b8;
-  --roll-hole: #2b2721;
-  --roll-lit: #9a6b16;
-  --roll-ink: #6b5c3e;
-  --brass: #9c7a35;
-  --key-lit: #e5b85c;
+  --roll-paper: #0d0d0f;
+  --roll-edge: #19191d;
+  --roll-hole: #bfa778;
+  --roll-lit: #fff3d6;
+  --roll-ink: #c9ae78;
+  --brass: #c8a96a;
+  --brass-hover: #d9bf8a;
+  --key-lit: #f0c878;
+  --room-ivory: #f2ede3;
+  --room-ebony: #111113;
+  --room-text: #f1ece2;
+  --room-muted: #a8a091;
+  --room-line: rgba(241, 236, 226, 0.16);
+  --room-hover: #222227;
+  --room-on-gold: #17130a;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -216,14 +226,6 @@
     --cover-7: #6b2525;
     --cover-8: #253a6b;
     --on-cover: #f2f5f4;
-
-    --roll-paper: #1c1914;
-    --roll-edge: #13110d;
-    --roll-hole: #cdbf9f;
-    --roll-lit: #ffe7b0;
-    --roll-ink: #a8997a;
-    --brass: #b8975a;
-    --key-lit: #f0c66e;
   }
 }
 
@@ -283,14 +285,6 @@
   --cover-7: #6b2525;
   --cover-8: #253a6b;
   --on-cover: #f2f5f4;
-
-  --roll-paper: #1c1914;
-  --roll-edge: #13110d;
-  --roll-hole: #cdbf9f;
-  --roll-lit: #ffe7b0;
-  --roll-ink: #a8997a;
-  --brass: #b8975a;
-  --key-lit: #f0c66e;
 }
 
 /* A theme chosen in Settings (P5-09) also sets the colours of form controls and scrollbars. */
@@ -347,13 +341,21 @@ html[data-high-contrast] {
   --loop-band: rgba(0, 81, 63, 0.14);
   --glow: transparent;
 
-  --roll-paper: #ffffff;
+  --roll-paper: #000000;
   --roll-edge: #000000;
-  --roll-hole: #000000;
-  --roll-lit: #00513f;
-  --roll-ink: #000000;
-  --brass: #000000;
-  --key-lit: #00513f;
+  --roll-hole: #ffffff;
+  --roll-lit: #6ff0c8;
+  --roll-ink: #ffffff;
+  --brass: #ffffff;
+  --brass-hover: #e0e0e0;
+  --key-lit: #6ff0c8;
+  --room-ivory: #ffffff;
+  --room-ebony: #000000;
+  --room-text: #ffffff;
+  --room-muted: #e0e0e0;
+  --room-line: #ffffff;
+  --room-hover: #1a1a1a;
+  --room-on-gold: #000000;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -399,14 +401,6 @@ html[data-high-contrast] {
     --now-line: #ffffff;
     --loop-band: rgba(111, 240, 200, 0.16);
     --glow: transparent;
-
-    --roll-paper: #000000;
-    --roll-edge: #ffffff;
-    --roll-hole: #ffffff;
-    --roll-lit: #6ff0c8;
-    --roll-ink: #ffffff;
-    --brass: #ffffff;
-    --key-lit: #6ff0c8;
   }
 }
 
@@ -453,14 +447,6 @@ html[data-high-contrast]:where([data-theme='dark']) {
   --now-line: #ffffff;
   --loop-band: rgba(111, 240, 200, 0.16);
   --glow: transparent;
-
-  --roll-paper: #000000;
-  --roll-edge: #ffffff;
-  --roll-hole: #ffffff;
-  --roll-lit: #6ff0c8;
-  --roll-ink: #ffffff;
-  --brass: #ffffff;
-  --key-lit: #6ff0c8;
 }
 
 /* ---- Large print (Settings → Accessibility): every size above is in rem ---- */

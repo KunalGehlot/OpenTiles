@@ -30,6 +30,7 @@ import {
   Shuffle,
   SkipBack,
   SkipForward,
+  SlidersHorizontal,
 } from 'lucide-react';
 import { buildPlayback } from '@opentiles/practice';
 import type { HandFilter } from '@opentiles/practice';
@@ -52,15 +53,7 @@ import { playerTransport } from '../player/browser';
 import { searchCollection, sortCollection } from '../player/collection';
 import type { CollectionEntry, CollectionSort } from '../player/collection';
 import { loadCollection } from '../player/load';
-import {
-  LEADER_SECONDS,
-  drawRoom,
-  drawSeekPicture,
-  paperGrain,
-  readRoomColours,
-  roomGeometry,
-  rollData,
-} from '../player/piano';
+import { LEADER_SECONDS, drawRoom, readRoomColours, roomGeometry, rollData } from '../player/piano';
 import type { RollData, RoomColours, RoomGeometry } from '../player/piano';
 import { origin, programme, TRADITIONAL, worksOf } from '../player/programme';
 import type { ComposerGroup, Work } from '../player/programme';
@@ -70,9 +63,8 @@ import type { PlayerTransport, TransportState } from '../player/transport';
 import { PlaysOnControl } from '../practice/PlaysOnControl';
 import type { MidiPlayback } from '../settings/model';
 import { updateAppSettings, useAppSettings, useEffectiveAccessibility } from '../settings/store';
+import { Popover } from '../ui/Popover';
 import { SearchBox } from '../ui/SearchBox';
-import { readPalette } from '../views/renderer';
-import type { Palette } from '../views/renderer';
 
 type Filter = 'all' | 'library' | 'catalogue';
 
@@ -521,8 +513,13 @@ export function Player() {
     </div>
   );
 
-  const controls = (
-    <div className="np-controls">
+  const options = (
+    <Popover
+      label={t('Playback options')}
+      icon={<SlidersHorizontal />}
+      className="np-icon room__options"
+      title={t('Playback options')}
+    >
       <label className="tempo" title={t('Tempo')}>
         <span className="tempo__label">{t('Tempo')}</span>
         <input
@@ -548,14 +545,15 @@ export function Player() {
           </button>
         ))}
       </div>
-      <button
-        className="room__toggle"
-        aria-pressed={showHands}
-        onClick={() => setShowHands((v) => !v)}
-      >
+      <label className="check">
+        <input
+          type="checkbox"
+          checked={showHands}
+          onChange={(e) => setShowHands(e.target.checked)}
+        />
         {t('Show hands')}
-      </button>
-    </div>
+      </label>
+    </Popover>
   );
 
   const message =
@@ -596,6 +594,7 @@ export function Player() {
         <RoomTitle entry={current} />
         <div className="room__actions">
           {playsOnControl}
+          {options}
           <button
             className="np-icon"
             aria-label={t('Up next')}
@@ -621,6 +620,7 @@ export function Player() {
           touch={settings.touch}
           showHands={showHands}
           still={reducedMotion}
+          active={state.status === 'playing'}
           nextTitle={nextEntry ? { title: nextEntry.title, composer: nextEntry.composer } : null}
         />
       )}
@@ -628,9 +628,8 @@ export function Player() {
         <p className="room__next">{t('Next: {title}', { title: nextEntry.title })}</p>
       )}
       <div className="room__deck">
-        <Seek onSeek={(s) => transport.seek(s)} />
+        <Progress onSeek={(s) => transport.seek(s)} />
         {transportButtons}
-        {controls}
       </div>
       {message}
     </section>
@@ -643,7 +642,7 @@ export function Player() {
           queueOpen ? ' player--queue' : ''
         }`}
       >
-        <header className="player__head">
+        <header className="player__head visually-hidden">
           <h1>{t('Player')}</h1>
           <p className="muted">
             {t(
@@ -871,6 +870,7 @@ function MusicRoom({
   touch,
   showHands,
   still,
+  active,
   nextTitle,
 }: {
   transport: PlayerTransport;
@@ -878,10 +878,11 @@ function MusicRoom({
   touch: 'natural' | 'even';
   showHands: boolean;
   still: boolean;
+  active: boolean;
   nextTitle: { title: string; composer?: string } | null;
 }) {
   const canvas = useRef<HTMLCanvasElement>(null);
-  const colours = useRef<{ c: RoomColours; grain: CanvasPattern | null } | null>(null);
+  const colours = useRef<RoomColours | null>(null);
   const geometry = useRef<{ key: string; g: RoomGeometry } | null>(null);
   const roll = useRollCache();
   useThemeChange(() => {
@@ -893,11 +894,7 @@ function MusicRoom({
     if (!el || !st.piece) return;
     const f = fit(el);
     if (!f || f.w < 1 || f.h < 1) return;
-    if (!colours.current) {
-      const c = readRoomColours(el);
-      const tile = c.plain ? null : paperGrain(c.dark);
-      colours.current = { c, grain: tile ? f.ctx.createPattern(tile, 'repeat') : null };
-    }
+    colours.current ??= readRoomColours(el);
     const data = roll(st.piece.song, hands, touch);
     const key = `${f.w}x${f.h}/${data.low}-${data.high}`;
     if (geometry.current?.key !== key) {
@@ -923,9 +920,8 @@ function MusicRoom({
     drawRoom(
       f.ctx,
       geometry.current.g,
-      { data, seconds, next, leader, hands: showHands, still },
-      colours.current.c,
-      colours.current.grain,
+      { data, seconds, active, next, leader, hands: showHands, still },
+      colours.current,
     );
   });
   return (
@@ -936,45 +932,37 @@ function MusicRoom({
 }
 
 /**
- * The piece's picture as the seek bar, with the time played and the time left: tap or drag to
- * move, and the arrow keys move 5 s (a slider to assistive technology, "1:23 of 4:56").
+ * Where the piece is, as a hairline with the part played in gold and the times either side: tap or
+ * drag to move, and the arrow keys move 5 s (a slider to assistive technology, "1:23 of 4:56").
  */
-function Seek({ onSeek }: { onSeek: (seconds: number) => void }) {
-  const canvas = useRef<HTMLCanvasElement>(null);
+function Progress({ onSeek }: { onSeek: (seconds: number) => void }) {
+  const track = useRef<HTMLDivElement>(null);
+  const fill = useRef<HTMLDivElement>(null);
   const elapsed = useRef<HTMLSpanElement>(null);
   const remaining = useRef<HTMLSpanElement>(null);
-  const palette = useRef<{ p: Palette; unplayed: string } | null>(null);
-  const last = useRef({ seconds: 0, total: 0 });
-  useThemeChange(() => {
-    palette.current = null;
-  });
-  useFrame(({ song, fraction, seconds, total }) => {
-    const c = canvas.current;
-    if (!c) return;
-    const f = fit(c);
-    if (!f) return;
-    palette.current ??= {
-      p: readPalette(c),
-      unplayed: getComputedStyle(c).getPropertyValue('--line-strong').trim() || '#888',
-    };
-    drawSeekPicture(f.ctx, song, f.w, f.h, fraction, palette.current.p, palette.current.unplayed);
+  const last = useRef({ seconds: -1, total: 0 });
+  useFrame(({ fraction, seconds, total }) => {
+    if (fill.current)
+      fill.current.style.transform = `scaleX(${Math.min(1, Math.max(0, fraction))})`;
+    const el = track.current;
+    if (!el) return;
     if (Math.round(seconds) === Math.round(last.current.seconds) && total === last.current.total) {
       return;
     }
     last.current = { seconds, total };
     if (elapsed.current) elapsed.current.textContent = formatTime(seconds);
     if (remaining.current) remaining.current.textContent = `−${formatTime(total - seconds)}`;
-    c.setAttribute('aria-valuemax', String(Math.round(total)));
-    c.setAttribute('aria-valuenow', String(Math.round(seconds)));
-    c.setAttribute(
+    el.setAttribute('aria-valuemax', String(Math.round(total)));
+    el.setAttribute('aria-valuenow', String(Math.round(seconds)));
+    el.setAttribute(
       'aria-valuetext',
       t('{at} of {total}', { at: formatTime(seconds), total: formatTime(total) }),
     );
   });
   const seekTo = (clientX: number) => {
-    const c = canvas.current;
-    if (!c) return;
-    const box = c.getBoundingClientRect();
+    const el = track.current;
+    if (!el) return;
+    const box = el.getBoundingClientRect();
     const fraction = Math.min(1, Math.max(0, (clientX - box.left) / Math.max(1, box.width)));
     onSeek(fraction * last.current.total);
   };
@@ -983,8 +971,9 @@ function Seek({ onSeek }: { onSeek: (seconds: number) => void }) {
       <span className="np-seek__time" ref={elapsed}>
         0:00
       </span>
-      <canvas
-        ref={canvas}
+      <div
+        ref={track}
+        className="np-seek__track"
         role="slider"
         aria-label={t('Position')}
         aria-valuemin={0}
@@ -1012,7 +1001,9 @@ function Seek({ onSeek }: { onSeek: (seconds: number) => void }) {
           e.preventDefault();
           onSeek(to);
         }}
-      />
+      >
+        <div className="np-seek__fill" ref={fill} />
+      </div>
       <span className="np-seek__time" ref={remaining}>
         −0:00
       </span>

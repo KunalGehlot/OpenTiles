@@ -1,16 +1,16 @@
-// The Player's music room (P6-06, docs/phase-6/player-piano.md §4.2): a player piano. A paper roll
-// moves down onto a drawn grand keyboard; every note is a perforation, and as it passes the brass
-// tracker bar its hole lights and its key goes down, deeper for a louder note. The pedals under the
-// keys move with the piece's pedals (P6-10). Between two pieces the roll's leader passes, with the
-// next title printed on it, and the next piece's holes follow it in.
+// The Player's music room (P6-06, docs/phase-6/player-piano.md §4.2): a player piano on a stage of
+// black lacquer. The roll moves down onto a drawn grand keyboard; every note is a fine line of
+// light coming through its perforation, and as it reaches the gold tracker bar it brightens and its
+// key goes down, deeper and warmer for a louder note. A thin light under the keys shows the sustain
+// pedal (P6-10). Between two pieces the roll's leader passes, with the next title printed on it,
+// and the next piece's holes follow it in.
 //
 // The geometry and what each key and pedal is doing are pure functions, unit-tested in Node. The
 // drawing is called from requestAnimationFrame with the transport's position in song seconds,
 // read through refs; React never redraws it.
 import type { PedalKind, PlaybackEvent, PlaybackNote, PlaybackPedal } from '@opentiles/practice';
-import type { Hand, Song } from '@opentiles/song-model';
-import { noteMarks } from '../practice/overview';
-import type { Palette } from '../views/renderer';
+import { isBlackKey } from '@opentiles/song-model';
+import type { Hand } from '@opentiles/song-model';
 import { BLACK_HEIGHT, layoutKeyboard, rangeFor } from '../views/keyboard';
 import type { KeyboardLayout, KeyRect } from '../views/keyboard';
 import { mix, parseColour, rgba } from '../views/colour';
@@ -20,8 +20,11 @@ import type { Rgb } from '../views/colour';
 export const ROLL_SECONDS = 4;
 /** A key comes back up over this long after its note ends (P5-09's return glide). */
 export const RETURN_SECONDS = 0.08;
-/** Below this width the keyboard fits the piece; from it on, all 88 keys of a grand. */
-export const FULL_KEYBOARD_WIDTH = 1000;
+/**
+ * The narrowest a white key is drawn (CSS px). The keyboard widens from the piece's octaves to all
+ * 88 keys of a grand as far as the room allows at this width.
+ */
+export const MIN_WHITE_WIDTH = 14;
 /** Song seconds the leader's printed title takes up on the roll. */
 export const LEADER_SECONDS = 1.1;
 
@@ -31,7 +34,7 @@ export interface RollData {
   /** The longest note, so a search can start early enough to find notes still sounding. */
   longest: number;
   pedals: Record<PedalKind, PlaybackPedal[]>;
-  /** Spans of song seconds with the sustain pedal down, for the pedal track along the roll. */
+  /** Spans of song seconds with the sustain pedal down. */
   sustain: [number, number][];
   low: number;
   high: number;
@@ -123,86 +126,99 @@ export interface RoomGeometry {
   width: number;
   height: number;
   layout: KeyboardLayout;
-  /** The paper spans the keyboard: from `paperLeft` to `paperRight`, from the top to the bar. */
+  /** The roll spans the keyboard: from `paperLeft` to `paperRight`, from the top to the bar. */
   paperLeft: number;
   paperRight: number;
   trackerY: number;
-  barHeight: number;
   keysTop: number;
   keysHeight: number;
   /** The white keys' front edge, which shortens as a key goes down. */
   front: number;
-  pedalsTop: number;
-  pedalsHeight: number;
+  /** The strip under the keys where the sustain pedal's light is. */
+  footTop: number;
+  footHeight: number;
   pxPerSecond: number;
-  /** Width of a perforation. */
+  /** Width of a perforation's line of light. */
   hole: number;
 }
 
+const whites = (low: number, high: number) => {
+  let n = 0;
+  for (let p = low; p <= high; p++) if (!isBlackKey(p)) n += 1;
+  return n;
+};
+
 /**
- * Where everything goes in a `width` × `height` room. A wide room gets all 88 keys; a narrow one
- * the piece's range in whole octaves (as the practice keyboard's "Fit piece"), so the keys stay
- * wide enough to see go down.
+ * The keys for a room `width` px wide: the piece's octaves, widened an octave at a time (down,
+ * then up) while every white key stays at least `MIN_WHITE_WIDTH` wide, up to the 88 of a grand.
  */
+export function roomRange(
+  width: number,
+  range: { low: number; high: number },
+): { low: number; high: number } {
+  if (width / whites(21, 108) >= MIN_WHITE_WIDTH) return { low: 21, high: 108 };
+  const fit = rangeFor([range.low, range.high], 24);
+  let low = fit.low;
+  let high = Math.min(108, fit.high + (11 - (fit.high % 12)));
+  let down = true;
+  for (let guard = 0; guard < 16; guard++) {
+    const nextLow = Math.max(21, low - 12);
+    const nextHigh = Math.min(108, high + 12);
+    const tryDown = down && nextLow < low;
+    const [l, h] = tryDown ? [nextLow, high] : nextHigh > high ? [low, nextHigh] : [nextLow, high];
+    if ((l === low && h === high) || width / whites(l, h) < MIN_WHITE_WIDTH) break;
+    [low, high] = [l, h];
+    down = !down;
+  }
+  return { low, high };
+}
+
+/** Where everything goes in a `width` × `height` room. */
 export function roomGeometry(
   width: number,
   height: number,
   range: { low: number; high: number },
 ): RoomGeometry {
-  let low = 21;
-  let high = 108;
-  if (width < FULL_KEYBOARD_WIDTH) {
-    const fit = rangeFor([range.low, range.high], 24);
-    low = fit.low;
-    high = Math.min(108, fit.high + (11 - (fit.high % 12)));
-  }
+  const { low, high } = roomRange(width, range);
   const layout = layoutKeyboard(low, high, width);
   const ww = layout.whiteWidth;
-  const pedalsHeight = Math.round(Math.max(26, Math.min(46, height * 0.09)));
-  const keysHeight = Math.round(Math.max(64, Math.min(ww * 5.4, height * 0.36, 210)));
-  const barHeight = Math.max(3, Math.round(ww * 0.12));
-  const keysTop = height - pedalsHeight - keysHeight;
-  const trackerY = keysTop - barHeight;
+  const footHeight = Math.round(Math.max(14, Math.min(24, height * 0.04)));
+  const keysHeight = Math.round(Math.max(64, Math.min(ww * 6.2, height * 0.34, 200)));
+  const keysTop = height - footHeight - keysHeight;
+  const trackerY = keysTop - 2;
   const first = layout.keys[0];
   const last = layout.keys[layout.keys.length - 1];
-  const paperLeft = first ? first.x : 0;
-  const paperRight = last ? last.x + last.width : width;
   return {
     width,
     height,
     layout,
-    paperLeft,
-    paperRight,
+    paperLeft: first ? first.x : 0,
+    paperRight: last ? last.x + last.width : width,
     trackerY,
-    barHeight,
     keysTop,
     keysHeight,
-    front: Math.max(4, Math.min(9, Math.round(keysHeight * 0.055))),
-    pedalsTop: keysTop + keysHeight,
-    pedalsHeight,
+    front: Math.max(4, Math.min(8, Math.round(keysHeight * 0.05))),
+    footTop: keysTop + keysHeight,
+    footHeight,
     pxPerSecond: Math.max(1, trackerY) / ROLL_SECONDS,
-    hole: Math.max(3, ww * 0.38),
+    hole: Math.max(2.5, Math.min(4.5, ww * 0.26)),
   };
 }
 
 /** The colours of the room, read once from the design tokens (styles/tokens.css). */
 export interface RoomColours {
-  paper: string;
-  /** The paper's edges and the shadow where it comes off the spool. */
-  edge: Rgb;
-  hole: string;
+  /** The lacquer the stage is made of. */
+  stage: Rgb;
+  hole: Rgb;
   lit: Rgb;
   ink: string;
-  brass: Rgb;
+  gold: Rgb;
   keyLit: Rgb;
-  white: Rgb;
-  whiteEdge: string;
-  black: Rgb;
+  ivory: Rgb;
+  ebony: Rgb;
   left: Rgb;
   right: Rgb;
-  /** Light marks (dark mode) or dark ones (light mode) for gloss and shade. */
-  dark: boolean;
-  /** High contrast: no grain, no glow, solid shapes. */
+  /** High contrast: no glow, solid shapes. */
   plain: boolean;
   serif: string;
 }
@@ -211,49 +227,20 @@ export function readRoomColours(el: Element): RoomColours {
   const css = getComputedStyle(el);
   const v = (name: string, fallback: string) => css.getPropertyValue(name).trim() || fallback;
   const rgb = (name: string, fallback: Rgb): Rgb => parseColour(v(name, ''))?.rgb ?? fallback;
-  const paper = rgb('--roll-paper', [239, 232, 214]);
   return {
-    paper: v('--roll-paper', '#efe8d6'),
-    edge: rgb('--roll-edge', [221, 210, 184]),
-    hole: v('--roll-hole', '#2b2721'),
-    lit: rgb('--roll-lit', [154, 107, 22]),
-    ink: v('--roll-ink', '#6b5c3e'),
-    brass: rgb('--brass', [156, 122, 53]),
-    keyLit: rgb('--key-lit', [229, 184, 92]),
-    white: rgb('--key-white', [255, 255, 255]),
-    whiteEdge: v('--key-edge', '#c9d1ce'),
-    black: rgb('--key-black', [28, 35, 33]),
+    stage: rgb('--roll-paper', [13, 13, 15]),
+    hole: rgb('--roll-hole', [191, 167, 120]),
+    lit: rgb('--roll-lit', [255, 243, 214]),
+    ink: v('--roll-ink', '#c9ae78'),
+    gold: rgb('--brass', [200, 169, 106]),
+    keyLit: rgb('--key-lit', [240, 200, 120]),
+    ivory: rgb('--room-ivory', [242, 237, 227]),
+    ebony: rgb('--room-ebony', [17, 17, 19]),
     left: rgb('--hand-left', [180, 90, 28]),
     right: rgb('--hand-right', [43, 120, 184]),
-    dark: (paper[0] + paper[1] + paper[2]) / 3 < 128,
     plain: document.documentElement.hasAttribute('data-high-contrast'),
     serif: v('--font-serif', 'Georgia, serif'),
   };
-}
-
-/** A small tile of paper grain (fixed noise, so it looks the same on every frame and device). */
-export function paperGrain(dark: boolean): HTMLCanvasElement | null {
-  const tile = document.createElement('canvas');
-  tile.width = 96;
-  tile.height = 96;
-  const ctx = tile.getContext('2d');
-  if (!ctx) return null;
-  let seed = 20261018;
-  const random = () => {
-    seed = (seed * 1103515245 + 12345) % 2 ** 31;
-    return seed / 2 ** 31;
-  };
-  const image = ctx.createImageData(96, 96);
-  for (let i = 0; i < image.data.length; i += 4) {
-    // Fibres run along the roll: a little more change across than down.
-    const shade = dark ? 255 : 0;
-    image.data[i] = shade;
-    image.data[i + 1] = shade;
-    image.data[i + 2] = shade;
-    image.data[i + 3] = Math.round(random() * (dark ? 10 : 16));
-  }
-  ctx.putImageData(image, 0, 0);
-  return tile;
 }
 
 export interface Leader {
@@ -267,72 +254,50 @@ export interface RoomFrame {
   data: RollData;
   /** The position on the roll in song seconds; past the end while the leader passes. */
   seconds: number;
+  /** Playing: keys go down and holes light only then, not while paused or stopped. */
+  active: boolean;
   /** The piece after the gap, with where its first second lies on this roll. */
   next?: { data: RollData; offset: number } | null;
   leader?: Leader | null;
   /** The practice hand colours on the holes and keys, instead of the piano's own light. */
   hands: boolean;
-  /** Reduce motion: the paper stands still and the keys light without moving. */
+  /** Reduce motion: the roll stands still and the keys light without moving. */
   still: boolean;
 }
 
-/** Draws the whole room: paper, holes, leader, tracker bar, keys and pedals. */
+/** Draws the whole room: the roll, the leader, the tracker bar, the keys and the pedal's light. */
 export function drawRoom(
   ctx: CanvasRenderingContext2D,
   g: RoomGeometry,
   f: RoomFrame,
   c: RoomColours,
-  grain: CanvasPattern | null,
 ): void {
-  ctx.clearRect(0, 0, g.width, g.height);
-  drawPaper(ctx, g, f, c, grain);
-  drawHoles(ctx, g, f.data, f.seconds, f, c, true);
+  ctx.fillStyle = rgba(c.stage, 1);
+  ctx.fillRect(0, 0, g.width, g.height);
+  drawGuides(ctx, g, c);
+  drawHoles(ctx, g, f.data, f.seconds, f, c, f.active);
   if (f.next) drawHoles(ctx, g, f.next.data, f.seconds - f.next.offset, f, c, false);
   if (f.leader && !f.still) drawLeader(ctx, g, f.leader, f.seconds, c);
+  // The roll comes out of the dark at the top.
+  if (!c.plain) {
+    const fade = ctx.createLinearGradient(0, 0, 0, g.trackerY * 0.42);
+    fade.addColorStop(0, rgba(c.stage, 1));
+    fade.addColorStop(1, rgba(c.stage, 0));
+    ctx.fillStyle = fade;
+    ctx.fillRect(0, 0, g.width, g.trackerY * 0.42);
+  }
   drawTrackerBar(ctx, g, c);
-  const keys = keysAt(f.data, f.seconds);
+  const keys = f.active ? keysAt(f.data, f.seconds) : new Map<number, KeyState>();
   drawKeys(ctx, g, keys, f, c);
-  drawPedals(ctx, g, pedalsAt(f.data, f.seconds), f.still, c);
+  drawPedalLight(ctx, g, f.active ? pedalsAt(f.data, f.seconds).sustain : 0, c);
 }
 
-function drawPaper(
-  ctx: CanvasRenderingContext2D,
-  g: RoomGeometry,
-  f: RoomFrame,
-  c: RoomColours,
-  grain: CanvasPattern | null,
-): void {
-  const w = g.paperRight - g.paperLeft;
-  ctx.fillStyle = c.paper;
-  ctx.fillRect(g.paperLeft, 0, w, g.trackerY);
+/** Faint lines above every C, so the eye can tell where on the keyboard a note will land. */
+function drawGuides(ctx: CanvasRenderingContext2D, g: RoomGeometry, c: RoomColours): void {
   if (c.plain) return;
-  // The grain moves with the paper, so the roll is seen to turn even through a long rest.
-  if (grain) {
-    const offset = f.still ? 0 : (f.seconds * g.pxPerSecond) % 96;
-    ctx.save();
-    ctx.beginPath();
-    ctx.rect(g.paperLeft, 0, w, g.trackerY);
-    ctx.clip();
-    ctx.translate(0, offset);
-    ctx.fillStyle = grain;
-    ctx.fillRect(g.paperLeft, -96, w, g.trackerY + 96);
-    ctx.restore();
-  }
-  // Where the paper comes off the spool at the top, and its two edges.
-  const spool = ctx.createLinearGradient(0, 0, 0, Math.min(56, g.trackerY * 0.25));
-  spool.addColorStop(0, rgba(c.edge, 0.95));
-  spool.addColorStop(1, rgba(c.edge, 0));
-  ctx.fillStyle = spool;
-  ctx.fillRect(g.paperLeft, 0, w, Math.min(56, g.trackerY * 0.25));
-  for (const [x, dir] of [
-    [g.paperLeft, 1],
-    [g.paperRight, -1],
-  ] as const) {
-    const edge = ctx.createLinearGradient(x, 0, x + dir * 10, 0);
-    edge.addColorStop(0, rgba(c.edge, 0.9));
-    edge.addColorStop(1, rgba(c.edge, 0));
-    ctx.fillStyle = edge;
-    ctx.fillRect(dir > 0 ? x : x - 10, 0, 10, g.trackerY);
+  ctx.fillStyle = rgba(c.gold, 0.07);
+  for (const k of g.layout.keys) {
+    if (k.pitch % 12 === 0) ctx.fillRect(Math.round(k.x), 0, 1, g.trackerY);
   }
 }
 
@@ -345,7 +310,7 @@ function drawHoles(
   seconds: number,
   f: RoomFrame,
   c: RoomColours,
-  current: boolean,
+  live: boolean,
 ): void {
   const keyOf = new Map(g.layout.keys.map((k) => [k.pitch, k]));
   const w = g.hole;
@@ -354,7 +319,7 @@ function drawHoles(
   const shown = f.still ? 0.35 : ROLL_SECONDS;
   ctx.save();
   ctx.beginPath();
-  ctx.rect(g.paperLeft, 0, g.paperRight - g.paperLeft, bar);
+  ctx.rect(0, 0, g.width, bar);
   ctx.clip();
   const from = firstFrom(data.notes, seconds - data.longest);
   for (let i = from; i < data.notes.length; i++) {
@@ -363,47 +328,31 @@ function drawHoles(
     if (n.end <= seconds) continue;
     const k = keyOf.get(n.pitch);
     if (!k) continue;
-    const sounding = current && n.start <= seconds;
-    const bottom = f.still ? bar : bar - (n.start - seconds) * g.pxPerSecond;
-    const top = f.still ? bar - w * 2.2 : bar - (n.end - seconds) * g.pxPerSecond;
+    const sounding = live && n.start <= seconds;
     if (f.still && !sounding) continue;
+    const bottom = f.still ? bar : bar - (n.start - seconds) * g.pxPerSecond;
+    const top = f.still ? bar - w * 6 : bar - (n.end - seconds) * g.pxPerSecond;
     const x = centre(k) - r;
-    const handColour = n.hand === 'left' ? c.left : c.right;
+    const hand = n.hand === 'left' ? c.left : c.right;
+    const light = f.hands ? hand : sounding ? c.lit : c.hole;
     if (sounding && !c.plain) {
-      // The light through a hole at the bar spills a little onto the paper around it.
-      ctx.fillStyle = rgba(f.hands ? handColour : c.lit, c.dark ? 0.28 : 0.18);
-      ctx.beginPath();
-      ctx.roundRect(x - r * 0.9, top - r * 0.6, w + r * 1.8, bottom - top + r * 1.2, r * 1.6);
-      ctx.fill();
+      // The light coming through the hole meets the bar and spreads a little along it.
+      const glowRadius = w * 7;
+      const glow = ctx.createRadialGradient(x + r, bar, 0, x + r, bar, glowRadius);
+      glow.addColorStop(0, rgba(f.hands ? hand : c.keyLit, 0.55));
+      glow.addColorStop(1, rgba(f.hands ? hand : c.keyLit, 0));
+      ctx.fillStyle = glow;
+      ctx.fillRect(x + r - glowRadius, bar - glowRadius, glowRadius * 2, glowRadius);
     }
-    ctx.fillStyle = sounding
-      ? rgba(f.hands ? handColour : c.lit, 1)
-      : f.hands
-        ? rgba(handColour, 0.85)
-        : c.hole;
+    ctx.fillStyle = rgba(light, sounding ? 1 : f.hands ? 0.8 : 0.72);
     ctx.beginPath();
     ctx.roundRect(x, top, w, Math.max(w, bottom - top), r);
     ctx.fill();
   }
-  // The sustain pedal's track runs down the roll's right margin.
-  if (current && !f.still) {
-    ctx.fillStyle = c.hole;
-    const x = g.paperRight - Math.max(4, w * 0.5) - 3;
-    for (const [down, up] of data.sustain) {
-      if (up <= seconds || down > seconds + ROLL_SECONDS) continue;
-      const y0 = bar - (Math.min(up, seconds + ROLL_SECONDS + 1) - seconds) * g.pxPerSecond;
-      const y1 = bar - (down - seconds) * g.pxPerSecond;
-      ctx.globalAlpha = 0.55;
-      ctx.beginPath();
-      ctx.roundRect(x, y0, Math.max(3, w * 0.35), Math.max(2, y1 - y0), 2);
-      ctx.fill();
-    }
-    ctx.globalAlpha = 1;
-  }
   ctx.restore();
 }
 
-/** The roll's leader: the title and composer printed across the paper, between two rules. */
+/** The roll's leader: the title and composer printed across it, between two fine rules. */
 function drawLeader(
   ctx: CanvasRenderingContext2D,
   g: RoomGeometry,
@@ -419,28 +368,27 @@ function drawLeader(
   const width = g.paperRight - g.paperLeft;
   ctx.save();
   ctx.beginPath();
-  ctx.rect(g.paperLeft, 0, width, g.trackerY);
+  ctx.rect(0, 0, g.width, g.trackerY);
   ctx.clip();
   ctx.fillStyle = c.ink;
   ctx.strokeStyle = c.ink;
   ctx.textAlign = 'center';
   ctx.textBaseline = 'alphabetic';
-  const size = Math.max(16, Math.min(40, height * 0.32, width / 22));
-  ctx.font = `italic 500 ${Math.round(size)}px ${c.serif}`;
-  const titleY = top + height * 0.5;
+  const size = Math.max(16, Math.min(34, height * 0.3, width / 24));
+  ctx.font = `italic 400 ${Math.round(size)}px ${c.serif}`;
+  const titleY = top + height * 0.52;
   ctx.fillText(leader.title, mid, titleY, width * 0.86);
   if (leader.composer) {
-    ctx.font = `500 ${Math.round(size * 0.42)}px ${c.serif}`;
-    const caps = leader.composer.toLocaleUpperCase();
-    // Letter-spaced small capitals, as printed on a roll's label.
-    ctx.letterSpacing = `${Math.round(size * 0.12)}px`;
-    ctx.fillText(caps, mid, titleY + size * 0.95, width * 0.86);
+    ctx.font = `400 ${Math.round(size * 0.4)}px ${c.serif}`;
+    // Letter-spaced capitals, as printed on a roll's label.
+    ctx.letterSpacing = `${Math.round(size * 0.14)}px`;
+    ctx.fillText(leader.composer.toLocaleUpperCase(), mid, titleY + size * 0.95, width * 0.86);
     ctx.letterSpacing = '0px';
   }
-  ctx.globalAlpha = 0.55;
+  ctx.globalAlpha = 0.45;
   ctx.lineWidth = 1;
-  const rule = Math.min(width * 0.36, size * 9);
-  for (const y of [top + height * 0.12, bottom - height * 0.04]) {
+  const rule = Math.min(width * 0.3, size * 7);
+  for (const y of [top + height * 0.14, bottom - height * 0.02]) {
     ctx.beginPath();
     ctx.moveTo(mid - rule / 2, Math.round(y) + 0.5);
     ctx.lineTo(mid + rule / 2, Math.round(y) + 0.5);
@@ -449,22 +397,19 @@ function drawLeader(
   ctx.restore();
 }
 
+/** A gold hairline where the roll meets the keys, with a faint glow above it. */
 function drawTrackerBar(ctx: CanvasRenderingContext2D, g: RoomGeometry, c: RoomColours): void {
   const x = g.paperLeft;
   const w = g.paperRight - g.paperLeft;
-  const y = g.trackerY;
-  const h = g.barHeight;
-  if (c.plain) {
-    ctx.fillStyle = rgba(c.brass, 1);
-    ctx.fillRect(x, y, w, h);
-    return;
+  if (!c.plain) {
+    const glow = ctx.createLinearGradient(0, g.trackerY - 18, 0, g.trackerY);
+    glow.addColorStop(0, rgba(c.gold, 0));
+    glow.addColorStop(1, rgba(c.gold, 0.12));
+    ctx.fillStyle = glow;
+    ctx.fillRect(x, g.trackerY - 18, w, 18);
   }
-  const brass = ctx.createLinearGradient(0, y, 0, y + h);
-  brass.addColorStop(0, rgba(mix(c.brass, [255, 255, 255], 0.45), 1));
-  brass.addColorStop(0.45, rgba(c.brass, 1));
-  brass.addColorStop(1, rgba(mix(c.brass, [0, 0, 0], 0.45), 1));
-  ctx.fillStyle = brass;
-  ctx.fillRect(x, y, w, h);
+  ctx.fillStyle = rgba(c.gold, 0.9);
+  ctx.fillRect(x, g.trackerY, w, 1.5);
 }
 
 function drawKeys(
@@ -480,12 +425,12 @@ function drawKeys(
   /** How far a key goes down: its depth, more for a louder note; none under Reduce motion. */
   const dipOf = (s: KeyState | undefined) =>
     !s || f.still ? 0 : s.depth * g.front * (0.35 + 0.45 * Math.min(1, s.velocity / 110));
-  const whiteTop = rgba(c.white, 1);
-  const whiteFront = rgba(mix(c.white, c.black, c.dark ? 0.32 : 0.18), 1);
-  const whiteShade = rgba(mix(c.white, c.black, 0.12), 1);
-  // The keybed behind the keys shows in the gaps.
-  ctx.fillStyle = rgba(mix(c.black, [0, 0, 0], 0.4), 1);
-  ctx.fillRect(g.paperLeft, top, g.paperRight - g.paperLeft, h);
+  // The ivory, shaded at the back under the fallboard.
+  const ivory = ctx.createLinearGradient(0, top, 0, top + h);
+  ivory.addColorStop(0, rgba(mix(c.ivory, c.ebony, 0.28), 1));
+  ivory.addColorStop(0.1, rgba(c.ivory, 1));
+  ivory.addColorStop(1, rgba(mix(c.ivory, c.ebony, 0.06), 1));
+  const front = rgba(mix(c.ivory, c.ebony, 0.3), 1);
   for (const k of g.layout.keys) {
     if (k.black) continue;
     const s = keys.get(k.pitch);
@@ -493,128 +438,86 @@ function drawKeys(
     const surface = h - g.front + dip;
     const x = k.x + 0.5;
     const w = k.width - 1;
-    // The ivory, darkening a touch towards the back where the fallboard shades it.
-    const ivory = ctx.createLinearGradient(0, top, 0, top + surface);
-    ivory.addColorStop(0, whiteShade);
-    ivory.addColorStop(0.18, whiteTop);
-    ivory.addColorStop(1, whiteTop);
-    ctx.fillStyle = c.plain ? whiteTop : ivory;
+    ctx.fillStyle = c.plain ? rgba(c.ivory, 1) : ivory;
     ctx.fillRect(x, top, w, surface);
     if (s && s.depth > 0) {
-      // The light gathers towards the front of the key, where a finger would be.
-      const alpha = (f.hands ? 0.85 : 0.3 + 0.55 * Math.min(1, s.velocity / 110)) * s.depth;
-      const glow = ctx.createLinearGradient(0, top, 0, top + surface);
-      glow.addColorStop(0, rgba(lightOf(s), alpha * (f.hands ? 1 : 0.25)));
-      glow.addColorStop(1, rgba(lightOf(s), alpha));
-      ctx.fillStyle = c.plain ? rgba(lightOf(s), 1) : glow;
+      // A warm light gathers towards the front of the key, where a finger would be.
+      const alpha = (f.hands ? 0.85 : 0.3 + 0.45 * Math.min(1, s.velocity / 110)) * s.depth;
+      const warm = ctx.createLinearGradient(0, top, 0, top + surface);
+      warm.addColorStop(0, rgba(lightOf(s), f.hands ? alpha : 0));
+      warm.addColorStop(1, rgba(lightOf(s), alpha));
+      ctx.fillStyle = c.plain ? rgba(lightOf(s), 1) : warm;
       ctx.fillRect(x, top, w, surface);
     }
     // The key's front edge: shorter while it is down.
-    ctx.fillStyle = whiteFront;
+    ctx.fillStyle = front;
     ctx.fillRect(x, top + surface, w, g.front - dip);
   }
   const blackHeight = h * BLACK_HEIGHT;
-  const bevel = Math.max(3, Math.min(10, blackHeight * 0.1));
-  const ebony = rgba(c.black, 1);
-  const ebonyTop = rgba(mix(c.black, [255, 255, 255], c.dark ? 0.16 : 0.22), 1);
+  const bevel = Math.max(3, Math.min(9, blackHeight * 0.09));
+  const ebony = rgba(c.ebony, 1);
+  const sheen = rgba(mix(c.ebony, c.ivory, 0.16), 1);
   for (const k of g.layout.keys) {
     if (!k.black) continue;
     const s = keys.get(k.pitch);
     const dip = dipOf(s) * 0.7;
-    // A shadow on the white keys beside it.
     if (!c.plain) {
-      ctx.fillStyle = 'rgba(0, 0, 0, 0.18)';
-      ctx.fillRect(k.x + 1.5, top, k.width, blackHeight + 2);
+      // Its shadow on the white keys beside it.
+      ctx.fillStyle = 'rgba(0, 0, 0, 0.2)';
+      ctx.fillRect(k.x + 1, top, k.width + 1, blackHeight + 2);
     }
     ctx.fillStyle = ebony;
     ctx.beginPath();
     ctx.roundRect(k.x, top, k.width, blackHeight, [0, 0, 2, 2]);
     ctx.fill();
     // The top of the key, narrower than its base; its sloped front shortens as it goes down.
-    const inset = k.width * 0.12;
+    const inset = k.width * 0.13;
     const faceHeight = blackHeight - bevel + dip;
     if (!c.plain) {
       const face = ctx.createLinearGradient(0, top, 0, top + faceHeight);
       face.addColorStop(0, ebony);
-      face.addColorStop(1, ebonyTop);
+      face.addColorStop(1, sheen);
       ctx.fillStyle = face;
       ctx.beginPath();
       ctx.roundRect(k.x + inset, top, k.width - inset * 2, faceHeight, [0, 0, 2, 2]);
       ctx.fill();
     }
     if (s && s.depth > 0) {
-      ctx.fillStyle = rgba(lightOf(s), (f.hands ? 0.9 : 0.35 + 0.5 * (s.velocity / 127)) * s.depth);
+      ctx.fillStyle = rgba(lightOf(s), (f.hands ? 0.9 : 0.55) * s.depth);
       ctx.beginPath();
       ctx.roundRect(k.x + inset, top, k.width - inset * 2, faceHeight, [0, 0, 2, 2]);
       ctx.fill();
     }
   }
-  // The fallboard's shadow across the top of the keys.
   if (!c.plain) {
-    const shade = ctx.createLinearGradient(0, top, 0, top + Math.min(14, h * 0.1));
-    shade.addColorStop(0, 'rgba(0, 0, 0, 0.45)');
+    // The fallboard's shadow across the top of the keys.
+    const shade = ctx.createLinearGradient(0, top, 0, top + Math.min(12, h * 0.1));
+    shade.addColorStop(0, 'rgba(0, 0, 0, 0.5)');
     shade.addColorStop(1, 'rgba(0, 0, 0, 0)');
     ctx.fillStyle = shade;
-    ctx.fillRect(g.paperLeft, top, g.paperRight - g.paperLeft, Math.min(14, h * 0.1));
+    ctx.fillRect(g.paperLeft, top, g.paperRight - g.paperLeft, Math.min(12, h * 0.1));
   }
 }
 
-const PEDAL_ORDER: PedalKind[] = ['soft', 'sostenuto', 'sustain'];
-
-/** Three brass pedals, left to right soft, sostenuto and sustain, pressed as the piece presses them. */
-function drawPedals(
+/** A thin gold light under the keys that comes on while the sustain pedal is down. */
+function drawPedalLight(
   ctx: CanvasRenderingContext2D,
   g: RoomGeometry,
-  pedals: Record<PedalKind, number>,
-  still: boolean,
+  sustain: number,
   c: RoomColours,
 ): void {
-  const mid = (g.paperLeft + g.paperRight) / 2;
-  const h = g.pedalsHeight - 10;
-  const w = Math.max(12, Math.min(26, h * 0.62));
-  const gap = w * 0.9;
-  const top = g.pedalsTop + 7;
-  PEDAL_ORDER.forEach((pedal, i) => {
-    const down = Math.min(1, pedals[pedal] / 127);
-    const pressed = pedal === 'sustain' ? (pedals[pedal] >= 64 ? 1 : 0) : down;
-    const x = mid + (i - 1) * (w + gap) - w / 2;
-    const y = top + (still ? 0 : pressed * 3);
-    if (c.plain) {
-      ctx.fillStyle = rgba(c.brass, pressed ? 1 : 0.6);
-    } else {
-      const shine = ctx.createLinearGradient(x, 0, x + w, 0);
-      const base = pressed ? mix(c.brass, [255, 255, 255], 0.25) : c.brass;
-      shine.addColorStop(0, rgba(mix(base, [0, 0, 0], 0.35), 1));
-      shine.addColorStop(0.35, rgba(mix(base, [255, 255, 255], 0.35), 1));
-      shine.addColorStop(1, rgba(mix(base, [0, 0, 0], 0.4), 1));
-      ctx.fillStyle = shine;
-    }
+  const down = sustain >= 64;
+  const w = Math.min(160, (g.paperRight - g.paperLeft) * 0.14);
+  const x = (g.paperLeft + g.paperRight) / 2 - w / 2;
+  const y = g.footTop + g.footHeight / 2 - 1;
+  ctx.fillStyle = rgba(c.gold, down ? 0.95 : 0.1);
+  ctx.beginPath();
+  ctx.roundRect(x, y, w, 2, 1);
+  ctx.fill();
+  if (down && !c.plain) {
+    ctx.fillStyle = rgba(c.gold, 0.14);
     ctx.beginPath();
-    ctx.roundRect(x, y, w, h - (still ? 0 : pressed * 3), [w * 0.35, w * 0.35, w * 0.5, w * 0.5]);
+    ctx.roundRect(x - 6, y - 4, w + 12, 10, 5);
     ctx.fill();
-  });
-}
-
-/**
- * The whole piece as a strip of marks, lit up to `fraction` (the part already played), with a line
- * at the position. The Player's seek bar (P5-07's overview picture).
- */
-export function drawSeekPicture(
-  ctx: CanvasRenderingContext2D,
-  song: Song,
-  width: number,
-  height: number,
-  fraction: number,
-  p: Palette,
-  unplayed: string,
-): void {
-  ctx.clearRect(0, 0, width, height);
-  const at = fraction * width;
-  for (const m of noteMarks(song)) {
-    const x = m.x * width;
-    ctx.fillStyle = x < at ? (m.hand === 'left' ? p.left : p.right) : unplayed;
-    ctx.fillRect(x, m.y * (height - 3), Math.max(1.5, m.width * width - 0.5), 3);
   }
-  ctx.fillStyle = p.text;
-  ctx.fillRect(Math.round(at) - 1, 0, 2, height);
 }

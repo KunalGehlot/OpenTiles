@@ -3,13 +3,14 @@
 import { describe, expect, it } from 'vitest';
 import type { PlaybackEvent } from '@opentiles/practice';
 import {
-  FULL_KEYBOARD_WIDTH,
+  MIN_WHITE_WIDTH,
   RETURN_SECONDS,
   ROLL_SECONDS,
   keysAt,
   pedalsAt,
   rollData,
   roomGeometry,
+  roomRange,
 } from '../src/player/piano';
 
 const note = (pitch: number, start: number, end: number, velocity = 80): PlaybackEvent => ({
@@ -94,24 +95,34 @@ describe('the keys and pedals of the player piano (P6-06)', () => {
 });
 
 describe('where the music room puts things (P6-06)', () => {
-  it('draws a grand’s 88 keys in a wide room, the roll above them and the pedals below', () => {
-    const g = roomGeometry(1600, 700, { low: 60, high: 72 });
+  it('draws a grand’s 88 keys when they fit, the roll above them and the pedal’s light below', () => {
+    const g = roomGeometry(52 * MIN_WHITE_WIDTH, 700, { low: 60, high: 72 });
     expect(g.layout.keys).toHaveLength(88);
     expect(g.trackerY).toBeLessThan(g.keysTop);
-    expect(g.keysTop + g.keysHeight).toBe(g.pedalsTop);
-    expect(g.pedalsTop + g.pedalsHeight).toBe(700);
+    expect(g.keysTop + g.keysHeight).toBe(g.footTop);
+    expect(g.footTop + g.footHeight).toBe(700);
     expect(g.pxPerSecond * ROLL_SECONDS).toBeCloseTo(g.trackerY, 5);
     expect(g.paperLeft).toBeGreaterThanOrEqual(0);
-    expect(g.paperRight).toBeLessThanOrEqual(1600);
+    expect(g.paperRight).toBeLessThanOrEqual(52 * MIN_WHITE_WIDTH);
   });
 
-  it('fits the piece in whole octaves in a narrow room, so the keys stay wide enough to see', () => {
-    const g = roomGeometry(FULL_KEYBOARD_WIDTH - 1, 600, { low: 50, high: 76 });
-    expect(g.layout.low % 12).toBe(0);
-    expect(g.layout.high % 12).toBe(11);
-    expect(g.layout.low).toBeLessThanOrEqual(50);
-    expect(g.layout.high).toBeGreaterThanOrEqual(76);
-    expect(g.layout.keys.length).toBeLessThan(88);
+  it('widens the piece’s octaves as far as the keys stay wide enough to see', () => {
+    const width = 36 * MIN_WHITE_WIDTH;
+    const { low, high } = roomRange(width, { low: 50, high: 76 });
+    expect(low % 12).toBe(0);
+    expect(high % 12).toBe(11);
+    expect(low).toBeLessThanOrEqual(50);
+    expect(high).toBeGreaterThanOrEqual(76);
+    // Five octaves (35 white keys) fit; a sixth would make the keys too narrow.
+    expect(high - low + 1).toBe(60);
+    expect(
+      roomGeometry(width, 600, { low: 50, high: 76 }).layout.whiteWidth,
+    ).toBeGreaterThanOrEqual(MIN_WHITE_WIDTH);
+  });
+
+  it('keeps the piece’s own octaves in a very narrow room', () => {
+    const { low, high } = roomRange(200, { low: 50, high: 70 });
+    expect([low, high]).toEqual([48, 83]);
   });
 
   it('keeps the keys a sensible height in a short room', () => {
