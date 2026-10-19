@@ -4,10 +4,12 @@ import { describe, expect, it } from 'vitest';
 import type { PlaybackEvent } from '@opentiles/practice';
 import {
   MIN_WHITE_WIDTH,
+  PRESS_SECONDS,
   RETURN_SECONDS,
   ROLL_SECONDS,
   keysAt,
   pedalsAt,
+  pressSeconds,
   rollData,
   roomGeometry,
   roomLights,
@@ -72,11 +74,31 @@ describe('the keys and pedals of the player piano (P6-06)', () => {
     expect(keys.has(60)).toBe(false);
   });
 
-  it('lets a key glide back up after its note ends', () => {
-    const half = keysAt(data, 1.5 + RETURN_SECONDS / 2).get(60);
-    expect(half?.depth).toBeCloseTo(0.5, 5);
-    expect(half?.velocity).toBe(100);
-    expect(keysAt(data, 1.5 + RETURN_SECONDS + 0.01).has(60)).toBe(false);
+  it('springs a key back up after its note ends, quickly at first', () => {
+    const quarter = keysAt(data, 1.5 + RETURN_SECONDS / 4).get(60)?.depth ?? 0;
+    const half = keysAt(data, 1.5 + RETURN_SECONDS / 2).get(60)?.depth ?? 0;
+    expect(quarter).toBeLessThan(0.5);
+    expect(half).toBeCloseTo(0.125, 5);
+    expect(keysAt(data, 1.5 + RETURN_SECONDS / 2).get(60)?.velocity).toBe(100);
+    expect(keysAt(data, 1.5 + RETURN_SECONDS + 0.001).has(60)).toBe(false);
+  });
+
+  it('takes a key down just before its note, faster for a loud one, so it is down as it sounds', () => {
+    expect(pressSeconds(127)).toBeLessThan(pressSeconds(30));
+    expect(pressSeconds(30)).toBeLessThanOrEqual(PRESS_SECONDS);
+    const press = pressSeconds(100);
+    expect(keysAt(data, 1 - press - 0.001).has(60)).toBe(false);
+    const halfway = keysAt(data, 1 - press / 2).get(60)?.depth ?? 0;
+    // Gathering speed: a quarter of the way down at half the time.
+    expect(halfway).toBeCloseTo(0.25, 5);
+    expect(keysAt(data, 1).get(60)?.depth).toBe(1);
+  });
+
+  it('lets a key struck again soon rise only part of the way', () => {
+    const quick = rollData([note(60, 0, 0.5), note(60, 0.55, 1)]);
+    const between = keysAt(quick, 0.535).get(60)?.depth ?? 0;
+    expect(between).toBeGreaterThan(0);
+    expect(between).toBeLessThan(1);
   });
 
   it('shows the same key struck again at its new loudness', () => {
@@ -154,26 +176,16 @@ describe('the HDR lights over the music room (P6-06)', () => {
   const g = roomGeometry(1200, 600, data);
   const frame = { data, seconds: 0.75, active: true, hands: false, still: false };
 
-  it('lights the gold bar, each hole at it and its glow, each key that plays and the pedal', () => {
+  it('lights the gold bar, each hole at it and its glow, and the pedal, but not the keys', () => {
     const lights = roomLights(g, frame, colours);
-    // Bar + 2 × (hole + glow) + 2 keys + pedal.
-    expect(lights).toHaveLength(8);
+    // Bar + 2 × (hole + glow) + pedal.
+    expect(lights).toHaveLength(6);
+    expect(lights.some((l) => l.y >= g.keysTop && l.y < g.footTop)).toBe(false);
     expect(lights.every((l) => l.w > 0 && l.h > 0)).toBe(true);
     // The holes are well past white; the bar only a little brighter than its gold (0.79 in P3).
     const brightest = (l: { colour: readonly number[] }) => Math.max(...l.colour);
     expect(brightest(lights[1] as (typeof lights)[number])).toBeGreaterThan(1.3);
     expect(brightest(lights[0] as (typeof lights)[number])).toBeGreaterThan(0.85);
-  });
-
-  it('lights a louder note’s key more', () => {
-    const lights = roomLights(g, frame, colours);
-    const keyLights = lights.filter((l) => l.fade && l.y >= g.keysTop);
-    expect(keyLights).toHaveLength(2);
-    const [c4, e4] = keyLights.sort((a, b) => a.x - b.x) as [
-      (typeof lights)[number],
-      (typeof lights)[number],
-    ];
-    expect(Math.max(...c4.colour)).toBeGreaterThan(Math.max(...e4.colour));
   });
 
   it('leaves only the bar lit while paused, and nothing under high contrast', () => {

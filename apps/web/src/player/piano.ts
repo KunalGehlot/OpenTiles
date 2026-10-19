@@ -20,8 +20,18 @@ import { hdrColour, p3Colour } from './wide';
 
 /** Song seconds of the roll shown above the tracker bar. */
 export const ROLL_SECONDS = 4;
-/** A key comes back up over this long after its note ends (P5-09's return glide). */
-export const RETURN_SECONDS = 0.08;
+/**
+ * A key travels down over this long before its note sounds, as on a real piano, where the hammer
+ * strikes when the key is nearly down; a loud note goes down faster (`pressSeconds`).
+ */
+export const PRESS_SECONDS = 0.04;
+/** A key springs back up over this long after its note ends, quickly at first (P5-09's glide). */
+export const RETURN_SECONDS = 0.12;
+
+/** How long a key takes to go down for a note of `velocity`: 40 ms soft, 22 ms loud. */
+export function pressSeconds(velocity: number): number {
+  return PRESS_SECONDS - 0.018 * Math.min(1, Math.max(0, velocity / 127));
+}
 /**
  * The narrowest a white key is drawn (CSS px). The keyboard widens from the piece's octaves to all
  * 88 keys of a grand as far as the room allows at this width.
@@ -92,14 +102,28 @@ export interface KeyState {
   hand: Hand;
 }
 
-/** What every key is doing at `seconds`: down while its note sounds, then gliding back up. */
+/**
+ * What every key is doing at `seconds`: going down just before its note, gathering speed like a
+ * finger pressing it, so it is down as the note sounds; down while the note sounds; then springing
+ * back up, quickly at first and settling. A key struck again soon rises only part of the way.
+ */
 export function keysAt(data: RollData, seconds: number): Map<number, KeyState> {
   const keys = new Map<number, KeyState>();
   const from = firstFrom(data.notes, seconds - data.longest - RETURN_SECONDS);
   for (let i = from; i < data.notes.length; i++) {
     const n = data.notes[i] as PlaybackNote;
-    if (n.start > seconds) break;
-    const depth = seconds < n.end ? 1 : 1 - (seconds - n.end) / RETURN_SECONDS;
+    const press = pressSeconds(n.velocity);
+    if (n.start - PRESS_SECONDS > seconds) break;
+    if (n.start - press > seconds) continue;
+    let depth: number;
+    if (seconds < n.start) {
+      const t = (seconds - (n.start - press)) / press;
+      depth = t * t;
+    } else if (seconds < n.end) depth = 1;
+    else {
+      const u = Math.min(1, (seconds - n.end) / RETURN_SECONDS);
+      depth = (1 - u) ** 3;
+    }
     if (depth <= 0) continue;
     const was = keys.get(n.pitch);
     if (!was || depth > was.depth) keys.set(n.pitch, { depth, velocity: n.velocity, hand: n.hand });
@@ -201,7 +225,7 @@ export function roomGeometry(
     trackerY,
     keysTop,
     keysHeight,
-    front: Math.max(4, Math.min(8, Math.round(keysHeight * 0.05))),
+    front: Math.max(5, Math.min(11, Math.round(keysHeight * 0.075))),
     footTop: keysTop + keysHeight,
     footHeight,
     pxPerSecond: Math.max(1, trackerY) / ROLL_SECONDS,
@@ -424,6 +448,15 @@ function drawTrackerBar(ctx: CanvasRenderingContext2D, g: RoomGeometry, c: RoomC
   ctx.fillRect(x, g.trackerY, w, 1.5);
 }
 
+/**
+ * How far a key's front goes down at its depth, in px: most of the white keys' front edge for a
+ * loud note, a little less for a soft one; nothing under Reduce motion.
+ */
+export function keyTravel(g: RoomGeometry, s: KeyState | undefined, still: boolean): number {
+  if (!s || still) return 0;
+  return s.depth * g.front * (0.6 + 0.3 * Math.min(1, s.velocity / 110));
+}
+
 function drawKeys(
   ctx: CanvasRenderingContext2D,
   g: RoomGeometry,
@@ -434,72 +467,113 @@ function drawKeys(
   const top = g.keysTop;
   const h = g.keysHeight;
   const lightOf = (s: KeyState) => (f.hands ? (s.hand === 'left' ? c.left : c.right) : c.keyLit);
-  /** How far a key goes down: its depth, more for a louder note; none under Reduce motion. */
-  const dipOf = (s: KeyState | undefined) =>
-    !s || f.still ? 0 : s.depth * g.front * (0.35 + 0.45 * Math.min(1, s.velocity / 110));
+  const light = (s: KeyState, a: number) => (f.hands ? rgba(lightOf(s), a) : warm(c, c.keyLit, a));
   // The ivory, shaded at the back under the fallboard.
   const ivory = ctx.createLinearGradient(0, top, 0, top + h);
   ivory.addColorStop(0, rgba(mix(c.ivory, c.ebony, 0.28), 1));
   ivory.addColorStop(0.1, rgba(c.ivory, 1));
   ivory.addColorStop(1, rgba(mix(c.ivory, c.ebony, 0.06), 1));
-  const front = rgba(mix(c.ivory, c.ebony, 0.3), 1);
   for (const k of g.layout.keys) {
     if (k.black) continue;
     const s = keys.get(k.pitch);
-    const dip = dipOf(s);
-    const surface = h - g.front + dip;
+    const d = s?.depth ?? 0;
+    const travel = keyTravel(g, s, f.still);
+    const surface = h - g.front + travel;
     const x = k.x + 0.5;
     const w = k.width - 1;
     ctx.fillStyle = c.plain ? rgba(c.ivory, 1) : ivory;
     ctx.fillRect(x, top, w, surface);
-    if (s && s.depth > 0) {
+    if (s && d > 0 && !c.plain) {
+      // The key tips forward into the fallboard's shadow, darker at the back...
+      const tilt = ctx.createLinearGradient(0, top, 0, top + surface);
+      tilt.addColorStop(0, `rgba(0, 0, 0, ${(0.34 * d).toFixed(3)})`);
+      tilt.addColorStop(0.35, `rgba(0, 0, 0, ${(0.1 * d).toFixed(3)})`);
+      tilt.addColorStop(1, `rgba(0, 0, 0, ${(0.04 * d).toFixed(3)})`);
+      ctx.fillStyle = tilt;
+      ctx.fillRect(x, top, w, surface);
+      // ...and sinks between its neighbours, whose edges shade its sides.
+      const side = Math.min(4, w * 0.18);
+      for (const [from, dir] of [
+        [x, 1],
+        [x + w, -1],
+      ] as const) {
+        const edge = ctx.createLinearGradient(from, 0, from + dir * side, 0);
+        edge.addColorStop(0, `rgba(0, 0, 0, ${(0.3 * d).toFixed(3)})`);
+        edge.addColorStop(1, 'rgba(0, 0, 0, 0)');
+        ctx.fillStyle = edge;
+        ctx.fillRect(dir > 0 ? from : from - side, top, side, surface);
+      }
+    }
+    if (s && d > 0) {
       // A warm light gathers towards the front of the key, where a finger would be.
-      const alpha = (f.hands ? 0.85 : 0.3 + 0.45 * Math.min(1, s.velocity / 110)) * s.depth;
-      const light = (a: number) => (f.hands ? rgba(lightOf(s), a) : warm(c, c.keyLit, a));
+      const alpha = (f.hands ? 0.85 : 0.1 + 0.2 * Math.min(1, s.velocity / 110)) * d;
       const glow = ctx.createLinearGradient(0, top, 0, top + surface);
-      glow.addColorStop(0, light(f.hands ? alpha : 0));
-      glow.addColorStop(1, light(alpha));
+      glow.addColorStop(0, light(s, f.hands ? alpha : 0));
+      glow.addColorStop(1, light(s, alpha));
       ctx.fillStyle = c.plain ? rgba(lightOf(s), 1) : glow;
       ctx.fillRect(x, top, w, surface);
     }
-    // The key's front edge: shorter while it is down.
-    ctx.fillStyle = front;
-    ctx.fillRect(x, top + surface, w, g.front - dip);
+    // The key's front edge, catching the light along its top; it slides away as the key goes
+    // down, and what is left of it is in shadow.
+    const lip = g.front - travel;
+    if (lip > 0.25) {
+      ctx.fillStyle = rgba(mix(c.ivory, c.ebony, 0.3 + 0.2 * d), 1);
+      ctx.fillRect(x, top + surface, w, lip);
+      if (!c.plain) {
+        ctx.fillStyle = `rgba(255, 255, 255, ${(0.55 * (1 - d)).toFixed(3)})`;
+        ctx.fillRect(x, top + surface, w, 1);
+      }
+    }
   }
   const blackHeight = h * BLACK_HEIGHT;
-  const bevel = Math.max(3, Math.min(9, blackHeight * 0.09));
+  const bevel = Math.max(4, Math.min(11, blackHeight * 0.11));
   const ebony = rgba(c.ebony, 1);
-  const sheen = rgba(mix(c.ebony, c.ivory, 0.16), 1);
   for (const k of g.layout.keys) {
     if (!k.black) continue;
     const s = keys.get(k.pitch);
-    const dip = dipOf(s) * 0.7;
+    const d = s?.depth ?? 0;
+    // A black key's sloped front shortens as it goes down; it sits lower, so its shadow on the
+    // white keys beside it shrinks and its top loses some of its sheen.
+    const travel = f.still || !s ? 0 : d * bevel * (0.7 + 0.3 * Math.min(1, s.velocity / 110));
     if (!c.plain) {
-      // Its shadow on the white keys beside it.
-      ctx.fillStyle = 'rgba(0, 0, 0, 0.2)';
-      ctx.fillRect(k.x + 1, top, k.width + 1, blackHeight + 2);
+      const reach = 2 - 1.4 * d;
+      ctx.fillStyle = `rgba(0, 0, 0, ${(0.22 - 0.08 * d).toFixed(3)})`;
+      ctx.fillRect(k.x + reach * 0.5, top, k.width + reach, blackHeight + reach);
     }
     ctx.fillStyle = ebony;
     ctx.beginPath();
     ctx.roundRect(k.x, top, k.width, blackHeight, [0, 0, 2, 2]);
     ctx.fill();
-    // The top of the key, narrower than its base; its sloped front shortens as it goes down.
     const inset = k.width * 0.13;
-    const faceHeight = blackHeight - bevel + dip;
+    const faceHeight = blackHeight - bevel + travel;
     if (!c.plain) {
       const face = ctx.createLinearGradient(0, top, 0, top + faceHeight);
       face.addColorStop(0, ebony);
-      face.addColorStop(1, sheen);
+      face.addColorStop(1, rgba(mix(c.ebony, c.ivory, 0.17 * (1 - 0.55 * d)), 1));
       ctx.fillStyle = face;
       ctx.beginPath();
       ctx.roundRect(k.x + inset, top, k.width - inset * 2, faceHeight, [0, 0, 2, 2]);
       ctx.fill();
+      // A thin highlight along the front of the top, gone while the key is down.
+      ctx.fillStyle = `rgba(255, 255, 255, ${(0.16 * (1 - d)).toFixed(3)})`;
+      ctx.fillRect(k.x + inset, top + faceHeight - 1, k.width - inset * 2, 1);
     }
-    if (s && s.depth > 0) {
-      ctx.fillStyle = f.hands ? rgba(lightOf(s), 0.9 * s.depth) : warm(c, c.keyLit, 0.55 * s.depth);
-      ctx.beginPath();
-      ctx.roundRect(k.x + inset, top, k.width - inset * 2, faceHeight, [0, 0, 2, 2]);
-      ctx.fill();
+    if (s && d > 0) {
+      if (f.hands || c.plain) {
+        ctx.fillStyle = rgba(lightOf(s), (c.plain ? 1 : 0.9) * d);
+        ctx.beginPath();
+        ctx.roundRect(k.x + inset, top, k.width - inset * 2, faceHeight, [0, 0, 2, 2]);
+        ctx.fill();
+      } else {
+        // Ebony does not take a tint well: the light catches the front edge of its top instead.
+        ctx.fillStyle = warm(c, c.keyLit, 0.85 * d);
+        ctx.fillRect(k.x + inset, top + faceHeight - 1.5, k.width - inset * 2, 1.5);
+        const sheen = ctx.createLinearGradient(0, top + faceHeight * 0.55, 0, top + faceHeight);
+        sheen.addColorStop(0, warm(c, c.keyLit, 0));
+        sheen.addColorStop(1, warm(c, c.keyLit, 0.16 * d));
+        ctx.fillStyle = sheen;
+        ctx.fillRect(k.x + inset, top + faceHeight * 0.55, k.width - inset * 2, faceHeight * 0.45);
+      }
     }
   }
   if (!c.plain) {
@@ -536,22 +610,21 @@ function drawPedalLight(
 }
 
 /** How bright the HDR lights are, as multiples of the screen's white. */
-const HDR = { hole: 3, bar: 1.4, key: 1.15, keyLoud: 0.6, pedal: 2.2, tracker: 1.3 };
+const HDR = { hole: 3, bar: 1.4, pedal: 2.2, tracker: 1.3 };
 
 /**
  * The lights the HDR layer adds over the room for this frame, in the room's CSS px: each hole at
- * the tracker bar and its light along the bar, the front of each key that plays (brighter for a
- * louder note), the sustain pedal's light and the gold bar itself. Empty under high contrast.
+ * the tracker bar and its light along the bar, the sustain pedal's light and the gold bar itself.
+ * The keys are not lit: they are the piano's own ivory and ebony, and their going down is shown
+ * by shade and movement. Empty under high contrast.
  */
 export function roomLights(g: RoomGeometry, f: RoomFrame, c: RoomColours): Light[] {
   if (c.plain) return [];
   const lights: Light[] = [];
-  const colourOf = (rgb: Rgb, intensity: number, hand?: Hand, boost = WARM_BOOST) =>
+  const colourOf = (rgb: Rgb, intensity: number, hand?: Hand) =>
     f.hands && hand
       ? hdrColour(hand === 'left' ? c.left : c.right, intensity)
-      : hdrColour(rgb, intensity, boost);
-  // A key that plays shines as brighter ivory with a warm cast, not as coloured light.
-  const keyLight = mix(c.keyLit, c.ivory, 0.45);
+      : hdrColour(rgb, intensity, WARM_BOOST);
   lights.push({
     x: g.paperLeft,
     y: g.trackerY,
@@ -592,30 +665,6 @@ export function roomLights(g: RoomGeometry, f: RoomFrame, c: RoomColours): Light
       radius: w,
       soft: w * 4,
       colour: colourOf(c.keyLit, HDR.bar, n.hand),
-    });
-  }
-  const keys = keysAt(f.data, f.seconds);
-  const blackHeight = g.keysHeight * BLACK_HEIGHT;
-  for (const k of g.layout.keys) {
-    const s = keys.get(k.pitch);
-    if (!s || s.depth <= 0) continue;
-    const loud = Math.min(1, s.velocity / 110);
-    const intensity = (HDR.key + HDR.keyLoud * loud) * s.depth;
-    const dip = f.still ? 0 : s.depth * g.front * (0.35 + 0.45 * loud);
-    const height = k.black ? blackHeight * 0.55 : (g.keysHeight - g.front + dip) * 0.5;
-    const bottom = k.black
-      ? g.keysTop + blackHeight * 0.85 + dip * 0.7
-      : g.keysTop + g.keysHeight - g.front + dip;
-    const inset = k.black ? k.width * 0.18 : 1.5;
-    lights.push({
-      x: k.x + inset,
-      y: bottom - height,
-      w: k.width - inset * 2,
-      h: height,
-      radius: 2,
-      soft: 2,
-      colour: colourOf(keyLight, intensity, s.hand, 1),
-      fade: true,
     });
   }
   if (pedalsAt(f.data, f.seconds).sustain >= 64) {
