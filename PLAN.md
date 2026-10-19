@@ -645,7 +645,10 @@ without a word when no MIDI output is found.
   out), README. Done: the FAQ on MIDI keyboards on an iPad, the architecture of the scheduler,
   transport and MIDI out (P6-03, P6-05), and the user guide for this round's features (bars to
   keep and tags, light or dark, the pedal's keys, the Score tab following a PDF, pedal marks).
-  Left: the Player in the user guide and the README, once its design is chosen (P6-06).
+  The Player in the user guide (the programme, Plays on, playing expressively, Up next, stand mode,
+  the bar on other pages, Listen and Practise this, what you hear on each device) and the README;
+  its keys in the guide and in Settings → Keyboard shortcuts. Left: screenshots of the Player in
+  the README once the maintainer is happy with its look.
 
 - [~] **P6-15** (APP) Stand mode: the music room alone in the window (full screen where offered),
   controls that fade after 3 s and come back on any touch, "Next: …" under the piano, the wake
@@ -695,6 +698,8 @@ Record the outcome as an ADR in `docs/adr/` and tick it here.
 - [x] Engine exposes a plain C ABI instead of wasm-bindgen glue — ADR 0002.
 
 ## Changelog
+
+- **2026-10-19** — P6-14: the Player in the user guide, the README and the shortcut list.
 
 - **2026-10-19** — P6-15: stand mode tested; the first key after the controls fade works again.
 

@@ -270,6 +270,11 @@ export const de: Readonly<Record<string, string>> = {
   'Pedal keys': 'Pedaltasten',
   'Turn the page forward / back when the foot pedal is switched on':
     'Vor- / zurückblättern, wenn das Fußpedal eingeschaltet ist',
+  'In the Player: back or forward 5 seconds': 'Im Player: 5 Sekunden zurück oder vor',
+  'In the Player: the piece before or after': 'Im Player: das Stück davor oder danach',
+  'In the Player: the music stand view on or off': 'Im Player: Notenpult-Ansicht an oder aus',
+  'In Up next: move a piece up or down':
+    'In „Als Nächstes“: ein Stück nach oben oder unten schieben',
   // Settings page
   'Settings are kept on this device.': 'Einstellungen werden auf diesem Gerät gespeichert.',
   Language: 'Sprache',

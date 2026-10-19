@@ -44,6 +44,9 @@ and track your progress. No account, no tracking, no payment. Ever.
 - **Play what you have.** A MIDI keyboard, an **acoustic piano through the microphone**, or the
   on-screen and computer keys.
 - **Sight-reading drills.** Endless, generated flash-card practice for reading notes on the staff.
+- **The Player.** Your whole library and the catalogue played like a self-playing grand piano, on
+  your keyboard's own sound when one is connected, with the sustain pedal and phrasing, a queue and
+  a music-stand view.
 - **81 public-domain pieces**, from folk tunes to Bach and Beethoven, sorted into a five-level path.
   Every piece has a recorded source and a reviewer.
 - **Bring your own music.** Import MusicXML, MuseScore, ABC or MIDI files, or even a recording of a
