@@ -91,6 +91,17 @@ answered the design brief ([docs/phase-6/player-piano.md](../phase-6/player-pian
   app (real MIDI) is installed together later.
 - **Q14:** stand mode, the music room alone with controls that fade (P6-15).
 
+### The keyboard's own sound by default (2026-10-19)
+
+The maintainer heard the app's sampled piano from the Player through their keyboard's speakers
+(the keyboard is also the computer's USB audio output) and asked for the keyboard's own sound:
+the open sample set is not as good as the piano's. Q1 stands (one "Plays on" setting), with a
+fourth choice that is now the default: **Automatic**, the keyboard's own sound over MIDI whenever
+a keyboard is connected, and this device otherwise, with no warning for learners who have no
+keyboard. A "This device" saved before it existed reads as Automatic. Automatic never prompts for
+MIDI by itself; the Player offers "Play on your piano" to connect. On an iPad the keyboard's own
+sound still needs the iPad app (P6-12, P3-01): no iPad browser has Web MIDI.
+
 ## Consequences
 
 - **The learner can play every piece they have on their own piano's sound,** and hear on screen

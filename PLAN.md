@@ -661,6 +661,9 @@ Record the outcome as an ADR in `docs/adr/` and tick it here.
 
 ## Changelog
 
+- **2026-10-19** — P6-01: "Plays on" gains "Automatic", the default: the keyboard's own sound
+  whenever one is connected (the maintainer's request); the Player offers "Play on your piano".
+
 - **2026-10-18** — P6-06: the Player becomes a self-playing grand piano (the maintainer's choice);
   P6-15 to P6-17 added.
 
