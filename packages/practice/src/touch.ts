@@ -23,7 +23,7 @@ const SPREAD = 3;
 const EPS = 1e-6;
 
 /** −SPREAD … +SPREAD, fixed for a note id (FNV-1a). */
-function wobble(id: string): number {
+export function wobble(id: string): number {
   let h = 0x811c9dc5;
   for (let i = 0; i < id.length; i++) {
     h ^= id.charCodeAt(i);
@@ -33,7 +33,7 @@ function wobble(id: string): number {
 }
 
 /** How strongly a note's place in the bar is felt: the downbeat most, an off-beat least. */
-function metricAccent(song: Song, n: SongNote): number {
+export function metricAccent(song: Song, n: SongNote): number {
   const m = song.measures[n.measureIndex];
   if (!m) return 0;
   const { unit, perBar } = pulseAt(song, m.startBeat);
@@ -48,6 +48,18 @@ function metricAccent(song: Song, n: SongNote): number {
   return perBar % 2 === 0 && perBar >= 4 && Math.round(counted) === perBar / 2 ? SECOND_STRONG : 0;
 }
 
+/** The melody, by note id: the highest right-hand note of each onset. */
+export function melodyIds(song: Song): Set<string> {
+  const top = new Map<number, SongNote>();
+  for (const n of song.notes) {
+    if (n.hand !== 'right') continue;
+    const key = Math.round(n.startBeat / EPS);
+    const best = top.get(key);
+    if (!best || n.pitch > best.pitch) top.set(key, n);
+  }
+  return new Set([...top.values()].map((n) => n.id));
+}
+
 /**
  * The velocity of each note that has none, by note id. With "even" every such note gets
  * `EVEN_VELOCITY`; notes with a velocity of their own are not in the map.
@@ -59,15 +71,7 @@ export function touchVelocities(song: Song, touch: Touch = 'natural'): Map<strin
     for (const n of unshaped) out.set(n.id, EVEN_VELOCITY);
     return out;
   }
-  // The melody: the highest right-hand note of each onset.
-  const top = new Map<number, SongNote>();
-  for (const n of song.notes) {
-    if (n.hand !== 'right') continue;
-    const key = Math.round(n.startBeat / EPS);
-    const best = top.get(key);
-    if (!best || n.pitch > best.pitch) top.set(key, n);
-  }
-  const melody = new Set([...top.values()].map((n) => n.id));
+  const melody = melodyIds(song);
   for (const n of unshaped) {
     const voice = melody.has(n.id) ? MELODY : n.hand === 'left' ? LEFT_HAND : 0;
     const v = BASE + voice + metricAccent(song, n) + wobble(n.id);

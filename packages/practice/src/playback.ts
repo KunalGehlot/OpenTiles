@@ -7,9 +7,10 @@
 // them onto the caller's clock at the chosen tempo, so the `Song` itself never holds seconds
 // (ADR 0003) and a tempo change only moves the mapping.
 import { PEDAL_DOWN, pedalsBefore, TempoMap } from '@opentiles/song-model';
-import type { Hand, PedalKind, Song } from '@opentiles/song-model';
+import type { Hand, PedalEvent, PedalKind, Song } from '@opentiles/song-model';
 import { includesHand } from './steps';
 import type { HandFilter } from './steps';
+import { expressivePedals, expressiveVelocities } from './expression';
 import { touchVelocities } from './touch';
 import type { Touch } from './touch';
 
@@ -65,13 +66,22 @@ export interface PlaybackOptions {
   pedals?: boolean;
   /** How notes without a velocity of their own are played (P6-11): natural by default. */
   touch?: Touch;
+  /**
+   * Expressive playing (P6-16, the Player only): shaped touch and phrases for notes the file
+   * leaves unshaped, and an automatic sustain pedal when the file has none. Overrides `touch`.
+   */
+  expressive?: boolean;
 }
 
 /** Spans of song seconds in which a pedal is down. */
-function downSpans(song: Song, tempo: TempoMap, pedal: PedalKind): [number, number][] {
+function downSpans(
+  list: readonly PedalEvent[],
+  tempo: TempoMap,
+  pedal: PedalKind,
+): [number, number][] {
   const spans: [number, number][] = [];
   let downAt: number | null = null;
-  for (const e of song.pedals ?? []) {
+  for (const e of list) {
     if (e.pedal !== pedal) continue;
     const at = tempo.beatToSeconds(e.beat);
     if (e.value >= PEDAL_DOWN && downAt === null) downAt = at;
@@ -93,11 +103,13 @@ export function buildPlayback(song: Song, options: PlaybackOptions = {}): Playba
     toBeat = song.lengthBeats,
     pedals = true,
     touch = 'natural',
+    expressive = false,
   } = options;
   const tempo = new TempoMap(song.tempos);
-  const shaped = touchVelocities(song, touch);
-  const sustain = downSpans(song, tempo, 'sustain');
-  const sostenuto = downSpans(song, tempo, 'sostenuto');
+  const shaped = expressive ? expressiveVelocities(song) : touchVelocities(song, touch);
+  const pedalList = expressive ? expressivePedals(song) : (song.pedals ?? []);
+  const sustain = downSpans(pedalList, tempo, 'sustain');
+  const sostenuto = downSpans(pedalList, tempo, 'sostenuto');
   const songEnd = tempo.beatToSeconds(song.lengthBeats);
   const heldUntil = (start: number, end: number) => {
     let held = end;
@@ -122,20 +134,27 @@ export function buildPlayback(song: Song, options: PlaybackOptions = {}): Playba
       start,
       end,
       held: heldUntil(start, end),
-      velocity: n.velocity ?? shaped.get(n.id) ?? DEFAULT_VELOCITY,
+      // Expressive touch also reshapes a file that gives every note one velocity.
+      velocity:
+        (expressive ? shaped.get(n.id) : undefined) ??
+        n.velocity ??
+        shaped.get(n.id) ??
+        DEFAULT_VELOCITY,
       hand: n.hand,
       noteId: n.id,
     });
   }
-  if (pedals && song.pedals?.length) {
+  if (pedals && pedalList.length) {
     // The pedals as they stand where playing starts, then their changes inside the range.
     const from = tempo.beatToSeconds(fromBeat);
-    const state = pedalsBefore(song.pedals, fromBeat);
+    const state = pedalsBefore(pedalList, fromBeat);
     for (const pedal of ['sustain', 'soft', 'sostenuto'] as const) {
       if (state[pedal] > 0) events.push({ kind: 'pedal', start: from, pedal, value: state[pedal] });
     }
-    for (const e of song.pedals) {
-      if (e.beat < fromBeat - 1e-6 || e.beat >= toBeat - 1e-6) continue;
+    for (const e of pedalList) {
+      // A pedal lifted where the range ends is kept, so nothing stays held after it.
+      const atEnd = Math.abs(e.beat - toBeat) <= 1e-6 && e.value < PEDAL_DOWN;
+      if (e.beat < fromBeat - 1e-6 || (e.beat >= toBeat - 1e-6 && !atEnd)) continue;
       events.push({
         kind: 'pedal',
         start: tempo.beatToSeconds(e.beat),
