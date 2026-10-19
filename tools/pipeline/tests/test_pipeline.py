@@ -14,6 +14,8 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 import arrange  # noqa: E402
 from catalogue_lib import Piece, index_entry, validate_piece, validate_songs  # noqa: E402
 from eu_term import is_free, latest_free_death_year  # noqa: E402
+from build_index import composer_years  # noqa: E402
+from wikidata import Cache  # noqa: E402
 
 GOOD = {
     "title": "Test Piece",
@@ -218,6 +220,42 @@ class ValidateTest(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class ComposerYearsTest(unittest.TestCase):
+    """The Player's programme shows a composer's years, from the Wikidata cache (CC0)."""
+
+    cache = Cache(
+        path=None,
+        names={"ludwig van beethoven": {"ids": ["Q255", "Q12368917"]}},
+        entities={
+            "Q255": {"birth_year": 1770, "death_year": 1827},
+            "Q12368917": {"birth_year": 1712, "death_year": 1773},
+            "Q1": {"birth_year": 1866, "death_year": 1925},
+        },
+    )
+
+    def test_picks_the_namesake_whose_death_year_is_the_records(self):
+        record = {"composer": "Ludwig van Beethoven", "composer_death_year": 1827}
+        self.assertEqual(composer_years(record, self.cache), [1770, 1827])
+
+    def test_an_item_named_in_the_record_wins(self):
+        record = {"composer": "E. S.", "composer_death_year": 1925, "composer_wikidata": "Q1"}
+        self.assertEqual(composer_years(record, self.cache), [1866, 1925])
+
+    def test_nothing_when_unsure_or_traditional(self):
+        self.assertIsNone(
+            composer_years({"composer": "Ludwig van Beethoven", "composer_death_year": 1830}, self.cache)
+        )
+        self.assertIsNone(composer_years({"composer": "Nobody", "composer_death_year": 1900}, self.cache))
+        self.assertIsNone(
+            composer_years({"composer": "Traditional", "traditional": True, "composer_death_year": None}, self.cache)
+        )
+
+    def test_the_index_carries_them(self):
+        piece = Piece(slug="a", path=Path("."), record=dict(GOOD))
+        self.assertEqual(index_entry(piece, [1866, 1925])["composer_years"], [1866, 1925])
+        self.assertNotIn("composer_years", index_entry(piece))
 
 
 class SongLevelsTest(unittest.TestCase):

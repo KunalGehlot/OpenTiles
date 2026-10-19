@@ -1023,7 +1023,15 @@ function ProgrammeGroup({
     <section className="programme__group" aria-label={grouped ? heading : undefined}>
       {grouped && (
         <div className="programme__heading">
-          <h3>{heading}</h3>
+          <h3>
+            <span className="programme__name">{heading}</span>
+            {group.years && (
+              <span className="programme__years">
+                <span className="visually-hidden">, </span>
+                {group.years[0]}–{group.years[1]}
+              </span>
+            )}
+          </h3>
           {group.works.length > 1 && (
             <button className="programme__all" onClick={onPlayAll}>
               {t('Play all')}

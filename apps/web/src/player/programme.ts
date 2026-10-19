@@ -15,6 +15,8 @@ export interface Work {
 export interface ComposerGroup {
   /** The composer's name, `TRADITIONAL` for folk tunes, or null for pieces without a composer. */
   composer: string | null;
+  /** The composer's years, when the catalogue knows them. */
+  years?: readonly [number, number];
   works: Work[];
 }
 
@@ -88,10 +90,14 @@ export function programme(entries: readonly CollectionEntry[], locale?: string):
   }
   const place = (c: string | null) => (c === null ? 2 : c === TRADITIONAL ? 1 : 0);
   return [...groups.entries()]
-    .map(([composer, works]) => ({
-      composer,
-      works: works.sort((a, b) => text(a.entry.title, b.entry.title)),
-    }))
+    .map(([composer, works]) => {
+      const years = works.find((w) => w.entry.composerYears)?.entry.composerYears;
+      return {
+        composer,
+        ...(composer && composer !== TRADITIONAL && years ? { years } : {}),
+        works: works.sort((a, b) => text(a.entry.title, b.entry.title)),
+      };
+    })
     .sort(
       (a, b) =>
         place(a.composer) - place(b.composer) ||

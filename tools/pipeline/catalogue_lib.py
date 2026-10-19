@@ -198,7 +198,7 @@ def review_notes(piece: Piece) -> list[str]:
     return notes
 
 
-def index_entry(piece: Piece) -> dict:
+def index_entry(piece: Piece, composer_years: list[int] | None = None) -> dict:
     r = piece.record
     entry = {
         "slug": piece.slug,
@@ -214,6 +214,8 @@ def index_entry(piece: Piece) -> dict:
     if r.get("song"):
         entry["song"] = r["song"]
         entry["variant"] = r["variant"]
+    if composer_years:
+        entry["composer_years"] = composer_years
     return entry
 
 

@@ -104,3 +104,19 @@ describe('the programme’s composers (P6-06)', () => {
     expect(surname('Bach')).toBe('Bach');
   });
 });
+
+describe('composer dates (P6-07)', () => {
+  it('heads each named composer with their years, and folk tunes with none', () => {
+    const groups = programme([
+      entry('ode', 'Ode to Joy', 'Ludwig van Beethoven', { composerYears: [1770, 1827] }),
+      entry('elise', 'Für Elise', 'Ludwig van Beethoven', { composerYears: [1770, 1827] }),
+      entry('twinkle', 'Twinkle', 'Traditional (nursery rhyme)'),
+      { ...entry('mine', 'My piece'), key: 'library:1', source: 'library' },
+    ]);
+    expect(groups.map((g) => [g.composer, g.years])).toEqual([
+      ['Ludwig van Beethoven', [1770, 1827]],
+      [TRADITIONAL, undefined],
+      [null, undefined],
+    ]);
+  });
+});
