@@ -176,6 +176,11 @@
   animation: pop-in var(--dur-2) var(--ease) backwards;
 }
 
+/* A tall panel scrolls; its controls keep their size instead of being squeezed to fit. */
+.popover__panel > * {
+  flex-shrink: 0;
+}
+
 .popover--start .popover__panel {
   right: auto;
   left: 0;

@@ -1,6 +1,15 @@
 import { useLiveQuery } from 'dexie-react-hooks';
 import { useEffect, useState } from 'react';
-import { CalendarCheck, Check, Clock, FilePlus, Link2, Medal, Play } from 'lucide-react';
+import {
+  CalendarCheck,
+  Check,
+  Clock,
+  FilePlus,
+  Headphones,
+  Link2,
+  Medal,
+  Play,
+} from 'lucide-react';
 import { difficultyLabel, loadCatalogue, siblingsOf, variantLabel } from '../catalogue/catalogue';
 import type { CataloguePiece } from '../catalogue/catalogue';
 import { matchesQuery } from '../catalogue/search';
@@ -8,6 +17,7 @@ import { catalogueKey, difficultyPath, MASTERY, nextPiece } from '../catalogue/p
 import { absoluteHref, href } from '../lib/router';
 import { HomeScreenHint } from '../pwa/HomeScreenHint';
 import { SearchBox } from '../ui/SearchBox';
+import { listenInPlayer } from '../player/listen';
 import { db, localDay, streak } from '../storage/db';
 import { t } from '../i18n';
 
@@ -237,6 +247,15 @@ function PieceCard({
         </span>
       </a>
       <CopyLink url={absoluteHref(route)} title={piece.title} />
+      <button
+        type="button"
+        className="listen-link quiet"
+        aria-label={t('Listen to {title} in the Player', { title: piece.title })}
+        title={t('Listen in the Player')}
+        onClick={() => void listenInPlayer(`catalogue:${piece.slug}`)}
+      >
+        <Headphones />
+      </button>
       {/* Always present, so cards in a row keep one height. */}
       <ul
         className="piece__levels"

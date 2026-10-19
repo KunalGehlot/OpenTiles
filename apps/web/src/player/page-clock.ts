@@ -7,9 +7,11 @@ import type { Instrument, Voice } from '../audio/instrument';
 export const pageNow = () => performance.now() / 1000;
 
 /**
- * An instrument on the audio clock, driven with times on the page's clock. The output timestamp
- * pairs the two clocks where it is available (it includes the output latency, so a note sounds at
- * the page time it was meant for); otherwise the current time stands in.
+ * An instrument on the audio clock, driven with times on the page's clock, so a note is *heard*
+ * at the page time it was meant for and the keys the Player draws on that clock go down with the
+ * sound (brief §5.4; a MIDI keyboard plays at its notes' time stamps, which is the same moment).
+ * The output timestamp pairs the two clocks where it is available and includes the output
+ * latency; otherwise the current time stands in, less the latency the context reports.
  */
 export function onPageClock(inner: Instrument, ctx: BaseAudioContext): Instrument {
   const toAudio = (when: number): number => {
@@ -17,7 +19,9 @@ export function onPageClock(inner: Instrument, ctx: BaseAudioContext): Instrumen
     if (ts?.contextTime !== undefined && ts.performanceTime) {
       return ts.contextTime + (when * 1000 - ts.performanceTime) / 1000;
     }
-    return ctx.currentTime + (when - pageNow());
+    const audio = ctx as Partial<Pick<AudioContext, 'baseLatency' | 'outputLatency'>>;
+    const latency = (audio.baseLatency ?? 0) + (audio.outputLatency ?? 0);
+    return ctx.currentTime + (when - pageNow()) - latency;
   };
   return {
     get volume() {

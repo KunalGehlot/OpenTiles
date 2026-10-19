@@ -1,6 +1,6 @@
 import { useLiveQuery } from 'dexie-react-hooks';
 import { useEffect, useRef, useState } from 'react';
-import { BookOpen, FileMusic, FilePlus, FileText, Play, Trash2 } from 'lucide-react';
+import { BookOpen, FileMusic, FilePlus, FileText, Headphones, Play, Trash2 } from 'lucide-react';
 import { SUPPORTED_EXTENSIONS } from '@opentiles/song-model';
 import {
   AUDIO_EXTENSIONS,
@@ -13,6 +13,7 @@ import { DEFAULT_SETTINGS } from '../lib/import-settings';
 import { href } from '../lib/router';
 import { matchesQuery } from '../catalogue/search';
 import { AddNotesButton } from '../library/AddNotesButton';
+import { listenInPlayer } from '../player/listen';
 import { ImportReview } from '../library/ImportReview';
 import { planImport } from '../library/pairing';
 import type { ImportGroup } from '../library/pairing';
@@ -521,9 +522,18 @@ function LibraryCard({
             </a>
           </>
         ) : (
-          <a className="button primary" href={practice}>
-            <Play /> {t('Practise')}
-          </a>
+          <>
+            <a className="button primary" href={practice}>
+              <Play /> {t('Practise')}
+            </a>
+            <button
+              title={t('Listen in the Player')}
+              aria-label={t('Listen to {title} in the Player', { title: item.title })}
+              onClick={() => void listenInPlayer(`library:${id}`)}
+            >
+              <Headphones /> {t('Listen')}
+            </button>
+          </>
         )}
         <button
           className="danger quiet"

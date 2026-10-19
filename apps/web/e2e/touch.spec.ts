@@ -69,7 +69,15 @@ for (const width of [1180, 375]) {
     await page.getByRole('button', { name: 'Save to my library' }).click();
     await expect(page).toHaveURL(/#\/practice\/library\//);
 
-    for (const hash of ['#/', '#/library', '#/drills', '#/settings', '#/about', '#/sheet-music']) {
+    for (const hash of [
+      '#/',
+      '#/library',
+      '#/player',
+      '#/drills',
+      '#/settings',
+      '#/about',
+      '#/sheet-music',
+    ]) {
       await page.goto(`./${hash}`);
       await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
       await page.waitForTimeout(300);

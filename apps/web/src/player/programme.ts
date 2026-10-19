@@ -3,7 +3,7 @@
 // "Amazing Grace (melody)") are one work, which plays in its fullest version; works are grouped
 // under their composer, folk tunes together under "Traditional". Pure, so it is unit-tested in
 // Node.
-import type { CollectionEntry } from './collection';
+import type { CollectionEntry, CollectionKey } from './collection';
 
 export interface Work {
   /** The version that plays: a catalogue song's fullest level, or the piece itself. */
@@ -98,4 +98,14 @@ export function programme(entries: readonly CollectionEntry[], locale?: string):
         text(surname(a.composer ?? ''), surname(b.composer ?? '')) ||
         text(a.composer ?? '', b.composer ?? ''),
     );
+}
+
+/**
+ * What "Listen" plays (P6-07): the piece, then the works after its own in the programme, as a row
+ * in the Player plays the list from there.
+ */
+export function listenQueue(works: readonly Work[], key: CollectionKey): CollectionKey[] {
+  const at = works.findIndex((w) => w.versions.some((v) => v.key === key));
+  const after = at < 0 ? [] : works.slice(at + 1).filter((w) => w.entry.playable);
+  return [key, ...after.map((w) => w.entry.key)];
 }
