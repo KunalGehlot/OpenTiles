@@ -26,8 +26,14 @@ is new.
   `splitPhrases`) rises from −8 to +12 at its highest melody note and falls to −12 at its end, the
   accompaniment following at 0.6. A phrase sung higher than the piece's average is a little louder.
   Clamped to 24–112. A performance's own velocities are kept.
-- **A recorded performance** (velocities that vary, as a MIDI recording of a pianist has) is played
-  as it is: no added pedal, its own touch, its own ending (`isPerformance`).
+- **A recorded performance** is played as it is: no added pedal, its own touch, its own ending
+  (`isPerformance`). A pianist never strikes a chord's notes exactly alike, so a file where most
+  chords' velocities differ is a recording; a file written out by notation software gives a chord
+  one velocity (without chords: more than 12 distinct velocities is a recording, a few levels an
+  export).
+- **A MIDI file written out by notation software** with its dynamics (p here, f there) is shaped
+  around its own velocities: the marks set the level, the phrase and the balance of the hands move
+  around it; it gets the automatic pedal and the ending like the catalogue.
 - **Pedal** (`autoPedal`), only when the file has no sustain pedal of its own and is not a recorded
   performance:
   - Harmony changes are read over whole pulses of at least 0.4 s within a bar: the bass moving to

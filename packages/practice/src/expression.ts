@@ -40,15 +40,32 @@ const REGISTER_CAP = 5;
 const SOFTEST = 24;
 const LOUDEST = 112;
 
+/** More distinct velocities than this in a file without chords is a hand, not a few marks. */
+const NOTATED_LEVELS = 12;
+
 /**
- * A recorded performance: its notes carry velocities that vary. Its touch, timing and pedal are the
- * pianist's own, so expressive playing leaves it as it is (ADR 0021).
+ * A recorded performance: its touch, timing and pedal are the pianist's own, so expressive playing
+ * leaves it as it is (ADR 0021). A pianist never strikes the notes of a chord exactly alike, so in
+ * a recording most chords' velocities differ; a file written out by notation software gives a
+ * chord one velocity, from its dynamics mark (p, f) or none. Without chords, a recording shows many
+ * velocities and an export a few levels.
  */
 export function isPerformance(song: Song): boolean {
-  const velocities = new Set(
-    song.notes.flatMap((n) => (n.velocity === undefined ? [] : [n.velocity])),
-  );
-  return velocities.size > 1;
+  const onsets = new Map<number, number[]>();
+  const levels = new Set<number>();
+  for (const n of song.notes) {
+    if (n.velocity === undefined) continue;
+    levels.add(n.velocity);
+    const key = Math.round(n.startBeat / EPS);
+    const chord = onsets.get(key);
+    if (chord) chord.push(n.velocity);
+    else onsets.set(key, [n.velocity]);
+  }
+  if (levels.size <= 1) return false;
+  const chords = [...onsets.values()].filter((c) => c.length > 1);
+  if (chords.length === 0) return levels.size > NOTATED_LEVELS;
+  const uneven = chords.filter((c) => c.some((v) => v !== c[0])).length;
+  return uneven / chords.length >= 0.5;
 }
 
 /** True when the file gives every note one velocity: it says nothing about touch. */
@@ -67,15 +84,19 @@ function lerp(a: number, b: number, f: number): number {
 }
 
 /**
- * Expressive velocities, by note id, for the notes the file leaves unshaped: those without a
- * velocity, or every note when the file gives all of them the same one. Notes with velocities of
- * their own (a performance recorded as MIDI) are not in the map.
+ * Expressive velocities, by note id. A note without a velocity, or every note of a file that gives
+ * all of them the same one, is shaped around a mezzo-forte. A file written out by notation software
+ * with its dynamics (p here, f there) is shaped around its own velocities: the marks set the level,
+ * the phrase and the balance of the hands move around it. A recorded performance keeps its own,
+ * and its notes are not in the map.
  */
 export function expressiveVelocities(song: Song): Map<string, number> {
   const out = new Map<string, number>();
+  if (isPerformance(song)) return out;
   const uniform = uniformVelocities(song);
-  const unshaped = song.notes.filter((n) => uniform || n.velocity === undefined);
-  if (unshaped.length === 0) return out;
+  const unshaped = song.notes;
+  /** The level a note is shaped around: its written dynamics, or mezzo-forte. */
+  const levelOf = (n: SongNote) => (uniform || n.velocity === undefined ? BASE : n.velocity);
 
   const melody = melodyIds(song);
   // The bass: the lowest left-hand note of each onset.
@@ -127,7 +148,7 @@ export function expressiveVelocities(song: Song): Map<string, number> {
           ? BASS
           : LEFT_INNER;
     const shape = (shapeAt.get(n.id) ?? 0) * (sings ? 1 : ACCOMPANIMENT_FOLLOWS);
-    const v = BASE + role + metricAccent(song, n) + shape + wobble(n.id);
+    const v = levelOf(n) + role + metricAccent(song, n) + shape + wobble(n.id);
     out.set(n.id, Math.max(SOFTEST, Math.min(LOUDEST, Math.round(v))));
   }
   return out;
