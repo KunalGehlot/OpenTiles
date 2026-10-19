@@ -81,7 +81,11 @@
       "verified": true,
       "score": "pieces/fur-elise-opening-melody/score.musicxml",
       "song": "fur-elise-opening",
-      "variant": "Melody"
+      "variant": "Melody",
+      "composer_years": [
+        1770,
+        1827
+      ]
     },
     {
       "slug": "good-king-wenceslas-melody",
@@ -103,7 +107,11 @@
       "verified": true,
       "score": "pieces/hark-the-herald-angels-sing-melody/score.musicxml",
       "song": "hark-the-herald-angels-sing",
-      "variant": "Melody"
+      "variant": "Melody",
+      "composer_years": [
+        1809,
+        1847
+      ]
     },
     {
       "slug": "hot-cross-buns",
@@ -130,7 +138,11 @@
       "difficulty": 1,
       "licence": "CC0-1.0",
       "verified": true,
-      "score": "pieces/jingle-bells/score.musicxml"
+      "score": "pieces/jingle-bells/score.musicxml",
+      "composer_years": [
+        1822,
+        1893
+      ]
     },
     {
       "slug": "joy-to-the-world-melody",
@@ -141,7 +153,11 @@
       "verified": true,
       "score": "pieces/joy-to-the-world-melody/score.musicxml",
       "song": "joy-to-the-world",
-      "variant": "Melody"
+      "variant": "Melody",
+      "composer_years": [
+        1792,
+        1872
+      ]
     },
     {
       "slug": "largo-new-world-melody",
@@ -152,7 +168,11 @@
       "verified": true,
       "score": "pieces/largo-new-world-melody/score.musicxml",
       "song": "largo-new-world",
-      "variant": "Melody"
+      "variant": "Melody",
+      "composer_years": [
+        1841,
+        1904
+      ]
     },
     {
       "slug": "london-bridge",
@@ -172,7 +192,11 @@
       "verified": true,
       "score": "pieces/brahms-lullaby-melody/score.musicxml",
       "song": "brahms-lullaby",
-      "variant": "Melody"
+      "variant": "Melody",
+      "composer_years": [
+        1833,
+        1897
+      ]
     },
     {
       "slug": "mary-had-a-little-lamb",
@@ -192,7 +216,11 @@
       "verified": true,
       "score": "pieces/minuet-in-g-melody/score.musicxml",
       "song": "minuet-in-g",
-      "variant": "Melody"
+      "variant": "Melody",
+      "composer_years": [
+        1677,
+        1733
+      ]
     },
     {
       "slug": "ode-to-joy",
@@ -203,7 +231,11 @@
       "verified": true,
       "score": "pieces/ode-to-joy/score.musicxml",
       "song": "ode-to-joy",
-      "variant": "Two hands"
+      "variant": "Two hands",
+      "composer_years": [
+        1770,
+        1827
+      ]
     },
     {
       "slug": "ode-to-joy-melody",
@@ -214,7 +246,11 @@
       "verified": true,
       "score": "pieces/ode-to-joy-melody/score.musicxml",
       "song": "ode-to-joy",
-      "variant": "Melody"
+      "variant": "Melody",
+      "composer_years": [
+        1770,
+        1827
+      ]
     },
     {
       "slug": "old-macdonald",
@@ -243,7 +279,11 @@
       "verified": true,
       "score": "pieces/silent-night-melody/score.musicxml",
       "song": "silent-night",
-      "variant": "Melody"
+      "variant": "Melody",
+      "composer_years": [
+        1787,
+        1863
+      ]
     },
     {
       "slug": "twinkle-twinkle",
@@ -314,7 +354,11 @@
       "difficulty": 2,
       "licence": "public-domain",
       "verified": true,
-      "score": "pieces/ballade-burgmuller/score.musicxml"
+      "score": "pieces/ballade-burgmuller/score.musicxml",
+      "composer_years": [
+        1806,
+        1874
+      ]
     },
     {
       "slug": "bella-ciao",
@@ -336,7 +380,11 @@
       "verified": true,
       "score": "pieces/canon-in-d-melody/score.musicxml",
       "song": "canon-in-d",
-      "variant": "Melody"
+      "variant": "Melody",
+      "composer_years": [
+        1653,
+        1706
+      ]
     },
     {
       "slug": "consolation",
@@ -345,7 +393,11 @@
       "difficulty": 2,
       "licence": "public-domain",
       "verified": true,
-      "score": "pieces/consolation/score.musicxml"
+      "score": "pieces/consolation/score.musicxml",
+      "composer_years": [
+        1806,
+        1874
+      ]
     },
     {
       "slug": "deck-the-halls",
@@ -367,7 +419,11 @@
       "verified": true,
       "score": "pieces/eine-kleine-nachtmusik-melody/score.musicxml",
       "song": "eine-kleine-nachtmusik",
-      "variant": "Melody"
+      "variant": "Melody",
+      "composer_years": [
+        1756,
+        1791
+      ]
     },
     {
       "slug": "fur-elise-opening",
@@ -378,7 +434,11 @@
       "verified": true,
       "score": "pieces/fur-elise-opening/score.musicxml",
       "song": "fur-elise-opening",
-      "variant": "Two hands"
+      "variant": "Two hands",
+      "composer_years": [
+        1770,
+        1827
+      ]
     },
     {
       "slug": "good-king-wenceslas",
@@ -409,7 +469,11 @@
       "difficulty": 2,
       "licence": "CC0-1.0",
       "verified": true,
-      "score": "pieces/happy-birthday/score.musicxml"
+      "score": "pieces/happy-birthday/score.musicxml",
+      "composer_years": [
+        1859,
+        1916
+      ]
     },
     {
       "slug": "hark-the-herald-angels-sing",
@@ -420,7 +484,11 @@
       "verified": true,
       "score": "pieces/hark-the-herald-angels-sing/score.musicxml",
       "song": "hark-the-herald-angels-sing",
-      "variant": "Two hands"
+      "variant": "Two hands",
+      "composer_years": [
+        1809,
+        1847
+      ]
     },
     {
       "slug": "hall-of-the-mountain-king-melody",
@@ -431,7 +499,11 @@
       "verified": true,
       "score": "pieces/hall-of-the-mountain-king-melody/score.musicxml",
       "song": "hall-of-the-mountain-king",
-      "variant": "Melody"
+      "variant": "Melody",
+      "composer_years": [
+        1843,
+        1907
+      ]
     },
     {
       "slug": "joy-to-the-world",
@@ -442,7 +514,11 @@
       "verified": true,
       "score": "pieces/joy-to-the-world/score.musicxml",
       "song": "joy-to-the-world",
-      "variant": "Two hands"
+      "variant": "Two hands",
+      "composer_years": [
+        1792,
+        1872
+      ]
     },
     {
       "slug": "la-candeur",
@@ -451,7 +527,11 @@
       "difficulty": 2,
       "licence": "public-domain",
       "verified": true,
-      "score": "pieces/la-candeur/score.musicxml"
+      "score": "pieces/la-candeur/score.musicxml",
+      "composer_years": [
+        1806,
+        1874
+      ]
     },
     {
       "slug": "largo-new-world",
@@ -462,7 +542,11 @@
       "verified": true,
       "score": "pieces/largo-new-world/score.musicxml",
       "song": "largo-new-world",
-      "variant": "Two hands"
+      "variant": "Two hands",
+      "composer_years": [
+        1841,
+        1904
+      ]
     },
     {
       "slug": "brahms-lullaby",
@@ -473,7 +557,11 @@
       "verified": true,
       "score": "pieces/brahms-lullaby/score.musicxml",
       "song": "brahms-lullaby",
-      "variant": "Two hands"
+      "variant": "Two hands",
+      "composer_years": [
+        1833,
+        1897
+      ]
     },
     {
       "slug": "march-of-the-wooden-soldiers",
@@ -482,7 +570,11 @@
       "difficulty": 2,
       "licence": "public-domain",
       "verified": true,
-      "score": "pieces/march-of-the-wooden-soldiers/score.musicxml"
+      "score": "pieces/march-of-the-wooden-soldiers/score.musicxml",
+      "composer_years": [
+        1840,
+        1893
+      ]
     },
     {
       "slug": "minuet-in-g",
@@ -493,7 +585,11 @@
       "verified": true,
       "score": "pieces/minuet-in-g/score.musicxml",
       "song": "minuet-in-g",
-      "variant": "Two hands"
+      "variant": "Two hands",
+      "composer_years": [
+        1677,
+        1733
+      ]
     },
     {
       "slug": "bach-minuet-in-g-complete",
@@ -502,7 +598,11 @@
       "difficulty": 2,
       "licence": "public-domain",
       "verified": true,
-      "score": "pieces/bach-minuet-in-g-complete/score.musicxml"
+      "score": "pieces/bach-minuet-in-g-complete/score.musicxml",
+      "composer_years": [
+        1677,
+        1733
+      ]
     },
     {
       "slug": "bach-minuet-in-g-minor",
@@ -511,7 +611,11 @@
       "difficulty": 2,
       "licence": "public-domain",
       "verified": true,
-      "score": "pieces/bach-minuet-in-g-minor/score.musicxml"
+      "score": "pieces/bach-minuet-in-g-minor/score.musicxml",
+      "composer_years": [
+        1677,
+        1733
+      ]
     },
     {
       "slug": "bach-musette-in-d",
@@ -520,7 +624,11 @@
       "difficulty": 2,
       "licence": "public-domain",
       "verified": true,
-      "score": "pieces/bach-musette-in-d/score.musicxml"
+      "score": "pieces/bach-musette-in-d/score.musicxml",
+      "composer_years": [
+        1685,
+        1750
+      ]
     },
     {
       "slug": "ode-to-joy-full",
@@ -531,7 +639,11 @@
       "verified": true,
       "score": "pieces/ode-to-joy-full/score.musicxml",
       "song": "ode-to-joy",
-      "variant": "Full"
+      "variant": "Full",
+      "composer_years": [
+        1770,
+        1827
+      ]
     },
     {
       "slug": "old-french-song",
@@ -540,7 +652,11 @@
       "difficulty": 2,
       "licence": "public-domain",
       "verified": true,
-      "score": "pieces/old-french-song/score.musicxml"
+      "score": "pieces/old-french-song/score.musicxml",
+      "composer_years": [
+        1840,
+        1893
+      ]
     },
     {
       "slug": "prelude-in-c-melody",
@@ -551,7 +667,11 @@
       "verified": true,
       "score": "pieces/prelude-in-c-melody/score.musicxml",
       "song": "prelude-in-c",
-      "variant": "Right hand"
+      "variant": "Right hand",
+      "composer_years": [
+        1685,
+        1750
+      ]
     },
     {
       "slug": "silent-night",
@@ -562,7 +682,11 @@
       "verified": true,
       "score": "pieces/silent-night/score.musicxml",
       "song": "silent-night",
-      "variant": "Two hands"
+      "variant": "Two hands",
+      "composer_years": [
+        1787,
+        1863
+      ]
     },
     {
       "slug": "tendre-fleur",
@@ -571,7 +695,11 @@
       "difficulty": 2,
       "licence": "public-domain",
       "verified": true,
-      "score": "pieces/tendre-fleur/score.musicxml"
+      "score": "pieces/tendre-fleur/score.musicxml",
+      "composer_years": [
+        1806,
+        1874
+      ]
     },
     {
       "slug": "we-wish-you-a-merry-christmas",
@@ -604,7 +732,11 @@
       "verified": true,
       "score": "pieces/canon-in-d/score.musicxml",
       "song": "canon-in-d",
-      "variant": "Two hands"
+      "variant": "Two hands",
+      "composer_years": [
+        1653,
+        1706
+      ]
     },
     {
       "slug": "eine-kleine-nachtmusik",
@@ -615,7 +747,11 @@
       "verified": true,
       "score": "pieces/eine-kleine-nachtmusik/score.musicxml",
       "song": "eine-kleine-nachtmusik",
-      "variant": "Two hands"
+      "variant": "Two hands",
+      "composer_years": [
+        1756,
+        1791
+      ]
     },
     {
       "slug": "fur-elise-complete",
@@ -624,7 +760,11 @@
       "difficulty": 3,
       "licence": "public-domain",
       "verified": true,
-      "score": "pieces/fur-elise-complete/score.musicxml"
+      "score": "pieces/fur-elise-complete/score.musicxml",
+      "composer_years": [
+        1770,
+        1827
+      ]
     },
     {
       "slug": "greensleeves",
@@ -646,7 +786,11 @@
       "verified": true,
       "score": "pieces/hall-of-the-mountain-king/score.musicxml",
       "song": "hall-of-the-mountain-king",
-      "variant": "Two hands"
+      "variant": "Two hands",
+      "composer_years": [
+        1843,
+        1907
+      ]
     },
     {
       "slug": "innocence",
@@ -655,7 +799,11 @@
       "difficulty": 3,
       "licence": "public-domain",
       "verified": true,
-      "score": "pieces/innocence/score.musicxml"
+      "score": "pieces/innocence/score.musicxml",
+      "composer_years": [
+        1806,
+        1874
+      ]
     },
     {
       "slug": "bach-invention-13",
@@ -664,7 +812,11 @@
       "difficulty": 3,
       "licence": "public-domain",
       "verified": true,
-      "score": "pieces/bach-invention-13/score.musicxml"
+      "score": "pieces/bach-invention-13/score.musicxml",
+      "composer_years": [
+        1685,
+        1750
+      ]
     },
     {
       "slug": "bach-invention-14",
@@ -673,7 +825,11 @@
       "difficulty": 3,
       "licence": "public-domain",
       "verified": true,
-      "score": "pieces/bach-invention-14/score.musicxml"
+      "score": "pieces/bach-invention-14/score.musicxml",
+      "composer_years": [
+        1685,
+        1750
+      ]
     },
     {
       "slug": "bach-invention-2",
@@ -682,7 +838,11 @@
       "difficulty": 3,
       "licence": "public-domain",
       "verified": true,
-      "score": "pieces/bach-invention-2/score.musicxml"
+      "score": "pieces/bach-invention-2/score.musicxml",
+      "composer_years": [
+        1685,
+        1750
+      ]
     },
     {
       "slug": "bach-invention-4",
@@ -691,7 +851,11 @@
       "difficulty": 3,
       "licence": "public-domain",
       "verified": true,
-      "score": "pieces/bach-invention-4/score.musicxml"
+      "score": "pieces/bach-invention-4/score.musicxml",
+      "composer_years": [
+        1685,
+        1750
+      ]
     },
     {
       "slug": "bach-invention-8",
@@ -700,7 +864,11 @@
       "difficulty": 3,
       "licence": "public-domain",
       "verified": true,
-      "score": "pieces/bach-invention-8/score.musicxml"
+      "score": "pieces/bach-invention-8/score.musicxml",
+      "composer_years": [
+        1685,
+        1750
+      ]
     },
     {
       "slug": "arabesque-burgmuller",
@@ -709,7 +877,11 @@
       "difficulty": 3,
       "licence": "public-domain",
       "verified": true,
-      "score": "pieces/arabesque-burgmuller/score.musicxml"
+      "score": "pieces/arabesque-burgmuller/score.musicxml",
+      "composer_years": [
+        1806,
+        1874
+      ]
     },
     {
       "slug": "beethoven-menuett-woo82",
@@ -718,7 +890,11 @@
       "difficulty": 3,
       "licence": "public-domain",
       "verified": true,
-      "score": "pieces/beethoven-menuett-woo82/score.musicxml"
+      "score": "pieces/beethoven-menuett-woo82/score.musicxml",
+      "composer_years": [
+        1770,
+        1827
+      ]
     },
     {
       "slug": "morning-prayer",
@@ -727,7 +903,11 @@
       "difficulty": 3,
       "licence": "public-domain",
       "verified": true,
-      "score": "pieces/morning-prayer/score.musicxml"
+      "score": "pieces/morning-prayer/score.musicxml",
+      "composer_years": [
+        1840,
+        1893
+      ]
     },
     {
       "slug": "beethoven-sonata-20-menuetto",
@@ -736,7 +916,11 @@
       "difficulty": 3,
       "licence": "public-domain",
       "verified": true,
-      "score": "pieces/beethoven-sonata-20-menuetto/score.musicxml"
+      "score": "pieces/beethoven-sonata-20-menuetto/score.musicxml",
+      "composer_years": [
+        1770,
+        1827
+      ]
     },
     {
       "slug": "prelude-in-c",
@@ -747,7 +931,11 @@
       "verified": true,
       "score": "pieces/prelude-in-c/score.musicxml",
       "song": "prelude-in-c",
-      "variant": "Two hands"
+      "variant": "Two hands",
+      "composer_years": [
+        1685,
+        1750
+      ]
     },
     {
       "slug": "progres",
@@ -756,7 +944,11 @@
       "difficulty": 3,
       "licence": "public-domain",
       "verified": true,
-      "score": "pieces/progres/score.musicxml"
+      "score": "pieces/progres/score.musicxml",
+      "composer_years": [
+        1806,
+        1874
+      ]
     },
     {
       "slug": "chopin-waltz-op69-2",
@@ -765,7 +957,11 @@
       "difficulty": 3,
       "licence": "public-domain",
       "verified": true,
-      "score": "pieces/chopin-waltz-op69-2/score.musicxml"
+      "score": "pieces/chopin-waltz-op69-2/score.musicxml",
+      "composer_years": [
+        1810,
+        1849
+      ]
     },
     {
       "slug": "gluckes-genug",
@@ -774,7 +970,11 @@
       "difficulty": 4,
       "licence": "public-domain",
       "verified": true,
-      "score": "pieces/gluckes-genug/score.musicxml"
+      "score": "pieces/gluckes-genug/score.musicxml",
+      "composer_years": [
+        1810,
+        1856
+      ]
     },
     {
       "slug": "la-pastorale",
@@ -783,7 +983,11 @@
       "difficulty": 4,
       "licence": "public-domain",
       "verified": true,
-      "score": "pieces/la-pastorale/score.musicxml"
+      "score": "pieces/la-pastorale/score.musicxml",
+      "composer_years": [
+        1806,
+        1874
+      ]
     },
     {
       "slug": "maple-leaf-rag",
@@ -792,7 +996,11 @@
       "difficulty": 4,
       "licence": "public-domain",
       "verified": true,
-      "score": "pieces/maple-leaf-rag/score.musicxml"
+      "score": "pieces/maple-leaf-rag/score.musicxml",
+      "composer_years": [
+        1868,
+        1917
+      ]
     },
     {
       "slug": "chopin-prelude-4",
@@ -801,7 +1009,11 @@
       "difficulty": 4,
       "licence": "public-domain",
       "verified": true,
-      "score": "pieces/chopin-prelude-4/score.musicxml"
+      "score": "pieces/chopin-prelude-4/score.musicxml",
+      "composer_years": [
+        1810,
+        1849
+      ]
     },
     {
       "slug": "the-entertainer",
@@ -810,7 +1022,11 @@
       "difficulty": 4,
       "licence": "public-domain",
       "verified": true,
-      "score": "pieces/the-entertainer/score.musicxml"
+      "score": "pieces/the-entertainer/score.musicxml",
+      "composer_years": [
+        1868,
+        1917
+      ]
     }
   ]
 }

@@ -587,20 +587,20 @@ without a word when no MIDI output is found.
       note and spring back, a pedal light instead of pedals, a hairline for the position, one options
       menu, and HDR light (WebGPU, extended tone mapping) and Display P3 gold where the screen shows
       them. Published at the maintainer's request on 2026-10-19.
-- [~] **P6-07** (APP) The Player page (`#/player`): search, filters and sorting over all music, Now
-  playing, transport, tempo, hands, transpose, "Plays on", live keyboard strip, ⅓ iPad and 320 px
-  layouts, German strings, shortcuts. Done: the page plays through the transport (a row plays the
-  list from that piece; play, pause, previous, next, shuffle, repeat, tempo, hands); "Plays on"
-  moves a playing piece to the new choice and says when the keyboard goes away; seeking by tap,
-  drag and keys; Space and the arrow keys; German strings; e2e in the 320 and 1,180 px layouts;
-  "Show hands" kept between visits.
-  Entry points: "Listen" on the Home and Library cards and in practice's options plays the piece
-  in the Player, then the programme after it; "Practise this" in the Player's options. Keys at the
-  heard time (brief §5.4): this device's notes are scheduled through the output timestamp, which
-  includes the output latency, and a MIDI keyboard plays at its time stamps, so both sound when
-  the keys are drawn; without an output timestamp the reported latency is taken off. The touch
-  test covers `#/player` (the position line's target is 44 px tall on touch screens). Left:
-  composer dates from the catalogue (it has only death years).
+- [x] **P6-07** (APP) The Player page (`#/player`): search, filters and sorting over all music, Now
+      playing, transport, tempo, hands, transpose, "Plays on", live keyboard strip, ⅓ iPad and 320 px
+      layouts, German strings, shortcuts. Done: the page plays through the transport (a row plays the
+      list from that piece; play, pause, previous, next, shuffle, repeat, tempo, hands); "Plays on"
+      moves a playing piece to the new choice and says when the keyboard goes away; seeking by tap,
+      drag and keys; Space and the arrow keys; German strings; e2e in the 320 and 1,180 px layouts;
+      "Show hands" kept between visits.
+      Entry points: "Listen" on the Home and Library cards and in practice's options plays the piece
+      in the Player, then the programme after it; "Practise this" in the Player's options. Keys at the
+      heard time (brief §5.4): this device's notes are scheduled through the output timestamp, which
+      includes the output latency, and a MIDI keyboard plays at its time stamps, so both sound when
+      the keys are drawn; without an output timestamp the reported latency is taken off. The touch
+      test covers `#/player` (the position line's target is 44 px tall on touch screens). Composer dates in the programme: the index carries a named composer's years from the
+      committed Wikidata cache (CC0), only where its death year is the record's.
 - [x] **P6-08** (APP) Queue: play all, shuffle, repeat, reorder by drag and keyboard, kept on the
       device. Done: Up next (a panel on wide windows, over the page on narrower ones) plays a piece
       now on a tap, moves one by dragging its handle or with ↑ ↓ on the handle (Alt + ↑ ↓ anywhere
@@ -672,9 +672,17 @@ without a word when no MIDI output is found.
   bar before the last chord the tempo eases to 90 %, and the last chord is held half as long
   again; the transport, seek line and media controls take the longer length. Left: dynamics marks
   and hairpins from imported MusicXML (none of the catalogue's scores has any).
-- [ ] **P6-17** (APP) Sound on this device: a soft room sound from an impulse response made in code
+- [x] **P6-17** (APP) Sound on this device: a soft room sound from an impulse response made in code
       (Player only), and a richer piano with more Salamander loudness layers as the default sound
-      (maintainer, 2026-10-18), loaded after the current set and kept for offline use.
+      (maintainer, 2026-10-18), loaded after the current set and kept for offline use. Done (ADR
+      0007 amended): layers 5 (`soft/`, cut at 5 s) and 14 (`loud/`) beside layer 10, built by the
+      same script (layer 10 unchanged); each note plays with the layer recorded nearest its
+      velocity, loudness on the same curve (within 0.9 dB at the boundaries, rendered offline), the
+      layer changing the tone; the soft, then the loud layer load after the original set, and the
+      service worker precaches them (+2.8 MB, about 70 MB more decoded). The room: a 1.8 s impulse
+      response made in code (decaying noise, darker as it fades), on only while the Player plays
+      on this device; off on pause, in practice and in the Detector Lab. Not heard on a real iPad
+      yet (P6-13).
 
 ## Cross-cutting checklists
 
@@ -700,6 +708,10 @@ Record the outcome as an ADR in `docs/adr/` and tick it here.
 - [x] Engine exposes a plain C ABI instead of wasm-bindgen glue — ADR 0002.
 
 ## Changelog
+
+- **2026-10-19** — P6-07: the Player's programme shows each composer's years.
+
+- **2026-10-19** — P6-17: this device's piano gains a soft and a loud layer, and the Player a room.
 
 - **2026-10-19** — P6-16: the Player eases into the last chord and holds it.
 

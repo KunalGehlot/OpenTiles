@@ -17,6 +17,8 @@ export interface CollectionEntry {
   source: 'catalogue' | 'library';
   title: string;
   composer?: string;
+  /** The composer's years of birth and death, for the catalogue's named composers. */
+  composerYears?: readonly [number, number];
   /** Catalogue level, 1–5. */
   difficulty?: number;
   /** Length at 100 % tempo; unknown for a catalogue piece not yet opened on this device. */
@@ -66,6 +68,7 @@ export function buildCollection(parts: CollectionParts): CollectionEntry[] {
         source: 'catalogue',
         title: p.title,
         composer: p.composer,
+        ...(p.composer_years ? { composerYears: p.composer_years } : {}),
         difficulty: p.difficulty,
         hasSheet: false,
         playable: true,

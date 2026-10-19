@@ -4,14 +4,17 @@
 
 import { playClick, type Instrument, type Voice } from './instrument';
 import {
+  ORIGINAL_LAYER,
   SAMPLE_PITCHES,
   findOnset,
+  layerFor,
   nearestSample,
   playbackRate,
   releaseTime,
   sampleFileName,
   velocityCutoff,
   velocityGain,
+  type SampleLayer,
 } from './samples';
 
 export interface PianoSample {
@@ -34,10 +37,15 @@ const STEAL_RELEASE = 0.015;
 
 const silent: Voice = { stop: () => {} };
 
+interface LoadedLayer {
+  pitches: number[];
+  samples: Map<number, PianoSample>;
+}
+
 export class PianoSampler implements Instrument {
   private readonly out: GainNode;
-  private readonly pitches: number[];
-  private readonly samples = new Map<number, PianoSample>();
+  /** The velocity layers loaded so far (P6-17): the original set first, the others as they come. */
+  private readonly layers = new Map<SampleLayer, LoadedLayer>();
   /**
    * Sounding and scheduled voices, oldest first; the value releases the voice quickly, or with
    * `cut` also stops one that has not started yet.
@@ -53,11 +61,17 @@ export class PianoSampler implements Instrument {
      * stands at 0, so it lifts the limit: stealing would cut notes that have not started yet.
      */
     private readonly maxVoices = MAX_VOICES,
+    layer: SampleLayer = ORIGINAL_LAYER,
   ) {
-    for (const s of samples) this.samples.set(s.pitch, s);
-    this.pitches = [...this.samples.keys()];
+    this.addLayer(layer, samples);
     this.out = ctx.createGain();
     this.out.connect(destination);
+  }
+
+  /** Another velocity layer to play softer or louder notes with (P6-17). */
+  addLayer(layer: SampleLayer, samples: readonly PianoSample[]): void {
+    const map = new Map(samples.map((s) => [s.pitch, s]));
+    if (map.size > 0) this.layers.set(layer, { pitches: [...map.keys()], samples: map });
   }
 
   get volume(): number {
@@ -70,19 +84,22 @@ export class PianoSampler implements Instrument {
 
   noteOn(pitch: number, velocity = 90, when = this.ctx.currentTime): Voice {
     const ctx = this.ctx;
-    const nearest = nearestSample(pitch, this.pitches);
-    const sample = nearest === undefined ? undefined : this.samples.get(nearest);
-    if (!sample) return silent;
+    const layer = layerFor(velocity, [...this.layers.keys()]);
+    const set = layer && this.layers.get(layer);
+    const nearest = set && nearestSample(pitch, set.pitches);
+    const sample = nearest === undefined ? undefined : set?.samples.get(nearest);
+    if (!layer || !sample) return silent;
 
     const src = ctx.createBufferSource();
     src.buffer = sample.buffer;
     src.playbackRate.value = playbackRate(pitch, sample.pitch);
     const env = ctx.createGain();
-    const level = velocityGain(velocity) * SAMPLE_LEVEL;
+    // Loudness follows the velocity curve whichever layer plays; the layer brings the tone.
+    const level = velocityGain(velocity) * SAMPLE_LEVEL * 10 ** (-layer.levelDb / 20);
     // A 2 ms fade-in hides any step where playback starts mid-waveform.
     env.gain.setValueAtTime(0, when);
     env.gain.linearRampToValueAtTime(level, when + ATTACK);
-    const cutoff = velocityCutoff(velocity, pitch);
+    const cutoff = velocityCutoff(velocity, pitch, layer.velocity);
     if (cutoff === null) {
       src.connect(env);
     } else {
@@ -186,15 +203,16 @@ function decode(ctx: BaseAudioContext, data: ArrayBuffer): Promise<AudioBuffer> 
   });
 }
 
-/** Fetches and decodes every piano sample from `base` (a URL ending in "/"). */
+/** Fetches and decodes every sample of a layer (the original set by default) from `base`. */
 export async function loadPianoSamples(
   ctx: BaseAudioContext,
   base: URL,
   fetchFile: (url: URL) => Promise<Response> = (url) => fetch(url),
+  layer: SampleLayer = ORIGINAL_LAYER,
 ): Promise<PianoSample[]> {
   return Promise.all(
     SAMPLE_PITCHES.map(async (pitch) => {
-      const name = sampleFileName(pitch);
+      const name = layer.dir + sampleFileName(pitch);
       const res = await fetchFile(new URL(name, base));
       if (!res.ok) throw new Error(`Could not load piano sample ${name} (${res.status}).`);
       const buffer = await decode(ctx, await res.arrayBuffer());

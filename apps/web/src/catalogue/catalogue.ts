@@ -12,6 +12,8 @@ export interface CataloguePiece {
   verified: boolean;
   score: string;
   attribution?: string;
+  /** A named composer's years of birth and death (from the Wikidata cache, P6-07). */
+  composer_years?: [number, number];
   /** Pieces that are levels of one song share this (ADR 0012); `variant` names the level. */
   song?: string;
   variant?: string;
