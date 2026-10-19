@@ -114,16 +114,72 @@ test('keeps playing on other pages, and practice takes the sound over', async ({
   await playOnKeyboard(page);
   await playButton(page).click();
   await expect.poll(() => noteOns(page), { timeout: 10_000 }).toBeGreaterThan(1);
-  await page.getByRole('link', { name: 'My library' }).click();
+
+  // Home, then the Library: the notes go on, and the bar along the bottom shows the piece.
+  await page.getByRole('link', { name: 'Pieces' }).click();
+  await page.getByRole('link', { name: 'My library', exact: true }).click();
   const there = await noteOns(page);
   await expect.poll(() => noteOns(page), { timeout: 10_000 }).toBeGreaterThan(there);
+  const bar = page.locator('.shell-player');
+  await expect(bar).toContainText('Ode to Joy (full tune)');
+
+  // Its Pause ends everything sounding; its Play goes on.
+  await bar.getByRole('button', { name: 'Pause' }).click();
+  await page.waitForTimeout(400);
+  expect(unendedNotes(await sent(page))).toEqual([]);
+  await bar.getByRole('button', { name: 'Play' }).click();
+  const resumed = await noteOns(page);
+  await expect.poll(() => noteOns(page), { timeout: 10_000 }).toBeGreaterThan(resumed);
+
+  // Practice stops it, and the bar says so afterwards.
   await page.evaluate(() => (location.hash = '#/practice/catalogue/twinkle-twinkle'));
   await expect(page.locator('.stats')).toBeVisible();
+  await expect(bar).toHaveCount(0);
   await page.waitForTimeout(500);
   const stopped = await sent(page);
   expect(unendedNotes(stopped)).toEqual([]);
   await page.waitForTimeout(1000);
   expect(await noteOns(page)).toBe(stopped.filter((m) => m[0] === 0x90).length);
+  await page.evaluate(() => (location.hash = '#/library'));
+  await expect(bar).toContainText('Stopped while you practise.');
+  await expect(bar.getByRole('button', { name: 'Play' })).toBeVisible();
+
+  // A tap on the piece opens the Player, where the bar gives way to the Player's own controls.
+  await bar.getByRole('link').click();
+  await expect(page).toHaveURL(/#\/player/);
+  await expect(bar).toHaveCount(0);
+  await expect(page.getByTestId('player-message')).toHaveText('Stopped while you practise.');
+});
+
+test('a page where the Player was never opened shows no bar and makes no Player', async ({
+  page,
+}) => {
+  // Making the Player hands the device's media controls their actions: count those.
+  await page.addInitScript(() => {
+    const w = window as unknown as { __handlers: number };
+    w.__handlers = 0;
+    // On the prototype: WebKit may make navigator.mediaSession's object afresh, without a patch.
+    if (typeof MediaSession === 'undefined') return;
+    const set = MediaSession.prototype.setActionHandler;
+    MediaSession.prototype.setActionHandler = function (this: MediaSession, action, handler) {
+      w.__handlers += 1;
+      set.call(this, action, handler);
+    };
+  });
+  const handlers = () =>
+    page.evaluate(() => (window as unknown as { __handlers: number }).__handlers);
+  await page.goto('./#/library');
+  await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
+  await page.getByRole('link', { name: 'Pieces' }).click();
+  await expect(page.locator('.shell-player')).toHaveCount(0);
+  expect(await handlers()).toBe(0);
+  // The check itself works where there are media controls: opening the Player makes it.
+  await page.getByRole('link', { name: 'Player', exact: true }).click();
+  await expect(title(page)).toBeVisible();
+  const controls = await page.evaluate(
+    () => 'mediaSession' in navigator && typeof MediaMetadata !== 'undefined',
+  );
+  if (controls) expect(await handlers()).toBeGreaterThan(0);
 });
 
 test('moves with the seek picture and the arrow keys', async ({ page }) => {

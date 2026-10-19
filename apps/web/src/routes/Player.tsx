@@ -604,6 +604,10 @@ export function Player() {
       <p className="error" role="status">
         {t('This piece could not be loaded.')}
       </p>
+    ) : state.message === 'practice' ? (
+      <p className="muted player__message" role="status" data-testid="player-message">
+        {t('Stopped while you practise.')}
+      </p>
     ) : null;
 
   const nextEntry = upNextEntries[0];

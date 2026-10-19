@@ -12,6 +12,7 @@ import { ErrorBoundary } from './ui/ErrorBoundary';
 import { language, t } from './i18n';
 import { SheetMusic } from './routes/SheetMusic';
 import { Drills } from './routes/Drills';
+import { MiniPlayer } from './player/MiniPlayer';
 
 // Settings pulls in the encryption code (Argon2id, zip, sync client); load it only when opened.
 const Settings = lazy(() => import('./routes/Settings'));
@@ -94,6 +95,8 @@ export function App() {
           <span className="muted">{t('Free and open source · no tracking · no cookies')}</span>
         </footer>
       )}
+      {/* The Player keeps playing on other pages (P6-09); practice has stopped it. */}
+      {!practising && route.name !== 'player' && <MiniPlayer />}
     </div>
   );
 }
