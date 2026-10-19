@@ -164,6 +164,8 @@ const TEXT_PAIRS: [fg: string, bg: string][] = [
   ['--on-hand', '--warn'],
   // The initials on the Player's generated covers (P6-06).
   ...[1, 2, 3, 4, 5, 6, 7, 8].map((n): [string, string] => ['--on-cover', `--cover-${n}`]),
+  // The title printed on the paper roll's leader in the Player's music room.
+  ['--roll-ink', '--roll-paper'],
 ];
 
 /** Marks that must be seen but are not text: control outlines, focus ring, notes on the canvas. */
@@ -179,6 +181,11 @@ const MARK_PAIRS: [fg: string, bg: string][] = [
   ['--bad', '--canvas-bg'],
   ['--warn', '--canvas-bg'],
   ['--now-line', '--canvas-bg'],
+  // The music room (P6-06): holes in the roll, the hole at the tracker bar, the brass bar.
+  ['--roll-hole', '--roll-paper'],
+  ['--roll-lit', '--roll-paper'],
+  ['--brass', '--surface'],
+  ['--brass', '--bg'],
 ];
 
 describe('design tokens', () => {

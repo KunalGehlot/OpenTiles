@@ -26,6 +26,10 @@
   --font-sans:
     -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Segoe UI Variable Text', 'Segoe UI',
     system-ui, Roboto, 'Helvetica Neue', Arial, sans-serif;
+  /* Titles in the Player's music room and programme (P6-06): a book serif the system already has. */
+  --font-serif:
+    'Iowan Old Style', ui-serif, 'Palatino Linotype', Palatino, 'Book Antiqua', Georgia,
+    'Noto Serif', serif;
   --font-mono: ui-monospace, 'SF Mono', SFMono-Regular, Menlo, Consolas, monospace;
   --text-xs: 0.75rem;
   --text-sm: 0.875rem;
@@ -141,6 +145,19 @@
   --cover-7: #8a2f2f;
   --cover-8: #2f4a8a;
   --on-cover: #ffffff;
+
+  /*
+   * ---- Colour: the Player's music room (P6-06), a player piano: the paper roll, its holes, the
+   * hole at the tracker bar, the title printed on the roll's leader, the brass of the tracker bar
+   * and pedals, and the light on a key that plays. ----
+   */
+  --roll-paper: #efe8d6;
+  --roll-edge: #ddd2b8;
+  --roll-hole: #2b2721;
+  --roll-lit: #9a6b16;
+  --roll-ink: #6b5c3e;
+  --brass: #9c7a35;
+  --key-lit: #e5b85c;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -199,6 +216,14 @@
     --cover-7: #6b2525;
     --cover-8: #253a6b;
     --on-cover: #f2f5f4;
+
+    --roll-paper: #1c1914;
+    --roll-edge: #13110d;
+    --roll-hole: #cdbf9f;
+    --roll-lit: #ffe7b0;
+    --roll-ink: #a8997a;
+    --brass: #b8975a;
+    --key-lit: #f0c66e;
   }
 }
 
@@ -258,6 +283,14 @@
   --cover-7: #6b2525;
   --cover-8: #253a6b;
   --on-cover: #f2f5f4;
+
+  --roll-paper: #1c1914;
+  --roll-edge: #13110d;
+  --roll-hole: #cdbf9f;
+  --roll-lit: #ffe7b0;
+  --roll-ink: #a8997a;
+  --brass: #b8975a;
+  --key-lit: #f0c66e;
 }
 
 /* A theme chosen in Settings (P5-09) also sets the colours of form controls and scrollbars. */
@@ -313,6 +346,14 @@ html[data-high-contrast] {
   --now-line: #000000;
   --loop-band: rgba(0, 81, 63, 0.14);
   --glow: transparent;
+
+  --roll-paper: #ffffff;
+  --roll-edge: #000000;
+  --roll-hole: #000000;
+  --roll-lit: #00513f;
+  --roll-ink: #000000;
+  --brass: #000000;
+  --key-lit: #00513f;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -358,6 +399,14 @@ html[data-high-contrast] {
     --now-line: #ffffff;
     --loop-band: rgba(111, 240, 200, 0.16);
     --glow: transparent;
+
+    --roll-paper: #000000;
+    --roll-edge: #ffffff;
+    --roll-hole: #ffffff;
+    --roll-lit: #6ff0c8;
+    --roll-ink: #ffffff;
+    --brass: #ffffff;
+    --key-lit: #6ff0c8;
   }
 }
 
@@ -404,6 +453,14 @@ html[data-high-contrast]:where([data-theme='dark']) {
   --now-line: #ffffff;
   --loop-band: rgba(111, 240, 200, 0.16);
   --glow: transparent;
+
+  --roll-paper: #000000;
+  --roll-edge: #ffffff;
+  --roll-hole: #ffffff;
+  --roll-lit: #6ff0c8;
+  --roll-ink: #ffffff;
+  --brass: #ffffff;
+  --key-lit: #6ff0c8;
 }
 
 /* ---- Large print (Settings → Accessibility): every size above is in rem ---- */

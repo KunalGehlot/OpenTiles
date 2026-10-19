@@ -793,7 +793,16 @@ export const de: Readonly<Record<string, string>> = {
   'Nothing matches.': 'Nichts gefunden.',
   'Import a piece': 'Ein Stück importieren',
   'Up next': 'Als Nächstes',
-  'Cover of {title}': 'Cover von {title}',
+  // The music room and the programme (P6-06, player-piano.md)
+  'Let it play': 'Einfach spielen lassen',
+  'Play all': 'Alle spielen',
+  Traditional: 'Traditionell',
+  'Other pieces': 'Weitere Stücke',
+  'Show hands': 'Hände zeigen',
+  'Music stand view': 'Notenpult-Ansicht',
+  'Leave the music stand view': 'Notenpult-Ansicht verlassen',
+  'Next: {title}': 'Danach: {title}',
+  'Open the music room': 'Musikzimmer öffnen',
   '{at} of {total}': '{at} von {total}',
   Position: 'Position',
   // Plays on (P6-01)

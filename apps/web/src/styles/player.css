@@ -1,11 +1,13 @@
 /*
- * The Player (P6-06 prototype, P6-07). Calm and dark-first, one accent, the generated covers the
- * only other colour. Colours come from tokens.css only; the covers' colours are --cover-1 … 8.
+ * The Player (P6-06, P6-07, docs/phase-6/player-piano.md): the programme and the music room, a
+ * player piano. Calm and dark-first, one accent; the room's paper, brass and ivory come from the
+ * --roll-*, --brass and --key-* tokens, the initials tiles from --cover-1 … 8. Titles are set in
+ * the system's book serif (--font-serif), as a printed programme sets them.
  */
 
-/* A wider column than other pages: three areas side by side. The header lines up with it. */
+/* A wider column than other pages, so the piano can be a grand. The header lines up with it. */
 .app--player {
-  --page-width: 104rem;
+  --page-width: 120rem;
 }
 
 .player {
@@ -30,18 +32,18 @@
   margin: 0;
 }
 
-.player__design {
-  margin-left: auto;
-}
-
 .player__body {
   display: grid;
-  grid-template-columns: minmax(18rem, 25rem) minmax(0, 1fr) minmax(14rem, 19rem);
+  grid-template-columns: minmax(18rem, 24rem) minmax(0, 1fr);
   gap: var(--space-5);
   align-items: start;
 }
 
-/* ---- Covers and initials tiles ---- */
+.player--queue .player__body {
+  grid-template-columns: minmax(18rem, 24rem) minmax(0, 1fr) minmax(14rem, 18rem);
+}
+
+/* ---- Initials tiles ---- */
 
 .cover-1 {
   --tile: var(--cover-1);
@@ -82,7 +84,7 @@
   letter-spacing: 0.02em;
 }
 
-/* ---- The collection ---- */
+/* ---- The programme ---- */
 
 .collection,
 .upnext {
@@ -93,6 +95,14 @@
   border: 1px solid var(--line);
   border-radius: var(--radius-lg);
   background: var(--surface);
+}
+
+.programme__play {
+  justify-content: center;
+  gap: var(--space-2);
+  min-height: 3rem;
+  font-size: var(--text-md);
+  font-weight: 600;
 }
 
 .collection__tools {
@@ -110,15 +120,59 @@
 .collection__list {
   display: flex;
   flex-direction: column;
-  gap: 2px;
-  max-height: calc(100vh - 17rem);
-  max-height: calc(100dvh - 17rem);
+  gap: var(--space-4);
+  max-height: calc(100vh - 21rem);
+  max-height: calc(100dvh - 21rem);
   min-height: 12rem;
   margin: 0 calc(-1 * var(--space-2));
-  padding: 0;
+  padding: 0 0 var(--space-2);
   overflow-y: auto;
   overscroll-behavior: contain;
+}
+
+.programme__group ul {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  margin: 0;
+  padding: 0;
   list-style: none;
+}
+
+.programme__heading {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-2);
+  margin: 0 var(--space-2) var(--space-1);
+  padding: var(--space-2) 0 var(--space-1);
+  border-bottom: 1px solid var(--line);
+  background: var(--surface);
+}
+
+.programme__heading h3 {
+  margin: 0;
+  color: var(--muted);
+  font-family: var(--font-serif);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.programme__all {
+  flex: none;
+  min-height: 0;
+  white-space: nowrap;
+  padding: var(--space-1) var(--space-2);
+  border-color: transparent;
+  background: transparent;
+  box-shadow: none;
+  color: var(--accent);
+  font-size: var(--text-sm);
 }
 
 .collection__row {
@@ -155,7 +209,7 @@
 
 .collection__title {
   overflow: hidden;
-  font-weight: 600;
+  font-weight: 500;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
@@ -180,86 +234,140 @@
   font-variant-numeric: tabular-nums;
 }
 
-/* ---- Now playing ---- */
+/* Three small bars beside the piece playing, rising and falling like keys. */
+.programme__playing {
+  display: inline-block;
+  flex: none;
+  width: 0.9rem;
+  height: 0.8rem;
+  background:
+    linear-gradient(currentColor, currentColor) 0 100% / 0.2rem 60% no-repeat,
+    linear-gradient(currentColor, currentColor) 50% 100% / 0.2rem 100% no-repeat,
+    linear-gradient(currentColor, currentColor) 100% 100% / 0.2rem 40% no-repeat;
+  animation: programme-playing 0.9s ease-in-out infinite alternate;
+}
 
-.np {
+@keyframes programme-playing {
+  to {
+    background-size:
+      0.2rem 100%,
+      0.2rem 35%,
+      0.2rem 80%;
+  }
+}
+
+/* ---- The music room ---- */
+
+.room {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  min-width: 0;
+  padding: var(--space-5) var(--space-5) var(--space-4);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  background:
+    radial-gradient(
+      70rem 26rem at 50% 0%,
+      color-mix(in srgb, var(--brass) 9%, transparent),
+      transparent 75%
+    ),
+    var(--surface);
+}
+
+.room__head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-3) var(--space-5);
+}
+
+.room__close {
+  display: none;
+}
+
+.room__title {
+  flex: 1 1 20rem;
+  min-width: 0;
+}
+
+.room__title h2 {
+  margin: 0;
+  overflow-wrap: anywhere;
+  font-family: var(--font-serif);
+  font-size: clamp(1.6rem, 1.2rem + 1.1vw, 2.6rem);
+  font-weight: 500;
+  line-height: var(--leading-tight);
+  letter-spacing: 0.005em;
+}
+
+.room__composer {
+  margin: var(--space-2) 0 0;
+  color: var(--muted);
+  font-family: var(--font-serif);
+  font-size: var(--text-sm);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.room__actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.room__piano canvas {
+  display: block;
+  width: 100%;
+  /* The whole room, controls included, fits the window: the piano takes what is left. */
+  height: clamp(16rem, calc(100vh - 27rem), 46rem);
+  height: clamp(16rem, calc(100dvh - 27rem), 46rem);
+}
+
+.room__deck {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: var(--space-4);
-  min-width: 0;
-  padding: var(--space-6) var(--space-5);
-  border: 1px solid var(--line);
-  border-radius: var(--radius-lg);
-  background: radial-gradient(40rem 22rem at 50% 0%, var(--glow), transparent 70%), var(--surface);
+  gap: var(--space-3);
+  transition: opacity var(--dur-3) ease;
 }
 
-.np--stage {
-  align-items: stretch;
-  padding: var(--space-3);
-}
-
-.np-cover {
-  position: relative;
-  width: min(100%, 30rem, 44vh);
-  aspect-ratio: 1;
-  margin-top: var(--space-2);
-}
-
-.np-cover canvas {
-  position: relative;
-  display: block;
-  width: 100%;
-  height: 100%;
-  border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-3);
-}
-
-/* A soft halo of the cover's own colour, brightening with each new chord while it plays. */
-.np-cover__glow {
-  position: absolute;
-  inset: -10%;
-  border-radius: 50%;
-  background: radial-gradient(closest-side, var(--tile), transparent);
-  filter: blur(28px);
-  opacity: 0;
-  pointer-events: none;
-}
-
-.np-text {
-  max-width: 100%;
+.room__next {
+  margin: 0;
+  color: var(--muted);
+  font-family: var(--font-serif);
+  font-style: italic;
   text-align: center;
 }
 
-.np-text h2 {
-  margin: 0;
-  overflow-wrap: anywhere;
-  font-size: var(--text-2xl);
-  line-height: var(--leading-tight);
-}
-
-.np-text p {
-  margin: var(--space-1) 0 0;
-}
-
 .np-seek {
-  width: min(100%, 44rem);
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  width: min(100%, 52rem);
 }
 
 .np-seek canvas {
   display: block;
-  width: 100%;
-  height: 2.75rem;
+  flex: 1 1 auto;
+  min-width: 0;
+  height: 2.25rem;
   border-radius: var(--radius-sm);
   cursor: pointer;
 }
 
-.np-seek__times {
-  display: flex;
-  justify-content: space-between;
+.np-seek__time {
+  flex: none;
+  min-width: 3.2em;
   color: var(--muted);
   font-size: var(--text-sm);
   font-variant-numeric: tabular-nums;
+}
+
+.np-seek__time:last-child {
+  text-align: right;
 }
 
 .np-transport {
@@ -285,21 +393,22 @@
   color: var(--text);
 }
 
-.np-icon[aria-pressed='true'] {
+.np-icon[aria-pressed='true'],
+.np-icon[aria-expanded='true'] {
   color: var(--accent);
 }
 
 .np-play {
-  width: 4rem;
-  height: 4rem;
+  width: 3.75rem;
+  height: 3.75rem;
   padding: 0;
   border-radius: 50%;
   box-shadow: var(--shadow-2);
 }
 
 .np-play .icon {
-  width: 1.6rem;
-  height: 1.6rem;
+  width: 1.5rem;
+  height: 1.5rem;
 }
 
 .np-controls {
@@ -312,62 +421,128 @@
 }
 
 .np-controls .tempo {
-  flex: 0 1 20rem;
+  flex: 0 1 18rem;
 }
 
-/* ---- Design B: the stage ---- */
-
-.stage {
-  position: relative;
-  overflow: hidden;
-  border-radius: var(--radius);
+.room__toggle[aria-pressed='true'] {
+  border-color: var(--accent-line);
+  background: var(--accent-soft);
+  color: var(--accent-ink);
 }
 
-.stage canvas {
-  display: block;
-  width: 100%;
-  height: clamp(20rem, 52vh, 36rem);
+/* ---- Stand mode: the music room alone, for a laptop or iPad on the music rest ---- */
+
+.room--stand {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  gap: var(--space-3);
+  padding: max(var(--space-5), env(safe-area-inset-top))
+    max(var(--space-6), env(safe-area-inset-right))
+    calc(max(var(--space-3), env(safe-area-inset-bottom)) + 5rem)
+    max(var(--space-6), env(safe-area-inset-left));
+  border: 0;
+  border-radius: 0;
+  background:
+    radial-gradient(
+      80rem 30rem at 50% 0%,
+      color-mix(in srgb, var(--brass) 10%, transparent),
+      transparent 75%
+    ),
+    var(--bg);
 }
 
-.stage__glass {
+.room--stand .room__head {
+  justify-content: center;
+  text-align: center;
+}
+
+.room--stand .room__title {
+  flex: 1 1 100%;
+  order: 1;
+}
+
+.room--stand .room__actions {
   position: absolute;
-  top: var(--space-4);
-  right: var(--space-4);
-  left: var(--space-4);
+  top: max(var(--space-4), env(safe-area-inset-top));
+  right: max(var(--space-4), env(safe-area-inset-right));
+  transition: opacity var(--dur-3) ease;
+}
+
+.room--stand .room__title h2 {
+  font-size: clamp(2rem, 1.4rem + 1.6vw, 3.2rem);
+}
+
+.room--stand .room__piano {
   display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--space-3);
-  padding: var(--space-3) var(--space-4);
-  border: 1px solid color-mix(in srgb, var(--line-strong) 50%, transparent);
-  border-radius: var(--radius-lg);
-  background: color-mix(in srgb, var(--surface) 60%, transparent);
-  box-shadow: var(--shadow-2);
-  -webkit-backdrop-filter: blur(16px) saturate(1.3);
-  backdrop-filter: blur(16px) saturate(1.3);
+  flex: 1 1 auto;
+  min-height: 0;
 }
 
-.stage__title {
-  display: flex;
-  align-items: center;
-  gap: var(--space-3);
-  min-width: 0;
+.room--stand .room__piano canvas {
+  height: 100%;
 }
 
-.stage__title .np-text {
-  text-align: left;
+.room--stand .player__message {
+  display: none;
 }
 
-.stage__title .np-text h2 {
-  font-size: var(--text-xl);
+.room--stand .room__composer {
+  font-size: var(--text-md);
 }
 
-.np--stage .np-seek {
-  align-self: center;
+/* The band under the piano holds the controls while they are wanted and "Next: …" otherwise. */
+.room--stand .room__deck {
+  position: absolute;
+  right: max(var(--space-6), env(safe-area-inset-right));
+  bottom: max(var(--space-3), env(safe-area-inset-bottom));
+  left: max(var(--space-6), env(safe-area-inset-left));
+  flex-direction: row;
+  justify-content: center;
+  gap: var(--space-5);
+}
+
+.room--stand .np-controls {
+  display: none;
+}
+
+.room--stand .room__next {
+  position: absolute;
+  right: 0;
+  bottom: calc(max(var(--space-3), env(safe-area-inset-bottom)) + 1.25rem);
+  left: 0;
+  opacity: 0;
+  transition: opacity var(--dur-3) ease;
+}
+
+.room--idle {
+  cursor: none;
+}
+
+.room--idle .room__deck,
+.room--idle .room__actions {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.room--idle .room__next {
+  opacity: 1;
+}
+
+/* Whatever else is on the page stays out of the way under the stand. */
+.player--stand .minibar {
+  display: none;
 }
 
 /* ---- Up next ---- */
+
+.upnext {
+  display: none;
+}
+
+.player--queue .upnext {
+  display: flex;
+}
 
 .upnext h2 {
   display: flex;
@@ -396,22 +571,6 @@
   min-width: 0;
 }
 
-/* ---- The keyboard strip (design A) ---- */
-
-.keystrip {
-  width: 100%;
-  overflow: hidden;
-  border: 1px solid var(--line);
-  border-radius: var(--radius);
-  background: var(--canvas-bg);
-}
-
-.keystrip canvas {
-  display: block;
-  width: 100%;
-  height: clamp(4rem, 9vh, 6.5rem);
-}
-
 /* ---- The mini bar (narrow screens) ---- */
 
 .minibar {
@@ -421,28 +580,62 @@
 /* ---- Narrower windows ---- */
 
 @media (max-width: 1180px) {
-  .player__body {
-    grid-template-columns: minmax(16rem, 22rem) minmax(0, 1fr);
+  .player__body,
+  .player--queue .player__body {
+    grid-template-columns: minmax(16rem, 21rem) minmax(0, 1fr);
   }
 
-  .upnext {
-    display: none;
+  .player--queue .upnext {
+    position: fixed;
+    top: var(--space-4);
+    right: max(var(--space-2), env(safe-area-inset-right));
+    bottom: var(--space-4);
+    z-index: 30;
+    width: min(20rem, calc(100vw - 2rem));
+    overflow-y: auto;
+    box-shadow: var(--shadow-3);
+  }
+
+  .room {
+    padding: var(--space-4) var(--space-3) var(--space-3);
   }
 }
 
-/* ⅓ of an iPad and phones: the list is the page, the piece playing a bar along the bottom. */
+/* ⅓ of an iPad and phones: the programme is the page, the piece playing a bar along the bottom;
+   the bar opens the music room over it. */
 @media (max-width: 760px) {
-  .player__body {
+  .player__body,
+  .player--queue .player__body {
     grid-template-columns: minmax(0, 1fr);
   }
 
-  .np,
-  .keystrip {
+  .room {
     display: none;
   }
 
-  .player__design {
-    margin-left: 0;
+  .player--room-open .room,
+  .room--stand {
+    position: fixed;
+    inset: 0;
+    z-index: 40;
+    display: flex;
+    overflow-y: auto;
+    padding: max(var(--space-3), env(safe-area-inset-top))
+      max(var(--space-3), env(safe-area-inset-right))
+      max(var(--space-3), env(safe-area-inset-bottom))
+      max(var(--space-3), env(safe-area-inset-left));
+    border: 0;
+    border-radius: 0;
+    background: var(--bg);
+  }
+
+  .player--room-open .room__close {
+    display: inline-grid;
+    place-items: center;
+  }
+
+  .player--room-open .room__piano canvas {
+    height: clamp(16rem, 48vh, 30rem);
   }
 
   .collection__list {
@@ -461,13 +654,27 @@
     z-index: 20;
     display: flex;
     align-items: center;
-    gap: var(--space-3);
+    gap: var(--space-2);
     overflow: hidden;
-    padding: var(--space-2) var(--space-2) var(--space-2) var(--space-3);
+    padding: var(--space-2) var(--space-2) var(--space-2) var(--space-2);
     border: 1px solid var(--line-strong);
     border-radius: var(--radius-lg);
     background: var(--surface);
     box-shadow: var(--shadow-3);
+  }
+
+  .minibar__open {
+    display: flex;
+    flex: 1 1 auto;
+    align-items: center;
+    gap: var(--space-3);
+    min-width: 0;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    box-shadow: none;
+    color: var(--text);
+    text-align: left;
   }
 
   .minibar__progress {
@@ -483,13 +690,13 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .np-cover__glow {
-    display: none;
+  .programme__playing {
+    animation: none;
   }
 }
 
-html[data-reduced-motion] .np-cover__glow {
-  display: none;
+html[data-reduced-motion] .programme__playing {
+  animation: none;
 }
 
 .player__message {

@@ -1,9 +1,9 @@
-// The Player (P6-07, ADR 0019): all the learner's music in one list, the piece playing, and what
-// comes next. It plays through the app's one transport (P6-05), so the music goes on while the
-// learner moves to other pages; practice stops it. Two designs of "Now playing" sit behind a
-// switch until the maintainer chooses one (P6-06): A, a record sleeve (a large generated cover, the
-// piece's picture as the seek bar, a slim keyboard below), and B, a stage (the notes rising from a
-// wide keyboard behind frosted glass).
+// The Player (P6-06, P6-07, ADR 0019, docs/phase-6/player-piano.md): a self-playing grand piano.
+// The programme lists all the learner's music, the catalogue and the library, as a concert
+// programme does; the music room shows the piece playing as a player piano, its paper roll moving
+// down onto keys that go down by themselves. It plays through the app's one transport (P6-05), so
+// the music goes on while the learner moves to other pages; practice stops it. Stand mode shows
+// the music room alone, for a laptop or iPad on the music rest.
 //
 // Everything that moves is drawn on canvases from one requestAnimationFrame loop that reads the
 // transport's position through refs (docs/architecture.md); React lays out the page and the
@@ -19,7 +19,10 @@ import {
   useSyncExternalStore,
 } from 'react';
 import {
+  ChevronDown,
   ListMusic,
+  Maximize2,
+  Minimize2,
   Pause,
   Play,
   Repeat,
@@ -28,6 +31,8 @@ import {
   SkipBack,
   SkipForward,
 } from 'lucide-react';
+import { buildPlayback } from '@opentiles/practice';
+import type { HandFilter } from '@opentiles/practice';
 import { TempoMap } from '@opentiles/song-model';
 import type { Song } from '@opentiles/song-model';
 import { playsOn, playsOnUnavailableHint } from '../audio/plays-on';
@@ -42,25 +47,33 @@ import {
 import { nativeMidiAvailable } from '../input/native-midi-input';
 import { locale, t } from '../i18n';
 import { href } from '../lib/router';
-import { coverIndex, coverNotes, drawCover, initials } from '../player/art';
+import { coverIndex, initials } from '../player/art';
 import { playerTransport } from '../player/browser';
 import { searchCollection, sortCollection } from '../player/collection';
 import type { CollectionEntry, CollectionSort } from '../player/collection';
 import { loadCollection } from '../player/load';
+import {
+  LEADER_SECONDS,
+  drawRoom,
+  drawSeekPicture,
+  paperGrain,
+  readRoomColours,
+  roomGeometry,
+  rollData,
+} from '../player/piano';
+import type { RollData, RoomColours, RoomGeometry } from '../player/piano';
+import { origin, programme, TRADITIONAL, worksOf } from '../player/programme';
+import type { ComposerGroup, Work } from '../player/programme';
 import { upNext } from '../player/queue';
 import type { Repeat as RepeatMode } from '../player/queue';
-import { drawKeys, drawSeekPicture, drawStage, soundingAt, stageLayout } from '../player/stage';
 import type { PlayerTransport, TransportState } from '../player/transport';
 import { PlaysOnControl } from '../practice/PlaysOnControl';
 import type { MidiPlayback } from '../settings/model';
 import { updateAppSettings, useAppSettings, useEffectiveAccessibility } from '../settings/store';
 import { SearchBox } from '../ui/SearchBox';
-import { parseColour } from '../views/colour';
-import type { Rgb } from '../views/colour';
 import { readPalette } from '../views/renderer';
 import type { Palette } from '../views/renderer';
 
-type Variant = 'a' | 'b';
 type Filter = 'all' | 'library' | 'catalogue';
 
 /** What every canvas needs each frame: where the music is. */
@@ -71,6 +84,8 @@ interface Frame {
   fraction: number;
   seconds: number;
   total: number;
+  /** Where the roll is: the position, and past the end while the next piece's leader passes. */
+  roll: number;
 }
 
 type Draw = (frame: Frame) => void;
@@ -102,27 +117,32 @@ function fit(
   return { ctx, w, h };
 }
 
+/** Calls `onChange` when the colours may have changed: light or dark, a theme or high contrast. */
+function useThemeChange(onChange: () => void): void {
+  const ref = useRef(onChange);
+  ref.current = onChange;
+  useEffect(() => {
+    const call = () => ref.current();
+    const scheme = window.matchMedia('(prefers-color-scheme: dark)');
+    scheme.addEventListener('change', call);
+    const observer = new MutationObserver(call);
+    observer.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ['data-theme', 'data-high-contrast'],
+    });
+    return () => {
+      scheme.removeEventListener('change', call);
+      observer.disconnect();
+    };
+  }, []);
+}
+
 const formatTime = (s: number) => {
   const whole = Math.max(0, Math.round(s));
   return `${Math.floor(whole / 60)}:${String(whole % 60).padStart(2, '0')}`;
 };
 
-function coverColours(el: Element, name: string): { colour: Rgb; ink: Rgb } {
-  const css = getComputedStyle(el);
-  const read = (token: string, fallback: Rgb) =>
-    parseColour(css.getPropertyValue(token).trim())?.rgb ?? fallback;
-  return {
-    colour: read(`--cover-${coverIndex(name)}`, [45, 91, 138]),
-    ink: read('--on-cover', [255, 255, 255]),
-  };
-}
-
 const coverName = (e: Pick<CollectionEntry, 'composer' | 'title'>) => e.composer ?? e.title;
-
-/** The prototype's design choice, kept in the address so a screenshot link opens the same one. */
-function readVariant(): Variant {
-  return /[?&]design=b\b/.test(window.location.hash) ? 'b' : 'a';
-}
 
 /** The app's Player transport as React state; the canvases read its position every frame. */
 function useTransport(): { transport: PlayerTransport; state: TransportState } {
@@ -179,6 +199,42 @@ function useMidiState(): {
   return { ...state, connect: attach };
 }
 
+/** The element in full screen, with Safari's prefixed API where the plain one is missing. */
+type FullscreenElement = HTMLElement & { webkitRequestFullscreen?: () => Promise<void> | void };
+type FullscreenDocument = Document & {
+  webkitFullscreenElement?: Element | null;
+  webkitExitFullscreen?: () => Promise<void> | void;
+};
+
+function requestFullscreen(el: HTMLElement): void {
+  const target = el as FullscreenElement;
+  try {
+    if (target.requestFullscreen) void target.requestFullscreen().catch(() => {});
+    else void target.webkitRequestFullscreen?.();
+  } catch {
+    // Not offered here (an iPhone, an embedded view): stand mode still fills the window.
+  }
+}
+
+function fullscreenElement(): Element | null {
+  const doc = document as FullscreenDocument;
+  return doc.fullscreenElement ?? doc.webkitFullscreenElement ?? null;
+}
+
+function exitFullscreen(): void {
+  const doc = document as FullscreenDocument;
+  if (!fullscreenElement()) return;
+  try {
+    if (doc.exitFullscreen) void doc.exitFullscreen().catch(() => {});
+    else void doc.webkitExitFullscreen?.();
+  } catch {
+    // Already left.
+  }
+}
+
+/** Stand mode's controls fade after this long without a tap, a mouse move or a key. */
+const STAND_IDLE_MS = 3000;
+
 const REPEAT_NEXT: Record<RepeatMode, RepeatMode> = { off: 'all', all: 'one', one: 'off' };
 
 export function Player() {
@@ -190,8 +246,14 @@ export function Player() {
   const [error, setError] = useState<string | null>(null);
   const [query, setQuery] = useState('');
   const [filter, setFilter] = useState<Filter>('all');
-  const [sort, setSort] = useState<CollectionSort>('title');
-  const [variant, setVariant] = useState<Variant>(readVariant);
+  const [sort, setSort] = useState<CollectionSort>('composer');
+  const [showHands, setShowHands] = useState(false);
+  const [queueOpen, setQueueOpen] = useState(false);
+  /** On a narrow screen, the music room open over the programme. */
+  const [roomOpen, setRoomOpen] = useState(false);
+  const [stand, setStand] = useState(false);
+  const [idle, setIdle] = useState(false);
+  const roomRef = useRef<HTMLElement>(null);
 
   useEffect(() => {
     loadCollection().then(setEntries, (e: unknown) =>
@@ -204,30 +266,59 @@ export function Player() {
   const song = state.piece?.song ?? null;
   const playing = state.status === 'playing' || state.status === 'between';
 
-  // Something to show from the start, without playing: the list as first shown, at Ode to Joy
-  // if it is there. A queue the Player already has (from another visit) stays.
-  useEffect(() => {
-    if (!entries || transport.state.key) return;
-    const keys = sortCollection(entries, 'title', locale())
-      .filter((e) => e.playable)
-      .map((e) => e.key);
-    void transport.cue(keys, Math.max(0, keys.indexOf('catalogue:ode-to-joy')));
-  }, [entries, transport]);
-
-  const shown = useMemo(() => {
-    const scoped = (entries ?? []).filter((e) => filter === 'all' || e.source === filter);
-    return sortCollection(searchCollection(scoped, query), sort, locale());
-  }, [entries, filter, query, sort]);
+  const scoped = useMemo(
+    () =>
+      searchCollection(
+        (entries ?? []).filter((e) => filter === 'all' || e.source === filter),
+        query,
+      ),
+    [entries, filter, query],
+  );
+  /** The programme grouped by composer, or a plain list in the order the learner sorts by. */
+  const groups = useMemo<ComposerGroup[]>(
+    () =>
+      sort === 'composer'
+        ? programme(scoped, locale())
+        : [{ composer: null, works: worksOf(sortCollection(scoped, sort, locale())) }],
+    [scoped, sort],
+  );
+  const shownWorks = useMemo(() => groups.flatMap((g) => g.works), [groups]);
   const upNextEntries = useMemo(
     () =>
       upNext(state.queue).flatMap((k) => (byKey.get(k) ? [byKey.get(k) as CollectionEntry] : [])),
     [state.queue, byKey],
   );
 
-  /** Plays the list as shown, from `entry` on. */
-  const playFrom = (entry: CollectionEntry) => {
-    const keys = shown.filter((e) => e.playable).map((e) => e.key);
-    void transport.playQueue(keys, Math.max(0, keys.indexOf(entry.key)));
+  // Something to show from the start, without playing: the programme, at Ode to Joy if it is
+  // there. A queue the Player already has (from another visit) stays.
+  useEffect(() => {
+    if (!entries || transport.state.key) return;
+    const works = programme(entries, locale())
+      .flatMap((g) => g.works)
+      .filter((w) => w.entry.playable);
+    const start = works.findIndex((w) => w.versions.some((v) => v.key === 'catalogue:ode-to-joy'));
+    void transport.cue(
+      works.map((w) => w.entry.key),
+      Math.max(0, start),
+    );
+  }, [entries, transport]);
+
+  const playableKeys = (works: readonly Work[]) =>
+    works.filter((w) => w.entry.playable).map((w) => w.entry.key);
+
+  /** Plays the works as shown, from `work` on. */
+  const playFrom = (work: Work) => {
+    const keys = playableKeys(shownWorks);
+    void transport.playQueue(keys, Math.max(0, keys.indexOf(work.entry.key)));
+  };
+
+  /** Everything shown, shuffled, round and round until stopped: the piano in a hotel lobby. */
+  const letItPlay = () => {
+    const keys = playableKeys(shownWorks);
+    if (keys.length === 0) return;
+    transport.setShuffle(true);
+    transport.setRepeat('all');
+    void transport.playQueue(keys, Math.floor(Math.random() * keys.length));
   };
 
   // One loop for every canvas on the page, reading the transport's position.
@@ -244,9 +335,19 @@ export function Player() {
     const map = new TempoMap(song.tempos);
     let raf = 0;
     const loop = () => {
-      const total = Math.max(0.1, transport.state.duration);
+      const st = transport.state;
+      const total = Math.max(0.1, st.duration);
       const s = Math.min(total, transport.positionNow());
-      const frame = { song, beat: map.secondsToBeat(s), fraction: s / total, seconds: s, total };
+      // Between two pieces the roll turns on at the speed it played, for the leader to pass.
+      const roll = st.status === 'between' ? total + (st.gap - transport.gapLeft()) * st.tempo : s;
+      const frame = {
+        song,
+        beat: map.secondsToBeat(s),
+        fraction: s / total,
+        seconds: s,
+        total,
+        roll,
+      };
       for (const draw of draws.current) draw(frame);
       raf = requestAnimationFrame(loop);
     };
@@ -254,7 +355,51 @@ export function Player() {
     return () => cancelAnimationFrame(raf);
   }, [song, transport]);
 
-  // Space plays and pauses, ← and → move 5 s, Shift with them goes to the piece before or after.
+  const enterStand = () => {
+    setStand(true);
+    setIdle(false);
+    if (roomRef.current) requestFullscreen(roomRef.current);
+  };
+  const leaveStand = useCallback(() => {
+    setStand(false);
+    exitFullscreen();
+  }, []);
+
+  // Leaving full screen with the browser's own Escape leaves stand mode too.
+  useEffect(() => {
+    if (!stand) return;
+    let wasFull = false;
+    const onChange = () => {
+      if (fullscreenElement()) wasFull = true;
+      else if (wasFull) setStand(false);
+    };
+    document.addEventListener('fullscreenchange', onChange);
+    document.addEventListener('webkitfullscreenchange', onChange);
+    return () => {
+      document.removeEventListener('fullscreenchange', onChange);
+      document.removeEventListener('webkitfullscreenchange', onChange);
+    };
+  }, [stand]);
+
+  // In stand mode the controls fade when nothing moves for a while, and come back on any touch.
+  useEffect(() => {
+    if (!stand) return;
+    let timer = window.setTimeout(() => setIdle(true), STAND_IDLE_MS);
+    const wake = () => {
+      setIdle(false);
+      window.clearTimeout(timer);
+      timer = window.setTimeout(() => setIdle(true), STAND_IDLE_MS);
+    };
+    const events = ['pointermove', 'pointerdown', 'keydown'] as const;
+    for (const e of events) window.addEventListener(e, wake);
+    return () => {
+      window.clearTimeout(timer);
+      for (const e of events) window.removeEventListener(e, wake);
+    };
+  }, [stand]);
+
+  // Space plays and pauses, ← and → move 5 s, Shift with them goes to the piece before or after,
+  // F switches stand mode and Escape leaves it.
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if ((e.target as HTMLElement | null)?.closest('input, select, textarea, [role="slider"]')) {
@@ -268,11 +413,16 @@ export function Player() {
         e.preventDefault();
         if (e.shiftKey) void (forward ? transport.next() : transport.previous());
         else transport.seek(transport.positionNow() + (forward ? 5 : -5));
+      } else if ((e.key === 'f' || e.key === 'F') && !e.metaKey && !e.ctrlKey && !e.altKey) {
+        if (stand) leaveStand();
+        else enterStand();
+      } else if (e.key === 'Escape' && stand) {
+        leaveStand();
       }
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [transport]);
+  });
 
   const supported = midiSupported();
   const choice = settings.midi.playback;
@@ -398,7 +548,13 @@ export function Player() {
           </button>
         ))}
       </div>
-      {playsOnControl}
+      <button
+        className="room__toggle"
+        aria-pressed={showHands}
+        onClick={() => setShowHands((v) => !v)}
+      >
+        {t('Show hands')}
+      </button>
     </div>
   );
 
@@ -422,34 +578,71 @@ export function Player() {
       </p>
     ) : null;
 
-  const nowPlaying = current && (
+  const nextEntry = upNextEntries[0];
+  const room = current && (
     <section
-      className={`np np--${variant === 'a' ? 'sleeve' : 'stage'}`}
+      ref={roomRef}
+      className={`room${stand ? ' room--stand' : ''}${stand && idle ? ' room--idle' : ''}`}
       aria-label={t('Now playing')}
     >
-      {variant === 'a' ? (
-        <>
-          <Cover entry={current} song={song} pulse={playing && !reducedMotion} />
-          <NowPlayingText entry={current} />
-          <Seek onSeek={(s) => transport.seek(s)} />
-          {transportButtons}
-          {controls}
-          {song && <KeyboardStrip />}
-        </>
-      ) : (
-        <>
-          <Stage entry={current} transport={transportButtons} />
-          <Seek onSeek={(s) => transport.seek(s)} />
-          {controls}
-        </>
+      <header className="room__head">
+        <button
+          className="np-icon room__close"
+          aria-label={t('Close')}
+          onClick={() => setRoomOpen(false)}
+        >
+          <ChevronDown />
+        </button>
+        <RoomTitle entry={current} />
+        <div className="room__actions">
+          {playsOnControl}
+          <button
+            className="np-icon"
+            aria-label={t('Up next')}
+            aria-expanded={queueOpen}
+            onClick={() => setQueueOpen((v) => !v)}
+          >
+            <ListMusic />
+          </button>
+          <button
+            className="np-icon"
+            aria-label={stand ? t('Leave the music stand view') : t('Music stand view')}
+            aria-pressed={stand}
+            onClick={() => (stand ? leaveStand() : enterStand())}
+          >
+            {stand ? <Minimize2 /> : <Maximize2 />}
+          </button>
+        </div>
+      </header>
+      {song && (
+        <MusicRoom
+          transport={transport}
+          hands={state.hands}
+          touch={settings.touch}
+          showHands={showHands}
+          still={reducedMotion}
+          nextTitle={nextEntry ? { title: nextEntry.title, composer: nextEntry.composer } : null}
+        />
       )}
+      {stand && nextEntry && (
+        <p className="room__next">{t('Next: {title}', { title: nextEntry.title })}</p>
+      )}
+      <div className="room__deck">
+        <Seek onSeek={(s) => transport.seek(s)} />
+        {transportButtons}
+        {controls}
+      </div>
       {message}
     </section>
   );
 
   return (
     <FrameContext.Provider value={register}>
-      <div className="player">
+      <div
+        className={`player${roomOpen ? ' player--room-open' : ''}${stand ? ' player--stand' : ''}${
+          queueOpen ? ' player--queue' : ''
+        }`}
+      >
         <header className="player__head">
           <h1>{t('Player')}</h1>
           <p className="muted">
@@ -457,34 +650,17 @@ export function Player() {
               'Everything you can play, the catalogue and your library, played on this device or your keyboard.',
             )}
           </p>
-          {/* Prototype only: the two designs to choose from (P6-06). */}
-          <div className="segmented player__design" role="group" aria-label="Design">
-            {(
-              [
-                ['a', 'A · Record sleeve'],
-                ['b', 'B · Stage'],
-              ] as const
-            ).map(([v, label]) => (
-              <button
-                key={v}
-                aria-pressed={variant === v}
-                onClick={() => {
-                  setVariant(v);
-                  window.history.replaceState(
-                    null,
-                    '',
-                    v === 'b' ? '#/player?design=b' : '#/player',
-                  );
-                }}
-              >
-                {label}
-              </button>
-            ))}
-          </div>
         </header>
         {error && <p className="error">{error}</p>}
         <div className="player__body">
           <section className="collection" aria-label={t('All music')}>
+            <button
+              className="primary programme__play"
+              onClick={letItPlay}
+              disabled={shownWorks.length === 0}
+            >
+              <Play /> {t('Let it play')}
+            </button>
             <SearchBox
               value={query}
               onChange={setQuery}
@@ -512,8 +688,8 @@ export function Player() {
                   value={sort}
                   onChange={(e) => setSort(e.target.value as CollectionSort)}
                 >
-                  <option value="title">{t('Title')}</option>
                   <option value="composer">{t('Composer')}</option>
+                  <option value="title">{t('Title')}</option>
                   <option value="added">{t('Recently added')}</option>
                   <option value="played">{t('Recently played')}</option>
                   <option value="length">{t('Length')}</option>
@@ -522,46 +698,37 @@ export function Player() {
             </div>
             {entries === null ? (
               <p className="muted">{t('Loading…')}</p>
-            ) : shown.length === 0 ? (
+            ) : shownWorks.length === 0 ? (
               <p className="muted">
                 {t('Nothing matches.')}{' '}
                 <a href={href({ name: 'library' })}>{t('Import a piece')}</a>
               </p>
             ) : (
-              <ul className="collection__list">
-                {shown.map((e) => (
-                  <li key={e.key}>
-                    <button
-                      className="collection__row"
-                      aria-current={e.key === current?.key ? 'true' : undefined}
-                      disabled={!e.playable}
-                      onClick={() => playFrom(e)}
-                    >
-                      <InitialsTile entry={e} />
-                      <span className="collection__text">
-                        <span className="collection__title">{e.title}</span>
-                        <span className="collection__meta">
-                          {[e.composer, e.source === 'library' ? t('My library') : null]
-                            .filter(Boolean)
-                            .join(' · ')}
-                        </span>
-                      </span>
-                      <span className="collection__length">
-                        {e.seconds !== undefined ? formatTime(e.seconds) : ''}
-                      </span>
-                    </button>
-                  </li>
+              <div className="collection__list">
+                {groups.map((group) => (
+                  <ProgrammeGroup
+                    key={group.composer ?? ''}
+                    group={group}
+                    grouped={sort === 'composer'}
+                    currentKey={current?.key ?? null}
+                    playing={playing}
+                    onPlay={playFrom}
+                    onPlayAll={() => {
+                      const keys = playableKeys(group.works);
+                      if (keys.length) void transport.playQueue(keys, 0);
+                    }}
+                  />
                 ))}
-              </ul>
+              </div>
             )}
           </section>
-          {nowPlaying}
+          {room}
           <aside className="upnext" aria-label={t('Up next')}>
             <h2>
               <ListMusic /> {t('Up next')}
             </h2>
             <ol>
-              {upNextEntries.slice(0, 8).map((e) => (
+              {upNextEntries.slice(0, 12).map((e) => (
                 <li key={e.key}>
                   <InitialsTile entry={e} />
                   <span className="collection__text">
@@ -579,6 +746,7 @@ export function Player() {
             playing={playing}
             onToggle={() => void transport.toggle()}
             onNext={() => void transport.next()}
+            onOpen={() => setRoomOpen(true)}
           />
         )}
       </div>
@@ -594,12 +762,86 @@ function InitialsTile({ entry }: { entry: CollectionEntry }) {
   );
 }
 
-function NowPlayingText({ entry }: { entry: CollectionEntry }) {
+/** One composer's works, under their name, as a concert programme lists them. */
+function ProgrammeGroup({
+  group,
+  grouped,
+  currentKey,
+  playing,
+  onPlay,
+  onPlayAll,
+}: {
+  group: ComposerGroup;
+  grouped: boolean;
+  currentKey: string | null;
+  playing: boolean;
+  onPlay: (work: Work) => void;
+  onPlayAll: () => void;
+}) {
+  const heading =
+    group.composer === TRADITIONAL ? t('Traditional') : (group.composer ?? t('Other pieces'));
   return (
-    <div className="np-text">
+    <section className="programme__group" aria-label={grouped ? heading : undefined}>
+      {grouped && (
+        <div className="programme__heading">
+          <h3>{heading}</h3>
+          {group.works.length > 1 && (
+            <button className="programme__all" onClick={onPlayAll}>
+              {t('Play all')}
+            </button>
+          )}
+        </div>
+      )}
+      <ul>
+        {group.works.map((work) => {
+          const e = work.entry;
+          const isCurrent = work.versions.some((v) => v.key === currentKey);
+          const meta = grouped
+            ? group.composer === TRADITIONAL
+              ? origin(e.composer)
+              : null
+            : (e.composer ?? null);
+          return (
+            <li key={e.key}>
+              <button
+                className="collection__row"
+                aria-current={isCurrent ? 'true' : undefined}
+                disabled={!e.playable}
+                onClick={() => onPlay(work)}
+              >
+                {!grouped && <InitialsTile entry={e} />}
+                <span className="collection__text">
+                  <span className="collection__title">{e.title}</span>
+                  {(meta || e.source === 'library') && (
+                    <span className="collection__meta">
+                      {[meta, e.source === 'library' ? t('My library') : null]
+                        .filter(Boolean)
+                        .join(' · ')}
+                    </span>
+                  )}
+                </span>
+                {isCurrent && playing && <span className="programme__playing" aria-hidden="true" />}
+                <span className="collection__length">
+                  {e.seconds !== undefined ? formatTime(e.seconds) : ''}
+                </span>
+              </button>
+            </li>
+          );
+        })}
+      </ul>
+    </section>
+  );
+}
+
+/** The title as a printed programme gives it: the piece, then the composer in small capitals. */
+function RoomTitle({ entry }: { entry: CollectionEntry }) {
+  const composer = entry.composer && origin(entry.composer) ? t('Traditional') : entry.composer;
+  const from = origin(entry.composer);
+  return (
+    <div className="np-text room__title">
       <h2 aria-live="polite">{entry.title}</h2>
-      <p className="muted">
-        {[entry.composer, entry.source === 'library' ? t('My library') : t('Catalogue')]
+      <p className="room__composer">
+        {[composer, from, entry.source === 'library' ? t('My library') : null]
           .filter(Boolean)
           .join(' · ')}
       </p>
@@ -607,65 +849,88 @@ function NowPlayingText({ entry }: { entry: CollectionEntry }) {
   );
 }
 
-/** The generated cover, drawn once per piece; it glows softly with each new chord while playing. */
-function Cover({
-  entry,
-  song,
-  pulse,
+/** A piece's roll, kept while its song, hands and touch stay the same. */
+function useRollCache(): (song: Song, hands: HandFilter, touch: 'natural' | 'even') => RollData {
+  const cache = useRef(new Map<Song, { key: string; data: RollData }>());
+  return useCallback((song, hands, touch) => {
+    const key = `${hands}/${touch}`;
+    const known = cache.current.get(song);
+    if (known?.key === key) return known.data;
+    const data = rollData(buildPlayback(song, { hands, touch }));
+    // Two songs at most: the one playing and the one after the gap.
+    if (cache.current.size > 2) cache.current.clear();
+    cache.current.set(song, { key, data });
+    return data;
+  }, []);
+}
+
+/** The player piano: the roll, the tracker bar, the keys and the pedals, drawn every frame. */
+function MusicRoom({
+  transport,
+  hands,
+  touch,
+  showHands,
+  still,
+  nextTitle,
 }: {
-  entry: CollectionEntry;
-  song: Song | null;
-  pulse: boolean;
+  transport: PlayerTransport;
+  hands: HandFilter;
+  touch: 'natural' | 'even';
+  showHands: boolean;
+  still: boolean;
+  nextTitle: { title: string; composer?: string } | null;
 }) {
   const canvas = useRef<HTMLCanvasElement>(null);
-  const glow = useRef<HTMLDivElement>(null);
-  useEffect(() => {
-    const c = canvas.current;
-    if (!c || !song) return;
-    const draw = () => {
-      const f = fit(c);
-      if (!f) return;
-      const { colour, ink } = coverColours(c, coverName(entry));
-      f.ctx.clearRect(0, 0, f.w, f.h);
-      drawCover(f.ctx, Math.min(f.w, f.h), coverNotes(song), colour, ink);
-    };
-    draw();
-    const ro = new ResizeObserver(draw);
-    ro.observe(c);
-    const scheme = window.matchMedia('(prefers-color-scheme: dark)');
-    scheme.addEventListener('change', draw);
-    return () => {
-      ro.disconnect();
-      scheme.removeEventListener('change', draw);
-    };
-  }, [entry, song]);
-  const lastOnset = useRef(-1);
-  useFrame(({ song: s, beat }) => {
-    const el = glow.current;
-    if (!el) return;
-    if (!pulse) {
-      el.style.opacity = '0';
-      return;
+  const colours = useRef<{ c: RoomColours; grain: CanvasPattern | null } | null>(null);
+  const geometry = useRef<{ key: string; g: RoomGeometry } | null>(null);
+  const roll = useRollCache();
+  useThemeChange(() => {
+    colours.current = null;
+  });
+  useFrame(({ roll: seconds }) => {
+    const el = canvas.current;
+    const st = transport.state;
+    if (!el || !st.piece) return;
+    const f = fit(el);
+    if (!f || f.w < 1 || f.h < 1) return;
+    if (!colours.current) {
+      const c = readRoomColours(el);
+      const tile = c.plain ? null : paperGrain(c.dark);
+      colours.current = { c, grain: tile ? f.ctx.createPattern(tile, 'repeat') : null };
     }
-    // The latest onset at or before the position: a new chord brightens the glow, which fades.
-    let onset = -1;
-    for (const n of s.notes) {
-      if (n.startBeat > beat) break;
-      onset = n.startBeat;
+    const data = roll(st.piece.song, hands, touch);
+    const key = `${f.w}x${f.h}/${data.low}-${data.high}`;
+    if (geometry.current?.key !== key) {
+      geometry.current = { key, g: roomGeometry(f.w, f.h, data) };
     }
-    if (onset !== lastOnset.current) {
-      lastOnset.current = onset;
-      el.style.transition = 'none';
-      el.style.opacity = '0.75';
-      void el.offsetWidth;
-      el.style.transition = 'opacity 600ms ease-out';
-      el.style.opacity = '0.25';
+    let next = null;
+    let leader = null;
+    if (st.status === 'between') {
+      // The next piece's roll follows this one: its leader, then its first holes, arriving at
+      // the tracker bar as the gap ends.
+      const end = st.duration + st.gap * st.tempo;
+      const upcoming = transport.upcoming;
+      if (upcoming) next = { data: roll(upcoming.song, hands, touch), offset: end };
+      const label = upcoming ?? nextTitle;
+      if (label) {
+        leader = {
+          title: label.title,
+          ...(label.composer ? { composer: label.composer } : {}),
+          at: end - LEADER_SECONDS - 0.1,
+        };
+      }
     }
+    drawRoom(
+      f.ctx,
+      geometry.current.g,
+      { data, seconds, next, leader, hands: showHands, still },
+      colours.current.c,
+      colours.current.grain,
+    );
   });
   return (
-    <div className={`np-cover cover-${coverIndex(coverName(entry))}`}>
-      <div className="np-cover__glow" ref={glow} aria-hidden="true" />
-      <canvas ref={canvas} role="img" aria-label={t('Cover of {title}', { title: entry.title })} />
+    <div className="room__piano">
+      <canvas ref={canvas} aria-hidden="true" />
     </div>
   );
 }
@@ -680,6 +945,9 @@ function Seek({ onSeek }: { onSeek: (seconds: number) => void }) {
   const remaining = useRef<HTMLSpanElement>(null);
   const palette = useRef<{ p: Palette; unplayed: string } | null>(null);
   const last = useRef({ seconds: 0, total: 0 });
+  useThemeChange(() => {
+    palette.current = null;
+  });
   useFrame(({ song, fraction, seconds, total }) => {
     const c = canvas.current;
     if (!c) return;
@@ -703,12 +971,6 @@ function Seek({ onSeek }: { onSeek: (seconds: number) => void }) {
       t('{at} of {total}', { at: formatTime(seconds), total: formatTime(total) }),
     );
   });
-  useEffect(() => {
-    const scheme = window.matchMedia('(prefers-color-scheme: dark)');
-    const reset = () => (palette.current = null);
-    scheme.addEventListener('change', reset);
-    return () => scheme.removeEventListener('change', reset);
-  }, []);
   const seekTo = (clientX: number) => {
     const c = canvas.current;
     if (!c) return;
@@ -718,6 +980,9 @@ function Seek({ onSeek }: { onSeek: (seconds: number) => void }) {
   };
   return (
     <div className="np-seek">
+      <span className="np-seek__time" ref={elapsed}>
+        0:00
+      </span>
       <canvas
         ref={canvas}
         role="slider"
@@ -748,58 +1013,9 @@ function Seek({ onSeek }: { onSeek: (seconds: number) => void }) {
           onSeek(to);
         }}
       />
-      <div className="np-seek__times">
-        <span ref={elapsed}>0:00</span>
-        <span ref={remaining}>−0:00</span>
-      </div>
-    </div>
-  );
-}
-
-/** Design B: the notes rising from a wide keyboard, the title and transport on frosted glass. */
-function Stage({ entry, transport }: { entry: CollectionEntry; transport: React.ReactNode }) {
-  const canvas = useRef<HTMLCanvasElement>(null);
-  const palette = useRef<Palette | null>(null);
-  useFrame(({ song, beat }) => {
-    const c = canvas.current;
-    if (!c) return;
-    const f = fit(c);
-    if (!f) return;
-    palette.current ??= readPalette(c);
-    const layout = stageLayout(song, f.w);
-    const keysHeight = Math.min(f.h * 0.34, layout.whiteWidth * 4.6);
-    drawStage(f.ctx, song, layout, f.w, f.h, keysHeight, beat, palette.current);
-  });
-  return (
-    <div className="stage">
-      <canvas ref={canvas} aria-hidden="true" />
-      <div className="stage__glass">
-        <div className="stage__title">
-          <InitialsTile entry={entry} />
-          <NowPlayingText entry={entry} />
-        </div>
-        {transport}
-      </div>
-    </div>
-  );
-}
-
-/** Design A: a slim keyboard under the page with the sounding keys lit. */
-function KeyboardStrip() {
-  const canvas = useRef<HTMLCanvasElement>(null);
-  const palette = useRef<Palette | null>(null);
-  useFrame(({ song, beat }) => {
-    const c = canvas.current;
-    if (!c) return;
-    const f = fit(c);
-    if (!f) return;
-    palette.current ??= readPalette(c);
-    f.ctx.clearRect(0, 0, f.w, f.h);
-    drawKeys(f.ctx, stageLayout(song, f.w), 0, f.h, soundingAt(song, beat), palette.current);
-  });
-  return (
-    <div className="keystrip">
-      <canvas ref={canvas} aria-hidden="true" />
+      <span className="np-seek__time" ref={remaining}>
+        −0:00
+      </span>
     </div>
   );
 }
@@ -810,11 +1026,13 @@ function MiniBar({
   playing,
   onToggle,
   onNext,
+  onOpen,
 }: {
   entry: CollectionEntry;
   playing: boolean;
   onToggle: () => void;
   onNext: () => void;
+  onOpen: () => void;
 }) {
   const progress = useRef<HTMLDivElement>(null);
   useFrame(({ fraction }) => {
@@ -823,11 +1041,13 @@ function MiniBar({
   return (
     <div className="minibar" role="region" aria-label={t('Now playing')}>
       <div className="minibar__progress" ref={progress} />
-      <InitialsTile entry={entry} />
-      <span className="collection__text">
-        <span className="collection__title">{entry.title}</span>
-        <span className="collection__meta">{entry.composer}</span>
-      </span>
+      <button className="minibar__open" onClick={onOpen} aria-label={t('Open the music room')}>
+        <InitialsTile entry={entry} />
+        <span className="collection__text">
+          <span className="collection__title">{entry.title}</span>
+          <span className="collection__meta">{entry.composer}</span>
+        </span>
+      </button>
       <button className="np-icon" aria-label={playing ? t('Pause') : t('Play')} onClick={onToggle}>
         {playing ? <Pause /> : <Play />}
       </button>

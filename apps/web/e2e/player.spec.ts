@@ -33,7 +33,7 @@ test('lists the catalogue and the library together, with search and filters', as
   await importTinyMidi(page, 'Little Study.mid');
   await page.goto('./#/player');
   const list = page.locator('.collection__list');
-  await expect(list.getByText('Ode to Joy (theme)')).toBeVisible();
+  await expect(list.getByText('Ode to Joy (full tune)')).toBeVisible();
   await expect(list.getByText('Little Study')).toBeVisible();
   await page
     .getByRole('group', { name: 'Show' })
@@ -50,12 +50,12 @@ test('plays on the keyboard: play, pause and next send notes there, and none on 
 }) => {
   await fakeKeyboard(page);
   await page.goto('./#/player');
-  await expect(title(page)).toHaveText('Ode to Joy (theme)');
+  await expect(title(page)).toHaveText('Ode to Joy (full tune)');
   await playOnKeyboard(page);
   await playButton(page).click();
   await expect.poll(() => noteOns(page), { timeout: 10_000 }).toBeGreaterThan(2);
   expect(await deviceNotes(page)).toBe(0);
-  await expect(page.locator('.np-seek__times span').first()).not.toHaveText('0:00');
+  await expect(page.locator('.np-seek__time').first()).not.toHaveText('0:00');
 
   // Pause: everything sounding ends, and nothing more arrives.
   await page.keyboard.press('Space');
@@ -69,7 +69,7 @@ test('plays on the keyboard: play, pause and next send notes there, and none on 
   // Next: the following piece in the list, playing.
   await page.keyboard.press('Space');
   await page.getByRole('button', { name: 'Next piece' }).click();
-  await expect(title(page)).not.toHaveText('Ode to Joy (theme)');
+  await expect(title(page)).not.toHaveText('Ode to Joy (full tune)');
   const before = await noteOns(page);
   await expect.poll(() => noteOns(page), { timeout: 10_000 }).toBeGreaterThan(before);
 });
