@@ -93,14 +93,15 @@ pnpm --filter @opentiles/ios-shell ipa    # writes apps/ios-shell/build/OpenTile
 
 ## When something goes wrong
 
-| What you see                               | What to do                                                                                                     |
-| ------------------------------------------ | -------------------------------------------------------------------------------------------------------------- |
-| "Untrusted Developer" when opening the app | Trust your Apple ID: Settings → General → VPN & Device Management.                                             |
-| "Developer Mode required"                  | Settings → Privacy & Security → Developer Mode, then restart.                                                  |
-| The app stopped opening after a week       | The 7 days ran out. Refresh it in AltStore or SideStore, or install it again; your library is still there.     |
-| "Maximum number of apps" or "app ID limit" | A free Apple ID allows three signed apps at once and ten new app identifiers a week. Remove one or wait.       |
-| The keyboard does not appear               | Plug it in (USB-C, or Apple's Lightning to USB Camera Adapter) and press **Connect MIDI keyboard** again.      |
-| A Bluetooth keyboard does not appear       | Pair it in the app: Settings → MIDI keyboard → **Pair a Bluetooth MIDI keyboard**, not in the iPad's settings. |
+| What you see                               | What to do                                                                                                            |
+| ------------------------------------------ | --------------------------------------------------------------------------------------------------------------------- |
+| "Untrusted Developer" when opening the app | Trust your Apple ID: Settings → General → VPN & Device Management.                                                    |
+| "Unable to Verify App"                     | Connect the iPad to the internet, then Settings → General → VPN & Device Management → your Apple ID → **Verify App**. |
+| "Developer Mode required"                  | Settings → Privacy & Security → Developer Mode, then restart.                                                         |
+| The app stopped opening after a week       | The 7 days ran out. Refresh it in AltStore or SideStore, or install it again; your library is still there.            |
+| "Maximum number of apps" or "app ID limit" | A free Apple ID allows three signed apps at once and ten new app identifiers a week. Remove one or wait.              |
+| The keyboard does not appear               | Plug it in (USB-C, or Apple's Lightning to USB Camera Adapter) and press **Connect MIDI keyboard** again.             |
+| A Bluetooth keyboard does not appear       | Pair it in the app: Settings → MIDI keyboard → **Pair a Bluetooth MIDI keyboard**, not in the iPad's settings.        |
 
 See also the [user guide](user-guide.md) and the [FAQ](faq.md). How the app is built is described
 in [`apps/ios-shell/README.md`](../apps/ios-shell/README.md); why it is shipped this way, in
