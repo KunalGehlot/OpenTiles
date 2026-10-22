@@ -29,7 +29,9 @@ use the tools that make hard bars easier. For quick answers see the [FAQ](faq.md
    your path. A level counts as complete when every piece in it reaches 90 %.
 2. Use the search box to find a piece by title, composer or level.
 3. Press **Practise**. The piece opens in **Wait** mode with falling notes over a keyboard.
-4. Play the notes that light up. In wait mode the piece waits for you; nothing is timed.
+4. A big 3, 2, 1 counts you in while the first notes fall into place. Then play the notes that
+   light up. In wait mode the piece waits for you; nothing is timed. If the app's sound has not
+   started yet, the screen first asks you to tap it or press a key.
 
 Your best result for each piece, your streak and the time you practised today are kept on your
 device and shown on the home page.
@@ -110,7 +112,8 @@ missed, and which bars were hardest.
 All of these are on the practice screen or under **Options**.
 
 - **Hands: Left / Both / Right.** Practise one hand alone. **Play other hand** makes the app play
-  the hand you are not practising.
+  the hand you are not practising. When that hand begins first, its opening plays after the
+  count-in, and the piece then waits for your first note.
 - **Tempo.** Slow a piece down to a speed you can manage, then raise it. OpenTiles remembers your
   last mode, hand, tempo and metronome choice.
 - **Loop.** Repeat a range of bars. Choose the bars with the button or drag across the falling

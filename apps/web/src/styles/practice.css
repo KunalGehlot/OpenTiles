@@ -486,6 +486,76 @@ label.check {
   background: color-mix(in srgb, var(--bg) 72%, transparent);
 }
 
+/* The count-in before a run (P6-20): a big 3, 2, 1 over the falling notes, each popping in and
+   fading away within its second. Taps go through to the keys and the page. */
+.countdown {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.countdown__number {
+  font-size: clamp(7rem, 32vmin, 16rem);
+  font-weight: 800;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+  color: var(--accent);
+  text-shadow: 0 0.04em 0.3em color-mix(in srgb, var(--accent) 35%, transparent);
+  animation: countdown-pop 1s var(--ease) forwards;
+}
+
+@keyframes countdown-pop {
+  0% {
+    opacity: 0;
+    transform: scale(0.55);
+  }
+  18% {
+    opacity: 1;
+    transform: scale(1.06);
+  }
+  32% {
+    transform: scale(1);
+  }
+  70% {
+    opacity: 1;
+    transform: scale(1);
+    filter: blur(0);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(1.4);
+    filter: blur(3px);
+  }
+}
+
+/* Without motion the number simply stands for its second. */
+html[data-reduced-motion] .countdown__number {
+  animation: none !important;
+}
+
+.countdown__tap {
+  display: grid;
+  gap: var(--space-1);
+  margin: 0;
+  padding: var(--space-4) var(--space-6);
+  border-radius: var(--radius-lg);
+  background: color-mix(in srgb, var(--surface) 88%, transparent);
+  box-shadow: var(--shadow-2);
+  font-size: var(--text-3xl);
+  font-weight: 700;
+  text-align: center;
+  color: var(--text);
+}
+
+.countdown__tap small {
+  font-size: var(--text-md);
+  font-weight: 400;
+  color: var(--muted);
+}
+
 .overlay .panel {
   width: 100%;
   max-width: 28.75rem;

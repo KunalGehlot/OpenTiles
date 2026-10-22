@@ -188,6 +188,12 @@ describe('MIDI out', () => {
     const only = new SplitInstrument(null, keyboard.inst);
     only.play(62, 0, 1);
     expect(keyboard.log.at(-1)).toBe('play 62');
+    // Before sound starts on this device, the keyboard still plays its part.
+    expect(playbackInstrument(null, null, 'both')).toBeNull();
+    expect(playbackInstrument(null, keyboard.inst, 'device')).toBeNull();
+    playbackInstrument(null, keyboard.inst, 'both')?.play(64, 0, 1);
+    playbackInstrument(null, keyboard.inst, 'keyboard')?.play(65, 0, 1);
+    expect(keyboard.log.slice(-2)).toEqual(['play 64', 'play 65']);
   });
 
   it('picks the output that belongs to the connected keyboard', () => {

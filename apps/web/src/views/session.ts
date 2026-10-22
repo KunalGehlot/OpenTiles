@@ -167,9 +167,15 @@ export interface SessionStatus {
   recorded: boolean;
   /** Perfect, good, missed and wrong notes and the streak, for the live stats strip (P5-07). */
   live: LiveStats;
+  /** The big number of the count-in (3, 2, 1), or null when none is running. */
+  countdown: number | null;
+  /** A wait-mode run waits for a tap: its opening plays on this device, whose sound is not on yet. */
+  tapToStart: boolean;
 }
 
 const LEAD_IN = 1.5;
+/** The count-in before a run the learner plays, with a big 3, 2, 1 (seconds; P6-20). */
+export const COUNTDOWN = 3;
 /** How far ahead notes and clicks are handed to the instrument; it may ask for less (lookAhead). */
 const SCHEDULE_AHEAD = 0.3;
 /** Pause between the end of a looped section and its next run in wait mode (seconds). */
@@ -192,6 +198,8 @@ function easeInOut(k: number): number {
 
 /** How long a judged hold bar stays on screen after it ends (seconds). */
 const HOLD_FADE = 0.4;
+/** A step back of the practice clock larger than this is the switch to the audio clock (seconds). */
+const CLOCK_SWITCH = 0.5;
 
 export class PracticeSession {
   readonly tempoMap: TempoMap;
@@ -199,9 +207,17 @@ export class PracticeSession {
   mode: PracticeMode = 'wait';
   hands: HandFilter = 'both';
   tempo = 1;
-  accompany = true;
+  private accompanyValue = true;
   /** Play a sound for notes from inputs that make none themselves (touch). */
   soundForTouch = true;
+  /**
+   * Count in before each run the learner plays (P6-20): three seconds with a big 3, 2, 1 while the
+   * first notes fall into place, then the piece starts by itself. In wait mode the other hand's
+   * opening plays in time, and the run waits at the learner's first note. Off for drills.
+   */
+  countIn = false;
+  /** True when the app's notes can be heard: sound on this device has started, or a keyboard plays. */
+  soundReady: () => boolean = () => true;
   /**
    * How much the screen gives away (P5-05): falling notes and the keys to press (`full`), the keys
    * only (`keys`), or nothing but the score (`none`, for sight-reading drills).
@@ -303,6 +319,12 @@ export class PracticeSession {
 
   private lastFramePerf = 0;
   private readonly display: () => number;
+  /** The wait-mode count-in and the other hand's opening, up to the learner's first step. */
+  private lead: { timeline: Timeline; playback: PlaybackCursor; untilBeat: number } | null = null;
+  /** A wait-mode count-in is due but waits for sound (see `tapToStart`). */
+  private leadPending = false;
+  /** The practice clock's last reading, to notice it switching (see `time`). */
+  private lastClock = -Infinity;
 
   constructor(
     song: Song,
@@ -318,6 +340,48 @@ export class PracticeSession {
 
   get song(): Song {
     return this.songValue;
+  }
+
+  /**
+   * The practice clock. It runs on the page's clock until sound starts and on the audio clock from
+   * then on, which steps back to near zero. In wait mode on a MIDI keyboard that can happen mid-run
+   * (the keyboard needs no tap), so the times kept so far move with it: lit keys go out, holds and
+   * the run's length stay right.
+   */
+  private time(): number {
+    const t = this.clock();
+    const last = this.lastClock;
+    this.lastClock = t;
+    if (t < last - CLOCK_SWITCH) this.moveTimes(t - last, t);
+    return t;
+  }
+
+  private moveTimes(by: number, t: number): void {
+    // A listen or play-along run is scheduled on the old clock; it stops and starts again on Play.
+    if (this.timeline) this.stop();
+    const lead = this.lead;
+    if (lead) {
+      // The count-in goes on where it was, without playing its notes again.
+      const old = lead.timeline;
+      lead.timeline = new Timeline(this.song, old.factor, old.startTime + by, old.startBeat);
+      lead.playback.seek(lead.playback.secondsAt(t - by), t);
+    }
+    const move = (at: number) => (at ? at + by : 0);
+    this.startedAt = move(this.startedAt);
+    this.finishedAt = move(this.finishedAt);
+    this.runStartedAt = move(this.runStartedAt);
+    this.lastInputAt = move(this.lastInputAt);
+    this.loopRestartAt = move(this.loopRestartAt);
+    if (this.homing) this.homing.at += by;
+    if (this.waitClick) this.waitClick.next += by;
+    for (const f of this.flashes) f.until += by;
+    for (const l of this.labels) l.until += by;
+    for (const [pitch, at] of this.strikes) this.strikes.set(pitch, at + by);
+    for (const h of this.holds.values()) {
+      h.start += by;
+      if (h.end !== undefined) h.end += by;
+    }
+    this.recorder.shift(by);
   }
 
   /**
@@ -393,13 +457,23 @@ export class PracticeSession {
           : judged.filter((r) => r.judgement !== 'missed').length,
       wrong: this.mode === 'wait' ? stats.wrong : (this.scorer?.extras.length ?? 0),
       summary: this.summary,
-      elapsed: this.startedAt ? (this.finishedAt || this.clock()) - this.startedAt : 0,
+      elapsed: this.startedAt ? (this.finishedAt || this.time()) - this.startedAt : 0,
       loop: this.loop,
       metronome: this.metronome,
       holds: { ...this.holdStats },
       recorded: this.recording !== null && this.recorder.notes.length > 0,
       live: { ...this.tally.stats },
+      countdown: this.countdownNumber(),
+      tapToStart: this.leadPending,
     };
+  }
+
+  private countdownNumber(): number | null {
+    const tl =
+      this.lead?.timeline ?? (this.countIn && this.mode === 'play-along' ? this.timeline : null);
+    if (!tl) return null;
+    const left = tl.startTime - this.time();
+    return left > 0 ? Math.min(COUNTDOWN, Math.ceil(left)) : null;
   }
 
   private emitStatus(): void {
@@ -437,7 +511,82 @@ export class PracticeSession {
     this.waitClick = null;
     this.beat = this.steps[0]?.beat ?? span?.fromBeat ?? 0;
     this.onExpected(this.steps[0]?.pitches ?? []);
+    this.lead = null;
+    this.leadPending = this.countIn && this.mode === 'wait' && this.steps.length > 0;
+    this.startCountIn();
     this.emitStatus();
+  }
+
+  /**
+   * Where a run starts: the learner's first note, or earlier when another note plays before it (the
+   * other hand's opening, or anything in Listen).
+   */
+  private openingBeat(first: number): number {
+    const playsAll = this.mode === 'listen';
+    const playsOther = this.accompany && this.hands !== 'both';
+    if (!playsAll && !playsOther) return first;
+    const from = this.loopSpan?.fromBeat ?? -Infinity;
+    let opening = first;
+    for (const n of this.song.notes) {
+      if (n.startBeat >= from - 1e-6 && n.startBeat < opening) opening = n.startBeat;
+    }
+    return opening;
+  }
+
+  /**
+   * Starts a due wait-mode count-in (P6-20). One whose opening would play on this device waits
+   * while that device has no sound, so nothing plays unheard: the screen asks for a tap, and the
+   * page calls this again once sound has started. Playing the first step starts the run at once.
+   */
+  startCountIn(): void {
+    const first = this.steps[this.wait.index];
+    if (!this.leadPending || !first || this.wait.index > 0) {
+      this.leadPending = false;
+      return;
+    }
+    const from = this.openingBeat(first.beat);
+    const events =
+      from < first.beat
+        ? buildPlayback(this.song, {
+            hands: this.hands,
+            accompany: true,
+            fromBeat: from,
+            toBeat: first.beat,
+            pedals: false,
+            touch: this.touch,
+          })
+        : [];
+    const t = this.time();
+    const tl = new Timeline(this.song, this.tempo, t + COUNTDOWN, from);
+    if (events.length > 0 && !this.soundReady()) {
+      // The picture the count-in will start from: the first notes three seconds away.
+      this.beat = tl.beatAt(t);
+      this.emitStatus();
+      return;
+    }
+    this.leadPending = false;
+    this.lead = {
+      timeline: tl,
+      playback: new PlaybackCursor(
+        events,
+        { time: tl.startTime, seconds: tl.tempo.beatToSeconds(from) },
+        tl.factor,
+      ),
+      untilBeat: first.beat,
+    };
+    this.beat = tl.beatAt(t);
+    this.waitClick = null;
+    if (this.metronome) this.countInClicks(t, t + COUNTDOWN, from);
+    this.emitStatus();
+  }
+
+  /** Up to four clicks on the beats before `start`, the last one accented. */
+  private countInClicks(t: number, start: number, fromBeat: number): void {
+    const beatSec = this.tempoMap.secondsPerBeatAt(fromBeat) / this.tempo;
+    for (let k = 1; k <= 4; k++) {
+      const when = start - k * beatSec;
+      if (when > t) this.click(when, k === 4);
+    }
   }
 
   setMode(mode: PracticeMode): void {
@@ -448,6 +597,28 @@ export class PracticeSession {
   setHands(hands: HandFilter): void {
     this.hands = hands;
     this.rebuild();
+  }
+
+  /** True when a step played in wait mode also plays the other hand. */
+  get playsOtherHand(): boolean {
+    return this.mode === 'wait' && this.accompany && this.hands !== 'both';
+  }
+
+  /** Play the other hand when practising one: in wait mode step by step, in play-along in time. */
+  get accompany(): boolean {
+    return this.accompanyValue;
+  }
+
+  /** A play-along run takes the change at once: the other hand joins or stops from where it is. */
+  set accompany(on: boolean) {
+    if (on === this.accompanyValue) return;
+    this.accompanyValue = on;
+    const tl = this.timeline;
+    if (!tl || this.mode !== 'play-along') return;
+    const cursor = this.playbackFor(tl);
+    const t = this.time();
+    cursor.seek(cursor.secondsAt(t), t);
+    this.playback = cursor;
   }
 
   setTempo(factor: number): void {
@@ -484,7 +655,7 @@ export class PracticeSession {
     this.waitClick = null;
     const tl = this.timeline;
     if (tl) {
-      const t = this.clock();
+      const t = this.time();
       this.clicks = on ? this.clickTimes(tl, Math.max(tl.beatAt(t), tl.startBeat)) : [];
       this.clicked = 0;
     }
@@ -521,7 +692,7 @@ export class PracticeSession {
     }
     const tl = this.timeline;
     if (!tl) return [];
-    const t = this.clock();
+    const t = this.time();
     return this.song.notes.filter((n) => {
       if (!this.inHands(n)) return false;
       const nt = tl.timeOf(n.startBeat);
@@ -543,7 +714,7 @@ export class PracticeSession {
   // --- Input ---------------------------------------------------------------------------------
 
   input(e: NoteEvent): void {
-    const t = this.clock();
+    const t = this.time();
     this.lastInputAt = t;
     if (e.source === 'touch' && this.soundForTouch && this.synth) {
       this.synth.play(e.pitch, t, 0.6, e.velocity ?? 90);
@@ -573,7 +744,12 @@ export class PracticeSession {
           this.done.add(n.id);
           if (!this.marks.has(n.id)) this.marks.set(n.id, 'correct');
         }
-        if (out.completed && before) this.accompanyStep(before, t);
+        if (out.completed && before) {
+          // Played before the count-in ended: the run is under way.
+          this.lead = null;
+          this.leadPending = false;
+          this.accompanyStep(before, t);
+        }
       } else if (out.kind === 'wrong') {
         this.keys.set(e.pitch, 'wrong');
         this.flash(e.pitch, 'wrong', t);
@@ -617,7 +793,7 @@ export class PracticeSession {
   }
 
   /** A key came up; `time` is the input's own time for it (practice clock). */
-  release(pitch: number, time = this.clock()): void {
+  release(pitch: number, time = this.time()): void {
     this.keys.delete(pitch);
     this.recorder.noteOff(pitch, time);
     this.echoVoices.get(pitch)?.stop();
@@ -629,7 +805,7 @@ export class PracticeSession {
     let j = judgeHold(hold.length, hold.end - hold.start);
     // In wait mode the learner sets the pace; holding on while finding the next note is fine.
     if (j === 'long' && this.mode === 'wait') j = 'good';
-    this.judgeHoldAs(hold, j, this.clock());
+    this.judgeHoldAs(hold, j, this.time());
   }
 
   /** Key presses count for the run's recording while the run is on. */
@@ -692,7 +868,7 @@ export class PracticeSession {
   /** The last finished run as played and polished, ready for the piano (P4-09). */
   renderings(): { asPlayed: RenderNote[]; polished: RenderNote[] } | null {
     const r = this.recording;
-    const t = this.clock();
+    const t = this.time();
     // Keys still held count up to now.
     const played: PlayedNote[] = this.recorder.notes.map((p) =>
       p.end === undefined ? { ...p, end: Math.max(p.start, t) } : { ...p },
@@ -753,7 +929,7 @@ export class PracticeSession {
 
   /** A looped section was played through in wait mode: report it and start it again. */
   private finishWaitLoop(): void {
-    const t = this.clock();
+    const t = this.time();
     const stats = this.wait.stats;
     const total = stats.correct + stats.wrong;
     this.reportLoopRun(
@@ -781,7 +957,7 @@ export class PracticeSession {
   }
 
   private finishWait(): void {
-    const t = this.clock();
+    const t = this.time();
     this.finishedAt = t;
     const notes = this.steps.flatMap((s) => s.notes);
     const from = this.steps[0]?.beat ?? 0;
@@ -813,18 +989,19 @@ export class PracticeSession {
   start(): void {
     if (this.mode === 'wait') return;
     this.stop();
-    const t = this.clock();
+    const t = this.time();
     const span = this.loopSpan;
     const fromBeat = span ? span.fromBeat : this.beatForStart();
     const toBeat = span ? span.toBeat : this.song.lengthBeats;
+    const leadIn = this.countIn && this.mode === 'play-along' ? COUNTDOWN : LEAD_IN;
     this.endBeat = toBeat;
-    this.timeline = new Timeline(this.song, this.tempo, t + LEAD_IN, fromBeat);
+    this.timeline = new Timeline(this.song, this.tempo, t + leadIn, fromBeat);
     this.summary = null;
     this.done.clear();
     this.judged.clear();
     this.labels = [];
-    if (!span || !this.startedAt) this.startedAt = t + LEAD_IN;
-    this.runStartedAt = t + LEAD_IN;
+    if (!span || !this.startedAt) this.startedAt = t + leadIn;
+    this.runStartedAt = t + leadIn;
     this.marks.clear();
     this.resetRun();
     this.tally.reset();
@@ -832,26 +1009,7 @@ export class PracticeSession {
     this.homed = false;
     this.homing = null;
     const tl = this.timeline;
-    // Listen plays every note; play-along plays the other hand when the learner asks for it.
-    // The other hand plays without the file's pedal: it would hold the learner's notes too.
-    const events =
-      this.mode === 'listen'
-        ? buildPlayback(this.song, { fromBeat, toBeat, touch: this.touch })
-        : this.accompany
-          ? buildPlayback(this.song, {
-              hands: this.hands,
-              accompany: true,
-              fromBeat,
-              toBeat,
-              pedals: false,
-              touch: this.touch,
-            })
-          : [];
-    this.playback = new PlaybackCursor(
-      events,
-      { time: tl.startTime, seconds: tl.tempo.beatToSeconds(fromBeat) },
-      tl.factor,
-    );
+    this.playback = this.playbackFor(tl);
     this.cues = this.song.notes
       .filter(
         (n) => this.inHands(n) && n.startBeat >= fromBeat - 1e-6 && n.startBeat < toBeat - 1e-6,
@@ -869,12 +1027,34 @@ export class PracticeSession {
       });
     }
     // Count-in clicks over the lead-in.
-    const beatSec = this.tempoMap.secondsPerBeatAt(fromBeat) / this.tempo;
-    for (let k = 1; k <= 4; k++) {
-      const when = t + LEAD_IN - k * beatSec;
-      if (when > t) this.click(when, k === 4);
-    }
+    this.countInClicks(t, t + leadIn, fromBeat);
     this.emitStatus();
+  }
+
+  /** The notes a run on `tl` plays, from its start to the end of the run. */
+  private playbackFor(tl: Timeline): PlaybackCursor {
+    const fromBeat = tl.startBeat;
+    const toBeat = this.endBeat;
+    // Listen plays every note; play-along plays the other hand when the learner asks for it.
+    // The other hand plays without the file's pedal: it would hold the learner's notes too.
+    const events =
+      this.mode === 'listen'
+        ? buildPlayback(this.song, { fromBeat, toBeat, touch: this.touch })
+        : this.accompany
+          ? buildPlayback(this.song, {
+              hands: this.hands,
+              accompany: true,
+              fromBeat,
+              toBeat,
+              pedals: false,
+              touch: this.touch,
+            })
+          : [];
+    return new PlaybackCursor(
+      events,
+      { time: tl.startTime, seconds: tl.tempo.beatToSeconds(fromBeat) },
+      tl.factor,
+    );
   }
 
   stop(): void {
@@ -897,6 +1077,8 @@ export class PracticeSession {
     const to = this.loopSpan?.toBeat ?? this.song.lengthBeats;
     const target = Math.min(Math.max(beat, from), to);
     if (this.timeline) this.stop();
+    this.lead = null;
+    this.leadPending = false;
     this.finishedAt = 0;
     this.homed = false;
     this.homing = null;
@@ -914,13 +1096,15 @@ export class PracticeSession {
 
   private beatForStart(): number {
     const first = this.steps[0]?.beat ?? 0;
-    return this.beat > first + 1e-6 && this.beat < this.song.lengthBeats ? this.beat : first;
+    return this.beat > first + 1e-6 && this.beat < this.song.lengthBeats
+      ? this.beat
+      : this.openingBeat(first);
   }
 
   // --- Per frame ----------------------------------------------------------------------------
 
   frame(): void {
-    const t = this.clock();
+    const t = this.time();
     const perf = performance.now() / 1000;
     const dt = this.lastFramePerf ? Math.min(0.1, perf - this.lastFramePerf) : 0;
     this.lastFramePerf = perf;
@@ -953,15 +1137,25 @@ export class PracticeSession {
         this.resetRun();
         this.done.clear();
         this.wait.reset();
+        this.leadPending = this.countIn;
+        this.startCountIn();
       }
-      this.runWaitClick(t);
-      const target =
-        this.homed || this.scrubbing
-          ? this.beat
-          : (this.wait.current?.beat ?? this.loopSpan?.toBeat ?? this.song.lengthBeats);
-      // Time-based easing: the same glide at 60 and 120 Hz (a per-frame factor ran twice as fast).
-      this.beat += (target - this.beat) * (1 - Math.exp(-dt * 11));
-      if (Math.abs(target - this.beat) < 1e-3) this.beat = target;
+      const lead = this.lead;
+      if (lead) {
+        // The count-in and the opening run in time, then the run waits at the first step.
+        this.beat = Math.min(lead.timeline.beatAt(this.display()), lead.untilBeat);
+        this.schedule(lead.playback, t);
+        if (t >= lead.timeline.timeOf(lead.untilBeat)) this.lead = null;
+      } else if (!this.leadPending) {
+        this.runWaitClick(t);
+        const target =
+          this.homed || this.scrubbing
+            ? this.beat
+            : (this.wait.current?.beat ?? this.loopSpan?.toBeat ?? this.song.lengthBeats);
+        // Time-based easing: the same glide at 60 and 120 Hz (a per-frame factor ran twice as fast).
+        this.beat += (target - this.beat) * (1 - Math.exp(-dt * 11));
+        if (Math.abs(target - this.beat) < 1e-3) this.beat = target;
+      }
     } else if (this.timeline) {
       // The picture follows a steady clock; judging and scheduling use the audio clock itself.
       this.beat = this.timeline.beatAt(this.display());
@@ -1030,11 +1224,16 @@ export class PracticeSession {
       this.clicked += 1;
       if (c.time >= t - 0.05) this.click(c.time, c.accent);
     }
+    if (this.playback) this.schedule(this.playback, t);
+  }
+
+  /** Hands the notes due soon to the instrument. */
+  private schedule(cursor: PlaybackCursor, t: number): void {
     const synth = this.synth;
-    if (!synth || !this.playback) return;
+    if (!synth) return;
     // A MIDI output that cannot drop stamped notes on Stop asks for a shorter look-ahead (P6-02).
     const ahead = Math.min(SCHEDULE_AHEAD, synth.lookAhead ?? SCHEDULE_AHEAD);
-    for (const e of this.playback.take(t + ahead, t)) {
+    for (const e of cursor.take(t + ahead, t)) {
       if (e.kind === 'note') synth.play(e.pitch, e.time, e.duration, e.velocity, e.heldDuration);
       else synth.pedal?.(e.pedal, e.value, e.time);
     }

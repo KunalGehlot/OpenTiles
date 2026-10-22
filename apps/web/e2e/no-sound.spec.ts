@@ -42,10 +42,13 @@ test('the metronome and wait mode work without sound', async ({ page }) => {
   await page.reload();
   await expect(metronome).toHaveAttribute('aria-pressed', 'true');
   const stats = page.locator('.stats');
+  // The first key waits once for sound to start; after that try, keys play at once.
   await page.keyboard.press('KeyD'); // E4
   await expect(stats).toContainText('Step 2/');
   await page.keyboard.press('KeyD'); // E4 again
-  await expect(stats).toContainText('Step 3/');
+  await expect(stats).toContainText('Step 3/', { timeout: 500 });
+  await page.keyboard.press('KeyF'); // F4
+  await expect(stats).toContainText('Step 4/', { timeout: 500 });
 });
 
 test('a listen run plays through without sound', async ({ page }) => {

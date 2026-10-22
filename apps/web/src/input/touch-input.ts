@@ -29,7 +29,14 @@ export class TouchInput implements InputAdapter {
   onRelease: (pitch: number, time: number) => void = () => {};
   /** MIDI pitch of the C that the A key plays. */
   base = 60;
+  /**
+   * Something a key must wait for before it plays (sound starting on this device), or null to play
+   * at once. The key's release waits with it.
+   */
+  waitFor: () => Promise<unknown> | null = () => null;
   private down = new Set<string>();
+  /** Keys and releases held back while waiting, in the order they happened. */
+  private queue: Promise<void> | null = null;
 
   async start(): Promise<void> {
     window.addEventListener('keydown', this.keydown);
@@ -42,11 +49,26 @@ export class TouchInput implements InputAdapter {
   }
 
   press(pitch: number): void {
-    this.onNote({ pitch, time: now(), velocity: 90, confidence: 1, source: 'touch' });
+    const play = () =>
+      this.onNote({ pitch, time: now(), velocity: 90, confidence: 1, source: 'touch' });
+    const wait = this.queue ?? this.waitFor();
+    if (wait) this.after(wait, play);
+    else play();
   }
 
   release(pitch: number): void {
-    this.onRelease(pitch, now());
+    const play = () => this.onRelease(pitch, now());
+    if (this.queue) this.after(this.queue, play);
+    else play();
+  }
+
+  /** Runs `fn` once `wait` has settled, after everything held back before it. */
+  private after(wait: Promise<unknown>, fn: () => void): void {
+    const next = wait.catch(() => {}).then(fn);
+    this.queue = next;
+    void next.then(() => {
+      if (this.queue === next) this.queue = null;
+    });
   }
 
   private keydown = (e: KeyboardEvent) => {

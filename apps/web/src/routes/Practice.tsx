@@ -17,7 +17,7 @@ import {
 import { customKeyboard, KEYBOARD_PRESETS, keyCount } from '@opentiles/practice';
 import type { HandFilter } from '@opentiles/practice';
 import type { ScoreHints, Song } from '@opentiles/song-model';
-import { audioContext, now, unlockAudio } from '../audio/context';
+import { audioContext, audioStarted, now, unlockAudio } from '../audio/context';
 import { MidiOutInstrument, playbackInstrument, SentNotes } from '../audio/midi-out';
 import { playsOn, playsOnMessage, playsOnUnavailableHint } from '../audio/plays-on';
 import { synthFor } from '../audio/synth';
@@ -33,6 +33,7 @@ import {
   midiWaitingMessage,
   pickOutput,
   startMidiInput,
+  webMidiSupported,
 } from '../input/midi-input';
 import type { MidiKeyboardInput } from '../input/midi-input';
 import type { MicInput } from '../input/mic-input';
@@ -117,6 +118,8 @@ interface Loaded {
 const NO_BARS: readonly number[] = [];
 /** How long an endless drill's result stays before the next drill starts. */
 const ENDLESS_PAUSE_MS = 2500;
+/** The longest a key waits for sound to start before it plays anyway. */
+const SOUND_WAIT_MS = 300;
 
 const unavailableReason = () =>
   midiUnavailableReason({
@@ -323,6 +326,7 @@ function PracticeView({
   const startHands: HandFilter =
     prefs.hands === 'both' || song.notes.some((n) => n.hand === prefs.hands) ? prefs.hands : 'both';
   const [hands, setHands] = useState<HandFilter>(startHands);
+  const handsInPiece = useMemo(() => new Set(song.notes.map((n) => n.hand)), [song]);
   const [tempo, setTempo] = useState(prefs.tempo);
   const [accompany, setAccompany] = useState(prefs.accompany);
   const [liveStats, setLiveStats] = useState(prefs.liveStats);
@@ -378,6 +382,10 @@ function PracticeView({
       (run) =>
         void (drill ? recordPracticeTime(run.seconds) : recordRun(progressKey, 0, run.seconds)),
     );
+    // A run the learner plays counts in and starts by itself (P6-20); a drill waits for its first
+    // note. The count-in's opening waits while it could not be heard.
+    session.countIn = !drill;
+    session.soundReady = () => audioStarted() || keyboardOut.current !== null || soundTried.current;
     // Start from the learner's last choices.
     session.setMode(prefs.mode);
     session.setHands(startHands);
@@ -510,13 +518,15 @@ function PracticeView({
    * chosen but out of reach, the notes play on this device and the screen says why.
    */
   const { echo: midiEcho, playback: midiPlayback, output: midiOutput, thru } = settings.midi;
-  const route = playsOn(midiPlayback, {
-    supported: midiSupported(),
-    connected: midiInput !== null,
-    inputs: midiDevices,
-    outputs: midiOutputs,
-    name: midiOutput,
-  });
+  const routeFor = (input: MidiKeyboardInput | null, inputs: string[], outputs: string[]) =>
+    playsOn(midiPlayback, {
+      supported: midiSupported(),
+      connected: input !== null,
+      inputs,
+      outputs,
+      name: midiOutput,
+    });
+  const route = routeFor(midiInput, midiDevices, midiOutputs);
   // Copies of the app's notes that a "MIDI thru" keyboard sends back, ignored as input (P6-02).
   const echoes = useRef<SentNotes | null>(null);
   // One instrument per output, kept while it is in use: it knows which notes it has sounding, so
@@ -526,20 +536,28 @@ function PracticeView({
     output: string;
     instrument: MidiOutInstrument;
   } | null>(null);
-  const applySound = (ctx: AudioContext) => {
-    const device = synthFor(ctx);
+  // The keyboard needs no sound on this device: its part plays even before the browser lets this
+  // device sound (wait mode on a MIDI keyboard may never see a tap or a click).
+  const applySound = (ctx: AudioContext | null) => {
+    const device = ctx ? synthFor(ctx) : null;
+    // A keyboard that has just connected is not on the screen yet; its own lists say where it plays.
+    const input = midiInUse.current;
+    const to =
+      input === midiInput
+        ? route
+        : routeFor(input, input?.deviceNames ?? [], input?.outputNames ?? []);
     let kept = keyboardOut.current;
-    if (kept && (kept.input !== midiInput || kept.output !== route.output)) {
+    if (kept && (kept.input !== input || kept.output !== to.output)) {
       // The notes move elsewhere (another output, or this device): nothing may keep sounding here.
       kept.instrument.silence();
       kept = null;
     }
-    if (!kept && midiInput && route.output) {
-      const sink = midiInput.output(midiOutput);
+    if (!kept && input && to.output) {
+      const sink = input.output(midiOutput);
       if (sink) {
         kept = {
-          input: midiInput,
-          output: route.output,
+          input,
+          output: to.output,
           instrument: new MidiOutInstrument(sink, now),
         };
       }
@@ -550,24 +568,76 @@ function PracticeView({
       keyboard.sent = thru.includes(kept.output) ? (keyboard.sent ?? new SentNotes()) : null;
     }
     echoes.current = keyboard?.sent ?? null;
-    session.setSynth(playbackInstrument(device, keyboard, route.effective));
+    session.setSynth(playbackInstrument(device, keyboard, to.effective));
     session.midiEcho = midiEcho ? device : null;
+    // A count-in that waited for sound can start now.
+    session.startCountIn();
   };
 
+  // Sound may start long after the render that asked for it (a keyboard connected meanwhile), so
+  // it applies the newest choices.
+  const applySoundNow = useRef(applySound);
+  useEffect(() => {
+    applySoundNow.current = applySound;
+  });
+  // True once a try to start sound has finished, whether sound started or not (a browser with no
+  // sound device never starts it): from then on nothing waits for it.
+  const soundTried = useRef(false);
+  const startSound = async () => {
+    try {
+      const starting = unlockAudio();
+      // The context exists from here on: notes go to it at once, and sound once it runs.
+      applySoundNow.current(audioContext());
+      applySoundNow.current(await starting);
+    } finally {
+      soundTried.current = true;
+      session.startCountIn();
+    }
+  };
   const ensureAudio = async () => {
-    const ctx = await unlockAudio();
-    applySound(ctx);
+    await startSound();
     await connectClickTrack(session);
   };
+  // A key that completes a step plays the other hand with it, so before sound has started such a
+  // key waits for it: a moment, never more than SOUND_WAIT_MS after the first try began.
+  const firstSound = useRef<{ until: number; ready: Promise<void> } | null>(null);
+  const waitForSound = (): Promise<void> | null => {
+    if (audioStarted() || soundTried.current || !session.playsOtherHand) return null;
+    if (!firstSound.current) {
+      firstSound.current = { until: performance.now() + SOUND_WAIT_MS, ready: startSound() };
+    }
+    const left = firstSound.current.until - performance.now();
+    if (left <= 0) return null;
+    return Promise.race([
+      firstSound.current.ready,
+      new Promise<void>((resolve) => window.setTimeout(resolve, left)),
+    ]);
+  };
 
-  // A changed setting, or a keyboard (and its output) connected later, applies at once once audio
-  // is running.
+  // A changed setting, or a keyboard (and its output) connected later, applies at once.
   useEffect(() => {
-    const ctx = audioContext();
-    if (ctx) applySound(ctx);
+    applySound(audioContext());
     // applySound reads exactly these values.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [midiInput, midiDevices, midiOutputs, midiEcho, midiPlayback, midiOutput, thru]);
+
+  // Sound on this device starts only from a tap, a click or a key (Safari), and wait mode has no Play
+  // button: the first one anywhere on the screen starts it, so the other hand, the metronome and the
+  // keyboard's echo sound in wait mode too.
+  useEffect(() => {
+    const start = () => {
+      if (!audioStarted()) ensureAudio().catch(() => {});
+    };
+    window.addEventListener('pointerdown', start, true);
+    window.addEventListener('keydown', start, true);
+    // The first key tapped or typed waits a moment for sound to start: the step it completes plays
+    // the other hand, and its time is on the clock every later note uses.
+    touch.current.waitFor = waitForSound;
+    return () => {
+      window.removeEventListener('pointerdown', start, true);
+      window.removeEventListener('keydown', start, true);
+    };
+  });
 
   const toggle = async () => {
     // Stopping needs no sound, so it never waits for the browser to start audio (which can take
@@ -592,6 +662,8 @@ function PracticeView({
 
   const onPointerDown = (e: React.PointerEvent) => {
     void ensureAudio();
+    // The tap that starts the count-in plays no key.
+    if (session.status().tapToStart) return;
     const pitch = pitchAt(e);
     if (pitch === null) {
       // Above the keyboard: a drag selects bars to loop (P2-08).
@@ -657,6 +729,8 @@ function PracticeView({
       }
       midiInUse.current?.stop();
       midiInUse.current = input;
+      // At once: the keyboard may be played before the screen shows it connected.
+      applySoundNow.current(audioContext());
       setMidiInput(input);
       setMidiDevices(input.deviceNames);
       setMidiOutputs(input.outputNames);
@@ -664,6 +738,12 @@ function PracticeView({
         setInputError(noKeyboardMessage(navigator.userAgent));
       }
       await applyMidiCalibration(input.deviceNames);
+      // Played on a MIDI keyboard alone, the screen may never be tapped. Chrome and Firefox let
+      // sound start once the page has been used (a link followed here counts). Only with Web MIDI:
+      // Safari and the iPad app have none, so sound there still starts only from a gesture.
+      if (webMidiSupported() && navigator.userActivation?.hasBeenActive && !audioStarted()) {
+        ensureAudio().catch(() => {});
+      }
     } catch (e) {
       if (!quiet) setInputError(describeMidiError(e, navigator.userAgent));
     } finally {
@@ -1018,6 +1098,13 @@ function PracticeView({
               <button
                 key={h}
                 aria-pressed={hands === h}
+                // A hand the piece has no notes for (a melody alone) would leave nothing to play.
+                disabled={h !== 'both' && hands !== h && !handsInPiece.has(h)}
+                title={
+                  h !== 'both' && !handsInPiece.has(h)
+                    ? t('This piece has no notes for this hand.')
+                    : undefined
+                }
                 onClick={() => {
                   setHands(h);
                   remember({ hands: h });
@@ -1172,6 +1259,22 @@ function PracticeView({
           role="img"
           data-keys={`${keysRange.low}-${keysRange.high}`}
         />
+        {status.countdown !== null && (
+          <div className="countdown" role="timer" aria-live="polite" aria-atomic="true">
+            {/* A new element for each number, so its animation starts again. */}
+            <span key={status.countdown} className="countdown__number">
+              {status.countdown}
+            </span>
+          </div>
+        )}
+        {status.tapToStart && (
+          <div className="countdown" role="status">
+            <p className="countdown__tap">
+              {t('Tap to start')}
+              <small>{t('or press a key')}</small>
+            </p>
+          </div>
+        )}
         {status.finished && summary && (
           <div className="overlay">
             <div className="panel stack summary">

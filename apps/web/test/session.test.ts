@@ -560,6 +560,34 @@ describe('last input', () => {
   });
 });
 
+describe('the clock switching to the audio clock', () => {
+  it('keeps a wait-mode run right when sound starts mid-run', () => {
+    const { session, clock, run, press } = setup(scale(1));
+    let seconds = -1;
+    session.onFinish = (_, s) => (seconds = s);
+    // Played on the page's clock (a MIDI keyboard, before any tap).
+    clock.t = 100;
+    press(61);
+    expect(session.keys.get(61)).toBe('wrong');
+    press(60);
+    // Sound starts: the audio clock begins near zero.
+    clock.t = 0.2;
+    run(0.5);
+    expect(session.flashes).toEqual([]);
+    expect(session.keys.get(61)).toBe('held');
+    expect(session.strikes.get(60)).toBeCloseTo(0.2, 1);
+    for (const p of [62, 64, 65]) {
+      press(p);
+      run(0.2);
+    }
+    expect(session.status().finished).toBe(true);
+    // From the first key to the last: 0.5 s since the switch and 0.4 s of presses.
+    expect(seconds).toBeGreaterThan(0.5);
+    expect(seconds).toBeLessThan(1.5);
+    expect(session.renderings()?.asPlayed.map((n) => n.pitch)).toEqual([61, 60, 62, 64, 65]);
+  });
+});
+
 describe('playback through the shared scheduler (P6-03)', () => {
   function playing(lookAhead?: number) {
     const clock = { t: 0 };
@@ -582,7 +610,7 @@ describe('playback through the shared scheduler (P6-03)', () => {
         session.frame();
       }
     };
-    return { session, played, run };
+    return { session, played, run, clock };
   }
 
   it('plays every note of a listen run once, on time, at the practice tempo', () => {
@@ -625,5 +653,194 @@ describe('playback through the shared scheduler (P6-03)', () => {
     session.start();
     run(1.5 + 2);
     expect(played.map((p) => p.pitch)).toEqual([60, 62, 64, 65]);
+  });
+
+  it('lets the other hand join or stop in the middle of a play-along run', () => {
+    const { session, played, run } = playing();
+    session.setMode('play-along');
+    session.setHands('left');
+    session.accompany = false;
+    session.start();
+    run(1.5 + 0.8);
+    expect(played).toEqual([]);
+    // Turned on halfway: the notes still to come play, on time.
+    session.accompany = true;
+    run(0.3);
+    expect(played.map((p) => [p.pitch, p.when])).toEqual([[64, expect.closeTo(2.5, 6)]]);
+    session.accompany = false;
+    run(1);
+    expect(played).toHaveLength(1);
+  });
+
+  it('plays the other hand in wait mode as each step is played, only when asked to', () => {
+    const { session, played, clock } = playing();
+    // A left hand under the scale: C3 for two beats, then G2 for two.
+    const left = (id: string, pitch: number, startBeat: number): SongNote => ({
+      id,
+      pitch,
+      startBeat,
+      durationBeats: 2,
+      hand: 'left',
+      staff: 2,
+      voice: 1,
+      part: 0,
+      measureIndex: 0,
+      sourceRefs: [],
+    });
+    session.setSong({
+      ...session.song,
+      notes: [...session.song.notes, left('l0', 48, 0), left('l1', 43, 2)],
+    });
+    session.setHands('right');
+    const press = (pitch: number) =>
+      session.input({ pitch, time: clock.t, confidence: 1, source: 'midi' });
+    clock.t = 1;
+    press(60);
+    expect(played).toEqual([{ pitch: 48, when: 1, duration: 1, at: 1 }]);
+    clock.t = 2;
+    press(62);
+    expect(played).toHaveLength(1);
+    clock.t = 4;
+    press(64);
+    expect(played.at(-1)).toEqual({ pitch: 43, when: 4, duration: 1, at: 4 });
+    session.accompany = false;
+    session.rebuild();
+    press(60);
+    expect(played).toHaveLength(2);
+  });
+});
+
+describe('the count-in (P6-20)', () => {
+  /** The scale in the right hand from beat 2, under a left-hand opening on beats 0 and 1. */
+  function withOpening(): Song {
+    const song = scale(1);
+    const left = (id: string, pitch: number, startBeat: number): SongNote => ({
+      id,
+      pitch,
+      startBeat,
+      durationBeats: 1,
+      hand: 'left',
+      staff: 2,
+      voice: 1,
+      part: 0,
+      measureIndex: 0,
+      sourceRefs: [],
+    });
+    song.notes = [
+      left('l0', 48, 0),
+      left('l1', 50, 1),
+      ...song.notes.filter((n) => n.startBeat >= 2),
+    ];
+    return song;
+  }
+
+  function counting(song = withOpening()) {
+    const clock = { t: 10 };
+    const played: { pitch: number; when: number }[] = [];
+    const synth: PianoSynth = {
+      volume: 1,
+      noteOn: () => ({ stop: () => {} }),
+      play: (pitch, when) => {
+        played.push({ pitch, when });
+        return { stop: () => {} };
+      },
+      click: () => {},
+    };
+    const session = new PracticeSession(song, () => clock.t, synth);
+    session.countIn = true;
+    const run = (seconds: number) => {
+      const end = clock.t + seconds;
+      while (clock.t < end - 1e-9) {
+        clock.t += 1 / 60;
+        session.frame();
+      }
+    };
+    const press = (pitch: number) =>
+      session.input({ pitch, time: clock.t, confidence: 1, source: 'midi' });
+    return { session, clock, played, run, press };
+  }
+
+  it('counts 3, 2, 1, plays the other hand’s opening in time and waits at the first note', () => {
+    const { session, played, run } = counting();
+    session.setHands('right');
+    expect(session.status().countdown).toBe(3);
+    // The first note of the piece is three seconds away.
+    expect(session.beat).toBeCloseTo(-6, 1);
+    run(1.1);
+    expect(session.status().countdown).toBe(2);
+    run(1);
+    expect(session.status().countdown).toBe(1);
+    run(1);
+    expect(session.status().countdown).toBeNull();
+    run(1.5);
+    expect(played.map((p) => [p.pitch, p.when])).toEqual([
+      [48, expect.closeTo(13, 6)],
+      [50, expect.closeTo(13.5, 6)],
+    ]);
+    // Waiting at the right hand's first note (beat 2; the picture's clock runs on real time here),
+    // and nothing more plays.
+    expect(session.beat).toBeGreaterThan(1.7);
+    expect(session.beat).toBeLessThanOrEqual(2);
+    run(2);
+    expect(played).toHaveLength(2);
+    expect(session.wait.index).toBe(0);
+  });
+
+  it('waits for a tap when the opening would play unheard', () => {
+    const { session, played, run } = counting();
+    let ready = false;
+    session.soundReady = () => ready;
+    session.setHands('right');
+    expect(session.status()).toMatchObject({ countdown: null, tapToStart: true });
+    run(4);
+    expect(played).toEqual([]);
+    ready = true;
+    session.startCountIn();
+    expect(session.status()).toMatchObject({ countdown: 3, tapToStart: false });
+  });
+
+  it('needs no sound when there is no opening to play', () => {
+    const { session } = counting(scale(1));
+    session.soundReady = () => false;
+    session.rebuild();
+    expect(session.status()).toMatchObject({ countdown: 3, tapToStart: false });
+  });
+
+  it('starts the run at once when the first note is played during the count-in', () => {
+    const { session, played, run, press } = counting();
+    session.setHands('right');
+    run(1);
+    press(64);
+    expect(session.wait.index).toBe(1);
+    expect(session.status().countdown).toBeNull();
+    run(3);
+    // No opening after the run began.
+    expect(played.every((p) => p.pitch !== 48 && p.pitch !== 50)).toBe(true);
+  });
+
+  it('counts in again before each round of a loop', () => {
+    const { session, run, press } = counting(scale(2));
+    session.setLoop({ fromMeasure: 0, toMeasure: 0 });
+    run(3.1);
+    for (const p of [60, 62, 64, 65]) press(p);
+    run(0.7);
+    expect(session.status().countdown).toBe(3);
+  });
+
+  it('counts in for three seconds in play-along, from the other hand’s opening', () => {
+    const { session, played, run } = counting();
+    session.setMode('play-along');
+    session.setHands('right');
+    session.start();
+    expect(session.status().countdown).toBe(3);
+    run(3.3);
+    expect(played[0]).toEqual({ pitch: 48, when: expect.closeTo(13, 6) });
+  });
+
+  it('leaves Listen with its short lead-in and no numbers', () => {
+    const { session } = counting();
+    session.setMode('listen');
+    session.start();
+    expect(session.status().countdown).toBeNull();
   });
 });

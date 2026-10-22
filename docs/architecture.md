@@ -337,8 +337,11 @@ a desktop browser can show it, covered by the Playwright suite; each one still g
 real devices in the device lab before a release.
 
 - [~] Create or resume the `AudioContext` only from a user tap (`unlockAudio()` in
-  `apps/web/src/audio/context.ts`, P1-18). Left: a visible "Tap to start" state while audio is
-  still locked.
+  `apps/web/src/audio/context.ts`, P1-18). The practice screen tries on the first tap, click or
+  key anywhere on it. One narrow exception (P6-19): a MIDI keyboard that connects by itself starts
+  sound when the page has been used before (`navigator.userActivation.hasBeenActive`), and only
+  where Web MIDI exists, so never in Safari or the iPad app. A keyboard's own sound (MIDI out)
+  needs no `AudioContext` at all. Left: a visible "Tap to start" state while audio is still locked.
 - [x] Request the microphone with `echoCancellation: false`, `noiseSuppression: false`,
       `autoGainControl: false` (`packages/engine/js/mic-detector.ts`).
 - [x] Feature-detect Web MIDI; never show a broken MIDI option on WebKit (`midiSupported()`; the

@@ -212,12 +212,25 @@ export class SplitInstrument implements Instrument {
 
 export type PlaybackTarget = 'device' | 'keyboard' | 'both';
 
-/** The instrument for the app's own notes, given where the learner wants them. */
+/**
+ * The instrument for the app's own notes, given where the learner wants them. With no `device`
+ * (sound on this device has not started yet) the keyboard still plays its part.
+ */
 export function playbackInstrument(
   device: Instrument,
   keyboard: Instrument | null,
   target: PlaybackTarget,
-): Instrument {
+): Instrument;
+export function playbackInstrument(
+  device: Instrument | null,
+  keyboard: Instrument | null,
+  target: PlaybackTarget,
+): Instrument | null;
+export function playbackInstrument(
+  device: Instrument | null,
+  keyboard: Instrument | null,
+  target: PlaybackTarget,
+): Instrument | null {
   if (!keyboard || target === 'device') return device;
   return new SplitInstrument(target === 'both' ? device : null, keyboard);
 }
