@@ -380,6 +380,10 @@ function PracticeView({
       (run) =>
         void (drill ? recordPracticeTime(run.seconds) : recordRun(progressKey, 0, run.seconds)),
     );
+    // A run the learner plays counts in and starts by itself (P6-20); a drill waits for its first
+    // note. The count-in's opening waits while it could not be heard.
+    session.countIn = !drill;
+    session.soundReady = () => audioStarted() || keyboardOut.current !== null;
     // Start from the learner's last choices.
     session.setMode(prefs.mode);
     session.setHands(startHands);
@@ -565,6 +569,8 @@ function PracticeView({
     echoes.current = keyboard?.sent ?? null;
     session.setSynth(playbackInstrument(device, keyboard, to.effective));
     session.midiEcho = midiEcho ? device : null;
+    // A count-in that waited for sound can start now.
+    session.startCountIn();
   };
 
   // Sound may start long after the render that asked for it (a keyboard connected meanwhile), so
@@ -644,6 +650,8 @@ function PracticeView({
 
   const onPointerDown = (e: React.PointerEvent) => {
     void ensureAudio();
+    // The tap that starts the count-in plays no key.
+    if (session.status().tapToStart) return;
     const pitch = pitchAt(e);
     if (pitch === null) {
       // Above the keyboard: a drag selects bars to loop (P2-08).
@@ -1239,6 +1247,22 @@ function PracticeView({
           role="img"
           data-keys={`${keysRange.low}-${keysRange.high}`}
         />
+        {status.countdown !== null && (
+          <div className="countdown" role="timer" aria-live="polite" aria-atomic="true">
+            {/* A new element for each number, so its animation starts again. */}
+            <span key={status.countdown} className="countdown__number">
+              {status.countdown}
+            </span>
+          </div>
+        )}
+        {status.tapToStart && (
+          <div className="countdown" role="status">
+            <p className="countdown__tap">
+              {t('Tap to start')}
+              <small>{t('or press a key')}</small>
+            </p>
+          </div>
+        )}
         {status.finished && summary && (
           <div className="overlay">
             <div className="panel stack summary">

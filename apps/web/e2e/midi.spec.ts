@@ -263,3 +263,27 @@ test('Plays on offers only this device where there is no Web MIDI', async ({ pag
   await expect(page.getByTestId('plays-on-unavailable')).toContainText('this device');
   await expect(page.getByRole('radio')).toHaveCount(0);
 });
+
+test('on the keyboard, the count-in plays the other hand’s opening there by itself (P6-20)', async ({
+  page,
+}) => {
+  await fakeKeyboard(page);
+  await page.addInitScript(() => {
+    const permissions = navigator.permissions;
+    const query = permissions.query.bind(permissions);
+    permissions.query = (d: PermissionDescriptor) =>
+      (d.name as string) === 'midi'
+        ? Promise.resolve({ state: 'granted' } as PermissionStatus)
+        : query(d);
+    localStorage.setItem('opentiles:setting:practicePrefs', JSON.stringify({ hands: 'left' }));
+  });
+  await page.goto('./#/practice/catalogue/fur-elise-opening');
+  await expect(page.getByText('MIDI: Test Keyboard')).toBeVisible();
+  await expect(page.getByText('Tap to start')).toHaveCount(0);
+  // E5 and D♯5, the right hand's first notes, reach the keyboard with nothing played or clicked.
+  await expect
+    .poll(async () => (await sent(page)).filter((m) => m[0] === 0x90).map((m) => m[1]), {
+      timeout: 8000,
+    })
+    .toEqual(expect.arrayContaining([76, 75]));
+});

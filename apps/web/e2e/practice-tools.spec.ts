@@ -277,3 +277,51 @@ test('a melody alone offers no left hand to practise', async ({ page }) => {
   await expect(page.getByRole('button', { name: 'Left', exact: true })).toBeDisabled();
   await expect(page.getByRole('button', { name: 'Right', exact: true })).toBeEnabled();
 });
+
+test('a run counts in 3, 2, 1 and the notes fall into place (P6-20)', async ({ page }) => {
+  await page.goto('./#/practice/catalogue/ode-to-joy');
+  const countdown = page.getByRole('timer');
+  await expect(countdown).toHaveText('3');
+  await expect(countdown).toHaveText('2');
+  await expect(countdown).toHaveText('1');
+  await expect(countdown).toHaveCount(0);
+  // Restart counts in again.
+  await page.getByRole('button', { name: 'Restart' }).click();
+  await expect(countdown).toHaveText('3');
+});
+
+test('the other hand’s opening waits for a tap, then plays after the count-in (P6-20)', async ({
+  page,
+}) => {
+  await page.addInitScript(() => {
+    const w = window as unknown as { notesPlayed: number };
+    w.notesPlayed = 0;
+    const start = AudioBufferSourceNode.prototype.start;
+    AudioBufferSourceNode.prototype.start = function (...args: Parameters<typeof start>) {
+      w.notesPlayed += 1;
+      start.apply(this, args);
+    };
+    const osc = OscillatorNode.prototype.start;
+    OscillatorNode.prototype.start = function (...args: Parameters<typeof osc>) {
+      if (![1320, 1760].includes(this.frequency.value)) w.notesPlayed += 1;
+      osc.apply(this, args);
+    };
+    localStorage.setItem('opentiles:setting:practicePrefs', JSON.stringify({ hands: 'left' }));
+  });
+  // Für Elise: the right hand plays eight notes before the left hand's first.
+  await page.goto('./#/practice/catalogue/fur-elise-opening');
+  await expect(page.getByText('Tap to start')).toBeVisible();
+  await expect(page.getByRole('timer')).toHaveCount(0);
+  const box = await page.locator('canvas').boundingBox();
+  if (!box) throw new Error('No canvas');
+  await page.mouse.click(box.x + box.width / 2, box.y + 20);
+  await expect(page.getByRole('timer')).toHaveText('3');
+  await expect(page.getByText('Tap to start')).toHaveCount(0);
+  await expect
+    .poll(() => page.evaluate(() => (window as unknown as { notesPlayed: number }).notesPlayed), {
+      timeout: 8000,
+    })
+    .toBeGreaterThanOrEqual(8);
+  // The run waits at the left hand's first note.
+  await expect(page.locator('.stats')).toContainText('Step 1/');
+});
