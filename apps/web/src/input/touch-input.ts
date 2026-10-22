@@ -35,7 +35,8 @@ export class TouchInput implements InputAdapter {
    */
   waitFor: () => Promise<unknown> | null = () => null;
   private down = new Set<string>();
-  private waiting = new Map<number, Promise<void>>();
+  /** Keys and releases held back while waiting, in the order they happened. */
+  private queue: Promise<void> | null = null;
 
   async start(): Promise<void> {
     window.addEventListener('keydown', this.keydown);
@@ -48,28 +49,26 @@ export class TouchInput implements InputAdapter {
   }
 
   press(pitch: number): void {
-    const wait = this.waitFor();
-    if (!wait) {
+    const play = () =>
       this.onNote({ pitch, time: now(), velocity: 90, confidence: 1, source: 'touch' });
-      return;
-    }
-    const pressed = wait
-      .catch(() => {})
-      .then(() => {
-        if (this.waiting.get(pitch) === pressed) this.waiting.delete(pitch);
-        this.onNote({ pitch, time: now(), velocity: 90, confidence: 1, source: 'touch' });
-      });
-    this.waiting.set(pitch, pressed);
+    const wait = this.queue ?? this.waitFor();
+    if (wait) this.after(wait, play);
+    else play();
   }
 
   release(pitch: number): void {
-    const pressed = this.waiting.get(pitch);
-    if (!pressed) {
-      this.onRelease(pitch, now());
-      return;
-    }
-    this.waiting.delete(pitch);
-    void pressed.then(() => this.onRelease(pitch, now()));
+    const play = () => this.onRelease(pitch, now());
+    if (this.queue) this.after(this.queue, play);
+    else play();
+  }
+
+  /** Runs `fn` once `wait` has settled, after everything held back before it. */
+  private after(wait: Promise<unknown>, fn: () => void): void {
+    const next = wait.catch(() => {}).then(fn);
+    this.queue = next;
+    void next.then(() => {
+      if (this.queue === next) this.queue = null;
+    });
   }
 
   private keydown = (e: KeyboardEvent) => {

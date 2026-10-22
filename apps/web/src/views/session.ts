@@ -599,6 +599,11 @@ export class PracticeSession {
     this.rebuild();
   }
 
+  /** True when a step played in wait mode also plays the other hand. */
+  get playsOtherHand(): boolean {
+    return this.mode === 'wait' && this.accompany && this.hands !== 'both';
+  }
+
   /** Play the other hand when practising one: in wait mode step by step, in play-along in time. */
   get accompany(): boolean {
     return this.accompanyValue;

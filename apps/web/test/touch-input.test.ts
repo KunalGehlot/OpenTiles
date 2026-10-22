@@ -28,10 +28,26 @@ describe('touch input', () => {
     input.release(60);
     expect(log).toEqual([]);
     started();
-    await sound;
-    await Promise.resolve();
-    await Promise.resolve();
+    await new Promise((r) => setTimeout(r, 0));
     expect(log).toEqual(['on 60', 'off 60']);
+  });
+
+  it('keeps the order of keys pressed while waiting, a repeated key included', async () => {
+    const { input, log } = keys();
+    let started = () => {};
+    const sound = new Promise<void>((resolve) => (started = resolve));
+    input.waitFor = () => sound;
+    input.press(64);
+    input.release(64);
+    input.press(64);
+    input.release(64);
+    input.press(65);
+    started();
+    await new Promise((r) => setTimeout(r, 0));
+    expect(log).toEqual(['on 64', 'off 64', 'on 64', 'off 64', 'on 65']);
+    input.waitFor = () => null;
+    input.release(65);
+    expect(log.at(-1)).toBe('off 65');
   });
 
   it('plays the key when sound fails to start', async () => {

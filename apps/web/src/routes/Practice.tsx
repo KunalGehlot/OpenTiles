@@ -118,6 +118,8 @@ interface Loaded {
 const NO_BARS: readonly number[] = [];
 /** How long an endless drill's result stays before the next drill starts. */
 const ENDLESS_PAUSE_MS = 2500;
+/** The longest a key waits for sound to start before it plays anyway. */
+const SOUND_WAIT_MS = 300;
 
 const unavailableReason = () =>
   midiUnavailableReason({
@@ -383,7 +385,7 @@ function PracticeView({
     // A run the learner plays counts in and starts by itself (P6-20); a drill waits for its first
     // note. The count-in's opening waits while it could not be heard.
     session.countIn = !drill;
-    session.soundReady = () => audioStarted() || keyboardOut.current !== null;
+    session.soundReady = () => audioStarted() || keyboardOut.current !== null || soundTried.current;
     // Start from the learner's last choices.
     session.setMode(prefs.mode);
     session.setHands(startHands);
@@ -537,8 +539,7 @@ function PracticeView({
   // The keyboard needs no sound on this device: its part plays even before the browser lets this
   // device sound (wait mode on a MIDI keyboard may never see a tap or a click).
   const applySound = (ctx: AudioContext | null) => {
-    // A context that has not started would hold every note until it does, then play them at once.
-    const device = ctx && audioStarted() ? synthFor(ctx) : null;
+    const device = ctx ? synthFor(ctx) : null;
     // A keyboard that has just connected is not on the screen yet; its own lists say where it plays.
     const input = midiInUse.current;
     const to =
@@ -579,30 +580,41 @@ function PracticeView({
   useEffect(() => {
     applySoundNow.current = applySound;
   });
+  // True once a try to start sound has finished, whether sound started or not (a browser with no
+  // sound device never starts it): from then on nothing waits for it.
+  const soundTried = useRef(false);
   const startSound = async () => {
-    applySoundNow.current(await unlockAudio());
+    try {
+      const starting = unlockAudio();
+      // The context exists from here on: notes go to it at once, and sound once it runs.
+      applySoundNow.current(audioContext());
+      applySoundNow.current(await starting);
+    } finally {
+      soundTried.current = true;
+      session.startCountIn();
+    }
   };
   const ensureAudio = async () => {
     await startSound();
     await connectClickTrack(session);
   };
-  // The first try to start sound, which keys wait for: once it has settled, started or not (a
-  // browser with no sound device never starts), keys play at once.
-  const firstSound = useRef<{ done: boolean; ready: Promise<void> } | null>(null);
+  // A key that completes a step plays the other hand with it, so before sound has started such a
+  // key waits for it: a moment, never more than SOUND_WAIT_MS after the first try began.
+  const firstSound = useRef<{ until: number; ready: Promise<void> } | null>(null);
   const waitForSound = (): Promise<void> | null => {
-    if (audioStarted()) return null;
+    if (audioStarted() || soundTried.current || !session.playsOtherHand) return null;
     if (!firstSound.current) {
-      const attempt = { done: false, ready: Promise.resolve() };
-      attempt.ready = startSound().finally(() => {
-        attempt.done = true;
-      });
-      firstSound.current = attempt;
+      firstSound.current = { until: performance.now() + SOUND_WAIT_MS, ready: startSound() };
     }
-    return firstSound.current.done ? null : firstSound.current.ready;
+    const left = firstSound.current.until - performance.now();
+    if (left <= 0) return null;
+    return Promise.race([
+      firstSound.current.ready,
+      new Promise<void>((resolve) => window.setTimeout(resolve, left)),
+    ]);
   };
 
-  // A changed setting, or a keyboard (and its output) connected later, applies at once: before the
-  // screen shows the keyboard as connected, so a key played then already has its other hand.
+  // A changed setting, or a keyboard (and its output) connected later, applies at once.
   useEffect(() => {
     applySound(audioContext());
     // applySound reads exactly these values.

@@ -253,6 +253,8 @@ test('bars can be adjusted, and the corrections are kept', async ({ page }) => {
     pdf: sheetPdf(),
   });
   await page.goto(`./#/practice/library/${id}`);
+  // The count-in moves the place through the first bars; the outlines follow it until it ends.
+  await expect(page.getByRole('timer')).toHaveCount(0, { timeout: 10_000 });
   await page.getByRole('group', { name: 'View' }).getByRole('button', { name: 'Sheet' }).click();
   const panel = page.getByRole('region', { name: 'Your sheet music' });
   await expect(panel).toHaveAttribute('data-map', 'ready', { timeout: 30_000 });
