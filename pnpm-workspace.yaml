@@ -3,6 +3,11 @@ packages:
   - apps/ios-shell/plugins/*
   - packages/*
 
+# Supply-chain guard (Shai-Hulud style worms spread through versions published minutes ago): pnpm
+# will not install a version younger than two days, so a hijacked release is usually unpublished
+# before we can resolve to it. Remove the floor for one install only to take an urgent fix.
+minimumReleaseAge: 2880
+
 ignoredBuiltDependencies:
   # core-js only prints a donation banner in its install script.
   - core-js
@@ -10,6 +15,8 @@ ignoredBuiltDependencies:
 overrides:
   # xcode (Capacitor CLI, iPad shell build tool only) pins uuid 7, which has an advisory.
   uuid: '>=11.1.1'
+  # Node types follow .nvmrc (22); without this, vitest's optional peer resolves to the newest major.
+  '@types/node': ^22.20.5
 
 auditConfig:
   ignoreGhsas:

@@ -90,7 +90,11 @@ for (const width of [1180, 375]) {
     expect(await smallControls(page), 'practice').toEqual([]);
     if (width < 400) expect(await sideways(page), 'practice').toBeLessThanOrEqual(0);
     await page.getByRole('button', { name: 'Options' }).click();
-    await page.waitForTimeout(300);
+    // The panel opens from scale(0.98), so a 44 px control measures 43 px until the animation ends;
+    // a fixed wait was not always enough on CI WebKit.
+    await page
+      .locator('.popover__panel')
+      .evaluate((el) => Promise.all(el.getAnimations().map((a) => a.finished)));
     expect(await smallControls(page), 'practice options').toEqual([]);
   });
 }

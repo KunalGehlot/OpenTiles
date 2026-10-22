@@ -42,7 +42,13 @@ Breaking one of these is a blocking review comment, whatever else the change doe
 ## Setup and commands
 
 Requirements: Node ≥ 22.12, pnpm 10, Rust stable with the `wasm32-unknown-unknown` target
-(`rust-toolchain.toml` installs it), Python ≥ 3.11.
+(`rust-toolchain.toml` installs it), Python ≥ 3.11. Use the newest patch release of Node 22: CI does
+(`check-latest`), and Node's security releases (22.23.4 on 2026-10-21) are fixes for the runtime that
+runs the dev server and the tests.
+
+pnpm refuses to install a package version published less than two days ago
+(`minimumReleaseAge` in `pnpm-workspace.yaml`), because hijacked releases are usually unpublished
+within hours. For an urgent security fix, lower it for that one install and read the lockfile diff.
 
 ```sh
 pnpm install                 # JS dependencies for every workspace package

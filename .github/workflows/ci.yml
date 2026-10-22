@@ -37,6 +37,7 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version-file: .nvmrc
+          check-latest: true
       # Builds dist/engine.wasm (baseline) and dist/engine-simd.wasm, then check-wasm.mjs checks
       # both: no imports, every export, silence stays silent, and SIMD only in the SIMD build.
       - name: Build both wasm modules and check them
@@ -53,6 +54,7 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version-file: .nvmrc
+          check-latest: true
           cache: pnpm
       - uses: dtolnay/rust-toolchain@stable
         with:
@@ -78,6 +80,7 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version-file: .nvmrc
+          check-latest: true
           cache: pnpm
       - uses: dtolnay/rust-toolchain@stable
         with:
@@ -107,6 +110,7 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node }}
+          check-latest: true
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       - run: pnpm --filter @opentiles/sync-api typecheck
@@ -122,6 +126,7 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version-file: .nvmrc
+          check-latest: true
           cache: pnpm
       # Only `cargo metadata` runs; nothing is compiled.
       - uses: dtolnay/rust-toolchain@stable
@@ -183,6 +188,7 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version-file: .nvmrc
+          check-latest: true
           cache: pnpm
       - uses: dtolnay/rust-toolchain@stable
         with:

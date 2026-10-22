@@ -13,11 +13,11 @@
     "typecheck": "tsc -p tsconfig.json"
   },
   "dependencies": {
-    "fflate": "^0.8.2",
+    "fflate": "^0.8.3",
     "hash-wasm": "^4.12.0"
   },
   "devDependencies": {
     "typescript": "~6.0.3",
-    "vitest": "^5.0.3"
+    "vitest": "^5.0.5"
   }
 }

@@ -685,6 +685,15 @@ without a word when no MIDI output is found.
       response made in code (decaying noise, darker as it fades), on only while the Player plays
       on this device; off on pause, in practice and in the Detector Lab. Not heard on a real iPad
       yet (P6-13).
+- [x] **P6-18** (GOV) Dependency security round (2026-10-22), after the October npm supply-chain
+      incidents (Shai-Hulud worm in `keyv`/`cacheable` and others, the Trusted Publishing hijack) and
+      the Node.js security release of 2026-10-21. Checked first: all 674 locked package versions
+      against OSV and `pnpm audit` (only the already-documented `sprintf-js`), the lockfile against
+      the compromised versions, and the tree for the worm's files; nothing was affected (`eslint` →
+      `cacheable` sits at 2.5.0, before the pulled 2.5.1). Done: every dependency refreshed within
+      its range (no majors, no new or removed packages, no install scripts); `minimumReleaseAge` (two days) in
+      `pnpm-workspace.yaml` so pnpm will not install anything younger; CI
+      `setup-node` uses `check-latest` so it runs the newest 22.x (22.23.4 or later has the fix).
 
 ## Cross-cutting checklists
 
@@ -710,6 +719,9 @@ Record the outcome as an ADR in `docs/adr/` and tick it here.
 - [x] Engine exposes a plain C ABI instead of wasm-bindgen glue — ADR 0002.
 
 ## Changelog
+
+- **2026-10-22** — P6-18: dependencies refreshed in range, a two-day floor on new releases, CI on the
+  newest Node 22.
 
 - **2026-10-19** — P6-16: a MIDI file from notation software is pedalled and shaped around its
   own dynamics; only a recording is left as played.
