@@ -19,7 +19,8 @@ sign it with your own Apple ID: a free one is enough.
   Mode**, then restart. The switch appears once a signed app has been installed, so you may need to
   install first and then turn it on.
 - **Trust your Apple ID once:** **Settings → General → VPN & Device Management**, tap your Apple ID
-  under "Developer App" and **Trust**. (AltStore and SideStore do this step for you.)
+  under "Developer App" and **Trust**. With AltStore or SideStore you do this once, when you set
+  them up; the apps they install after that are trusted already.
 - **Keep the same tool and Apple ID.** Signing with another Apple ID or tool installs a second copy
   with an empty library. Before switching, save a backup under **Settings → Backup** and restore it
   in the new copy.
@@ -30,8 +31,13 @@ sign it with your own Apple ID: a free one is enough.
 ## Download
 
 Get **`OpenTiles.ipa`** from the [releases page](https://github.com/KunalGehlot/OpenTiles/releases).
-The IPA is unsigned: it is the same for everyone, and your tool signs it for you. To build it
-yourself on a Mac instead, see [Building it yourself](#building-it-yourself).
+The IPA is unsigned: it is the same for everyone, and your tool signs it for you.
+
+**There is no release yet.** Until the first one, build the IPA yourself on a Mac
+([option 3](#option-3-building-it-yourself-mac-with-xcode)), or, signed in to GitHub, download
+`OpenTiles-ipa` from the newest run of the
+[iPad app workflow](https://github.com/KunalGehlot/OpenTiles/actions/workflows/ios.yml) and unzip
+it. The AltStore / SideStore source below works from the first published release.
 
 ## Option 1: AltStore or SideStore (updates itself)
 
