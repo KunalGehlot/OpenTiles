@@ -1,0 +1,99 @@
+name: iPad app
+
+# Builds the unsigned OpenTiles.ipa that people sign with their own Apple ID and install themselves
+# (ADR 0023, docs/ipad-app.md), and runs the CoreMIDI plugin's tests. Separate from ci.yml: it needs
+# a macOS runner and never holds up the website's deploy.
+on:
+  pull_request:
+    paths:
+      - 'apps/ios-shell/**'
+      - 'apps/web/src/input/native-midi-input.ts'
+      - 'apps/web/src/lib/native-shell.ts'
+      - '.github/workflows/ios.yml'
+  # A version tag (v0.1.0) builds the release files and puts them on a draft release, which the
+  # maintainer reads and publishes by hand.
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ios-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  ipa:
+    name: Unsigned IPA and plugin tests
+    # Capacitor 8 needs Xcode 26 or newer.
+    runs-on: macos-26
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # The build number is the commit count, so it needs the whole history.
+          fetch-depth: 0
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          check-latest: true
+          cache: pnpm
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: wasm32-unknown-unknown
+      - uses: Swatinem/rust-cache@v2
+      - run: pnpm install --frozen-lockfile
+      - name: A tag names the version in apps/ios-shell/package.json
+        if: startsWith(github.ref, 'refs/tags/v')
+        run: |
+          version="$(node -p "require('./apps/ios-shell/package.json').version")"
+          if [ "v$version" != "$GITHUB_REF_NAME" ]; then
+            echo "::error::Tag $GITHUB_REF_NAME does not match the app's version $version"
+            exit 1
+          fi
+      # The public web build (as deployed), cap sync, then an unsigned Release build zipped as an IPA.
+      - run: pnpm --filter @opentiles/ios-shell ipa
+      - name: Plugin tests on an iPad simulator
+        working-directory: apps/ios-shell/plugins/core-midi
+        run: |
+          udid="$(xcrun simctl list devices available --json | node -e '
+            const { devices } = JSON.parse(require("node:fs").readFileSync(0, "utf8"));
+            const ipad = Object.entries(devices)
+              .filter(([runtime]) => runtime.includes("iOS"))
+              .flatMap(([, list]) => list)
+              .find((d) => d.name.startsWith("iPad"));
+            if (!ipad) { console.error("No iPad simulator on this runner"); process.exit(1); }
+            console.log(ipad.udid);
+          ')"
+          xcodebuild test -quiet -scheme OpentilesCapacitorCoreMidi -destination "id=$udid"
+      - name: AltStore / SideStore source
+        run: >-
+          node apps/ios-shell/scripts/altstore-source.mjs apps/ios-shell/build/OpenTiles.ipa
+          "https://github.com/${{ github.repository }}/releases/download/${{ github.ref_name }}/OpenTiles.ipa"
+          > apps/ios-shell/build/altstore.json
+      - uses: actions/upload-artifact@v4
+        with:
+          name: OpenTiles-ipa
+          path: |
+            apps/ios-shell/build/OpenTiles.ipa
+            apps/ios-shell/build/altstore.json
+          if-no-files-found: error
+
+  release:
+    name: Draft release
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: ipa
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: OpenTiles-ipa
+      - name: Attach the IPA and the source to a draft release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: >-
+          gh release create "$GITHUB_REF_NAME" --repo "$GITHUB_REPOSITORY" --draft --verify-tag
+          --title "OpenTiles $GITHUB_REF_NAME" --generate-notes OpenTiles.ipa altstore.json
