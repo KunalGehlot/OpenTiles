@@ -24,6 +24,8 @@
 	<string>$(CURRENT_PROJECT_VERSION)</string>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
+	<key>NSBluetoothAlwaysUsageDescription</key>
+	<string>OpenTiles uses Bluetooth only to find and connect a Bluetooth MIDI keyboard when you ask it to pair one.</string>
 	<key>NSMicrophoneUsageDescription</key>
 	<string>OpenTiles listens to your piano to hear which notes you play. The sound is analysed on this device and is not sent anywhere.</string>
 	<key>UIApplicationSceneManifest</key>
@@ -51,7 +53,7 @@
 	<string>Main</string>
 	<key>UIRequiredDeviceCapabilities</key>
 	<array>
-		<string>armv7</string>
+		<string>arm64</string>
 	</array>
 	<key>UISupportedInterfaceOrientations</key>
 	<array>
