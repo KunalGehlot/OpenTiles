@@ -29,7 +29,13 @@ export class TouchInput implements InputAdapter {
   onRelease: (pitch: number, time: number) => void = () => {};
   /** MIDI pitch of the C that the A key plays. */
   base = 60;
+  /**
+   * Something a key must wait for before it plays (sound starting on this device), or null to play
+   * at once. The key's release waits with it.
+   */
+  waitFor: () => Promise<unknown> | null = () => null;
   private down = new Set<string>();
+  private waiting = new Map<number, Promise<void>>();
 
   async start(): Promise<void> {
     window.addEventListener('keydown', this.keydown);
@@ -42,11 +48,28 @@ export class TouchInput implements InputAdapter {
   }
 
   press(pitch: number): void {
-    this.onNote({ pitch, time: now(), velocity: 90, confidence: 1, source: 'touch' });
+    const wait = this.waitFor();
+    if (!wait) {
+      this.onNote({ pitch, time: now(), velocity: 90, confidence: 1, source: 'touch' });
+      return;
+    }
+    const pressed = wait
+      .catch(() => {})
+      .then(() => {
+        if (this.waiting.get(pitch) === pressed) this.waiting.delete(pitch);
+        this.onNote({ pitch, time: now(), velocity: 90, confidence: 1, source: 'touch' });
+      });
+    this.waiting.set(pitch, pressed);
   }
 
   release(pitch: number): void {
-    this.onRelease(pitch, now());
+    const pressed = this.waiting.get(pitch);
+    if (!pressed) {
+      this.onRelease(pitch, now());
+      return;
+    }
+    this.waiting.delete(pitch);
+    void pressed.then(() => this.onRelease(pitch, now()));
   }
 
   private keydown = (e: KeyboardEvent) => {

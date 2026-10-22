@@ -242,3 +242,38 @@ test('the screen stays on while the practice screen is open (P5-02)', async ({ p
   await expect(page).toHaveURL(/#\/$/);
   await expect.poll(async () => (await wakeLog()).releases).toBe(1);
 });
+
+test('the other hand sounds from the first key, before anything was clicked', async ({ page }) => {
+  await page.addInitScript(() => {
+    const w = window as unknown as { notesPlayed: number };
+    w.notesPlayed = 0;
+    for (const Node of [OscillatorNode, AudioBufferSourceNode]) {
+      const start = Node.prototype.start as (...a: unknown[]) => void;
+      Node.prototype.start = function (this: AudioScheduledSourceNode, ...args: unknown[]) {
+        const click = this instanceof OscillatorNode && [1320, 1760].includes(this.frequency.value);
+        if (!click) w.notesPlayed += 1;
+        start.apply(this, args);
+      };
+    }
+    localStorage.setItem('opentiles:setting:practicePrefs', JSON.stringify({ hands: 'right' }));
+  });
+  await page.goto('./#/practice/catalogue/ode-to-joy');
+  await expect(page.getByRole('button', { name: 'Right', exact: true })).toHaveAttribute(
+    'aria-pressed',
+    'true',
+  );
+  // D on the computer keyboard is E4, the right hand's first note; the left hand's C3 joins it.
+  await page.keyboard.down('d');
+  await page.keyboard.up('d');
+  await expect(page.locator('.stats')).toContainText('Step 2/');
+  // The learner's own key and the other hand's note.
+  await expect
+    .poll(() => page.evaluate(() => (window as unknown as { notesPlayed: number }).notesPlayed))
+    .toBeGreaterThanOrEqual(2);
+});
+
+test('a melody alone offers no left hand to practise', async ({ page }) => {
+  await page.goto('./#/practice/catalogue/amazing-grace-melody');
+  await expect(page.getByRole('button', { name: 'Left', exact: true })).toBeDisabled();
+  await expect(page.getByRole('button', { name: 'Right', exact: true })).toBeEnabled();
+});

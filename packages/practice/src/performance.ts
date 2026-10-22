@@ -42,6 +42,14 @@ export class PerformanceRecorder {
     this.notes.length = 0;
     this.open.clear();
   }
+
+  /** Moves every recorded time by `seconds`, for a practice clock that jumped. */
+  shift(seconds: number): void {
+    for (const n of this.notes) {
+      n.start += seconds;
+      if (n.end !== undefined) n.end += seconds;
+    }
+  }
 }
 
 export interface TimedNoteWithLength extends TimedNote {

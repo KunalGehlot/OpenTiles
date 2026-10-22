@@ -139,6 +139,18 @@ describe('performance', () => {
     expect(judgeHolds(expected, played).map((h) => h.judgement)).toEqual(['good', 'short', 'long']);
   });
 
+  it('moves its times with a clock that jumped, a held key included', () => {
+    const r = new PerformanceRecorder();
+    r.noteOn(ev(60, 100));
+    r.noteOff(60, 100.5);
+    r.noteOn(ev(62, 101));
+    r.shift(-100);
+    expect(r.finish(1.5)).toEqual([
+      { pitch: 60, start: 0, end: 0.5, velocity: 90 },
+      { pitch: 62, start: 1, end: 1.5, velocity: 90 },
+    ]);
+  });
+
   it('renders as played and polished', () => {
     const played = [
       { pitch: 60, start: 1.03, end: 1.4, velocity: 100 },

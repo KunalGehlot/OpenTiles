@@ -560,6 +560,34 @@ describe('last input', () => {
   });
 });
 
+describe('the clock switching to the audio clock', () => {
+  it('keeps a wait-mode run right when sound starts mid-run', () => {
+    const { session, clock, run, press } = setup(scale(1));
+    let seconds = -1;
+    session.onFinish = (_, s) => (seconds = s);
+    // Played on the page's clock (a MIDI keyboard, before any tap).
+    clock.t = 100;
+    press(61);
+    expect(session.keys.get(61)).toBe('wrong');
+    press(60);
+    // Sound starts: the audio clock begins near zero.
+    clock.t = 0.2;
+    run(0.5);
+    expect(session.flashes).toEqual([]);
+    expect(session.keys.get(61)).toBe('held');
+    expect(session.strikes.get(60)).toBeCloseTo(0.2, 1);
+    for (const p of [62, 64, 65]) {
+      press(p);
+      run(0.2);
+    }
+    expect(session.status().finished).toBe(true);
+    // From the first key to the last: 0.5 s since the switch and 0.4 s of presses.
+    expect(seconds).toBeGreaterThan(0.5);
+    expect(seconds).toBeLessThan(1.5);
+    expect(session.renderings()?.asPlayed.map((n) => n.pitch)).toEqual([61, 60, 62, 64, 65]);
+  });
+});
+
 describe('playback through the shared scheduler (P6-03)', () => {
   function playing(lookAhead?: number) {
     const clock = { t: 0 };
@@ -582,7 +610,7 @@ describe('playback through the shared scheduler (P6-03)', () => {
         session.frame();
       }
     };
-    return { session, played, run };
+    return { session, played, run, clock };
   }
 
   it('plays every note of a listen run once, on time, at the practice tempo', () => {
@@ -625,5 +653,59 @@ describe('playback through the shared scheduler (P6-03)', () => {
     session.start();
     run(1.5 + 2);
     expect(played.map((p) => p.pitch)).toEqual([60, 62, 64, 65]);
+  });
+
+  it('lets the other hand join or stop in the middle of a play-along run', () => {
+    const { session, played, run } = playing();
+    session.setMode('play-along');
+    session.setHands('left');
+    session.accompany = false;
+    session.start();
+    run(1.5 + 0.8);
+    expect(played).toEqual([]);
+    // Turned on halfway: the notes still to come play, on time.
+    session.accompany = true;
+    run(0.3);
+    expect(played.map((p) => [p.pitch, p.when])).toEqual([[64, expect.closeTo(2.5, 6)]]);
+    session.accompany = false;
+    run(1);
+    expect(played).toHaveLength(1);
+  });
+
+  it('plays the other hand in wait mode as each step is played, only when asked to', () => {
+    const { session, played, clock } = playing();
+    // A left hand under the scale: C3 for two beats, then G2 for two.
+    const left = (id: string, pitch: number, startBeat: number): SongNote => ({
+      id,
+      pitch,
+      startBeat,
+      durationBeats: 2,
+      hand: 'left',
+      staff: 2,
+      voice: 1,
+      part: 0,
+      measureIndex: 0,
+      sourceRefs: [],
+    });
+    session.setSong({
+      ...session.song,
+      notes: [...session.song.notes, left('l0', 48, 0), left('l1', 43, 2)],
+    });
+    session.setHands('right');
+    const press = (pitch: number) =>
+      session.input({ pitch, time: clock.t, confidence: 1, source: 'midi' });
+    clock.t = 1;
+    press(60);
+    expect(played).toEqual([{ pitch: 48, when: 1, duration: 1, at: 1 }]);
+    clock.t = 2;
+    press(62);
+    expect(played).toHaveLength(1);
+    clock.t = 4;
+    press(64);
+    expect(played.at(-1)).toEqual({ pitch: 43, when: 4, duration: 1, at: 4 });
+    session.accompany = false;
+    session.rebuild();
+    press(60);
+    expect(played).toHaveLength(2);
   });
 });

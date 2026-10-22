@@ -222,6 +222,38 @@ test('leaving practice during Listen leaves nothing sounding on the keyboard', a
   expect(after.some((m) => m[0] === 0xb0 && m[1] === 123)).toBe(true);
 });
 
+// A keyboard that connects by itself and is played at once: the page sees no tap or click, so
+// sound on this device cannot start, yet the keyboard needs none to play the other hand.
+test('wait mode on the keyboard alone plays the other hand there, with nothing clicked', async ({
+  page,
+}) => {
+  await fakeKeyboard(page);
+  await page.addInitScript(() => {
+    const permissions = navigator.permissions;
+    const query = permissions.query.bind(permissions);
+    permissions.query = (d: PermissionDescriptor) =>
+      (d.name as string) === 'midi'
+        ? Promise.resolve({ state: 'granted' } as PermissionStatus)
+        : query(d);
+    localStorage.setItem('opentiles:setting:practicePrefs', JSON.stringify({ hands: 'right' }));
+  });
+  await page.goto('./#/practice/catalogue/ode-to-joy');
+  await expect(page.getByText('MIDI: Test Keyboard')).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Right', exact: true })).toHaveAttribute(
+    'aria-pressed',
+    'true',
+  );
+  await expect(page.getByLabel('Play other hand')).toBeChecked();
+  // The right hand's first step is E4; the left hand's C3 sounds with it.
+  await page.evaluate(() =>
+    (window as unknown as { __midiPress: (p: number) => void }).__midiPress(64),
+  );
+  await expect(page.locator('.stats')).toContainText('Step 2/');
+  await expect
+    .poll(async () => (await sent(page)).some((m) => m[0] === 0x90 && m[1] === 48))
+    .toBe(true);
+});
+
 test('Plays on offers only this device where there is no Web MIDI', async ({ page }) => {
   await page.addInitScript(() => {
     Object.defineProperty(navigator, 'requestMIDIAccess', { value: undefined });

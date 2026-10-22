@@ -215,6 +215,7 @@ export const de: Readonly<Record<string, string>> = {
   Both: 'Beide',
   Right: 'Rechts',
   'Play other hand': 'Andere Hand mitspielen',
+  'This piece has no notes for this hand.': 'Dieses Stück hat keine Noten für diese Hand.',
   'Loop a range of bars (or drag across the falling notes)':
     'Takte in Schleife üben (oder über die fallenden Noten ziehen)',
   Loop: 'Schleife',

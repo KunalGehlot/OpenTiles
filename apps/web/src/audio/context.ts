@@ -37,6 +37,12 @@ export async function unlockAudio(): Promise<AudioContext> {
   return context;
 }
 
+/** True once sound on this device has started: notes scheduled now are heard when they are due. */
+export function audioStarted(): boolean {
+  if (context && context.state === 'running') started = true;
+  return started;
+}
+
 /**
  * Current time on the audio clock once it has run, or on the page's clock before: a context that
  * never starts would otherwise stop the falling notes and every run. Once it has run, the audio

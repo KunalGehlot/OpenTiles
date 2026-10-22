@@ -192,6 +192,8 @@ function easeInOut(k: number): number {
 
 /** How long a judged hold bar stays on screen after it ends (seconds). */
 const HOLD_FADE = 0.4;
+/** A step back of the practice clock larger than this is the switch to the audio clock (seconds). */
+const CLOCK_SWITCH = 0.5;
 
 export class PracticeSession {
   readonly tempoMap: TempoMap;
@@ -199,7 +201,7 @@ export class PracticeSession {
   mode: PracticeMode = 'wait';
   hands: HandFilter = 'both';
   tempo = 1;
-  accompany = true;
+  private accompanyValue = true;
   /** Play a sound for notes from inputs that make none themselves (touch). */
   soundForTouch = true;
   /**
@@ -303,6 +305,8 @@ export class PracticeSession {
 
   private lastFramePerf = 0;
   private readonly display: () => number;
+  /** The practice clock's last reading, to notice it switching (see `time`). */
+  private lastClock = -Infinity;
 
   constructor(
     song: Song,
@@ -318,6 +322,41 @@ export class PracticeSession {
 
   get song(): Song {
     return this.songValue;
+  }
+
+  /**
+   * The practice clock. It runs on the page's clock until sound starts and on the audio clock from
+   * then on, which steps back to near zero. In wait mode on a MIDI keyboard that can happen mid-run
+   * (the keyboard needs no tap), so the times kept so far move with it: lit keys go out, holds and
+   * the run's length stay right.
+   */
+  private time(): number {
+    const t = this.clock();
+    const last = this.lastClock;
+    this.lastClock = t;
+    if (t < last - CLOCK_SWITCH) this.moveTimes(t - last);
+    return t;
+  }
+
+  private moveTimes(by: number): void {
+    // A listen or play-along run is scheduled on the old clock; it stops and starts again on Play.
+    if (this.timeline) this.stop();
+    const move = (at: number) => (at ? at + by : 0);
+    this.startedAt = move(this.startedAt);
+    this.finishedAt = move(this.finishedAt);
+    this.runStartedAt = move(this.runStartedAt);
+    this.lastInputAt = move(this.lastInputAt);
+    this.loopRestartAt = move(this.loopRestartAt);
+    if (this.homing) this.homing.at += by;
+    if (this.waitClick) this.waitClick.next += by;
+    for (const f of this.flashes) f.until += by;
+    for (const l of this.labels) l.until += by;
+    for (const [pitch, at] of this.strikes) this.strikes.set(pitch, at + by);
+    for (const h of this.holds.values()) {
+      h.start += by;
+      if (h.end !== undefined) h.end += by;
+    }
+    this.recorder.shift(by);
   }
 
   /**
@@ -393,7 +432,7 @@ export class PracticeSession {
           : judged.filter((r) => r.judgement !== 'missed').length,
       wrong: this.mode === 'wait' ? stats.wrong : (this.scorer?.extras.length ?? 0),
       summary: this.summary,
-      elapsed: this.startedAt ? (this.finishedAt || this.clock()) - this.startedAt : 0,
+      elapsed: this.startedAt ? (this.finishedAt || this.time()) - this.startedAt : 0,
       loop: this.loop,
       metronome: this.metronome,
       holds: { ...this.holdStats },
@@ -450,6 +489,23 @@ export class PracticeSession {
     this.rebuild();
   }
 
+  /** Play the other hand when practising one: in wait mode step by step, in play-along in time. */
+  get accompany(): boolean {
+    return this.accompanyValue;
+  }
+
+  /** A play-along run takes the change at once: the other hand joins or stops from where it is. */
+  set accompany(on: boolean) {
+    if (on === this.accompanyValue) return;
+    this.accompanyValue = on;
+    const tl = this.timeline;
+    if (!tl || this.mode !== 'play-along') return;
+    const cursor = this.playbackFor(tl);
+    const t = this.time();
+    cursor.seek(cursor.secondsAt(t), t);
+    this.playback = cursor;
+  }
+
   setTempo(factor: number): void {
     this.tempo = factor;
     this.waitClick = null;
@@ -484,7 +540,7 @@ export class PracticeSession {
     this.waitClick = null;
     const tl = this.timeline;
     if (tl) {
-      const t = this.clock();
+      const t = this.time();
       this.clicks = on ? this.clickTimes(tl, Math.max(tl.beatAt(t), tl.startBeat)) : [];
       this.clicked = 0;
     }
@@ -521,7 +577,7 @@ export class PracticeSession {
     }
     const tl = this.timeline;
     if (!tl) return [];
-    const t = this.clock();
+    const t = this.time();
     return this.song.notes.filter((n) => {
       if (!this.inHands(n)) return false;
       const nt = tl.timeOf(n.startBeat);
@@ -543,7 +599,7 @@ export class PracticeSession {
   // --- Input ---------------------------------------------------------------------------------
 
   input(e: NoteEvent): void {
-    const t = this.clock();
+    const t = this.time();
     this.lastInputAt = t;
     if (e.source === 'touch' && this.soundForTouch && this.synth) {
       this.synth.play(e.pitch, t, 0.6, e.velocity ?? 90);
@@ -617,7 +673,7 @@ export class PracticeSession {
   }
 
   /** A key came up; `time` is the input's own time for it (practice clock). */
-  release(pitch: number, time = this.clock()): void {
+  release(pitch: number, time = this.time()): void {
     this.keys.delete(pitch);
     this.recorder.noteOff(pitch, time);
     this.echoVoices.get(pitch)?.stop();
@@ -629,7 +685,7 @@ export class PracticeSession {
     let j = judgeHold(hold.length, hold.end - hold.start);
     // In wait mode the learner sets the pace; holding on while finding the next note is fine.
     if (j === 'long' && this.mode === 'wait') j = 'good';
-    this.judgeHoldAs(hold, j, this.clock());
+    this.judgeHoldAs(hold, j, this.time());
   }
 
   /** Key presses count for the run's recording while the run is on. */
@@ -692,7 +748,7 @@ export class PracticeSession {
   /** The last finished run as played and polished, ready for the piano (P4-09). */
   renderings(): { asPlayed: RenderNote[]; polished: RenderNote[] } | null {
     const r = this.recording;
-    const t = this.clock();
+    const t = this.time();
     // Keys still held count up to now.
     const played: PlayedNote[] = this.recorder.notes.map((p) =>
       p.end === undefined ? { ...p, end: Math.max(p.start, t) } : { ...p },
@@ -753,7 +809,7 @@ export class PracticeSession {
 
   /** A looped section was played through in wait mode: report it and start it again. */
   private finishWaitLoop(): void {
-    const t = this.clock();
+    const t = this.time();
     const stats = this.wait.stats;
     const total = stats.correct + stats.wrong;
     this.reportLoopRun(
@@ -781,7 +837,7 @@ export class PracticeSession {
   }
 
   private finishWait(): void {
-    const t = this.clock();
+    const t = this.time();
     this.finishedAt = t;
     const notes = this.steps.flatMap((s) => s.notes);
     const from = this.steps[0]?.beat ?? 0;
@@ -813,7 +869,7 @@ export class PracticeSession {
   start(): void {
     if (this.mode === 'wait') return;
     this.stop();
-    const t = this.clock();
+    const t = this.time();
     const span = this.loopSpan;
     const fromBeat = span ? span.fromBeat : this.beatForStart();
     const toBeat = span ? span.toBeat : this.song.lengthBeats;
@@ -832,26 +888,7 @@ export class PracticeSession {
     this.homed = false;
     this.homing = null;
     const tl = this.timeline;
-    // Listen plays every note; play-along plays the other hand when the learner asks for it.
-    // The other hand plays without the file's pedal: it would hold the learner's notes too.
-    const events =
-      this.mode === 'listen'
-        ? buildPlayback(this.song, { fromBeat, toBeat, touch: this.touch })
-        : this.accompany
-          ? buildPlayback(this.song, {
-              hands: this.hands,
-              accompany: true,
-              fromBeat,
-              toBeat,
-              pedals: false,
-              touch: this.touch,
-            })
-          : [];
-    this.playback = new PlaybackCursor(
-      events,
-      { time: tl.startTime, seconds: tl.tempo.beatToSeconds(fromBeat) },
-      tl.factor,
-    );
+    this.playback = this.playbackFor(tl);
     this.cues = this.song.notes
       .filter(
         (n) => this.inHands(n) && n.startBeat >= fromBeat - 1e-6 && n.startBeat < toBeat - 1e-6,
@@ -875,6 +912,32 @@ export class PracticeSession {
       if (when > t) this.click(when, k === 4);
     }
     this.emitStatus();
+  }
+
+  /** The notes a run on `tl` plays, from its start to the end of the run. */
+  private playbackFor(tl: Timeline): PlaybackCursor {
+    const fromBeat = tl.startBeat;
+    const toBeat = this.endBeat;
+    // Listen plays every note; play-along plays the other hand when the learner asks for it.
+    // The other hand plays without the file's pedal: it would hold the learner's notes too.
+    const events =
+      this.mode === 'listen'
+        ? buildPlayback(this.song, { fromBeat, toBeat, touch: this.touch })
+        : this.accompany
+          ? buildPlayback(this.song, {
+              hands: this.hands,
+              accompany: true,
+              fromBeat,
+              toBeat,
+              pedals: false,
+              touch: this.touch,
+            })
+          : [];
+    return new PlaybackCursor(
+      events,
+      { time: tl.startTime, seconds: tl.tempo.beatToSeconds(fromBeat) },
+      tl.factor,
+    );
   }
 
   stop(): void {
@@ -920,7 +983,7 @@ export class PracticeSession {
   // --- Per frame ----------------------------------------------------------------------------
 
   frame(): void {
-    const t = this.clock();
+    const t = this.time();
     const perf = performance.now() / 1000;
     const dt = this.lastFramePerf ? Math.min(0.1, perf - this.lastFramePerf) : 0;
     this.lastFramePerf = perf;

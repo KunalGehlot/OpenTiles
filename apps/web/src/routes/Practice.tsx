@@ -17,7 +17,7 @@ import {
 import { customKeyboard, KEYBOARD_PRESETS, keyCount } from '@opentiles/practice';
 import type { HandFilter } from '@opentiles/practice';
 import type { ScoreHints, Song } from '@opentiles/song-model';
-import { audioContext, now, unlockAudio } from '../audio/context';
+import { audioContext, audioStarted, now, unlockAudio } from '../audio/context';
 import { MidiOutInstrument, playbackInstrument, SentNotes } from '../audio/midi-out';
 import { playsOn, playsOnMessage, playsOnUnavailableHint } from '../audio/plays-on';
 import { synthFor } from '../audio/synth';
@@ -323,6 +323,7 @@ function PracticeView({
   const startHands: HandFilter =
     prefs.hands === 'both' || song.notes.some((n) => n.hand === prefs.hands) ? prefs.hands : 'both';
   const [hands, setHands] = useState<HandFilter>(startHands);
+  const handsInPiece = useMemo(() => new Set(song.notes.map((n) => n.hand)), [song]);
   const [tempo, setTempo] = useState(prefs.tempo);
   const [accompany, setAccompany] = useState(prefs.accompany);
   const [liveStats, setLiveStats] = useState(prefs.liveStats);
@@ -526,8 +527,11 @@ function PracticeView({
     output: string;
     instrument: MidiOutInstrument;
   } | null>(null);
-  const applySound = (ctx: AudioContext) => {
-    const device = synthFor(ctx);
+  // The keyboard needs no sound on this device: its part plays even before the browser lets this
+  // device sound (wait mode on a MIDI keyboard may never see a tap or a click).
+  const applySound = (ctx: AudioContext | null) => {
+    // A context that has not started would hold every note until it does, then play them at once.
+    const device = ctx && audioStarted() ? synthFor(ctx) : null;
     let kept = keyboardOut.current;
     if (kept && (kept.input !== midiInput || kept.output !== route.output)) {
       // The notes move elsewhere (another output, or this device): nothing may keep sounding here.
@@ -554,20 +558,42 @@ function PracticeView({
     session.midiEcho = midiEcho ? device : null;
   };
 
+  // Sound may start long after the render that asked for it (a keyboard connected meanwhile), so
+  // it applies the newest choices.
+  const applySoundNow = useRef(applySound);
+  useEffect(() => {
+    applySoundNow.current = applySound;
+  });
   const ensureAudio = async () => {
     const ctx = await unlockAudio();
-    applySound(ctx);
+    applySoundNow.current(ctx);
     await connectClickTrack(session);
   };
 
-  // A changed setting, or a keyboard (and its output) connected later, applies at once once audio
-  // is running.
+  // A changed setting, or a keyboard (and its output) connected later, applies at once.
   useEffect(() => {
-    const ctx = audioContext();
-    if (ctx) applySound(ctx);
+    applySound(audioContext());
     // applySound reads exactly these values.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [midiInput, midiDevices, midiOutputs, midiEcho, midiPlayback, midiOutput, thru]);
+
+  // Sound on this device starts only from a tap, a click or a key (Safari), and wait mode has no Play
+  // button: the first one anywhere on the screen starts it, so the other hand, the metronome and the
+  // keyboard's echo sound in wait mode too.
+  useEffect(() => {
+    const start = () => {
+      if (!audioStarted()) ensureAudio().catch(() => {});
+    };
+    window.addEventListener('pointerdown', start, true);
+    window.addEventListener('keydown', start, true);
+    // The first key tapped or typed waits a moment for sound to start: the step it completes plays
+    // the other hand, and its time is on the clock every later note uses.
+    touch.current.waitFor = () => (audioStarted() ? null : ensureAudio());
+    return () => {
+      window.removeEventListener('pointerdown', start, true);
+      window.removeEventListener('keydown', start, true);
+    };
+  });
 
   const toggle = async () => {
     // Stopping needs no sound, so it never waits for the browser to start audio (which can take
@@ -664,6 +690,12 @@ function PracticeView({
         setInputError(noKeyboardMessage(navigator.userAgent));
       }
       await applyMidiCalibration(input.deviceNames);
+      // Played on a MIDI keyboard alone, the screen may never be tapped. A browser lets sound start
+      // once the page has been used (a link followed here counts); Safari has no Web MIDI, so this
+      // never starts sound outside a gesture there.
+      if (navigator.userActivation?.hasBeenActive && !audioStarted()) {
+        ensureAudio().catch(() => {});
+      }
     } catch (e) {
       if (!quiet) setInputError(describeMidiError(e, navigator.userAgent));
     } finally {
@@ -1018,6 +1050,13 @@ function PracticeView({
               <button
                 key={h}
                 aria-pressed={hands === h}
+                // A hand the piece has no notes for (a melody alone) would leave nothing to play.
+                disabled={h !== 'both' && hands !== h && !handsInPiece.has(h)}
+                title={
+                  h !== 'both' && !handsInPiece.has(h)
+                    ? t('This piece has no notes for this hand.')
+                    : undefined
+                }
                 onClick={() => {
                   setHands(h);
                   remember({ hands: h });
