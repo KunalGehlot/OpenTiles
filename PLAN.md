@@ -55,7 +55,7 @@ phase ends at a gate. If a gate fails, re-plan the next phase before continuing.
 | 2 — Catalogue and breadth | Apr – Jun 2027                  | 150 verified pieces, looping, ABC/MuseScore import, backup | **G2 Public beta:** legal guardrails all met, device lab passes                                      |
 | 3 — v1.0                  | Jul – Aug 2027                  | iPad MIDI shell, 300 pieces, release hardening             | **G3 v1.0 release:** the definition of success in spec §1 holds                                      |
 | 4 — After v1.0            | Sep 2027 →                      | OMR, audio import, courses, community arrangements         | —                                                                                                    |
-| 7 — Chord drills          | Planned 2026-10-22; not started | Random chords to practise, on the sheet or as falling keys | The maintainer plays it and answers Q1–Q9 (P7-13)                                                    |
+| 7 — Chord drills          | Planned 2026-10-22; not started | Random chords to practise, on the sheet or as falling keys | The maintainer plays it and approves it (P7-13)                                                      |
 
 If **G0** fails, v1.0 becomes MIDI-first and the microphone ships marked as beta (spec §11).
 
@@ -739,10 +739,10 @@ Goal: a **Chords** drill beside Sight-reading. The learner gets random chords fr
 at eight difficulty levels, and plays them from the sheet with nothing given away ("blind") or from
 falling keys, in wait mode or at a tempo. Asked for in [issue #47](https://github.com/KunalGehlot/OpenTiles/issues/47)
 and shaped by the maintainer on 2026-10-22. Every task's detail is in
-[docs/phase-7/chord-drills.md](docs/phase-7/chord-drills.md); the decisions go into ADR 0022 (P7-00)
-once the maintainer has answered Q1–Q9 in §7 of the plan.
+[docs/phase-7/chord-drills.md](docs/phase-7/chord-drills.md); Q1–Q9 in §7 of the plan were decided
+on 2026-10-22, and the decisions go into ADR 0022 (P7-00).
 
-- [~] **P7-00** (GOV) The plan and ADR 0022. Done: the plan. Left: the maintainer's answers, then the ADR.
+- [~] **P7-00** (GOV) The plan and ADR 0022. Done: the plan and the answers to Q1–Q9. Left: the ADR.
 - [ ] **P7-01** (PRAC) Chord vocabulary: qualities, spelling, inversions, voicings, `chordSymbol` parts.
 - [ ] **P7-02** (PRAC) The seeded chord drill generator (MusicXML with `<harmony>`, one chord a bar).
 - [ ] **P7-03** (PRAC) Judging a chord: per-chord tally, causes of a miss, chord spread in play-along.
@@ -782,6 +782,10 @@ Record the outcome as an ADR in `docs/adr/` and tick it here.
 - [x] Engine exposes a plain C ABI instead of wasm-bindgen glue — ADR 0002.
 
 ## Changelog
+
+- **2026-10-22** — P7-00: Q1–Q9 of the chord drills plan decided; add9 and sixth chords join the
+  first chord vocabulary, level 8 is the left hand's root and fifth, and the microphone hint follows
+  the notes sounding at once.
 
 - **2026-10-22** — CI: every action on Node.js 24 (GitHub's Node.js 20 deprecation); Dependabot
   for the actions, the pnpm workspace and the engine's crate.
