@@ -13,6 +13,8 @@ export default tseslint.config(
       'apps/web/public/**',
       // The Xcode project, including the copy of the built web app that `cap sync` puts there.
       'apps/ios-shell/ios/**',
+      // `pnpm ipa` and `pnpm device`: Xcode's derived data and the IPA.
+      'apps/ios-shell/build/**',
     ],
   },
   js.configs.recommended,

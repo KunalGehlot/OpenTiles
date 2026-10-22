@@ -7,9 +7,11 @@ iPad. Everything else (microphone, on-screen keys, library, catalogue) is the we
 PLAN.md task **P3-01**.
 
 > **Status: builds; not yet run on a device.** Written on Linux; first built on macOS with Xcode 27
-> on 2026-10-09 (`xcodebuild -scheme App -destination 'generic/platform=iOS'`, no errors). Not yet
-> installed on an iPad or tried with a keyboard, and the plugin tests (⌘U) need an iPad simulator
-> runtime. Work through the [first-build checklist](#first-build-checklist).
+> on 2026-10-09 (`xcodebuild -scheme App -destination 'generic/platform=iOS'`, no errors). Since
+> 2026-10-22 it builds as an unsigned IPA that anyone can sign and install themselves
+> ([Install it yourself](#install-it-yourself), ADR 0023). First installed on an iPad Pro (M1,
+> iPadOS 27) with `pnpm device` on 2026-10-22 and played with a USB digital piano; the plugin tests
+> run in CI on an iPad simulator. Work through the [first-build checklist](#first-build-checklist).
 
 ## Layout
 
@@ -17,12 +19,14 @@ PLAN.md task **P3-01**.
 | ----------------------------------------- | ---------------------------------------------------------------------------------------------- |
 | `capacitor.config.ts`                     | App ID `org.opentiles.app`, name, `webDir: ../web/dist`, WebView settings                      |
 | `ios/`                                    | Xcode project from `cap add ios` (Swift Package Manager). `cap sync` fills in the ignored bits |
-| `ios/App/App/Info.plist`                  | Includes the microphone usage text                                                             |
+| `ios/App/App/Info.plist`                  | Includes the microphone and Bluetooth usage texts                                              |
 | `plugins/core-midi/`                      | The CoreMIDI plugin, workspace package `@opentiles/capacitor-core-midi`                        |
 | `plugins/core-midi/ios/Sources/`          | Swift: `CoreMidiPlugin` (bridge), `MidiSession` (CoreMIDI), `UniversalPacket` (parsing, clock) |
 | `plugins/core-midi/ios/Tests/`            | XCTest for the message parser and clock                                                        |
 | `plugins/core-midi/src/`                  | The plugin's TypeScript definitions and `registerPlugin()` call                                |
 | `scripts/render-assets.py`                | Renders the app icon and launch image from `apps/web/public/icon.svg`                          |
+| `scripts/build.sh`                        | `pnpm ipa` (unsigned `build/OpenTiles.ipa`) and `pnpm device` (sign and install on an iPad)    |
+| `scripts/altstore-source.mjs`             | Writes the AltStore / SideStore source for a release from the IPA's Info.plist                 |
 | `apps/web/src/input/native-midi-input.ts` | `NativeMidiInput`: the web side, producing the same `NoteEvent`s as Web MIDI                   |
 
 `ios/App/App/public/` (the copied web build), `capacitor.config.json`, `config.xml` and
@@ -78,6 +82,10 @@ In Xcode, select the **App** target → **Signing & Capabilities** → choose yo
 as the run destination and press **Run**. The first build downloads `capacitor-swift-pm` from
 GitHub through Swift Package Manager; after that it builds offline.
 
+Signing in Xcode with a free Apple ID usually fails on the bundle identifier `org.opentiles.app`
+(someone else has registered it): change it in the same pane, for example by adding your team ID.
+`pnpm device` below does this for you.
+
 - After changing the web app, run `pnpm --filter @opentiles/ios-shell ios` again.
 - After changing the plugin's Swift code, just build again in Xcode: the package is referenced by
   path (`ios/App/CapApp-SPM/Package.swift`, rewritten by every `cap sync`).
@@ -87,27 +95,58 @@ GitHub through Swift Package Manager; after that it builds offline.
 The scripts run `cap telemetry off` first: the Capacitor CLI otherwise sends usage data (including
 the app ID) when it runs in an interactive terminal.
 
+### Install it yourself
+
+The user-facing steps are in [docs/ipad-app.md](../../docs/ipad-app.md); the reasons in ADR 0023.
+
+```sh
+pnpm --filter @opentiles/ios-shell ipa                     # unsigned build/OpenTiles.ipa
+TEAM=ABCDE12345 pnpm --filter @opentiles/ios-shell device  # sign with your team, install on the iPad
+```
+
+- **`ipa`** builds the public web app (as deployed: verified catalogue only, no sync server, source
+  maps removed), runs `cap sync`, makes a Release build with code signing off and zips
+  `Payload/App.app`. AltStore, SideStore and Sideloadly sign it with the user's Apple ID. The app
+  has no entitlements, which is what lets a free Apple ID sign it: keep it that way (no App Groups,
+  iCloud, push or associated domains) or free signing stops working.
+- **`device`** picks the one paired iPad or iPhone (`DEVICE=<name or UDID>` when there are more),
+  stops with a hint if Developer Mode is off, builds with `-allowProvisioningUpdates
+-allowProvisioningDeviceRegistration` for team `TEAM`, and installs with `xcrun devicectl`. The
+  bundle identifier becomes `org.opentiles.app.<TEAM>` (`BUNDLE_SUFFIX` changes the part after
+  `org.opentiles.app`) through `OPENTILES_BUNDLE_SUFFIX`, which only the App target reads.
+- **Versions:** `CFBundleShortVersionString` is this package's `version`, `CFBundleVersion` the
+  commit count (`BUILD_NUMBER` overrides it). `SKIP_WEB=1` reuses the web build already synced.
+- **CI** (`.github/workflows/ios.yml`, macOS): pull requests that touch the app build the IPA and run
+  the plugin tests on an iPad simulator. A tag `v<version>` also puts `OpenTiles.ipa` and
+  `altstore.json` on a **draft** release; read it, then publish it by hand. AltStore and SideStore
+  read the source at `…/releases/latest/download/altstore.json`.
+
 ### First-build checklist
 
-1. ✓ The app and the plugin compile (2026-10-09). The plugin and its tests compile for iOS with
-   MIDI out (2026-10-17, `xcodebuild build-for-testing`); the tests (⌘U) are still to run, on a
-   simulator runtime or an iPad.
-2. The app starts with no network (aeroplane mode) and the catalogue opens. The top bar sits
+1. ✓ The app and the plugin compile (2026-10-09), with MIDI out (2026-10-17). ✓ `pnpm ipa` makes
+   an unsigned IPA with no entitlements, and the plugin tests pass in CI on an iPad simulator
+   (2026-10-22). ✓ `pnpm device` with a free Apple ID installs on an iPad Pro (M1, iPadOS 27).
+   Still to try: AltStore, SideStore and Sideloadly.
+2. Found on the first device run (2026-10-22) and fixed: the piano samples arrive from
+   `capacitor://` with status 0, which the loader took for a failure (the app played the stand-in
+   synth); the status bar did not follow the page's dark theme. Keyboard size is not detected (MIDI
+   does not report it); choose it under Settings → Keyboard size.
+3. The app starts with no network (aeroplane mode) and the catalogue opens. The top bar sits
    below the status bar (`env(safe-area-inset-top)`), in both orientations.
-3. A USB MIDI keyboard (USB-C, or the Lightning to USB Camera Adapter) appears after
-   **Connect MIDI keyboard**; notes advance wait mode; in play-along, notes played on the beat are
-   judged on time (compare with the on-screen keys).
-4. Unplugging and replugging the keyboard updates the device list and notes resume.
-5. A Bluetooth MIDI keyboard paired from Settings → MIDI keyboard appears too.
-6. With "Plays on: My keyboard", Listen and the Player play on the keyboard's own sound, on time,
+4. A USB MIDI keyboard (USB-C, or the Lightning to USB Camera Adapter) appears after
+   **Connect MIDI keyboard** (✓ 2026-10-22); notes advance wait mode; in play-along, notes played
+   on the beat are judged on time (compare with the on-screen keys).
+5. Unplugging and replugging the keyboard updates the device list and notes resume.
+6. A Bluetooth MIDI keyboard paired from Settings → MIDI keyboard appears too.
+7. With "Plays on: My keyboard", Listen and the Player play on the keyboard's own sound, on time,
    with its pedal; Stop leaves nothing sounding; unplugging it mid-piece pauses the Player.
-7. **Use microphone** shows the permission text from `Info.plist`, and detection works in the
+8. **Use microphone** shows the permission text from `Info.plist`, and detection works in the
    app's WebView.
-8. Sound starts after a tap; check it with the Ring/Silent switch on and off (see follow-ups).
-9. Split View at a third of the screen and rotation keep the practice screen usable.
-10. An imported piece is still in the library after quitting and reopening the app, and the "Add to
+9. Sound starts after a tap; check it with the Ring/Silent switch on and off (see follow-ups).
+10. Split View at a third of the screen and rotation keep the practice screen usable.
+11. An imported piece is still in the library after quitting and reopening the app, and the "Add to
     Home Screen" hint does not appear.
-11. Xcode → **Product → Generate Privacy Report** on an archive lists the plugin's manifest.
+12. Xcode → **Product → Generate Privacy Report** on an archive lists the plugin's manifest.
 
 ## App Store notes (P3-02)
 
@@ -127,7 +166,9 @@ the app ID) when it runs in an interactive terminal.
   terms add usage rules the AGPL does not allow, so get advice before the first release, for
   example on adding an App Store permission under AGPL §7 with contributors' agreement. The
   source stays public and the About page links to it.
-- **Versions:** `MARKETING_VERSION` and `CURRENT_PROJECT_VERSION` in the Xcode project.
+- **Versions:** `pnpm ipa` and `pnpm device` set `MARKETING_VERSION` from `package.json` and
+  `CURRENT_PROJECT_VERSION` from the commit count; the Xcode project's values are for builds from
+  Xcode itself.
 - **Icon and launch image** come from `scripts/render-assets.py` (needs Pillow); they replace
   Capacitor's placeholder images.
 
@@ -141,8 +182,10 @@ the app ID) when it runs in an interactive terminal.
 - The app target has none: its own Swift code (`AppDelegate`, `SceneDelegate`) uses no
   required-reason API, and the web app's storage (IndexedDB) belongs to WebKit. Add one in Xcode
   (File → New → File → App Privacy) if review asks for it.
-- `NSMicrophoneUsageDescription` in `Info.plist` explains the microphone in British English; add a
-  German `InfoPlist.strings` when the app gets German (P2-14).
+- `NSMicrophoneUsageDescription` and `NSBluetoothAlwaysUsageDescription` (needed by Apple's
+  Bluetooth MIDI pairing screen; without it iOS ends the app when the screen opens) explain the
+  microphone and Bluetooth in British English; add a German `InfoPlist.strings` when the app gets
+  German (P2-14).
 
 ## Design notes
 
@@ -164,11 +207,6 @@ the app ID) when it runs in an interactive terminal.
 
 ## Follow-ups
 
-- **Bluetooth MIDI pairing.** iOS has no system-wide pairing screen for Bluetooth MIDI; a keyboard
-  connected through another app (GarageBand, for example) shows up here, but the app should offer
-  `CABTMIDICentralViewController` itself (needs `NSBluetoothAlwaysUsageDescription` and a button in
-  the practice screen).
 - **Silent switch.** Check whether Web Audio is muted by the Ring/Silent switch in the app; if so,
   set the `AVAudioSession` category to `.playback` in `AppDelegate`.
-- **CI.** A macOS job that runs `pnpm --filter @opentiles/ios-shell ios`, builds the app with
-  `xcodebuild` and runs the plugin tests.
+- **App Store** (P3-02): the paid programme, review, and the AGPL question above.

@@ -18,7 +18,7 @@ jobs:
     name: Engine (Rust)
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: dtolnay/rust-toolchain@stable
         with:
           targets: wasm32-unknown-unknown
@@ -34,7 +34,7 @@ jobs:
         run: >-
           cargo clippy --target wasm32-unknown-unknown --target-dir target/wasm-simd
           -p opentiles-engine --lib --features simd -- -D warnings
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v7
         with:
           node-version-file: .nvmrc
           check-latest: true
@@ -49,9 +49,9 @@ jobs:
     name: TypeScript packages and web app
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: pnpm/action-setup@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v7
+      - uses: pnpm/action-setup@v6
+      - uses: actions/setup-node@v7
         with:
           node-version-file: .nvmrc
           check-latest: true
@@ -75,9 +75,9 @@ jobs:
     name: End-to-end (Chromium, Firefox, WebKit)
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: pnpm/action-setup@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v7
+      - uses: pnpm/action-setup@v6
+      - uses: actions/setup-node@v7
         with:
           node-version-file: .nvmrc
           check-latest: true
@@ -91,7 +91,7 @@ jobs:
       - run: pnpm build:engine
       - run: test -s packages/engine/dist/engine.wasm && test -s packages/engine/dist/engine-simd.wasm
       - run: pnpm --filter @opentiles/web e2e
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         if: failure()
         with:
           name: playwright-report
@@ -105,9 +105,9 @@ jobs:
         # The lowest version package.json allows (node:sqlite without a flag) and the latest 22.x.
         node: ['22.13', '22']
     steps:
-      - uses: actions/checkout@v4
-      - uses: pnpm/action-setup@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v7
+      - uses: pnpm/action-setup@v6
+      - uses: actions/setup-node@v7
         with:
           node-version: ${{ matrix.node }}
           check-latest: true
@@ -121,9 +121,9 @@ jobs:
     name: Licences
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: pnpm/action-setup@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v7
+      - uses: pnpm/action-setup@v6
+      - uses: actions/setup-node@v7
         with:
           node-version-file: .nvmrc
           check-latest: true
@@ -140,8 +140,8 @@ jobs:
     name: Catalogue provenance
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
         with:
           python-version: '3.12'
       - run: python3 tools/pipeline/validate_catalogue.py
@@ -152,13 +152,18 @@ jobs:
     if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           fetch-depth: 0
       - name: Every commit is signed off
         run: |
           missing=0
           for sha in $(git rev-list --no-merges ${{ github.event.pull_request.base.sha }}..${{ github.event.pull_request.head.sha }}); do
+            # Dependabot cannot sign off (.github/dependabot.yml); the maintainer's signed-off
+            # merge certifies its updates.
+            if [ "$(git log -1 --format=%ae "$sha")" = '49699333+dependabot[bot]@users.noreply.github.com' ]; then
+              continue
+            fi
             if ! git log -1 --format=%B "$sha" | grep -q '^Signed-off-by: '; then
               echo "::error::Commit $sha is missing a Signed-off-by line (use git commit -s)"
               missing=1
@@ -183,9 +188,9 @@ jobs:
       group: pages
       cancel-in-progress: false
     steps:
-      - uses: actions/checkout@v4
-      - uses: pnpm/action-setup@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v7
+      - uses: pnpm/action-setup@v6
+      - uses: actions/setup-node@v7
         with:
           node-version-file: .nvmrc
           check-latest: true

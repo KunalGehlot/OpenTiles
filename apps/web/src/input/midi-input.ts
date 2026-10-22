@@ -130,11 +130,13 @@ export async function midiAccess(): Promise<MIDIAccess> {
 }
 
 /**
- * True when a screen may connect the keyboard by itself, without a prompt: access was granted on
- * this page already, or the browser says MIDI is allowed for this site. Browsers that cannot say
+ * True when a screen may connect the keyboard by itself, without a prompt: always in the iPad app
+ * (CoreMIDI asks no permission, so every piece connects as the last one did), or access was granted
+ * on this page already, or the browser says MIDI is allowed for this site. Browsers that cannot say
  * (the query throws) get the Connect button until access is granted once on the page.
  */
 export async function midiAllowed(): Promise<boolean> {
+  if (nativeMidiAvailable()) return true;
   if (!webMidiSupported()) return false;
   if (granted) return true;
   try {

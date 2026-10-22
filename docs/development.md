@@ -30,7 +30,7 @@ Breaking one of these is a blocking review comment, whatever else the change doe
 | Path                  | What                                                                           | Language       |
 | --------------------- | ------------------------------------------------------------------------------ | -------------- |
 | `apps/web`            | The web app (React + Vite, PWA)                                                | TypeScript     |
-| `apps/ios-shell`      | Capacitor wrapper + CoreMIDI plugin (phase 3, placeholder)                     | Swift / TS     |
+| `apps/ios-shell`      | iPad app: Capacitor wrapper + CoreMIDI plugin, self-signed IPA (ADR 0023)      | Swift / TS     |
 | `packages/engine`     | Note detection engine → WebAssembly, plus its AudioWorklet and loader in `js/` | Rust, TS       |
 | `packages/song-model` | `Song` model, tempo map, MusicXML / MIDI parsers, quantiser, hand split        | TypeScript     |
 | `packages/practice`   | Practice engine: `NoteEvent`, steps, wait mode, play-along scoring             | TypeScript     |
@@ -49,6 +49,12 @@ runs the dev server and the tests.
 pnpm refuses to install a package version published less than two days ago
 (`minimumReleaseAge` in `pnpm-workspace.yaml`), because hijacked releases are usually unpublished
 within hours. For an urgent security fix, lower it for that one install and read the lockfile diff.
+
+Dependabot (`.github/dependabot.yml`) opens update pull requests every Monday for the GitHub Actions,
+the pnpm workspace (minor and patch grouped, each major on its own) and the engine's crate, each a
+few days after a release for the same reason. It cannot sign off its commits, so the DCO job lets
+`dependabot[bot]` through; merge its pull requests like any other, with your own signed-off merge
+commit (never GitHub's merge button). Capacitor majors and Node type majors are left to a person.
 
 ```sh
 pnpm install                 # JS dependencies for every workspace package

@@ -64,9 +64,9 @@ device** in **Settings → MIDI keyboard**, or turn the keyboard's speakers down
 Not in a browser: no browser on an iPad or iPhone can reach MIDI keyboards, and Safari is not
 supported. Two things help in the meantime. Many digital pianos also work as a USB audio
 interface: plugged into an iPad, they play its sound through their own speakers, the app's notes
-included. And an acoustic or digital piano can be heard through the microphone. An OpenTiles iPad
-app that talks to MIDI keyboards over USB and Bluetooth is being built
-([`apps/ios-shell`](../apps/ios-shell/README.md)) but is not released yet.
+included. And an acoustic or digital piano can be heard through the microphone. The OpenTiles iPad
+app talks to MIDI keyboards over USB and Bluetooth. It is experimental and not in the App Store:
+you sign it with your own Apple ID and install it yourself ([Installing the iPad app](ipad-app.md)).
 
 ### The timing feels off.
 

@@ -23,7 +23,8 @@ sync, and release hardening. What is left is mostly human work and gates:
 - **G0, the microphone gate:** record the test set on real pianos (P0-04), measure latency on iPads
   (P0-11), tune and write the gate report (P0-13).
 - **Legal and publishing:** the legal consultation (P2-18) and the trademark. The site deploys to GitHub Pages at opentiles.site (P5-11, ADR 0016).
-- **iPad app:** install on an iPad and test with a keyboard (P3-01); App Store (P3-02).
+- **iPad app:** builds as an unsigned IPA that people sign with their own Apple ID (ADR 0023); install
+  on an iPad and test with a keyboard (P3-01); App Store (P3-02).
 - **Code still open:** MIDI out and Bluetooth MIDI pairing in the iPad app, the sustain pedal, frame time
   on an older iPad, a native speaker's read-through of the German, more catalogue pieces (P3-05).
 
@@ -229,8 +230,16 @@ compatibility matrix (spec §5).
 
 - [~] **P3-01** Capacitor iPad shell with a Swift CoreMIDI plugin (`NativeMidiInput`), in
   `apps/ios-shell`. Done: Capacitor 8 shell, Swift CoreMIDI plugin, NativeMidiInput; the app
-  builds with Xcode 27 (2026-10-09). Left: install on an iPad and test with a keyboard (the
-  first-build checklist in the app's README), the plugin tests on a simulator.
+  builds with Xcode 27 (2026-10-09). Self-signing (2026-10-22, ADR 0023, `docs/ipad-app.md`):
+  `pnpm ipa` makes an unsigned IPA for AltStore, SideStore or Sideloadly and a free Apple ID,
+  `pnpm device` signs with the user's team and installs; a macOS CI workflow builds it, runs the
+  plugin tests on a simulator and drafts a release with an AltStore source on a version tag; the
+  Bluetooth usage text the pairing screen needs; no service worker inside the app. First device run
+  (2026-10-22, iPad Pro M1, iPadOS 27, a USB digital piano): MIDI in works; fixed from it: the
+  sampled piano (Capacitor serves MP3s with status 0) and the status bar in the dark theme. The
+  plugin tests pass in CI. Left: the rest of the first-build checklist in the app's README
+  (Bluetooth, microphone, MIDI out on the keyboard's own sound, Split View), AltStore / SideStore /
+  Sideloadly with a free Apple ID.
 - [ ] **P3-02** (human) Apple Developer Program, free App Store release.
 - [~] **P3-03** Encrypted sync: passkeys / email link, Argon2id-wrapped library key, AES-GCM blobs,
   EU object storage, 250 MB quota, one-step account deletion. (Open decision: v1.0 or right
@@ -773,6 +782,15 @@ Record the outcome as an ADR in `docs/adr/` and tick it here.
 - [x] Engine exposes a plain C ABI instead of wasm-bindgen glue — ADR 0002.
 
 ## Changelog
+
+- **2026-10-22** — CI: every action on Node.js 24 (GitHub's Node.js 20 deprecation); Dependabot
+  for the actions, the pnpm workspace and the engine's crate.
+
+- **2026-10-22** — P3-01: the iPad app can be signed with your own Apple ID and installed without the
+  App Store (unsigned IPA, AltStore / SideStore source, one command for Mac owners).
+
+- **2026-10-22** — P3-01: in the iPad app the keyboard stays connected from piece to piece; **Loop**
+  repeats the whole piece at once, so wait mode goes round instead of ending.
 
 - **2026-10-22** — P6-20: a 3, 2, 1 count-in before each run; the other hand's opening plays
   before the practised hand's first note.

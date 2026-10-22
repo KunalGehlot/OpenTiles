@@ -82,8 +82,9 @@ test('inside the iPad app, a CoreMIDI keyboard drives wait mode', async ({ page 
   await page.getByRole('button', { name: 'Right', exact: true }).click();
   await expect(page.getByText('MIDI not available')).toHaveCount(0);
 
-  await page.getByRole('button', { name: 'Connect MIDI keyboard' }).click();
+  // CoreMIDI asks no permission, so the app connects by itself on every piece: no Connect.
   await expect(page.getByText('MIDI: Test Piano')).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Connect MIDI keyboard' })).toHaveCount(0);
   const calls = await page.evaluate(() => window.fakeMidi.calls);
   expect(calls).toContain('getTime');
   expect(calls).toContain('start');

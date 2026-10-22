@@ -117,15 +117,8 @@ export function SectionBar({
           ))}
         </select>
       </label>
-      {loop && (
-        <button
-          onClick={() => {
-            setSteps(null);
-            session.setLoop(null);
-          }}
-        >
-          {t('Whole piece')}
-        </button>
+      {loop && (loop.fromMeasure > 0 || loop.toMeasure < lastBar) && (
+        <button onClick={() => setRange(0, lastBar)}>{t('Whole piece')}</button>
       )}
       <label
         title={t('After every run with no wrong or missed notes, play 5 % faster, up to 100 %')}
