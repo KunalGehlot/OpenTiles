@@ -4,8 +4,11 @@ The OpenTiles iPad app is the web app in a native wrapper that can reach MIDI ke
 Bluetooth, which no browser on an iPad can. It is not in the App Store. You install it yourself and
 sign it with your own Apple ID: a free one is enough.
 
-> **Status: experimental.** The app builds and installs, but has not yet been tried with a keyboard
-> on a real iPad (PLAN.md P3-01). Please report what works and what does not.
+<img src="images/ipad-app.png" alt="The iPad app playing Chopin's Waltz in B minor (Op. 69 No. 2) as falling notes over a 61-key keyboard, with a MIDI keyboard connected" width="720">
+
+> **Status: experimental.** First run on an iPad Pro (M1, iPadOS 27) with a digital piano on USB on
+> 2026-10-22: the keys reach the app and the practice screen follows them. Please report what works
+> and what does not.
 
 ## What you need to know first
 

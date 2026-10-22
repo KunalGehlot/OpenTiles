@@ -1,5 +1,7 @@
 ## Install the iPad app
 
+<img src="https://raw.githubusercontent.com/KunalGehlot/OpenTiles/main/docs/images/ipad-app.png" alt="The iPad app playing Chopin's Waltz in B minor (Op. 69 No. 2) as falling notes over a 61-key keyboard, with a MIDI keyboard connected" width="720">
+
 The OpenTiles iPad app reaches MIDI keyboards over USB and Bluetooth, which no iPad browser can. It
 is not in the App Store: you sign it with your own Apple ID (a free one works) and install it
 yourself. **Experimental:** please report what works and what does not.

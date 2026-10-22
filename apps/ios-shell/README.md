@@ -9,9 +9,9 @@ PLAN.md task **P3-01**.
 > **Status: builds; not yet run on a device.** Written on Linux; first built on macOS with Xcode 27
 > on 2026-10-09 (`xcodebuild -scheme App -destination 'generic/platform=iOS'`, no errors). Since
 > 2026-10-22 it builds as an unsigned IPA that anyone can sign and install themselves
-> ([Install it yourself](#install-it-yourself), ADR 0023). Not yet installed on an iPad or tried
-> with a keyboard, and the plugin tests (⌘U) need an iPad simulator runtime. Work through the
-> [first-build checklist](#first-build-checklist).
+> ([Install it yourself](#install-it-yourself), ADR 0023). First installed on an iPad Pro (M1,
+> iPadOS 27) with `pnpm device` on 2026-10-22 and played with a USB digital piano; the plugin tests
+> run in CI on an iPad simulator. Work through the [first-build checklist](#first-build-checklist).
 
 ## Layout
 
@@ -123,27 +123,30 @@ TEAM=ABCDE12345 pnpm --filter @opentiles/ios-shell device  # sign with your team
 
 ### First-build checklist
 
-1. ✓ The app and the plugin compile (2026-10-09). The plugin and its tests compile for iOS with
-   MIDI out (2026-10-17, `xcodebuild build-for-testing`) and for the simulator (2026-10-22); the
-   tests are still to run, on a simulator runtime (CI) or an iPad. ✓ `pnpm ipa` makes an unsigned
-   IPA with no entitlements (2026-10-22). Still to try: installing it with AltStore, SideStore or
-   Sideloadly and a free Apple ID, and `pnpm device`.
-2. The app starts with no network (aeroplane mode) and the catalogue opens. The top bar sits
+1. ✓ The app and the plugin compile (2026-10-09), with MIDI out (2026-10-17). ✓ `pnpm ipa` makes
+   an unsigned IPA with no entitlements, and the plugin tests pass in CI on an iPad simulator
+   (2026-10-22). ✓ `pnpm device` with a free Apple ID installs on an iPad Pro (M1, iPadOS 27).
+   Still to try: AltStore, SideStore and Sideloadly.
+2. Found on the first device run (2026-10-22) and fixed: the piano samples arrive from
+   `capacitor://` with status 0, which the loader took for a failure (the app played the stand-in
+   synth); the status bar did not follow the page's dark theme. Keyboard size is not detected (MIDI
+   does not report it); choose it under Settings → Keyboard size.
+3. The app starts with no network (aeroplane mode) and the catalogue opens. The top bar sits
    below the status bar (`env(safe-area-inset-top)`), in both orientations.
-3. A USB MIDI keyboard (USB-C, or the Lightning to USB Camera Adapter) appears after
-   **Connect MIDI keyboard**; notes advance wait mode; in play-along, notes played on the beat are
-   judged on time (compare with the on-screen keys).
-4. Unplugging and replugging the keyboard updates the device list and notes resume.
-5. A Bluetooth MIDI keyboard paired from Settings → MIDI keyboard appears too.
-6. With "Plays on: My keyboard", Listen and the Player play on the keyboard's own sound, on time,
+4. A USB MIDI keyboard (USB-C, or the Lightning to USB Camera Adapter) appears after
+   **Connect MIDI keyboard** (✓ 2026-10-22); notes advance wait mode; in play-along, notes played
+   on the beat are judged on time (compare with the on-screen keys).
+5. Unplugging and replugging the keyboard updates the device list and notes resume.
+6. A Bluetooth MIDI keyboard paired from Settings → MIDI keyboard appears too.
+7. With "Plays on: My keyboard", Listen and the Player play on the keyboard's own sound, on time,
    with its pedal; Stop leaves nothing sounding; unplugging it mid-piece pauses the Player.
-7. **Use microphone** shows the permission text from `Info.plist`, and detection works in the
+8. **Use microphone** shows the permission text from `Info.plist`, and detection works in the
    app's WebView.
-8. Sound starts after a tap; check it with the Ring/Silent switch on and off (see follow-ups).
-9. Split View at a third of the screen and rotation keep the practice screen usable.
-10. An imported piece is still in the library after quitting and reopening the app, and the "Add to
+9. Sound starts after a tap; check it with the Ring/Silent switch on and off (see follow-ups).
+10. Split View at a third of the screen and rotation keep the practice screen usable.
+11. An imported piece is still in the library after quitting and reopening the app, and the "Add to
     Home Screen" hint does not appear.
-11. Xcode → **Product → Generate Privacy Report** on an archive lists the plugin's manifest.
+12. Xcode → **Product → Generate Privacy Report** on an archive lists the plugin's manifest.
 
 ## App Store notes (P3-02)
 

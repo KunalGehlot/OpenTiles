@@ -234,9 +234,12 @@ compatibility matrix (spec §5).
   `pnpm ipa` makes an unsigned IPA for AltStore, SideStore or Sideloadly and a free Apple ID,
   `pnpm device` signs with the user's team and installs; a macOS CI workflow builds it, runs the
   plugin tests on a simulator and drafts a release with an AltStore source on a version tag; the
-  Bluetooth usage text the pairing screen needs; no service worker inside the app. Left: install on
-  an iPad and test with a keyboard (the first-build checklist in the app's README), the first CI
-  run of the plugin tests, the first tagged release (the maintainer's yes).
+  Bluetooth usage text the pairing screen needs; no service worker inside the app. First device run
+  (2026-10-22, iPad Pro M1, iPadOS 27, a USB digital piano): MIDI in works; fixed from it: the
+  sampled piano (Capacitor serves MP3s with status 0) and the status bar in the dark theme. The
+  plugin tests pass in CI. Left: the rest of the first-build checklist in the app's README
+  (Bluetooth, microphone, MIDI out on the keyboard's own sound, Split View), AltStore / SideStore /
+  Sideloadly with a free Apple ID.
 - [ ] **P3-02** (human) Apple Developer Program, free App Store release.
 - [~] **P3-03** Encrypted sync: passkeys / email link, Argon2id-wrapped library key, AES-GCM blobs,
   EU object storage, 250 MB quota, one-step account deletion. (Open decision: v1.0 or right

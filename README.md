@@ -79,7 +79,9 @@ OpenTiles is built for a computer with a MIDI keyboard or a piano in the room.
 Phones and tablets are not a target. An experimental iPad app, which reaches MIDI keyboards over
 USB and Bluetooth, is in the repository ([`apps/ios-shell`](apps/ios-shell/README.md)). It is not in
 the App Store: you sign it with your own Apple ID and install it yourself
-([Installing the iPad app](docs/ipad-app.md)). It has not yet been tried with a keyboard.
+([Installing the iPad app](docs/ipad-app.md)). First tried with a keyboard on 2026-10-22.
+
+<img src="docs/images/ipad-app.png" alt="The iPad app playing Chopin's Waltz in B minor (Op. 69 No. 2) as falling notes over a 61-key keyboard, with a MIDI keyboard connected" width="640">
 
 ## Why
 
