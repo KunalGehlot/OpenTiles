@@ -30,7 +30,7 @@ Breaking one of these is a blocking review comment, whatever else the change doe
 | Path                  | What                                                                           | Language       |
 | --------------------- | ------------------------------------------------------------------------------ | -------------- |
 | `apps/web`            | The web app (React + Vite, PWA)                                                | TypeScript     |
-| `apps/ios-shell`      | Capacitor wrapper + CoreMIDI plugin (phase 3, placeholder)                     | Swift / TS     |
+| `apps/ios-shell`      | iPad app: Capacitor wrapper + CoreMIDI plugin, self-signed IPA (ADR 0023)      | Swift / TS     |
 | `packages/engine`     | Note detection engine → WebAssembly, plus its AudioWorklet and loader in `js/` | Rust, TS       |
 | `packages/song-model` | `Song` model, tempo map, MusicXML / MIDI parsers, quantiser, hand split        | TypeScript     |
 | `packages/practice`   | Practice engine: `NoteEvent`, steps, wait mode, play-along scoring             | TypeScript     |

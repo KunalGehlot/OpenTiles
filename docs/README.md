@@ -9,6 +9,7 @@ Pick the section that fits what you want to do.
 | [User guide](user-guide.md)                         | Inputs, practice modes, tools, importing your own music, settings |
 | [FAQ](faq.md)                                       | Quick answers and fixes for common problems                       |
 | [Run it yourself](../README.md#run-it-yourself)     | Start the app on your own computer until a hosted version exists  |
+| [Installing the iPad app](ipad-app.md)              | Sign the experimental iPad app with your Apple ID and install it  |
 | [Privacy and legal guardrails](legal-guardrails.md) | What OpenTiles will and will not do with your files               |
 
 ## I want to contribute

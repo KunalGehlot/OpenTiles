@@ -76,8 +76,10 @@ OpenTiles is built for a computer with a MIDI keyboard or a piano in the room.
 | Firefox (desktop)      | Supported, including MIDI keyboards                                    |
 | Safari (macOS, iPadOS) | **Not supported.** It has no Web MIDI and the app does not work in it. |
 
-Phones and tablets are not a target. An experimental iPad app is in the repository
-([`apps/ios-shell`](apps/ios-shell/README.md)) but is unfinished and unreleased.
+Phones and tablets are not a target. An experimental iPad app, which reaches MIDI keyboards over
+USB and Bluetooth, is in the repository ([`apps/ios-shell`](apps/ios-shell/README.md)). It is not in
+the App Store: you sign it with your own Apple ID and install it yourself
+([Installing the iPad app](docs/ipad-app.md)). It has not yet been tried with a keyboard.
 
 ## Why
 
@@ -141,7 +143,7 @@ every change keeps, and how to run the end-to-end tests.
 | Path                  | Contents                                                        |
 | --------------------- | --------------------------------------------------------------- |
 | `apps/web`            | The web app (React + Vite, PWA)                                 |
-| `apps/ios-shell`      | Experimental Capacitor wrapper for iPad (not released)          |
+| `apps/ios-shell`      | Experimental iPad app (Capacitor + CoreMIDI), self-signed       |
 | `apps/sync-api`       | Optional server for end-to-end encrypted backup and sync        |
 | `packages/engine`     | Rust note-detection engine → WebAssembly, with its AudioWorklet |
 | `packages/song-model` | The `Song` model and MusicXML / MIDI parsers                    |

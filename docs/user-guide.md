@@ -180,7 +180,7 @@ What you hear depends on the device:
 | -------------------------------------------------------- | ------------------------------------------------------------ |
 | Mac or PC with Chrome, Edge or Firefox, USB or Bluetooth | your keyboard plays the piece itself (MIDI), its pedal too   |
 | iPad, any browser, keyboard on USB                       | the app's piano, through the keyboard's speakers (USB audio) |
-| iPad app (coming later), USB or Bluetooth                | your keyboard plays the piece itself (MIDI)                  |
+| [iPad app](ipad-app.md) (experimental), USB or Bluetooth | your keyboard plays the piece itself (MIDI)                  |
 
 No browser on the iPad can send MIDI to a keyboard yet; see the [FAQ](faq.md).
 
