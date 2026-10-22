@@ -54,7 +54,8 @@ Dependabot (`.github/dependabot.yml`) opens update pull requests every Monday fo
 the pnpm workspace (minor and patch grouped, each major on its own) and the engine's crate, each a
 few days after a release for the same reason. It cannot sign off its commits, so the DCO job lets
 `dependabot[bot]` through; merge its pull requests like any other, with your own signed-off merge
-commit (never GitHub's merge button). Capacitor majors and Node type majors are left to a person.
+commit (never GitHub's merge button). Capacitor, Node type and TypeScript majors, and Playwright
+(its browsers move with it), are left to a person.
 
 ```sh
 pnpm install                 # JS dependencies for every workspace package
