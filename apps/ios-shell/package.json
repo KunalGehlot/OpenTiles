@@ -10,7 +10,9 @@
     "sync": "cap telemetry off && cap sync ios",
     "ios": "pnpm web && pnpm sync",
     "open": "cap telemetry off && cap open ios",
-    "typecheck": "tsc -p tsconfig.json"
+    "typecheck": "tsc -p tsconfig.json",
+    "ipa": "bash scripts/build.sh ipa",
+    "device": "bash scripts/build.sh device"
   },
   "dependencies": {
     "@capacitor/core": "^8.5.3",
