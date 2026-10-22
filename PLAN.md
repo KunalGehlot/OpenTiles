@@ -39,18 +39,22 @@ on" choice in practice so Listen can play on the keyboard only. The full plan is
 Player a self-playing grand piano, described in
 [docs/phase-6/player-piano.md](docs/phase-6/player-piano.md).
 
+**Next: [Phase 7 — Chord drills](#phase-7--chord-drills-planned-2026-10-22)**, planned from issue #47
+and not started. See [docs/phase-7/chord-drills.md](docs/phase-7/chord-drills.md).
+
 ## Phases and gates
 
 v1.0 is planned for August 2027 at roughly 8–10 hours a week, with December 2026 kept light. Each
 phase ends at a gate. If a gate fails, re-plan the next phase before continuing.
 
-| Phase                     | Window                         | Outcome                                                    | Gate at the end                                                                                      |
-| ------------------------- | ------------------------------ | ---------------------------------------------------------- | ---------------------------------------------------------------------------------------------------- |
-| 0 — Feasibility           | Oct 7 – Nov 18, 2026 (6 weeks) | Microphone detector proven (or not) on iPad Safari         | **G0 Go/no-go:** accuracy and latency targets on the recorded test set                               |
-| 1 — Core practice loop    | Nov 19, 2026 – Mar 31, 2027    | Journeys A and B work end to end, offline                  | **G1 Alpha:** a beginner can import or pick a piece and practise it in wait mode on iPad and desktop |
-| 2 — Catalogue and breadth | Apr – Jun 2027                 | 150 verified pieces, looping, ABC/MuseScore import, backup | **G2 Public beta:** legal guardrails all met, device lab passes                                      |
-| 3 — v1.0                  | Jul – Aug 2027                 | iPad MIDI shell, 300 pieces, release hardening             | **G3 v1.0 release:** the definition of success in spec §1 holds                                      |
-| 4 — After v1.0            | Sep 2027 →                     | OMR, audio import, courses, community arrangements         | —                                                                                                    |
+| Phase                     | Window                          | Outcome                                                    | Gate at the end                                                                                      |
+| ------------------------- | ------------------------------- | ---------------------------------------------------------- | ---------------------------------------------------------------------------------------------------- |
+| 0 — Feasibility           | Oct 7 – Nov 18, 2026 (6 weeks)  | Microphone detector proven (or not) on iPad Safari         | **G0 Go/no-go:** accuracy and latency targets on the recorded test set                               |
+| 1 — Core practice loop    | Nov 19, 2026 – Mar 31, 2027     | Journeys A and B work end to end, offline                  | **G1 Alpha:** a beginner can import or pick a piece and practise it in wait mode on iPad and desktop |
+| 2 — Catalogue and breadth | Apr – Jun 2027                  | 150 verified pieces, looping, ABC/MuseScore import, backup | **G2 Public beta:** legal guardrails all met, device lab passes                                      |
+| 3 — v1.0                  | Jul – Aug 2027                  | iPad MIDI shell, 300 pieces, release hardening             | **G3 v1.0 release:** the definition of success in spec §1 holds                                      |
+| 4 — After v1.0            | Sep 2027 →                      | OMR, audio import, courses, community arrangements         | —                                                                                                    |
+| 7 — Chord drills          | Planned 2026-10-22; not started | Random chords to practise, on the sheet or as falling keys | The maintainer plays it and answers Q1–Q9 (P7-13)                                                    |
 
 If **G0** fails, v1.0 becomes MIDI-first and the microphone ships marked as beta (spec §11).
 
@@ -686,6 +690,31 @@ without a word when no MIDI output is found.
       on this device; off on pause, in practice and in the Detector Lab. Not heard on a real iPad
       yet (P6-13).
 
+## Phase 7 — Chord drills (planned 2026-10-22)
+
+Goal: a **Chords** drill beside Sight-reading. The learner gets random chords from a set they choose,
+at eight difficulty levels, and plays them from the sheet with nothing given away ("blind") or from
+falling keys, in wait mode or at a tempo. Asked for in [issue #47](https://github.com/KunalGehlot/OpenTiles/issues/47)
+and shaped by the maintainer on 2026-10-22. Every task's detail is in
+[docs/phase-7/chord-drills.md](docs/phase-7/chord-drills.md); the decisions go into ADR 0022 (P7-00)
+once the maintainer has answered Q1–Q9 in §7 of the plan.
+
+- [~] **P7-00** (GOV) The plan and ADR 0022. Done: the plan. Left: the maintainer's answers, then the ADR.
+- [ ] **P7-01** (PRAC) Chord vocabulary: qualities, spelling, inversions, voicings, `chordSymbol` parts.
+- [ ] **P7-02** (PRAC) The seeded chord drill generator (MusicXML with `<harmony>`, one chord a bar).
+- [ ] **P7-03** (PRAC) Judging a chord: per-chord tally, causes of a miss, chord spread in play-along.
+- [ ] **P7-04** (APP) The Drills hub, the Chords setup page, chord names in the learner's label style.
+- [ ] **P7-05** (APP) Sheet (blind) mode: the first playable, with the chords-a-minute readout.
+- [ ] **P7-06** (APP) Falling keys mode: chord names on the bars, hint fade.
+- [ ] **P7-07** (APP) Speeds: wait, tempo with count-in, the optional ladder.
+- [ ] **P7-08** (STORE, APP) Chord progress on the device and "Practise my weak chords".
+- [ ] **P7-09** (APP) The eight-level ladder and the pace controls wired together.
+- [ ] **P7-10** (ENG) Four-note chords on the microphone: synthetic numbers, real recordings, a hint.
+- [ ] **P7-11** (APP) The on-screen keyboard with several fingers, at ⅓ of an iPad.
+- [ ] **P7-12** (GOV) User guide, README, German strings.
+- [ ] **P7-13** (human) The maintainer's checks, then a reply on issue #47 with their approval.
+- [ ] **P7-14** (PRAC, APP) Scales, on the same pieces (optional, after chords; see Q4).
+
 ## Cross-cutting checklists
 
 These are tracked in their own documents and must be green before the gate named.
@@ -710,6 +739,8 @@ Record the outcome as an ADR in `docs/adr/` and tick it here.
 - [x] Engine exposes a plain C ABI instead of wasm-bindgen glue — ADR 0002.
 
 ## Changelog
+
+- **2026-10-22** — P7-00: Phase 7 (chord drills) planned from issue #47; nothing built yet.
 
 - **2026-10-19** — P6-16: a MIDI file from notation software is pedalled and shaped around its
   own dynamics; only a recording is left as played.
