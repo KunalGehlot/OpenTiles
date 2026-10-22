@@ -30,14 +30,14 @@ sign it with your own Apple ID: a free one is enough.
 
 ## Download
 
-Get **`OpenTiles.ipa`** from the [releases page](https://github.com/KunalGehlot/OpenTiles/releases).
-The IPA is unsigned: it is the same for everyone, and your tool signs it for you.
+Get **`OpenTiles.ipa`** from the
+[latest release](https://github.com/KunalGehlot/OpenTiles/releases/latest) (direct link:
+<https://github.com/KunalGehlot/OpenTiles/releases/latest/download/OpenTiles.ipa>). The IPA is
+unsigned: it is the same for everyone, and your tool signs it for you.
 
-**There is no release yet.** Until the first one, build the IPA yourself on a Mac
-([option 3](#option-3-building-it-yourself-mac-with-xcode)), or, signed in to GitHub, download
-`OpenTiles-ipa` from the newest run of the
+Newer than the latest release: signed in to GitHub, download `OpenTiles-ipa` from a run of the
 [iPad app workflow](https://github.com/KunalGehlot/OpenTiles/actions/workflows/ios.yml) and unzip
-it. The AltStore / SideStore source below works from the first published release.
+it, or build it yourself ([option 3](#option-3-building-it-yourself-mac-with-xcode)).
 
 ## Option 1: AltStore or SideStore (updates itself)
 

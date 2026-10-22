@@ -88,12 +88,16 @@ jobs:
     permissions:
       contents: write
     steps:
+      - uses: actions/checkout@v4
       - uses: actions/download-artifact@v4
         with:
           name: OpenTiles-ipa
+          path: release
+      # The install steps first, then GitHub's list of merged pull requests.
       - name: Attach the IPA and the source to a draft release
         env:
           GH_TOKEN: ${{ github.token }}
         run: >-
-          gh release create "$GITHUB_REF_NAME" --repo "$GITHUB_REPOSITORY" --draft --verify-tag
-          --title "OpenTiles $GITHUB_REF_NAME" --generate-notes OpenTiles.ipa altstore.json
+          gh release create "$GITHUB_REF_NAME" --draft --verify-tag
+          --title "OpenTiles $GITHUB_REF_NAME" --notes-file apps/ios-shell/release-notes.md
+          --generate-notes release/OpenTiles.ipa release/altstore.json
