@@ -409,6 +409,28 @@ describe('loadPianoSamples', () => {
       ),
     ).rejects.toThrow(/C4\.mp3/);
   });
+
+  // The iPad app's capacitor:// scheme answers MP3 files without an HTTP status.
+  const statusZero = () =>
+    ({
+      ok: false,
+      status: 0,
+      arrayBuffer: async () => new Uint8Array([25]).buffer,
+    }) as unknown as Response;
+
+  it('accepts a file served without an HTTP status from the app', async () => {
+    const ctx = new FakeContext();
+    const app = new URL('capacitor://localhost/samples/piano/');
+    const samples = await loadPianoSamples(asContext(ctx), app, async () => statusZero());
+    expect(samples).toHaveLength(30);
+  });
+
+  it('still fails on status 0 over http(s)', async () => {
+    const ctx = new FakeContext();
+    await expect(loadPianoSamples(asContext(ctx), base, async () => statusZero())).rejects.toThrow(
+      /\(0\)/,
+    );
+  });
 });
 
 describe('Piano', () => {

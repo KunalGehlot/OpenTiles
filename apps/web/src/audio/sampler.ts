@@ -203,6 +203,15 @@ function decode(ctx: BaseAudioContext, data: ArrayBuffer): Promise<AudioBuffer> 
   });
 }
 
+/**
+ * True when a sample arrived. The iPad app serves its files from capacitor://, and Capacitor answers
+ * media files (MP3 included) without an HTTP status, so they arrive with status 0; only http(s) has
+ * one. Without this the app never got past the stand-in synth (ADR 0023).
+ */
+function loaded(res: Response, url: URL): boolean {
+  return res.ok || (res.status === 0 && url.protocol !== 'http:' && url.protocol !== 'https:');
+}
+
 /** Fetches and decodes every sample of a layer (the original set by default) from `base`. */
 export async function loadPianoSamples(
   ctx: BaseAudioContext,
@@ -213,8 +222,10 @@ export async function loadPianoSamples(
   return Promise.all(
     SAMPLE_PITCHES.map(async (pitch) => {
       const name = layer.dir + sampleFileName(pitch);
-      const res = await fetchFile(new URL(name, base));
-      if (!res.ok) throw new Error(`Could not load piano sample ${name} (${res.status}).`);
+      const url = new URL(name, base);
+      const res = await fetchFile(url);
+      if (!loaded(res, url))
+        throw new Error(`Could not load piano sample ${name} (${res.status}).`);
       const buffer = await decode(ctx, await res.arrayBuffer());
       return { pitch, buffer, offset: findOnset(buffer.getChannelData(0), buffer.sampleRate) };
     }),
