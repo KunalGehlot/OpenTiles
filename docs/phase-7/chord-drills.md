@@ -49,8 +49,10 @@ What the code does today, checked on `main` at `d5d35c5`:
 - **No chord names anywhere.** The `Song` has no chord symbols, and `lib/notes.ts` names single
   pitch classes only. It does know the three label styles the learner can choose (letters,
   German, fixed-do), which chord names must follow.
-- **Microphone limits.** The detector is score-informed and validated for single notes and 2 to 3
-  note chords (95 % of correct notes accepted, at most 3 % of wrong notes accepted; spec, "Accuracy targets and test set"). Four
+- **Microphone limits.** The detector is score-informed and its targets are set for single notes and 2 to 3
+  note chords (95 % of correct notes accepted, at most 3 % of wrong notes accepted; spec, "Accuracy
+  targets and test set"). The numbers so far come from a synthesiser; the gate on real recordings
+  (G0) is still open. Four
   notes (seventh chords) and more are "best effort". A chord drill above triads should therefore
   say "use MIDI or touch" until P7-10 has measured it.
 - **On-screen keyboard.** Touch input exists (`input/touch-input.ts`). Whether several fingers can
@@ -92,7 +94,7 @@ construction (section 10).
 | B — Web app       | P7-04, P7-05, P7-06, P7-07 | Setup page, sheet mode first (the first playable), then falling |
 | C — Progress      | P7-08                      | After P7-03 and P7-05                                           |
 | D — Input checks  | P7-10, P7-11               | Any time after P7-02; independent of B                          |
-| Last              | P7-09, P7-12, P7-13        | Pace and ladder, docs, then the human check                     |
+| Last              | P7-09, P7-12, P7-13        | Levels and pace wired together, docs, then the human check      |
 
 The first playable is P7-05: a chord drill in wait mode on the sheet, with MIDI and the on-screen
 keyboard. Everything after that adds a display, a speed or a measurement.
@@ -296,9 +298,10 @@ to practise.
 attempts, first-try rights and a moving median time, over the last 200 rounds at most. Never the
 drill's notes, never a title, never sent anywhere. The result card shows this round against the last
 five; the setup page gets "**Practise my weak chords**" which weights the generator towards the
-chords under 80 %. Decide with the maintainer whether `chordStats` is part of the encrypted backup
-(Q3); the default is yes, because it is the learner's own data and the only export is the backup
-(hard rule 1).
+chords under 80 %. The backup (`backup/backup.ts`) already carries the `settings` table except keys
+that `isDeviceSetting` marks as this device only, so a `chordStats` setting is in the encrypted
+backup unless it is listed there. Ask the maintainer (Q3); the recommendation is to include it,
+because it is the learner's own data and the backup is the only export (hard rule 1).
 
 **Tests.** The statistics update and the cap; the weighting never starves a chord; backup round trip
 if it is included. **Watch.** ADR 0015 chose to keep no progress for sight-reading drills, because
@@ -324,7 +327,7 @@ beside them. Size: S, since most of the parts exist by then.
 
 ### P7-10 (ENG) Four-note chords on the microphone
 
-**Why.** Levels 6 and up have four notes. The detector is validated for two and three (spec §6).
+**Why.** Levels 6 and up have four notes. The detector's targets (spec, "Accuracy targets and test set") cover two and three notes.
 
 **Build.** Add 4-note chords to `packages/engine/tests/synthetic_accuracy.rs` (the same scenarios:
 wait mode with and without pedal, play-along), report before and after numbers, and record a few
