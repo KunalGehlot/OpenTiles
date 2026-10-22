@@ -2,7 +2,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { CoreMidiPlugin } from '@opentiles/capacitor-core-midi';
 import type { NoteEvent } from '@opentiles/practice';
 import { audioTimeOf, ClockSync } from '../src/input/clock-sync';
-import { createMidiInput, MidiInput, midiSupported } from '../src/input/midi-input';
+import { createMidiInput, MidiInput, midiAllowed, midiSupported } from '../src/input/midi-input';
 import { parseMidiMessage, parseNativeNote, parseNativeSources } from '../src/input/midi-message';
 import { NativeMidiInput, nativeMidiAvailable } from '../src/input/native-midi-input';
 import { hasNativePlugin, isNativeShell } from '../src/lib/native-shell';
@@ -304,6 +304,15 @@ describe('native shell detection', () => {
     expect(hasNativePlugin('Camera')).toBe(false);
     expect(midiSupported()).toBe(true);
     expect(createMidiInput()).toBeInstanceOf(NativeMidiInput);
+  });
+
+  it('lets every piece connect the keyboard by itself inside the iPad app', async () => {
+    expect(await midiAllowed()).toBe(false);
+    vi.stubGlobal('Capacitor', {
+      isNativePlatform: () => true,
+      isPluginAvailable: (name: string) => name === 'CoreMidi',
+    });
+    expect(await midiAllowed()).toBe(true);
   });
 
   it('ignores a Capacitor global that is not native or lacks the plugin', () => {
