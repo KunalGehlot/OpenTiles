@@ -44,6 +44,12 @@ updates:
       # hand and run `pnpm --filter @opentiles/ios-shell ios` (apps/ios-shell/README.md).
       - dependency-name: '@capacitor/*'
         update-types: ['version-update:semver-major']
+      # Pinned exactly: the e2e browsers are built for this version (`playwright install`), and
+      # Dependabot cannot update them with it. Update by hand and run the e2e suite.
+      - dependency-name: '@playwright/test'
+      # TypeScript 7 is a major left alone on purpose (typescript-eslint does not take it yet).
+      - dependency-name: typescript
+        update-types: ['version-update:semver-major']
     labels: [dependencies]
     commit-message:
       prefix: Dependencies
