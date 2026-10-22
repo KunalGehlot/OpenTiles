@@ -50,6 +50,12 @@ pnpm refuses to install a package version published less than two days ago
 (`minimumReleaseAge` in `pnpm-workspace.yaml`), because hijacked releases are usually unpublished
 within hours. For an urgent security fix, lower it for that one install and read the lockfile diff.
 
+Dependabot (`.github/dependabot.yml`) opens update pull requests every Monday for the GitHub Actions,
+the pnpm workspace (minor and patch grouped, each major on its own) and the engine's crate, each a
+few days after a release for the same reason. It cannot sign off its commits, so the DCO job lets
+`dependabot[bot]` through; merge its pull requests like any other, with your own signed-off merge
+commit (never GitHub's merge button). Capacitor majors and Node type majors are left to a person.
+
 ```sh
 pnpm install                 # JS dependencies for every workspace package
 pnpm build:engine            # Rust → packages/engine/dist/engine{,-simd}.wasm (needed by the web app)

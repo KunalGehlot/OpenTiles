@@ -1,0 +1,60 @@
+# Dependabot version updates: the GitHub Actions in .github/workflows, the pnpm workspace and the
+# engine's Rust crate. Security updates are switched on in the repository settings and come on top.
+#
+# Every ecosystem waits a few days after a release (cooldown), like pnpm's minimumReleaseAge of two
+# days in pnpm-workspace.yaml: a hijacked release is usually unpublished by then, and pnpm would
+# refuse a younger version in Dependabot's own install anyway.
+#
+# Dependabot cannot sign off its commits; the DCO job in ci.yml lets its commits through, and the
+# maintainer's signed-off merge certifies the change (docs/development.md).
+version: 2
+updates:
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+    cooldown:
+      default-days: 7
+    groups:
+      actions:
+        patterns: ['*']
+    labels: [dependencies, github-actions]
+    commit-message:
+      prefix: CI
+
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+    cooldown:
+      default-days: 3
+      semver-major-days: 14
+    open-pull-requests-limit: 5
+    groups:
+      # Minor and patch releases in one pull request a week; each major on its own.
+      minor-and-patch:
+        update-types: [minor, patch]
+    ignore:
+      # Node types follow .nvmrc (22); pnpm-workspace.yaml overrides them to ^22.
+      - dependency-name: '@types/node'
+        update-types: ['version-update:semver-major']
+      # Capacitor's packages move together with capacitor-swift-pm in the iPad app; update them by
+      # hand and run `pnpm --filter @opentiles/ios-shell ios` (apps/ios-shell/README.md).
+      - dependency-name: '@capacitor/*'
+        update-types: ['version-update:semver-major']
+    labels: [dependencies]
+    commit-message:
+      prefix: Dependencies
+
+  - package-ecosystem: cargo
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+    cooldown:
+      default-days: 3
+    labels: [dependencies]
+    commit-message:
+      prefix: Engine

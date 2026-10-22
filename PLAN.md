@@ -783,6 +783,9 @@ Record the outcome as an ADR in `docs/adr/` and tick it here.
 
 ## Changelog
 
+- **2026-10-22** — CI: every action on Node.js 24 (GitHub's Node.js 20 deprecation); Dependabot
+  for the actions, the pnpm workspace and the engine's crate.
+
 - **2026-10-22** — P3-01: the iPad app can be signed with your own Apple ID and installed without the
   App Store (unsigned IPA, AltStore / SideStore source, one command for Mac owners).
 

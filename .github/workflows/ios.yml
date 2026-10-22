@@ -29,12 +29,12 @@ jobs:
     # Capacitor 8 needs Xcode 26 or newer.
     runs-on: macos-26
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           # The build number is the commit count, so it needs the whole history.
           fetch-depth: 0
-      - uses: pnpm/action-setup@v4
-      - uses: actions/setup-node@v4
+      - uses: pnpm/action-setup@v6
+      - uses: actions/setup-node@v7
         with:
           node-version-file: .nvmrc
           check-latest: true
@@ -72,7 +72,7 @@ jobs:
           node apps/ios-shell/scripts/altstore-source.mjs apps/ios-shell/build/OpenTiles.ipa
           "https://github.com/${{ github.repository }}/releases/download/${{ github.ref_name }}/OpenTiles.ipa"
           > apps/ios-shell/build/altstore.json
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: OpenTiles-ipa
           path: |
@@ -88,8 +88,8 @@ jobs:
     permissions:
       contents: write
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/download-artifact@v4
+      - uses: actions/checkout@v7
+      - uses: actions/download-artifact@v8
         with:
           name: OpenTiles-ipa
           path: release
