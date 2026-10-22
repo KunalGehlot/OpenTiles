@@ -1136,8 +1136,13 @@ function PracticeView({
             aria-expanded={showLoop || status.loop !== null}
             aria-pressed={status.loop !== null}
             onClick={() => {
-              if (status.loop) session.setLoop(null);
-              setShowLoop(!(showLoop || status.loop !== null));
+              // On, it loops the whole piece at once, so wait mode goes round again instead of
+              // ending; the bars, a drag or phrase by phrase narrow it. Off stops looping.
+              const on = !(showLoop || status.loop !== null);
+              session.setLoop(
+                on ? { fromMeasure: 0, toMeasure: Math.max(0, song.measures.length - 1) } : null,
+              );
+              setShowLoop(on);
             }}
             title={t('Loop a range of bars (or drag across the falling notes)')}
           >

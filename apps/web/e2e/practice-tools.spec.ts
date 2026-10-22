@@ -105,6 +105,24 @@ test('bars can be chosen to loop without dragging, and wait mode goes round agai
   await expect.poll(() => stepCount(page)).toBe(whole);
 });
 
+test('Loop loops the whole piece at once, so wait mode goes round instead of ending', async ({
+  page,
+}) => {
+  await openPractice(page);
+  const whole = await stepCount(page);
+  const loop = page.getByRole('button', { name: 'Loop', exact: true });
+  await loop.click();
+  await expect(loop).toHaveAttribute('aria-pressed', 'true');
+  const section = page.getByRole('group', { name: 'Loop a section' });
+  await expect(section).toContainText(/Looping bars 1–\d+/);
+  await expect(page.getByRole('button', { name: 'Whole piece' })).toHaveCount(0);
+  expect(await stepCount(page)).toBe(whole);
+  // Off again: no loop, and the bar closes.
+  await loop.click();
+  await expect(loop).toHaveAttribute('aria-pressed', 'false');
+  await expect(section).toHaveCount(0);
+});
+
 test('phrase by phrase loops the first phrase', async ({ page }) => {
   await openPractice(page);
   await page.getByRole('button', { name: 'Loop', exact: true }).click();
@@ -172,7 +190,10 @@ test('the overview strip loops bars by dragging, moves the loop with its handles
   await page.keyboard.press('ArrowLeft');
   await expect(end).toHaveAttribute('aria-valuenow', String(before - 1));
   await expect(page.getByRole('combobox', { name: 'To bar' })).toHaveValue(String(before - 2));
+  // Whole piece keeps looping, now over every bar.
   await page.getByRole('button', { name: 'Whole piece' }).click();
+  await expect(end).toHaveAttribute('aria-valuenow', (await end.getAttribute('aria-valuemax'))!);
+  await page.getByRole('button', { name: 'Loop', exact: true }).click();
   await expect(end).toHaveCount(0);
 
   // A tap goes to that bar: wait mode moves on to a later step.

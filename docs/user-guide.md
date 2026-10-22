@@ -116,8 +116,9 @@ All of these are on the practice screen or under **Options**.
   count-in, and the piece then waits for your first note.
 - **Tempo.** Slow a piece down to a speed you can manage, then raise it. OpenTiles remembers your
   last mode, hand, tempo and metronome choice.
-- **Loop.** Repeat a range of bars. Choose the bars with the button or drag across the falling
-  notes.
+- **Loop.** Repeat the piece or a range of bars. **Loop** repeats the whole piece at once, so a
+  run goes round again instead of ending; narrow it with the bar selectors, by dragging across the
+  falling notes, or phrase by phrase. Press **Loop** again to stop.
 - **Metronome.** A click track at the current tempo.
 - **Transpose.** Move the piece up or down in semitones.
 - **Fingering.** Show fingering numbers from the score, suggested ones where the score has none,

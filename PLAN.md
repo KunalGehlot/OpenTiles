@@ -786,6 +786,9 @@ Record the outcome as an ADR in `docs/adr/` and tick it here.
 - **2026-10-22** — P3-01: the iPad app can be signed with your own Apple ID and installed without the
   App Store (unsigned IPA, AltStore / SideStore source, one command for Mac owners).
 
+- **2026-10-22** — P3-01: in the iPad app the keyboard stays connected from piece to piece; **Loop**
+  repeats the whole piece at once, so wait mode goes round instead of ending.
+
 - **2026-10-22** — P6-20: a 3, 2, 1 count-in before each run; the other hand's opening plays
   before the practised hand's first note.
 
