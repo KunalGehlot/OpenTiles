@@ -33,6 +33,7 @@ import {
   midiWaitingMessage,
   pickOutput,
   startMidiInput,
+  webMidiSupported,
 } from '../input/midi-input';
 import type { MidiKeyboardInput } from '../input/midi-input';
 import type { MicInput } from '../input/mic-input';
@@ -511,13 +512,15 @@ function PracticeView({
    * chosen but out of reach, the notes play on this device and the screen says why.
    */
   const { echo: midiEcho, playback: midiPlayback, output: midiOutput, thru } = settings.midi;
-  const route = playsOn(midiPlayback, {
-    supported: midiSupported(),
-    connected: midiInput !== null,
-    inputs: midiDevices,
-    outputs: midiOutputs,
-    name: midiOutput,
-  });
+  const routeFor = (input: MidiKeyboardInput | null, inputs: string[], outputs: string[]) =>
+    playsOn(midiPlayback, {
+      supported: midiSupported(),
+      connected: input !== null,
+      inputs,
+      outputs,
+      name: midiOutput,
+    });
+  const route = routeFor(midiInput, midiDevices, midiOutputs);
   // Copies of the app's notes that a "MIDI thru" keyboard sends back, ignored as input (P6-02).
   const echoes = useRef<SentNotes | null>(null);
   // One instrument per output, kept while it is in use: it knows which notes it has sounding, so
@@ -532,18 +535,24 @@ function PracticeView({
   const applySound = (ctx: AudioContext | null) => {
     // A context that has not started would hold every note until it does, then play them at once.
     const device = ctx && audioStarted() ? synthFor(ctx) : null;
+    // A keyboard that has just connected is not on the screen yet; its own lists say where it plays.
+    const input = midiInUse.current;
+    const to =
+      input === midiInput
+        ? route
+        : routeFor(input, input?.deviceNames ?? [], input?.outputNames ?? []);
     let kept = keyboardOut.current;
-    if (kept && (kept.input !== midiInput || kept.output !== route.output)) {
+    if (kept && (kept.input !== input || kept.output !== to.output)) {
       // The notes move elsewhere (another output, or this device): nothing may keep sounding here.
       kept.instrument.silence();
       kept = null;
     }
-    if (!kept && midiInput && route.output) {
-      const sink = midiInput.output(midiOutput);
+    if (!kept && input && to.output) {
+      const sink = input.output(midiOutput);
       if (sink) {
         kept = {
-          input: midiInput,
-          output: route.output,
+          input,
+          output: to.output,
           instrument: new MidiOutInstrument(sink, now),
         };
       }
@@ -554,7 +563,7 @@ function PracticeView({
       keyboard.sent = thru.includes(kept.output) ? (keyboard.sent ?? new SentNotes()) : null;
     }
     echoes.current = keyboard?.sent ?? null;
-    session.setSynth(playbackInstrument(device, keyboard, route.effective));
+    session.setSynth(playbackInstrument(device, keyboard, to.effective));
     session.midiEcho = midiEcho ? device : null;
   };
 
@@ -564,13 +573,30 @@ function PracticeView({
   useEffect(() => {
     applySoundNow.current = applySound;
   });
+  const startSound = async () => {
+    applySoundNow.current(await unlockAudio());
+  };
   const ensureAudio = async () => {
-    const ctx = await unlockAudio();
-    applySoundNow.current(ctx);
+    await startSound();
     await connectClickTrack(session);
   };
+  // The first try to start sound, which keys wait for: once it has settled, started or not (a
+  // browser with no sound device never starts), keys play at once.
+  const firstSound = useRef<{ done: boolean; ready: Promise<void> } | null>(null);
+  const waitForSound = (): Promise<void> | null => {
+    if (audioStarted()) return null;
+    if (!firstSound.current) {
+      const attempt = { done: false, ready: Promise.resolve() };
+      attempt.ready = startSound().finally(() => {
+        attempt.done = true;
+      });
+      firstSound.current = attempt;
+    }
+    return firstSound.current.done ? null : firstSound.current.ready;
+  };
 
-  // A changed setting, or a keyboard (and its output) connected later, applies at once.
+  // A changed setting, or a keyboard (and its output) connected later, applies at once: before the
+  // screen shows the keyboard as connected, so a key played then already has its other hand.
   useEffect(() => {
     applySound(audioContext());
     // applySound reads exactly these values.
@@ -588,7 +614,7 @@ function PracticeView({
     window.addEventListener('keydown', start, true);
     // The first key tapped or typed waits a moment for sound to start: the step it completes plays
     // the other hand, and its time is on the clock every later note uses.
-    touch.current.waitFor = () => (audioStarted() ? null : ensureAudio());
+    touch.current.waitFor = waitForSound;
     return () => {
       window.removeEventListener('pointerdown', start, true);
       window.removeEventListener('keydown', start, true);
@@ -683,6 +709,8 @@ function PracticeView({
       }
       midiInUse.current?.stop();
       midiInUse.current = input;
+      // At once: the keyboard may be played before the screen shows it connected.
+      applySoundNow.current(audioContext());
       setMidiInput(input);
       setMidiDevices(input.deviceNames);
       setMidiOutputs(input.outputNames);
@@ -690,10 +718,10 @@ function PracticeView({
         setInputError(noKeyboardMessage(navigator.userAgent));
       }
       await applyMidiCalibration(input.deviceNames);
-      // Played on a MIDI keyboard alone, the screen may never be tapped. A browser lets sound start
-      // once the page has been used (a link followed here counts); Safari has no Web MIDI, so this
-      // never starts sound outside a gesture there.
-      if (navigator.userActivation?.hasBeenActive && !audioStarted()) {
+      // Played on a MIDI keyboard alone, the screen may never be tapped. Chrome and Firefox let
+      // sound start once the page has been used (a link followed here counts). Only with Web MIDI:
+      // Safari and the iPad app have none, so sound there still starts only from a gesture.
+      if (webMidiSupported() && navigator.userActivation?.hasBeenActive && !audioStarted()) {
         ensureAudio().catch(() => {});
       }
     } catch (e) {

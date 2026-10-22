@@ -698,18 +698,21 @@ without a word when no MIDI output is found.
       its range (no majors, no new or removed packages, no install scripts); `minimumReleaseAge` (two days) in
       `pnpm-workspace.yaml` so pnpm will not install anything younger; CI
       `setup-node` uses `check-latest` so it runs the newest 22.x (22.23.4 or later has the fix).
-- [x] **P6-19** (APP) Practice fixes (2026-10-22, maintainer: "play the other hand doesn't work on
-      practice … fix it all"). Wait mode has no Play button, so nothing started the app's sound:
-      on a MIDI keyboard the other hand, the steady click and the echo stayed silent until the
-      screen was tapped. Now the keyboard's own sound needs no audio on this device (its part plays
-      at once), the first tap, click or key anywhere on the screen starts sound, a keyboard that
-      connects by itself starts it where the browser allows (the page was used before), and the
-      first on-screen or computer key waits for sound so its step still plays the other hand. The
-      practice clock moving from the page's clock to the audio clock mid-run no longer leaves keys
-      lit or times the run wrongly. "Play other hand" now joins or stops in the middle of a
-      play-along run, and a hand the piece has no notes for (a melody alone) can no longer be
-      chosen. Checked in real Chrome with a virtual CoreMIDI keyboard: the live site sent nothing
-      for the left hand, this change sends it.
+- [~] **P6-19** (APP) Practice fixes (2026-10-22, maintainer: "play the other hand doesn't work on
+  practice … fix it all"). Wait mode has no Play button, so nothing started the app's sound:
+  on a MIDI keyboard the other hand, the steady click and the echo stayed silent until the
+  screen was tapped. Now the keyboard's own sound needs no audio on this device (its part plays
+  at once), the first tap, click or key anywhere on the screen starts sound, a keyboard that
+  connects by itself starts it where the browser allows (the page was used before), and the
+  first on-screen or computer key waits for sound so its step still plays the other hand. The
+  practice clock moving from the page's clock to the audio clock mid-run no longer leaves keys
+  lit or times the run wrongly. "Play other hand" now joins or stops in the middle of a
+  play-along run, and a hand the piece has no notes for (a melody alone) can no longer be
+  chosen. Checked in real Chrome with a virtual CoreMIDI keyboard: the live site sent nothing
+  for the left hand, this change sends it. Left: the other hand's notes before the practised
+  hand's first note (an opening, in 27 of the 81 catalogue pieces, e.g. Für Elise's left hand)
+  never play in wait mode, since only a played step plays the other hand; how a run should
+  start them is for the maintainer to decide.
 
 ## Phase 7 — Chord drills (planned 2026-10-22)
 
