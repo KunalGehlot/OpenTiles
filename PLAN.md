@@ -40,8 +40,9 @@ on" choice in practice so Listen can play on the keyboard only. The full plan is
 Player a self-playing grand piano, described in
 [docs/phase-6/player-piano.md](docs/phase-6/player-piano.md).
 
-**Next: [Phase 7 — Chord drills](#phase-7--chord-drills-planned-2026-10-22)**, planned from issue #47
-and not started. See [docs/phase-7/chord-drills.md](docs/phase-7/chord-drills.md).
+**Then: [Phase 7 — Chord drills](#phase-7--chord-drills-planned-2026-10-22)**, planned from issue #47
+and built on 2026-10-23 (P7-00 to P7-12); left are the real four-note recordings (P7-10), the
+maintainer's checks (P7-13) and scales (P7-14). See [docs/phase-7/chord-drills.md](docs/phase-7/chord-drills.md).
 
 ## Phases and gates
 
@@ -55,7 +56,7 @@ phase ends at a gate. If a gate fails, re-plan the next phase before continuing.
 | 2 — Catalogue and breadth | Apr – Jun 2027                  | 150 verified pieces, looping, ABC/MuseScore import, backup | **G2 Public beta:** legal guardrails all met, device lab passes                                      |
 | 3 — v1.0                  | Jul – Aug 2027                  | iPad MIDI shell, 300 pieces, release hardening             | **G3 v1.0 release:** the definition of success in spec §1 holds                                      |
 | 4 — After v1.0            | Sep 2027 →                      | OMR, audio import, courses, community arrangements         | —                                                                                                    |
-| 7 — Chord drills          | Planned 2026-10-22; not started | Random chords to practise, on the sheet or as falling keys | The maintainer plays it and approves it (P7-13)                                                      |
+| 7 — Chord drills          | Planned 2026-10-22; built 10-23 | Random chords to practise, on the sheet or as falling keys | The maintainer plays it and approves it (P7-13)                                                      |
 
 If **G0** fails, v1.0 becomes MIDI-first and the microphone ships marked as beta (spec §11).
 
@@ -742,19 +743,22 @@ and shaped by the maintainer on 2026-10-22. Every task's detail is in
 [docs/phase-7/chord-drills.md](docs/phase-7/chord-drills.md); Q1–Q9 in §7 of the plan were decided
 on 2026-10-22, and the decisions go into ADR 0022 (P7-00).
 
-- [~] **P7-00** (GOV) The plan and ADR 0022. Done: the plan and the answers to Q1–Q9. Left: the ADR.
-- [ ] **P7-01** (PRAC) Chord vocabulary: qualities, spelling, inversions, voicings, `chordSymbol` parts.
-- [ ] **P7-02** (PRAC) The seeded chord drill generator (MusicXML with `<harmony>`, one chord a bar).
-- [ ] **P7-03** (PRAC) Judging a chord: per-chord tally, causes of a miss, chord spread in play-along.
-- [ ] **P7-04** (APP) The Drills hub, the Chords setup page, chord names in the learner's label style.
-- [ ] **P7-05** (APP) Sheet (blind) mode: the first playable, with the chords-a-minute readout.
-- [ ] **P7-06** (APP) Falling keys mode: chord names on the bars, hint fade.
-- [ ] **P7-07** (APP) Speeds: wait, tempo with count-in, the optional ladder.
-- [ ] **P7-08** (STORE, APP) Chord progress on the device and "Practise my weak chords".
-- [ ] **P7-09** (APP) The eight-level ladder and the pace controls wired together.
-- [ ] **P7-10** (ENG) Four-note chords on the microphone: synthetic numbers, real recordings, a hint.
-- [ ] **P7-11** (APP) The on-screen keyboard with several fingers, at ⅓ of an iPad.
-- [ ] **P7-12** (GOV) User guide, README, German strings.
+- [x] **P7-00** (GOV) The plan, the answers to Q1–Q9 and ADR 0022.
+- [x] **P7-01** (PRAC) Chord vocabulary: qualities, spelling, inversions, voicings, `chordSymbol` parts.
+- [x] **P7-02** (PRAC) The seeded chord drill generator (MusicXML, one chord a bar; names as words, ADR 0022).
+- [x] **P7-03** (PRAC) Judging a chord: per-chord tally, causes of a miss, chord spread in play-along.
+- [x] **P7-04** (APP) The Drills hub, the Chords setup page, chord names in the learner's label style.
+- [x] **P7-05** (APP) Sheet (blind) mode: the first playable, with the chords-a-minute readout.
+- [x] **P7-06** (APP) Falling keys mode: chord names on the bars, hint fade.
+- [x] **P7-07** (APP) Speeds: wait, tempo with count-in, the optional ladder.
+- [x] **P7-08** (STORE, APP) Chord progress on the device and "Practise my weak chords".
+- [x] **P7-09** (APP) The eight-level ladder and the pace controls wired together.
+- [~] **P7-10** (ENG) Four-note chords on the microphone. Done: synthetic numbers (wait 81 % / 9.6 %,
+  pedal 59 % / 8.1 %, play-along 72.5 % / 2.7 %, against 95 % and 3 %) and the hint. Left: real
+  recordings (with P0-04).
+- [~] **P7-11** (APP) The on-screen keyboard with several fingers. Done: a three-finger chord test
+  (Chromium) and ⅓ iPad width. Left: a check on a real iPad in WebKit.
+- [x] **P7-12** (GOV) User guide, README, architecture, German strings.
 - [ ] **P7-13** (human) The maintainer's checks, then a reply on issue #47 with their approval.
 - [ ] **P7-14** (PRAC, APP) Scales, on the same pieces (optional, after chords; see Q4).
 
@@ -782,6 +786,11 @@ Record the outcome as an ADR in `docs/adr/` and tick it here.
 - [x] Engine exposes a plain C ABI instead of wasm-bindgen glue — ADR 0002.
 
 ## Changelog
+
+- **2026-10-23** — P7-00 to P7-12: chord drills. The Drills page has Sight-reading and Chords: random
+  chords at eight levels or from your own set, on the sheet (names shown, hidden or name only) or as
+  falling keys, waiting for you or at a tempo, judged a whole chord at a time, with the chords that
+  went wrong most kept on the device to practise next.
 
 - **2026-10-22** — P7-00: Q1–Q9 of the chord drills plan decided; add9 and sixth chords join the
   first chord vocabulary, level 8 is the left hand's root and fifth, and the microphone hint follows

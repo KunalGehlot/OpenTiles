@@ -1,7 +1,8 @@
 # Phase 7 — Chord drills
 
-- **Status:** planned on 2026-10-22; the questions in section 7 were decided the same day. Nothing
-  is built. The tasks are P7-00 to P7-14 in
+- **Status:** planned on 2026-10-22; the questions in section 7 were decided the same day. Built on
+  2026-10-23 (P7-00 to P7-12, ADR 0022); left are real four-note recordings (P7-10), a real-iPad
+  check of several fingers (P7-11), the maintainer's checks (P7-13) and scales (P7-14). The tasks are P7-00 to P7-14 in
   [PLAN.md](../../PLAN.md#phase-7--chord-drills-planned-2026-10-22). Start after the Phase 6
   human checks (P6-13) or in parallel with them: this phase touches the drills, not the Player.
 - **Where it came from:** [issue #47](https://github.com/KunalGehlot/OpenTiles/issues/47), "New

@@ -14,7 +14,7 @@ use the tools that make hard bars easier. For quick answers see the [FAQ](faq.md
 - [Practice modes](#practice-modes)
 - [Practice tools](#practice-tools)
 - [Falling notes, score and sheet views](#falling-notes-score-and-sheet-views)
-- [Sight-reading drills](#sight-reading-drills)
+- [Drills: sight-reading and chords](#drills-sight-reading-and-chords)
 - [The Player](#the-player)
 - [Bringing your own music](#bringing-your-own-music)
 - [Settings](#settings)
@@ -141,11 +141,60 @@ Switch the view with the buttons at the top right of the practice area.
   (see [Sheet music PDFs](#sheet-music-pdfs)), otherwise the engraved score. A Bluetooth page-turn
   foot pedal works here (see [Settings](#settings)).
 
-## Sight-reading drills
+## Drills: sight-reading and chords
 
-The **Sight-reading** page generates endless note-reading practice: pick a clef and a range around
-middle C, choose single notes or short phrases, and play what you see. Optional helps are note
-names under the notes and a lit key to press. The next drill starts as soon as one ends.
+The **Drills** page has two kinds of short exercise, made on your device and new every time.
+
+### Sight-reading
+
+**Sight-reading** generates endless note-reading practice: pick a clef and a range around middle C,
+choose single notes or short phrases, and play what you see. Optional helps are note names under
+the notes and a lit key to press. The next drill starts as soon as one ends.
+
+### Chords
+
+**Chords** gives you random chords to find and press, all notes together. Choose:
+
+- **Level.** Each level adds to the ones before it:
+
+  | Level | Adds                                                 |
+  | ----- | ---------------------------------------------------- |
+  | 1     | C, F and G major; A, D and E minor, in root position |
+  | 2     | Major and minor on every white key                   |
+  | 3     | All twelve roots, sharps and flats                   |
+  | 4     | First and second inversions                          |
+  | 5     | Diminished, augmented, sus2 and sus4                 |
+  | 6     | Seventh chords: maj7, 7, m7, m7♭5, dim7              |
+  | 7     | Seventh chords inverted, add9, 6 and m6              |
+  | 8     | Both hands: the left hand plays the root and fifth   |
+
+  **My own set** picks the roots and kinds of chord yourself, with inversions on or off; there the
+  left hand can play the root, the root and fifth, or the same chord lower.
+
+- **Hands.** Right, left or both. With both hands below level 8, the left hand plays the root.
+- **Show.** **Sheet, no help** draws the chords on the staff and nothing else. **Falling keys**
+  drops each chord onto the keyboard with its name on the bars; **Keys lit** decides how much the
+  keyboard shows as the chord arrives (every key, the root only, or none; by default this fades as
+  the levels climb).
+- **Chord names.** Shown above the chords, hidden, or **Name only**: on the sheet only the name is
+  there, and the notes appear once you have played them. **Show me** shows the chord to play, and
+  counts it as a miss. Names follow Settings → How note names are written: B♭maj7, German Bmaj7
+  (and Hmaj7 for B), or Si♭ maj7.
+- **Pace.** **Wait for me**: the next chord comes when the last one is right. **At a tempo**: a
+  chord every bar of four beats, 40 to 120 beats a minute, after the 3, 2, 1 count-in. **Speed up
+  as I improve** raises the tempo by five after three rounds with 90 % right at the first try and
+  lowers it after a round under 60 % (off by default). **Strict chords** wants a chord's notes
+  within 60 ms of each other instead of 120 ms.
+
+After a round you see chords a minute (or how many were together and on time), how many were right
+at the first try, the chords that went wrong most and what was wrong (a note missing, a note not in
+the chord, the wrong third or fifth, or the wrong inversion), and your last rounds for comparison.
+These results stay on this device (and in your encrypted backup); **Practise my weak chords** then
+draws the chords under 80 % more often.
+
+Chords of four or more notes are hard for the microphone; when a drill has them, the practice
+screen suggests a MIDI keyboard or the on-screen keys. The on-screen keys take several fingers at
+once.
 
 ## The Player
 
