@@ -3,16 +3,15 @@ name: iPad app
 # Builds the unsigned OpenTiles.ipa that people sign with their own Apple ID and install themselves
 # (ADR 0023, docs/ipad-app.md), and runs the CoreMIDI plugin's tests. Separate from ci.yml: it needs
 # a macOS runner and never holds up the website's deploy.
+#
+# The app ships the web app, so every change to the site is a change to the app: it runs on every
+# pull request and on main, not only when apps/ios-shell changes (PLAN.md P3-09).
 on:
   pull_request:
-    paths:
-      - 'apps/ios-shell/**'
-      - 'apps/web/src/input/native-midi-input.ts'
-      - 'apps/web/src/lib/native-shell.ts'
-      - '.github/workflows/ios.yml'
-  # A version tag (v0.1.0) builds the release files and puts them on a draft release, which the
-  # maintainer reads and publishes by hand.
+  # A version tag (v0.2.0) also builds the release files and puts them on a draft release, which
+  # the maintainer reads and publishes by hand.
   push:
+    branches: [main]
     tags: ['v*']
   workflow_dispatch:
 

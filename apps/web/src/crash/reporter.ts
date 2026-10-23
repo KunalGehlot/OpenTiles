@@ -4,9 +4,10 @@
 import { syncServerUrl } from '../sync/config';
 import { appSettings } from '../settings/store';
 import { db } from '../storage/db';
+// One version for the site and the iPad app (PLAN.md P3-09); Vite keeps only this field.
+import { version as APP_VERSION } from '../../package.json';
 
 const MAX_REPORTS_PER_PAGE_LOAD = 5;
-const APP_VERSION = '0.1.0';
 
 let installed = false;
 let sent = 0;
