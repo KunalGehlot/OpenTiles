@@ -93,6 +93,12 @@ import type { FingeringDisplay, MidiPlayback } from '../settings/model';
 import { spelledName } from '../lib/notes';
 import type { SpellingSetting } from '../lib/notes';
 import { loadPracticePrefs, savePracticePrefs } from '../practice/prefs';
+import {
+  catalogueShiftKey,
+  libraryShiftKey,
+  loadPieceShift,
+  savePieceShift,
+} from '../practice/piece-shift';
 import type { PracticePrefs } from '../practice/prefs';
 import { updateAppSettings, useAppSettings, useEffectiveAccessibility } from '../settings/store';
 import {
@@ -141,6 +147,8 @@ interface Loaded {
    * learner's PDF it was engraved with (P5-18), if any.
    */
   engraved?: { hints: ScoreHints | undefined };
+  /** The semitones the learner last moved this piece by, and its key in that store (P5-04). */
+  shift?: { key: string; semitones: number };
 }
 
 /**
@@ -161,6 +169,8 @@ const nextDrill = (d: DrillInfo, chordPrefs?: ChordDrillPrefs, focus: string[] =
   d.kind === 'chords' ? chordDrillRoute(chordPrefs ?? d.prefs, focus) : drillRoute(d.prefs);
 
 const NO_BARS: readonly number[] = [];
+
+const shiftOf = async (key: string) => ({ key, semitones: await loadPieceShift(key) });
 /** How long an endless drill's result stays before the next drill starts. */
 const ENDLESS_PAUSE_MS = 2500;
 /** The longest a key waits for sound to start before it plays anyway. */
@@ -239,6 +249,7 @@ export function Practice({
           title: piece.title,
           subtitle: piece.composer,
           progressKey: `catalogue:${id}`,
+          shift: await shiftOf(catalogueShiftKey(id)),
         };
       }
       const found = await getLibraryItem(Number(id));
@@ -257,6 +268,7 @@ export function Practice({
         engraved: item.format === 'midi' ? { hints } : undefined,
         title: item.title,
         progressKey: `library:${id}`,
+        shift: await shiftOf(libraryShiftKey(item)),
         sheet:
           item.sheet && views ? { itemId: Number(id), attachment: item.sheet, views } : undefined,
         sheetOnly:
@@ -306,6 +318,7 @@ function PracticeView({
   drill,
   sheet,
   engraved,
+  shift: savedShift,
   prefs: savedPrefs,
 }: Loaded & { prefs: PracticePrefs }) {
   const settings = useAppSettings();
@@ -360,9 +373,18 @@ function PracticeView({
   const { size, low, keys } = settings.keyboard;
   const fingering = drill ? 'off' : settings.fingering;
   const range = useMemo(() => keyboardRange({ size, low, keys }), [size, low, keys]);
-  // Semitones the learner moved the piece by on this visit (P5-04). The score is drawn moved too,
-  // and suggested fingers are worked out again for the new key.
-  const [shift, setShift] = useState(0);
+  // Semitones the learner moved the piece by (P5-04), remembered per piece. The score is drawn
+  // moved too, and suggested fingers are worked out again for the new key. It comes with the piece,
+  // so the score is engraved once, in the key the piece opens in.
+  const [shift, setShift] = useState(savedShift?.semitones ?? 0);
+  const shiftKey = savedShift?.key;
+  const changeShift = useCallback(
+    (next: number) => {
+      setShift(next);
+      if (shiftKey) void savePieceShift(shiftKey, next);
+    },
+    [shiftKey],
+  );
   const limits = useMemo(() => shiftLimits(song), [song]);
   const moved = Math.min(limits.up, Math.max(limits.down, shift));
   const shifted = useMemo(() => shiftSong(song, moved), [song, moved]);
@@ -1132,7 +1154,7 @@ function PracticeView({
                     type="button"
                     aria-label={t('Down a semitone')}
                     disabled={moved <= limits.down}
-                    onClick={() => setShift(Math.max(limits.down, moved - 1))}
+                    onClick={() => changeShift(Math.max(limits.down, moved - 1))}
                   >
                     <Minus />
                   </button>
@@ -1143,7 +1165,7 @@ function PracticeView({
                     type="button"
                     aria-label={t('Up a semitone')}
                     disabled={moved >= limits.up}
-                    onClick={() => setShift(Math.min(limits.up, moved + 1))}
+                    onClick={() => changeShift(Math.min(limits.up, moved + 1))}
                   >
                     <Plus />
                   </button>

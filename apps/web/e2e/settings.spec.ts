@@ -241,3 +241,16 @@ test('the new pages fit a ⅓-width iPad window, also with large print', async (
     expect(widths.page, url).toBeLessThanOrEqual(widths.viewport);
   }
 });
+
+test('a library piece opens in the key it was last moved to (P5-04)', async ({ page }) => {
+  await importMidi(page, 'My scale');
+  await page.getByRole('button', { name: 'Options' }).click();
+  await page.getByRole('button', { name: 'Up a semitone' }).click();
+  await expect(page.getByTestId('transpose')).toHaveText('+1');
+  await expect
+    .poll(() => page.evaluate(() => localStorage.getItem('opentiles:setting:pieceShifts')))
+    .toMatch(/^\{"library:\d+:scale\.mid":1\}$/);
+  await page.reload();
+  await page.getByRole('button', { name: 'Options' }).click();
+  await expect(page.getByTestId('transpose')).toHaveText('+1');
+});
