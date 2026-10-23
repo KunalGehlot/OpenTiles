@@ -87,7 +87,7 @@ it belongs, and say why in the changelog; do not open a new phase for it.
 - **App Store:** the Apple Developer Program (P3-02), after the licence question in the app's
   README.
 - **Catalogue growth:** reviewing new pieces (P2-06, P2-07, P3-05, P4-13).
-- **Proposed ADRs** waiting for a decision: 0015 to 0019 and 0021 to 0023, and the
+- **Proposed ADRs** waiting for a decision: 0015 to 0023, and the
   [open decisions](#open-decisions).
 
 ## iPad device checklist
