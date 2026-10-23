@@ -51,42 +51,50 @@ it belongs, and say why in the changelog; do not open a new phase for it.
 
 **Now**
 
-1. **P3-09** The website and the iPad app together: this plan, the `iPad app` workflow on every
-   pull request and on `main`, one version for both, release v0.2.0 (the chord drills and the
-   count-in reach the app).
-2. **P3-10** The app on an iPad simulator in CI: a UI test that starts the app and opens Home, a
-   catalogue piece in practice and a chord drill, so a change that breaks the app's WebView fails
-   CI, not the maintainer's iPad.
+1. **P5-19** Loose ends: go through every "Left:" in the task register. Strike what is done
+   already, fix the small code items (a day or less each), and give the rest a place in this list.
+   Release v0.3.0.
 
 **Next**
 
-3. **P5-19** Loose ends: go through every "Left:" in the task register. Strike what is done
-   already, fix the small code items (a day or less each), and give the rest a place in this list.
-4. **P7-14** Scales, planned first with the maintainer's answers (as the chord drills were), then
+2. **P7-14** Scales, planned first with the maintainer's answers (as the chord drills were), then
    built on the drills' generator, judging and pages. It finishes the drills that issue #47 asked
    for.
 
 **Later** (in this order unless the maintainer reorders it)
 
-5. **P6-16** Dynamics marks and hairpins from imported MusicXML (a `Song` model change; ask first).
+3. **P6-16** Dynamics marks and hairpins from imported MusicXML (a `Song` model change; ask first).
+4. **P5-09** The rest of the smoothness pass: home to playing in two clicks, one transport bar,
+   route and panel transitions, a refreshed logo, Detector Lab polish (reviewed in the
+   maintainer's Chrome).
+5. **P5-14, P5-18, P5-13** Import gaps: D.C. and D.S. jumps and multi-bar rests in the learner's
+   PDF, octave signs and clef changes inside a bar, grace notes from MIDI files, and re-importing
+   MIDI pieces already in a library.
 6. **P5-05** Sight-reading: accidentals beyond the key, then rhythm reading.
 7. **P5-08** Library preview before opening, and collections.
-8. **P5-06** Free play with recording and listen-back (needs an ADR and the lawyer's answer, P2-18).
-9. **P3-03** Encrypted sync goes live (needs the open decisions below and EU storage).
-10. **P4-05** Teacher features, **P4-03** courses, **P4-01** optical music recognition.
+8. **P4-19** A choice of audio output device for this device's piano (where the browser offers it).
+9. **P5-06** Free play with recording and listen-back (needs an ADR and the lawyer's answer, P2-18).
+10. **P3-03** Encrypted sync goes live (needs the open decisions below and EU storage).
+11. **P4-05** Teacher features, **P4-03** courses, **P4-01** optical music recognition.
 
 **Waiting on the maintainer** (no code until they act or decide)
 
 - **G0, the microphone gate:** record the test set (P0-04), measure latency on iPads (P0-11), then
-  the thresholds and gate report (P0-13). Four-note chords on real recordings join it (P7-10).
+  the thresholds and gate report (P0-13). Four-note chords on real recordings join it (P7-10), and
+  so do the microphone's harmonic profile and a check on a real piano (P1-20).
+- **Release:** publish the v0.2.0 draft release (P3-09).
 - **Checks:** the [iPad device checklist](#ipad-device-checklist), their keyboard and the Player
-  on the Mac (P6-13), the chord drills on a real keyboard (P7-13), the release gate (P5-10).
+  on the Mac (P6-13; with it P5-12's keyboard in their Chrome and Firefox and P6-05's ten minutes
+  in a hidden tab), the chord drills on a real keyboard (P7-13), their MuseScore PDF and MIDI pair
+  again (P5-18), the release gate (P5-10; with it a native German read-through, P2-14, and a pen
+  test, P4-15), and the Player's screenshots for the README once they like its look (P6-14).
 - **Legal and publishing:** the legal consultation (P2-18), the trademark (P0-02), the Impressum's
   postal address (P2-17), HTTPS enforced on GitHub Pages, and whether the README and user guide
   link to opentiles.site (P5-11).
 - **App Store:** the Apple Developer Program (P3-02), after the licence question in the app's
   README.
-- **Catalogue growth:** reviewing new pieces (P2-06, P2-07, P3-05, P4-13).
+- **Catalogue growth:** reviewing new pieces (P2-06, P2-07, P3-05, P4-13, P4-13b), and PDMX's
+  complexity in the difficulty levels (P2-05).
 - **Proposed ADRs** waiting for a decision: 0015 to 0023, and the
   [open decisions](#open-decisions).
 
@@ -97,30 +105,31 @@ iPad browser (all use WebKit); "App" is the iPad app. How to run the app checks 
 [first-build checklist](apps/ios-shell/README.md#first-build-checklist). Tick a row with the date
 and the device; a failure becomes a task at the top of the queue.
 
-| Check                                                                                  | Where  | Task         | Status                               |
-| -------------------------------------------------------------------------------------- | ------ | ------------ | ------------------------------------ |
-| The app installs with `pnpm device` and a free Apple ID                                | App    | P3-01        | ✓ 2026-10-22, iPad Pro M1, iPadOS 27 |
-| A USB MIDI keyboard connects and wait mode follows it                                  | App    | P3-01        | ✓ 2026-10-22                         |
-| The sampled piano plays (not the stand-in synth)                                       | App    | P3-01        | ✓ 2026-10-22, after a fix            |
-| AltStore, SideStore or Sideloadly install the release with a free Apple ID             | App    | P3-01        | open                                 |
-| v0.2.0: the chord drills (sheet and falling keys) and the 3, 2, 1 count-in             | App    | P3-09        | open                                 |
-| Starts with no network; the catalogue opens; the top bar clears the status bar         | App    | P3-01        | open                                 |
-| Play-along with a USB keyboard is judged on time; unplug and replug resumes            | App    | P3-01        | open                                 |
-| A Bluetooth MIDI keyboard pairs from Settings and plays                                | App    | P3-01, P6-12 | open                                 |
-| "Plays on: My keyboard": Listen and the Player on the keyboard's own sound, with pedal | App    | P6-12        | open                                 |
-| The microphone: permission text, set-up and detection in practice                      | Both   | P1-20        | open                                 |
-| Sound with the Ring/Silent switch on and off                                           | Both   | P3-01        | open                                 |
-| A library piece is still there after quitting; no "Add to Home Screen" hint in the app | Both   | P1-22        | open                                 |
-| Split View and Slide Over at ⅓ width, and rotation                                     | Both   | P1-27        | open                                 |
-| Chords with several fingers on the on-screen keys                                      | Both   | P7-11        | open                                 |
-| The screen stays awake while practising                                                | Both   | P5-02        | open                                 |
-| Frame time on an older iPad (falling notes, score, Player)                             | Both   | P5-10        | open                                 |
-| The richer piano and the Player's room; stand mode                                     | Both   | P6-15, P6-17 | open                                 |
-| The Player over USB audio, and whether the microphone hears it                         | Safari | P6-13        | open                                 |
-| Holding notes (hold longer / let go) on the on-screen keys                             | Both   | P4-09        | open                                 |
-| Score views, a MIDI piece's score and the learner's PDF, picking a PDF with its MIDI   | Both   | P5-13–P5-15  | open                                 |
-| Each keyboard size draws exactly its keys                                              | Both   | P5-16        | open                                 |
-| Release checklist on every row of the compatibility matrix (spec §5)                   | Both   | P3-06        | open                                 |
+| Check                                                                                  | Where  | Task            | Status                               |
+| -------------------------------------------------------------------------------------- | ------ | --------------- | ------------------------------------ |
+| The app installs with `pnpm device` and a free Apple ID                                | App    | P3-01           | ✓ 2026-10-22, iPad Pro M1, iPadOS 27 |
+| A USB MIDI keyboard connects and wait mode follows it                                  | App    | P3-01           | ✓ 2026-10-22                         |
+| The sampled piano plays (not the stand-in synth)                                       | App    | P3-01           | ✓ 2026-10-22, after a fix            |
+| AltStore, SideStore or Sideloadly install the release with a free Apple ID             | App    | P3-01           | open                                 |
+| v0.2.0: the chord drills (sheet and falling keys) and the 3, 2, 1 count-in             | App    | P3-09           | open                                 |
+| Starts with no network; the catalogue opens; the top bar clears the status bar         | App    | P3-01           | open                                 |
+| Play-along with a USB keyboard is judged on time; unplug and replug resumes            | App    | P3-01           | open                                 |
+| A Bluetooth MIDI keyboard pairs from Settings and plays                                | App    | P3-01, P6-12    | open                                 |
+| "Plays on: My keyboard": Listen and the Player on the keyboard's own sound, with pedal | App    | P6-12           | open                                 |
+| The microphone: permission text, set-up and detection in practice                      | Both   | P1-20           | open                                 |
+| Sound with the Ring/Silent switch on and off                                           | Both   | P3-01           | open                                 |
+| A library piece is still there after quitting; no "Add to Home Screen" hint in the app | Both   | P1-22           | open                                 |
+| Split View and Slide Over at ⅓ width, and rotation                                     | Both   | P1-27           | open                                 |
+| Chords with several fingers on the on-screen keys                                      | Both   | P7-11           | open                                 |
+| The screen stays awake while practising                                                | Both   | P5-02           | open                                 |
+| v0.3.0: a piece opens in the key it was last moved to; Options fits at ⅓ width         | Both   | P5-04, P2-15    | open                                 |
+| Frame time on an older iPad (falling notes, score, Player)                             | Both   | P4-11, P5-10    | open                                 |
+| The richer piano and the Player's room; stand mode                                     | Both   | P6-15, P6-17    | open                                 |
+| The Player over USB audio, and whether the microphone hears it                         | Safari | P6-13           | open                                 |
+| Holding notes (hold longer / let go) on the on-screen keys                             | Both   | P4-09           | open                                 |
+| Score views, a MIDI piece's score and the learner's PDF, picking a PDF with its MIDI   | Both   | P4-12, P5-13–15 | open                                 |
+| Each keyboard size draws exactly its keys                                              | Both   | P5-16           | open                                 |
+| Release checklist on every row of the compatibility matrix (spec §5)                   | Both   | P3-06           | open                                 |
 
 ## Phases and gates
 
@@ -223,7 +232,7 @@ Goal: Journeys A and B from spec §3 work end to end, offline, on iPad Safari an
 - [x] **P1-11** Listen mode: app plays the piece with cursor and keyboard animated.
 - [x] **P1-12** Hand separation: practise left, right or both; the app can play the other hand.
 - [x] **P1-13** Tempo control 25–150 % with count-in and metronome. Done: tempo slider,
-      count-in clicks. Left: metronome during practice.
+      count-in clicks, the metronome during practice (`MetronomeControl`, 2026-10-07).
 
 ### Views (APP)
 
@@ -236,12 +245,14 @@ Goal: Journeys A and B from spec §3 work end to end, offline, on iPad Safari an
 ### Audio and input (APP)
 
 - [x] **P1-17** Web Audio sampler with an openly licensed grand piano sample set (check licence);
-      small synth fallback. Done: additive synth fallback. Left: choose and load a sample set.
+      small synth fallback. Done: the Salamander Grand Piano samples (ADR 0007) with the additive
+      synth as fallback; more loudness layers since P6-17.
 - [x] **P1-18** Audio context started only from a user gesture (Safari).
 - [x] **P1-19** Web MIDI input with latency compensation. Done: input via Web MIDI with event
-      timestamps mapped to the audio clock, feature-detected. Left: measure and compensate latency.
+      timestamps mapped to the audio clock, feature-detected; the keyboard's latency measured in a
+      short test and taken off (`MidiLatencyCalibration`, 2026-10-07).
 - [~] **P1-20** Microphone input in practice, with the 10-second calibration flow (noise floor,
-  harmonic profile, tuning offset). Done: guided set-up on first microphone use (room noise, three keys, tuning, optional click latency), stored per microphone. Left: harmonic profile; check on a real piano.
+  harmonic profile, tuning offset). Done: guided set-up on first microphone use (room noise, three keys, tuning, optional click latency), stored per microphone. Left: harmonic profile; check on a real piano (both with G0).
 - [x] **P1-21** On-screen keyboard: touch, mouse and computer-keyboard keys.
 
 ### Storage, app shell and feedback (STORE, APP)
@@ -252,13 +263,13 @@ Goal: Journeys A and B from spec §3 work end to end, offline, on iPad Safari an
       iPad after the first import.
 - [x] **P1-24** Live feedback (green / red / grey, early / late) and after-run summary (accuracy,
       timing deviation, hardest bars). Done: key and note colours, summary with accuracy, timing
-      and hardest bars. Left: early/late shown live, hardest bars marked on the score (needs
-      P1-15).
+      and hardest bars, "early" / "late" live above the keys, the hardest bars marked on the score
+      (`.ot-hardest`, 2026-10-07).
 - [x] **P1-25** Progress: per-piece best score, practice minutes per day, streaks.
 - [x] **P1-26** Playwright end-to-end tests on Chromium, Firefox and WebKit in CI. Done: suite
       and CI job for Chromium, Firefox, WebKit and an iPad profile; every pull request runs all four
       (confirmed 2026-10-17: 373 tests across the four profiles in the "End-to-end" job).
-- [~] **P1-27** Safari checklist (spec §5): split view, rotation, score usable at ⅓ width. Done: compact layout at 320–400 px, rotation, score views at ⅓ width, covered by Chromium e2e. Left: real iPad Split View / Slide Over check.
+- [~] **P1-27** Safari checklist (spec §5): split view, rotation, score usable at ⅓ width. Done: compact layout at 320–400 px, rotation, score views at ⅓ width, covered by Chromium e2e. Left: Split View and Slide Over on an iPad ([checklist](#ipad-device-checklist)).
 
 **G1 criteria:** Journey A and Journey B pass on iPad Safari (microphone) and desktop Chrome (MIDI)
 with no account; the app works offline after the first visit; Playwright suite green on all three
@@ -284,8 +295,8 @@ engines.
 - [x] **P2-09** ABC notation import.
 - [x] **P2-10** MuseScore `.mscz` via webmscore, lazy-loaded; confirm licence fits AGPL-3.0 first.
 - [x] **P2-11** Page score view.
-- [x] **P2-12** Fingering display from score marks. Done: numbers on falling notes. Left: in the
-      score views.
+- [x] **P2-12** Fingering display from score marks. Done: numbers on falling notes, and in the
+      score views since P4-08.
 
 ### Storage, accessibility, legal (STORE, APP, GOV)
 
@@ -294,8 +305,8 @@ engines.
       label and import message in German (about 430 strings), a first visit follows the browser's
       language, German note names on the falling notes; a unit test fails on any untranslated string.
       Left: a native speaker's read-through.
-- [~] **P2-15** Accessibility: large print, high contrast, left-handed layout, keyboard shortcuts,
-  Bluetooth foot-pedal page turn. Done: settings for large print, high contrast, left-handed controls, reduced motion, shortcuts list, pedal key; the pedal's chosen keys turn every page view (engraved pages, the learner's sheet, the sheet reader) along with the usual ones (`settings/pedal.ts`, 2026-10-17). Left: practice view reading the left-handed flag beyond CSS.
+- [x] **P2-15** Accessibility: large print, high contrast, left-handed layout, keyboard shortcuts,
+      Bluetooth foot-pedal page turn. Done: settings for large print, high contrast, left-handed controls, reduced motion, shortcuts list, pedal key; the pedal's chosen keys turn every page view (engraved pages, the learner's sheet, the sheet reader) along with the usual ones (`settings/pedal.ts`, 2026-10-17). The left-handed layout mirrors the practice bars (CSS on `data-left-handed`); since P5-19 their panels stay inside the window, where at ⅓ iPad width Options ran off the left edge.
 - [x] **P2-16** Licence scanner for third-party dependencies in CI.
 - [~] **P2-17** Privacy policy, Impressum with notice-and-takedown address, records of processing. Done: privacy policy and Impressum (EN/DE), records of processing; the Impressum gives the maintainer's website gehlot.site as a contact only (2026-10-10). Left: the postal address and the lawyer review (P2-18).
 - [ ] **P2-18** (human) Legal consultation with a German copyright lawyer (timing is an open
@@ -320,22 +331,23 @@ compatibility matrix (spec §5).
   plugin tests pass in CI. Left: the rest of the first-build checklist in the app's README
   (Bluetooth, microphone, MIDI out on the keyboard's own sound, Split View), AltStore / SideStore /
   Sideloadly with a free Apple ID.
-- [~] **P3-09** (GOV, APP, iOS) The website and the iPad app together (maintainer, 2026-10-23: "the
-  iPad app needs to be brought up at the same time, even though user tests are not possible every
-  time"). Done: the plan's one queue and its rules ([How this plan works](#how-this-plan-works)),
-  the [iPad device checklist](#ipad-device-checklist), the `iPad app` workflow on every pull request
-  and on `main`, one version for the site and the app (0.2.0), the definition of done and the pull
-  request template. Left: the v0.2.0 tag and release.
-- [~] **P3-10** (APP, iOS) The app on an iPad simulator in CI. Done: a UI test target
-  (`apps/ios-shell/ios/App/AppUITests`) and a shared `App` scheme; the tests start the app and,
-  through the WebView's accessibility, open a catalogue piece from Home in wait mode ("Step 1/")
-  and a chord drill from the Drills page ("Chord 1/16"), with screenshots kept in the result
-  bundle; the `iPad app` workflow runs them on an iPad simulator after the IPA build and keeps the
-  results when they fail. Both pass on an iPad Pro 11-inch (M5) simulator with iOS 27.1 (Xcode
-  27.1, 2026-10-23, 22 s and 27 s); the screenshots show the piece counting in and the drill's
-  chord names over the bars. The first CI run (iOS 26.4) showed "Drills" lit up by a tap that
-  WebKit took for a hover while Home was still loading; each tap now waits for the next page and
-  taps again, as a person would. Left: a green run in CI.
+- [x] **P3-09** (GOV, APP, iOS) The website and the iPad app together (maintainer, 2026-10-23: "the
+      iPad app needs to be brought up at the same time, even though user tests are not possible every
+      time"). Done: the plan's one queue and its rules ([How this plan works](#how-this-plan-works)),
+      the [iPad device checklist](#ipad-device-checklist), the `iPad app` workflow on every pull request
+      and on `main`, one version for the site and the app (0.2.0), the definition of done and the pull
+      request template; the tag `v0.2.0` built the IPA onto a draft release (2026-10-23), which the
+      maintainer publishes.
+- [x] **P3-10** (APP, iOS) The app on an iPad simulator in CI. Done: a UI test target
+      (`apps/ios-shell/ios/App/AppUITests`) and a shared `App` scheme; the tests start the app and,
+      through the WebView's accessibility, open a catalogue piece from Home in wait mode ("Step 1/")
+      and a chord drill from the Drills page ("Chord 1/16"), with screenshots kept in the result
+      bundle; the `iPad app` workflow runs them on an iPad simulator after the IPA build and keeps the
+      results when they fail. Both pass on an iPad Pro 11-inch (M5) simulator with iOS 27.1 (Xcode
+      27.1, 2026-10-23, 22 s and 27 s); the screenshots show the piece counting in and the drill's
+      chord names over the bars. The first CI run (iOS 26.4) showed "Drills" lit up by a tap that
+      WebKit took for a hover while Home was still loading; each tap now waits for the next page and
+      taps again, as a person would; green in CI on #56.
 - [ ] **P3-02** (human) Apple Developer Program, free App Store release.
 - [~] **P3-03** Encrypted sync: passkeys / email link, Argon2id-wrapped library key, AES-GCM blobs,
   EU object storage, 250 MB quota, one-step account deletion. (Open decision: v1.0 or right
@@ -383,13 +395,13 @@ compatibility matrix (spec §5).
 - [x] **P4-11** Smooth motion and a sensible falling-notes layout on wide windows. Done: a steady
       drawing clock nudged toward the audio clock, time-based wait-mode easing, white keys capped at
       64 px with more octaves shown on wide windows (ADR 0012). Left: frame time on an older
-      iPad (not measured).
+      iPad ([checklist](#ipad-device-checklist)).
 - [x] **P4-12** Score views (the maintainer's feedback of 2026-10-08). Done: the cursor glides over bar lines
       (test), the score returns to its start a second after a run (page view: page 1), the scrolling
       score has no scroll bar and can be dragged or swiped with coasting, the play bar stays in the
       middle (ADR 0009 decision 5 superseded by ADR 0012), the page view is a centred page, not
-      stretched, and the score is larger on big windows. Left: a check on an iPad (WebKit is covered by
-      the Playwright runs).
+      stretched, and the score is larger on big windows. Left: a check on an iPad ([checklist](#ipad-device-checklist); WebKit
+      is covered by the Playwright runs).
 - [~] **P4-13** Several levels per song and more pieces (ADR 0012).
   Done: optional `song` and `variant` fields in schema, validator and index; Home links the other
   levels under a card; 19 melody levels, "Ode to Joy (full tune)" and "Happy Birthday to You",
@@ -423,8 +435,9 @@ compatibility matrix (spec §5).
       (listen mode, the other hand, listening back) on this device, the keyboard's own sound or both,
       through MIDI out; a choice of output when there are several; a live keyboard test in Settings.
       Firefox messages now cover its two real limits (no hot-plugging; the site permission add-on
-      off localhost). Confirmed working in Firefox by the maintainer (2026-10-09). Left: MIDI out from
-      the iPad app (CoreMIDI send), the sustain pedal, a choice of audio output device.
+      off localhost). Confirmed working in Firefox by the maintainer (2026-10-09). MIDI out from the iPad
+      app came with P6-12 and the pedals with P6-10. Left: a choice of audio output device (in the
+      queue).
 - [x] **P4-18** Scrubbing in the scrolling score (2026-10-09): the play bar stays in the middle and a
       drag (or a sideways trackpad scroll) moves the whole piece under it, back and forth; the
       score, cursor and falling notes follow, a playing run pauses and Play starts from there, wait
@@ -434,7 +447,8 @@ compatibility matrix (spec §5).
       the build and `public/_headers`), SVG sanitiser for engraved scores, zip and file size limits,
       an error boundary, storage that survives a blocked IndexedDB (localStorage copy), ordered saves,
       persistent storage requested on a settings change, `uuid` audit finding fixed, build warning
-      removed. Left: a real deployment (docs/deploying.md), a pen test, a check on WebKit and an iPad.
+      removed. Deployed to opentiles.site since P5-11; WebKit runs in every pull request's e2e job.
+      Left: a pen test (P5-10) and an iPad ([checklist](#ipad-device-checklist)).
 - [x] **P4-17** "Find sheet music" page (2026-10-09): where to get free (public-domain, openly
       licensed) and licensed sheet music in formats OpenTiles opens, with plain outside links only.
       Downloaders that get round a paywall and collections of unlicensed arrangements are left out
@@ -475,7 +489,7 @@ images, sounds or fonts, and credit the inspiration in [CREDITS.md](CREDITS.md).
       Done: held while a run plays and for five minutes after the last note, tap or key press (a
       learner in wait mode may think for a while between notes, so "pause" is idle time there),
       asked for again when the tab is visible again, released on leaving. Left: check on a real
-      iPad (P5-10).
+      iPad ([checklist](#ipad-device-checklist)).
 - [x] **P5-03** (APP) Note labels: letters, German names (H instead of B), Fixed-Do; one setting that
       the falling notes, the keyboard and the score fingerings share. Done: Settings → Fingering →
       "How note names are written" (as the language, letters, German, Fixed-Do). It names the
@@ -488,8 +502,9 @@ images, sounds or fonts, and credit the inspiration in [CREDITS.md](CREDITS.md).
       keys, so no note is dropped) and Black keys (as the key, sharps, flats; also in Settings). The
       screen says "Transposed up 2 semitones."; Verovio engraves the score in the new key, and the
       song's key moves as Verovio moves it (`transposeKey`, checked against Verovio for every key and
-      shift), so "as the key" names black keys as the score writes them, at ±6 semitones too. Left:
-      the shift is not remembered between visits.
+      shift), so "as the key" names black keys as the score writes them, at ±6 semitones too. Since
+      P5-19 (2026-10-23) a piece opens in the key it was last moved to; the shifts go into the
+      backup, a library piece's keyed by when it was added and its file name, not its id.
 - [~] **P5-05** (APP, PRAC) Sight-reading drills (the "Speed" and "Infinite" ideas): random notes or
   generated phrases on a staff, with clef, key signature, letters on/off and a speed readout. Works
   with MIDI, microphone and the on-screen keyboard through the usual `NoteEvent` stream. Material is
@@ -525,8 +540,8 @@ images, sounds or fonts, and credit the inspiration in [CREDITS.md](CREDITS.md).
   Options panel by `e2e/touch.spec.ts`; on an iPad in landscape the falling notes lose about 65 px
   of height to the taller bars. A manual light/dark switch (Settings → Accessibility → Appearance:
   same as this device, light or dark), the practice canvas and form controls following it and no
-  flash of the other theme on load. Left: the rest of the list, and checking the changes in the
-  maintainer's Chrome.
+  flash of the other theme on load. Left (in the queue): the rest of the list, and checking the
+  changes in the maintainer's Chrome.
 - [ ] **P5-10** (human) Release gate: frame time on an older iPad, a MIDI keyboard on an iPad through
       the iPad app (Safari has no Web MIDI; Firefox confirmed working 2026-10-09), legal consultation (P2-18), trademark (the domain
       opentiles.site was registered on 2026-10-10), a native German read-through, README
@@ -591,7 +606,7 @@ images, sounds or fonts, and credit the inspiration in [CREDITS.md](CREDITS.md).
   or dropped together pair by base name (a question when one score and one PDF differ in name); a
   PDF alone is a sheet-only piece; add, replace or remove a piece's PDF; "Add the MIDI or score
   file" for sheet-only pieces; PDFs up to 60 MB; encrypted backup, sync and crash-report scrubbing
-  keep the sheet. Left: an iPad check of the picker. (The Library page no longer loads the stored
+  keep the sheet. Left: an iPad check of the picker ([checklist](#ipad-device-checklist)). (The Library page no longer loads the stored
   files: P6-04.)
 
 - [~] **P5-16** (APP) The keyboard drawn in practice has exactly the keys chosen. Reason
@@ -601,7 +616,7 @@ images, sounds or fonts, and credit the inspiration in [CREDITS.md](CREDITS.md).
   piece" widens; a chosen keyboard draws its keys, centred, with margins on a wide window; e2e
   tests for every preset at 2,560, 2,056 and 320 px (keys drawn, edges from the pixels, lanes over
   their keys) that fail without the fix. Checked in the maintainer's Chrome at 2,560 px: every
-  preset draws exactly its keys. Left: a real iPad.
+  preset draws exactly its keys. Left: a real iPad ([checklist](#ipad-device-checklist)).
 
 - [x] **P5-17** (APP) One "Sheet" tab instead of "Page" and "Sheet" (maintainer, 2026-10-11: "why
       do I have a page tab and a sheet tab?"). The tabs are Falling notes | Score | Sheet: Sheet shows
@@ -617,10 +632,16 @@ images, sounds or fonts, and credit the inspiration in [CREDITS.md](CREDITS.md).
   pair again for a real check of the whole path; octave signs (the writer has none) and clef
   changes inside a bar; scans.
 
-- [ ] **P5-19** (all) Loose ends (2026-10-23): the task register has about 40 "Left:" notes, some
+- [x] **P5-19** (all) Loose ends (2026-10-23): the task register has about 40 "Left:" notes, some
       on tasks marked done and some already done elsewhere. Check each against the code, strike what
       is done, fix the small code items, move device checks to the
       [iPad device checklist](#ipad-device-checklist) and give the rest a place in the queue.
+      Done: eleven notes struck after a check in the code (P1-13, P1-17, P1-19, P1-24, P2-12,
+      P3-09, P3-10, P4-19's MIDI out and pedal, P4-15's deployment, P6-02, and the sample-set open
+      decision, ADR 0007); two fixed in code: a piece opens in the key it was last moved to (P5-04),
+      and the practice panels stay inside the window in the left-handed layout and at ⅓ iPad width,
+      where Options and "Plays on" ran off the screen (P2-15); every device check points to the
+      [checklist](#ipad-device-checklist); the rest is in the queue (Later) or waiting on the maintainer.
 
 Left out on purpose: 128 General MIDI instruments (a piano trainer, and extra sample licences and
 size), Sightread's song library and assets, and any analytics.
@@ -649,17 +670,17 @@ without a word when no MIDI output is found.
       outputs to choose from), the notes play on this device, the button shows a warning and a line
       says why, with Connect where that helps; a new output takes the notes over by itself. Where
       there is no Web MIDI it offers this device only, with the USB audio tip on iPad and iPhone.
-- [~] **P6-02** (APP) Clean MIDI out: output-only access from the shared `midiAccess()`; on stop,
-  seek, mode change, leaving and `pagehide` send note-offs, pedal up and All Notes Off; check
-  `MIDIOutput.clear()` in Chrome, Edge and Firefox; handle an unplugged keyboard; ignore notes a
-  keyboard echoes back. Done: the instrument remembers what it sent, and stopping (also on
-  leaving, `pagehide` and a hidden tab) ends every note, lifts the pedal and sends All Notes Off;
-  sending to an unplugged output no longer throws in the drawing loop; Settings' test note finds
-  "MIDI thru" keyboards and practice ignores their copies. `clear()` checked with a virtual
-  destination: missing in Chrome and Edge, present in Firefox; nothing left sounding 50 ms after
-  Stop in any of them (notes in `docs/architecture.md`); where it is missing, MIDI notes are
-  handed over at most 0.1 s ahead (with P6-03). Left: output-only access moves to P6-05, which is
-  the first to need it.
+- [x] **P6-02** (APP) Clean MIDI out: output-only access from the shared `midiAccess()`; on stop,
+      seek, mode change, leaving and `pagehide` send note-offs, pedal up and All Notes Off; check
+      `MIDIOutput.clear()` in Chrome, Edge and Firefox; handle an unplugged keyboard; ignore notes a
+      keyboard echoes back. Done: the instrument remembers what it sent, and stopping (also on
+      leaving, `pagehide` and a hidden tab) ends every note, lifts the pedal and sends All Notes Off;
+      sending to an unplugged output no longer throws in the drawing loop; Settings' test note finds
+      "MIDI thru" keyboards and practice ignores their copies. `clear()` checked with a virtual
+      destination: missing in Chrome and Edge, present in Firefox; nothing left sounding 50 ms after
+      Stop in any of them (notes in `docs/architecture.md`); where it is missing, MIDI notes are
+      handed over at most 0.1 s ahead (with P6-03). Output-only access came with P6-05: the Player
+      takes only an output port (`midiOutputPort`) from the page's one `midiAccess()`.
 - [x] **P6-03** (PRAC, APP) One playback scheduler in `packages/practice` (notes and pedal as timed
       events, seek, tempo change), used by Listen, play-along's accompaniment and the Player.
       Done: `buildPlayback` and `PlaybackCursor` (`packages/practice/src/playback.ts`), timed in
@@ -772,7 +793,7 @@ without a word when no MIDI output is found.
   test in Chromium, WebKit and the iPad profile. It found a bug: the key that woke the controls
   re-rendered the page while it was being handled, so the Player's shortcuts missed it (Space did
   nothing the first time); they now listen once for the page's life. Left: the check on a real iPad
-  (P6-13).
+  ([checklist](#ipad-device-checklist)).
 - [~] **P6-16** (PRAC) Phrasing for the Player: phrases swell towards their high point and settle
   at the end, the last bar slows by at most 10 % and the final chord is held; dynamics marks and
   hairpins set the level when a file has them (none of the catalogue's scores has any). On in the
@@ -858,7 +879,7 @@ on 2026-10-22, and the decisions go into ADR 0022 (P7-00).
   pedal 59 % / 8.1 %, play-along 72.5 % / 2.7 %, against 95 % and 3 %) and the hint. Left: real
   recordings (with P0-04).
 - [~] **P7-11** (APP) The on-screen keyboard with several fingers. Done: a three-finger chord test
-  (Chromium) and ⅓ iPad width. Left: a check on a real iPad in WebKit.
+  (Chromium) and ⅓ iPad width. Left: a check on a real iPad in WebKit ([checklist](#ipad-device-checklist)).
 - [x] **P7-12** (GOV) User guide, README, architecture, German strings.
 - [ ] **P7-13** (human) The maintainer's checks, then a reply on issue #47 with their approval.
 - [ ] **P7-14** (PRAC, APP) Scales, on the same pieces (optional, after chords; see Q4).
@@ -882,11 +903,18 @@ Record the outcome as an ADR in `docs/adr/` and tick it here.
 - [ ] Sign-in: passkeys only, or passkeys plus email link.
 - [ ] Timing of the legal consultation: before beta or before v1.0.
 - [ ] Individual maintainer or a non-profit association (e.V.) later.
-- [ ] Which openly licensed grand piano sample set to ship (licence and size).
+- [x] Which openly licensed grand piano sample set to ship — Salamander Grand Piano, ADR 0007.
 - [x] Practice logic lives in its own DOM-free package (`packages/practice`) — ADR 0004.
 - [x] Engine exposes a plain C ABI instead of wasm-bindgen glue — ADR 0002.
 
 ## Changelog
+
+- **2026-10-23** — P5-19: the loose ends in the task register checked against the code. A piece
+  now opens in the key it was last moved to, and the practice panels (Options, Plays on) stay on
+  the screen in the left-handed layout and at ⅓ iPad width. Notes on work done long ago are struck,
+  every iPad check points to the checklist, and the rest has a place in the queue: the rest of the
+  smoothness pass (P5-09), the import gaps (P5-13, P5-14, P5-18) and a choice of audio output
+  device (P4-19) join Later. Version 0.3.0.
 
 - **2026-10-23** — The plan is one queue ([Now, next, later](#now-next-later)) worked from the top,
   and the website and the iPad app ship together: one version, the app built and tested in CI on
