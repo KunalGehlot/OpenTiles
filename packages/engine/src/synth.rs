@@ -277,6 +277,9 @@ pub struct PassageOptions {
     /// Every event a four-note chord as the chord drills play them (P7-10): sevenths, add9 and
     /// sixth chords, some inverted, within a tenth.
     pub four_note: bool,
+    /// Every event a pair of notes from a major scale played with both hands as the scale drills
+    /// play them (P7-22): an octave apart, two octaves apart, or in contrary motion from one key.
+    pub scale_pairs: bool,
 }
 
 impl Default for PassageOptions {
@@ -289,6 +292,7 @@ impl Default for PassageOptions {
             min_gap_s: 0.30,
             max_gap_s: 0.80,
             four_note: false,
+            scale_pairs: false,
         }
     }
 }
@@ -309,10 +313,61 @@ const FOUR_NOTE_SHAPES: [[u8; 4]; 11] = [
     [0, 4, 7, 9],
 ];
 
-/// A random passage of single notes and 2–3 note chords (spans up to an octave), or of four-note
-/// chords with `four_note`, starting at 0.3 s. Returns the notes and the passage length in
-/// seconds.
+/// Semitones of a major scale's degrees above the tonic, one octave and the top note.
+const MAJOR: [u8; 8] = [0, 2, 4, 5, 7, 9, 11, 12];
+
+/// One octave of a major scale up and back down with both hands, from a random tonic, as pairs:
+/// `opts.chords` pairs in all, so runs are cut at the end.
+fn scale_pair_passage(rng: &mut Rng, opts: &PassageOptions) -> (Vec<SynthNote>, f32) {
+    let mut notes = Vec::new();
+    let mut t = 0.3f32;
+    let mut events = 0;
+    while events < opts.chords {
+        // 0: an octave apart, 1: two octaves apart, 2: contrary motion from one key.
+        let motion = rng.int(0, 2);
+        let apart: u8 = if motion == 1 { 24 } else { 12 };
+        let tonic = rng.int(
+            (opts.low + apart) as i32,
+            opts.high.saturating_sub(12) as i32,
+        ) as u8;
+        let gap = rng.range(opts.min_gap_s, opts.max_gap_s);
+        let degrees: Vec<usize> = (0..8).chain((0..7).rev()).collect();
+        for d in degrees {
+            if events >= opts.chords {
+                break;
+            }
+            let right = tonic + MAJOR[d];
+            // In contrary motion the left hand comes down the scale as the right goes up.
+            let left = if motion == 2 {
+                tonic + MAJOR[7 - d] - 12
+            } else {
+                right - apart
+            };
+            let velocity = rng.range(0.3, 1.0);
+            let mut pair = vec![left, right];
+            pair.dedup();
+            for p in pair {
+                notes.push(SynthNote {
+                    pitch: p,
+                    onset_s: t + rng.range(0.0, 0.03),
+                    duration_s: gap * rng.range(0.6, 0.95),
+                    velocity: (velocity + rng.range(-0.1, 0.1)).clamp(0.2, 1.0),
+                });
+            }
+            t += gap;
+            events += 1;
+        }
+    }
+    (notes, t + 0.8)
+}
+
+/// A random passage of single notes and 2–3 note chords (spans up to an octave), of four-note
+/// chords with `four_note`, or of two-handed scale pairs with `scale_pairs`, starting at 0.3 s.
+/// Returns the notes and the passage length in seconds.
 pub fn random_passage(rng: &mut Rng, opts: &PassageOptions) -> (Vec<SynthNote>, f32) {
+    if opts.scale_pairs {
+        return scale_pair_passage(rng, opts);
+    }
     let mut notes = Vec::new();
     let mut t = 0.3f32;
     const INTERVALS: [u8; 7] = [3, 4, 5, 7, 8, 9, 12];

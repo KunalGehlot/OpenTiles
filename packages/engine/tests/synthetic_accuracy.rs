@@ -15,6 +15,11 @@ use opentiles_engine::{DetectorConfig, Mode};
 const FOUR_NOTE_WAIT: (f64, f64) = (0.78, 0.12);
 const FOUR_NOTE_PEDAL: (f64, f64) = (0.55, 0.11);
 const FOUR_NOTE_PLAY: (f64, f64) = (0.70, 0.04);
+/// The same for the two-handed scale suites, measured on 2026-10-23 (wait 87.2 % / 6.4 %,
+/// play-along 65.6 % / 4.1 %; an octave below a played note is the commonest wrong note accepted,
+/// 12 % in wait mode); see `scale_pairs`.
+const SCALES_WAIT: (f64, f64) = (0.84, 0.08);
+const SCALES_PLAY: (f64, f64) = (0.62, 0.06);
 
 fn run_suite(mode: Mode, pedal: bool, seeds: std::ops::Range<u64>, sample_rate: f32) -> EvalReport {
     run_passages(mode, pedal, seeds, sample_rate, &PassageOptions::default())
@@ -179,6 +184,62 @@ fn four_note_chords_in_play_along() {
     );
     assert!(
         r.wrong.rate() <= FOUR_NOTE_PLAY.1,
+        "wrong-note acceptance {}",
+        r.wrong.rate()
+    );
+}
+
+/// Scales with both hands as the scale drills play them (P7-22): pairs of notes an octave apart,
+/// two octaves apart (the lower note's harmonics land on the upper one) or in contrary motion,
+/// from C2 to C7, a pair every 0.25 to 0.5 s. The spec's targets cover two-note chords, but octaves
+/// are the hard case for a score-informed detector; these suites report the numbers and guard
+/// against regressions, and the drills show a hint to use MIDI or the on-screen keys until real
+/// recordings meet the targets. Never loosen the detector to make these pass.
+fn scale_pairs() -> PassageOptions {
+    PassageOptions {
+        chords: 45,
+        low: 36,
+        high: 96,
+        min_gap_s: 0.25,
+        max_gap_s: 0.5,
+        scale_pairs: true,
+        ..PassageOptions::default()
+    }
+}
+
+#[test]
+fn scales_hands_together_in_wait_mode() {
+    let r = run_passages(Mode::Wait, false, 71..77, 48000.0, &scale_pairs());
+    println!(
+        "Scales, hands together, wait mode, no pedal, 48 kHz\n{}",
+        r.summary()
+    );
+    assert!(
+        r.correct.rate() >= SCALES_WAIT.0,
+        "correct-note acceptance {}",
+        r.correct.rate()
+    );
+    assert!(
+        r.wrong.rate() <= SCALES_WAIT.1,
+        "wrong-note acceptance {}",
+        r.wrong.rate()
+    );
+}
+
+#[test]
+fn scales_hands_together_in_play_along() {
+    let r = run_passages(Mode::PlayAlong, false, 81..85, 44100.0, &scale_pairs());
+    println!(
+        "Scales, hands together, play-along, no pedal, 44.1 kHz\n{}",
+        r.summary()
+    );
+    assert!(
+        r.correct.rate() >= SCALES_PLAY.0,
+        "correct-note acceptance {}",
+        r.correct.rate()
+    );
+    assert!(
+        r.wrong.rate() <= SCALES_PLAY.1,
         "wrong-note acceptance {}",
         r.wrong.rate()
     );
