@@ -2,7 +2,8 @@
 
 - **Status:** planned on 2026-10-23 (P7-14); the maintainer handed the questions in section 7 over
   the same day, so the recommendations stand and [ADR 0024](../adr/0024-scale-drills.md) records
-  them. The tasks are P7-15 to P7-24 in
+  them. Built the same day (P7-15 to P7-23); left are a real-iPad check (P7-20), real recordings
+  of hands together (P7-22) and the maintainer's checks (P7-24). The tasks are P7-15 to P7-24 in
   [PLAN.md](../../PLAN.md#phase-7--chord-drills-planned-2026-10-22), built on the chord drills'
   pieces ([chord-drills.md](chord-drills.md), ADR 0022).
 - **Where it came from:** [issue #47](https://github.com/KunalGehlot/OpenTiles/issues/47), "New

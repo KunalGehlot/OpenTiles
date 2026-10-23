@@ -141,9 +141,9 @@ Switch the view with the buttons at the top right of the practice area.
   (see [Sheet music PDFs](#sheet-music-pdfs)), otherwise the engraved score. A Bluetooth page-turn
   foot pedal works here (see [Settings](#settings)).
 
-## Drills: sight-reading and chords
+## Drills: sight-reading, chords and scales
 
-The **Drills** page has two kinds of short exercise, made on your device and new every time.
+The **Drills** page has three kinds of short exercise, made on your device and new every time.
 
 ### Sight-reading
 
@@ -195,6 +195,54 @@ draws the chords under 80 % more often.
 Chords of four or more notes are hard for the microphone; when a drill has them, the practice
 screen suggests a MIDI keyboard or the on-screen keys. The on-screen keys take several fingers at
 once.
+
+### Scales
+
+**Scales** gives you random scales to play up and back down, each in its key signature with its
+name above it and the finger for every note written over it. Choose:
+
+- **Level.** Each level adds to the ones before it:
+
+  | Level | Adds                                                   |
+  | ----- | ------------------------------------------------------ |
+  | 1     | C, G and F major; A minor                              |
+  | 2     | Up to two sharps or flats, with their harmonic minors  |
+  | 3     | All twelve major scales                                |
+  | 4     | Every minor: natural, harmonic and melodic             |
+  | 5     | Two octaves                                            |
+  | 6     | Both hands together                                    |
+  | 7     | Modes (Dorian to Locrian), pentatonics and blues       |
+  | 8     | The chromatic scale, and both hands in contrary motion |
+
+  **My own set** picks the keys and kinds of scale yourself. The melodic minor goes up with its
+  sixth and seventh raised and comes down without them, as in most scale books.
+
+- **Hands.** Right, left, together (an octave or two apart), or in **contrary motion**: both hands
+  start on the same key, move apart and come back.
+- **Octaves.** One or two.
+- **Show.** **Sheet** writes the scales out. **Name only, from memory** shows the name and the key
+  signature; the notes and their fingers appear once you have played them, which is how scales are
+  asked for in lessons. **Show me** shows the rest of the scale, and counts it as a miss. **Falling
+  keys** drops the notes onto the keyboard with the fingers on the bars. Sheet is the start at level
+  1, from memory after that.
+- **Show the fingers.** The fingers are those scale books print: in C major the right hand plays
+  1 2 3 1 2 3 4 5, and the thumb never lands on a black key. Pentatonic and blues scales have no
+  single standard and come without fingers.
+- **Pace.** **Wait for me**, or **at a tempo** in crotchets or quavers, 40 to 160 beats a minute,
+  after the count-in, with the same **Speed up as I improve** as chords.
+
+Names follow Settings → How note names are written and the app's language: E♭ harmonic minor, or in
+German es-Moll harmonisch.
+
+After a round you see notes a minute (or how many scales were clean and on time), how many were
+right at the first try, how **even** your playing was (very even, even, or uneven, and where: most
+often where the thumb passes under), the scales that went wrong most and what was wrong (the key's
+sharp or flat, the wrong form of minor, a note skipped), and your last rounds. These results stay on
+this device (and in your encrypted backup); **Practise my weak scales** brings the weak ones back
+more often.
+
+Both hands at once are harder for the microphone to follow; with hands together it suggests a MIDI
+keyboard or the on-screen keys.
 
 ## The Player
 

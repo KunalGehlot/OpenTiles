@@ -282,6 +282,23 @@ chord's notes as it spells them (`chordLabels`, `spelledNames`). Finished rounds
 `chordStats` setting (`chord-stats.ts`: at most 200 rounds, counts per kind of chord), which the
 encrypted backup carries and "Practise my weak chords" reads.
 
+## Scale drills (P7-15 to P7-22, ADR 0024)
+
+`packages/practice/src/scales.ts` spells every kind of scale on all twelve tonics with the key
+signature it is written in (at most six sharps or flats); `scale-fingering.ts` works out the
+standard fingering from the rules scale books follow (the suggested fingering of `fingering.ts`
+puts thumbs on black keys in most scales); `scale-drills.ts` draws seeded scales and writes them as
+MusicXML with key changes, names as words, `<fingering>` on every note, and accidentals only where
+the key signature does not cover a note. Ids start with `scales.`
+(`#/practice/drill/scales.l2.hr.o1.d4.n4.t80.s12345`). `scale-tally.ts` judges each scale as a run
+on top of wait mode and play-along: right at the first try, the cause of a wrong key, hands apart,
+and evenness (the spread of the gaps between notes). The session holds it as
+`PracticeSession.scales` when `scaleDrill` is set; `revealScale()` is "Show me" for the rest of the
+scale, and from memory `hideAhead` also hides the fingers and ledger lines of bars still to play. A
+scale drill keeps its written fingers (`prepareSong` with `written`), which other drills turn off.
+Finished rounds go into the `scaleStats` setting (`scale-stats.ts`), which the encrypted backup
+carries and "Practise my weak scales" reads.
+
 ## Sheet music PDFs (P5-14, ADR 0018)
 
 A library piece can keep the learner's own PDF (`LibraryItem.sheet`). The practice screen's Sheet

@@ -43,9 +43,11 @@ and track your progress. No account, no tracking, no payment. Ever.
   transpose, turn on a metronome.
 - **Play what you have.** A MIDI keyboard, an **acoustic piano through the microphone**, or the
   on-screen and computer keys.
-- **Drills.** Endless, generated flash-card practice for reading notes on the staff, and random
+- **Drills.** Endless, generated flash-card practice for reading notes on the staff; random
   chords to find on the sheet or as falling keys, in eight levels from C major to sevenths in both
-  hands, with the chords that went wrong most to practise next.
+  hands; and scales in every key with the fingering scale books print, from the sheet or from
+  memory, with how even you played them. The chords and scales that went wrong most come back to
+  practise next.
 - **The Player.** Your whole library and the catalogue played like a self-playing grand piano, on
   your keyboard's own sound when one is connected, with the sustain pedal and phrasing, a queue and
   a music-stand view.
