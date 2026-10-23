@@ -102,3 +102,87 @@ export {
   stepPitch,
 } from './drills';
 export type { Drill, DrillClef, DrillKind, DrillNote, DrillOptions } from './drills';
+export {
+  CHORD_QUALITIES,
+  chordKey,
+  chordNotes,
+  chordOn,
+  chordPitchClasses,
+  chordSymbol,
+  invert,
+  inversionsOf,
+  noteCount,
+  pitchClassOf,
+  rootFor,
+  shiftOctaves,
+  voicing,
+} from './chords';
+export type {
+  Chord,
+  ChordQuality,
+  ChordSymbolParts,
+  Letter,
+  PitchName,
+  SpelledPitch,
+} from './chords';
+export {
+  CHORD_DRILL_DEFAULTS,
+  CHORD_LEVELS,
+  CHORD_TEMPO_STEP,
+  chordDrillId,
+  chordKind,
+  drillChords,
+  drillEntries,
+  generateChordDrill,
+  isChordDrillId,
+  leftPartOf,
+  levelEntries,
+  levelHands,
+  MAX_CHORD_TEMPO,
+  MIN_CHORD_TEMPO,
+  mostNotesAtOnce,
+  normaliseChordDrillOptions,
+  normaliseChordSet,
+  parseChordDrillId,
+} from './chord-drills';
+export type {
+  ChordDrill,
+  ChordDrillOptions,
+  ChordEntry,
+  ChordHands,
+  ChordLevel,
+  ChordSet,
+  DrillChord,
+  LeftPart,
+} from './chord-drills';
+export {
+  CHORD_SPREAD,
+  ChordTally,
+  hardestChords,
+  judgeTogether,
+  mainCause,
+  medianOf,
+  missCause,
+  STRICT_CHORD_SPREAD,
+  summariseChords,
+} from './chord-tally';
+export type {
+  ChordAttempt,
+  ChordKindSummary,
+  ChordMiss,
+  ChordRoundSummary,
+  TogetherJudgement,
+} from './chord-tally';
+export {
+  addRound,
+  kindTotals,
+  MAX_ROUNDS,
+  NO_CHORD_STATS,
+  nextChordTempo,
+  normaliseChordStats,
+  recentShares,
+  roundOf,
+  WEAK_SHARE,
+  weakChords,
+} from './chord-stats';
+export type { ChordKindStats, ChordRound, ChordStats } from './chord-stats';
