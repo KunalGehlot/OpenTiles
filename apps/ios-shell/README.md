@@ -23,6 +23,7 @@ PLAN.md task **P3-01**.
 | `plugins/core-midi/`                      | The CoreMIDI plugin, workspace package `@opentiles/capacitor-core-midi`                        |
 | `plugins/core-midi/ios/Sources/`          | Swift: `CoreMidiPlugin` (bridge), `MidiSession` (CoreMIDI), `UniversalPacket` (parsing, clock) |
 | `plugins/core-midi/ios/Tests/`            | XCTest for the message parser and clock                                                        |
+| `ios/App/AppUITests/`                     | UI tests: the app starts and the web app's pages open in its WebView (PLAN.md P3-10)           |
 | `plugins/core-midi/src/`                  | The plugin's TypeScript definitions and `registerPlugin()` call                                |
 | `scripts/render-assets.py`                | Renders the app icon and launch image from `apps/web/public/icon.svg`                          |
 | `scripts/build.sh`                        | `pnpm ipa` (unsigned `build/OpenTiles.ipa`) and `pnpm device` (sign and install on an iPad)    |
@@ -91,6 +92,11 @@ Signing in Xcode with a free Apple ID usually fails on the bundle identifier `or
   path (`ios/App/CapApp-SPM/Package.swift`, rewritten by every `cap sync`).
 - **Plugin tests:** open `plugins/core-midi/Package.swift` in Xcode, choose an iPad simulator and
   press ⌘U.
+- **App tests:** after `pnpm --filter @opentiles/ios-shell ios`, choose an iPad simulator in the
+  App scheme and press ⌘U, or run
+  `xcodebuild test -project ios/App/App.xcodeproj -scheme App -destination 'platform=iOS Simulator,name=<an iPad>' CODE_SIGNING_ALLOWED=NO`.
+  They find the page's headings, links and texts through accessibility, so a renamed label in the
+  web app needs the same change in `AppUITests.swift` (the e2e tests use the same labels).
 
 The scripts run `cap telemetry off` first: the Capacitor CLI otherwise sends usage data (including
 the app ID) when it runs in an interactive terminal.
@@ -118,7 +124,7 @@ TEAM=ABCDE12345 pnpm --filter @opentiles/ios-shell device  # sign with your team
   one, and both move together at each release, PLAN.md P3-09), `CFBundleVersion` the
   commit count (`BUILD_NUMBER` overrides it). `SKIP_WEB=1` reuses the web build already synced.
 - **CI** (`.github/workflows/ios.yml`, macOS): every pull request and every push to `main` builds
-  the IPA and runs the plugin tests on an iPad simulator, because every change to the web app is a
+  the IPA and runs the plugin tests and the app's UI tests on an iPad simulator, because every change to the web app is a
   change to the app. A tag `v<version>` also puts `OpenTiles.ipa` and
   `altstore.json` on a **draft** release; read it, then publish it by hand. AltStore and SideStore
   read the source at `…/releases/latest/download/altstore.json`.

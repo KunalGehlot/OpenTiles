@@ -54,9 +54,9 @@ it belongs, and say why in the changelog; do not open a new phase for it.
 1. **P3-09** The website and the iPad app together: this plan, the `iPad app` workflow on every
    pull request and on `main`, one version for both, release v0.2.0 (the chord drills and the
    count-in reach the app).
-2. **P3-10** The app on an iPad simulator in CI: a UI test that starts the app with no network and
-   opens Home, a catalogue piece in practice and a chord drill, so a change that breaks the app's
-   WebView fails CI, not the maintainer's iPad.
+2. **P3-10** The app on an iPad simulator in CI: a UI test that starts the app and opens Home, a
+   catalogue piece in practice and a chord drill, so a change that breaks the app's WebView fails
+   CI, not the maintainer's iPad.
 
 **Next**
 
@@ -326,9 +326,16 @@ compatibility matrix (spec §5).
   the [iPad device checklist](#ipad-device-checklist), the `iPad app` workflow on every pull request
   and on `main`, one version for the site and the app (0.2.0), the definition of done and the pull
   request template. Left: the v0.2.0 tag and release.
-- [ ] **P3-10** (APP, iOS) The app on an iPad simulator in CI: a UI test target that starts the app
-      with no network and opens Home, a catalogue piece in practice and a chord drill in the WebView,
-      run by the `iPad app` workflow.
+- [~] **P3-10** (APP, iOS) The app on an iPad simulator in CI. Done: a UI test target
+  (`apps/ios-shell/ios/App/AppUITests`) and a shared `App` scheme; the tests start the app and,
+  through the WebView's accessibility, open a catalogue piece from Home in wait mode ("Step 1/")
+  and a chord drill from the Drills page ("Chord 1/16"), with screenshots kept in the result
+  bundle; the `iPad app` workflow runs them on an iPad simulator after the IPA build and keeps the
+  results when they fail. Both pass on an iPad Pro 11-inch (M5) simulator with iOS 27.1 (Xcode
+  27.1, 2026-10-23, 22 s and 27 s); the screenshots show the piece counting in and the drill's
+  chord names over the bars. The first CI run (iOS 26.4) showed "Drills" lit up by a tap that
+  WebKit took for a hover while Home was still loading; each tap now waits for the next page and
+  taps again, as a person would. Left: a green run in CI.
 - [ ] **P3-02** (human) Apple Developer Program, free App Store release.
 - [~] **P3-03** Encrypted sync: passkeys / email link, Argon2id-wrapped library key, AES-GCM blobs,
   EU object storage, 250 MB quota, one-step account deletion. (Open decision: v1.0 or right
