@@ -5,6 +5,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { ChevronLeft, Play } from 'lucide-react';
 import {
   CHORD_LEVELS,
+  CHORD_TEMPO_STEP,
   inversionsOf,
   kindTotals,
   MAX_CHORD_TEMPO,
@@ -32,6 +33,11 @@ import { Setting, Toggle } from '../ui/SettingRow';
 import { t } from '../i18n';
 
 const ROOTS = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11];
+/** The tempos a drill offers, 40 to 120 beats a minute in steps of 5 (P7-07). */
+const TEMPOS = Array.from(
+  { length: (MAX_CHORD_TEMPO - MIN_CHORD_TEMPO) / CHORD_TEMPO_STEP + 1 },
+  (_, i) => MIN_CHORD_TEMPO + i * CHORD_TEMPO_STEP,
+);
 
 /** A link back to the hub above a drill's setup page. */
 export function BackToDrills() {
@@ -257,25 +263,13 @@ export function ChordDrills() {
         {p.pace === 'tempo' && (
           <>
             <Setting label={t('Beats a minute')} hint={t('60 is a chord every four seconds.')}>
-              <input
-                type="number"
-                inputMode="numeric"
-                min={MIN_CHORD_TEMPO}
-                max={MAX_CHORD_TEMPO}
-                step={5}
-                value={p.tempo}
-                onChange={(e) => {
-                  const n = Number(e.target.value);
-                  if (Number.isFinite(n)) {
-                    set({
-                      tempo: Math.min(
-                        MAX_CHORD_TEMPO,
-                        Math.max(MIN_CHORD_TEMPO, Math.round(n / 5) * 5),
-                      ),
-                    });
-                  }
-                }}
-              />
+              <select value={p.tempo} onChange={(e) => set({ tempo: Number(e.target.value) })}>
+                {TEMPOS.map((bpm) => (
+                  <option key={bpm} value={bpm}>
+                    {bpm}
+                  </option>
+                ))}
+              </select>
             </Setting>
             <Toggle
               label={t('Speed up as I improve')}

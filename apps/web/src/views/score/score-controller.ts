@@ -44,8 +44,9 @@ export class ScoreController {
   private anchors: Anchor[] = [];
   private elements = new Map<string, Element>();
   private applied = new Map<string, NoteState>();
-  /** Glyphs hidden for "Name only" (P7-05). */
+  /** Glyphs hidden for "Name only" (P7-05), and the bars they are in. */
   private hidden = new Set<string>();
+  private hiddenBars = new Set<Element>();
   private lastSignature = '';
   private lastBeat = Number.NaN;
   private lastForced = 0;
@@ -355,12 +356,22 @@ export class ScoreController {
       };
       for (const [glyph, ids] of this.links.notesOf) if (ids.every(hide)) hidden.add(glyph);
     }
+    const bars = new Set<Element>();
     for (const [glyph, el] of this.elements) {
       const on = hidden.has(glyph);
+      if (on) {
+        const bar = el.closest('g.measure');
+        if (bar) bars.add(bar);
+      }
       if (on === this.hidden.has(glyph)) continue;
       el.classList.toggle('ot-hidden', on);
     }
+    // A bar whose chord is hidden hides its ledger lines too, which would show where the notes sit;
+    // once the chord shows, so do they.
+    for (const bar of this.hiddenBars) if (!bars.has(bar)) bar.classList.remove('ot-chord-hidden');
+    for (const bar of bars) bar.classList.add('ot-chord-hidden');
     this.hidden = hidden;
+    this.hiddenBars = bars;
   }
 
   /** Half a view of room on each side, so the first and last notes can reach the middle bar. */

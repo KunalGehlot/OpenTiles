@@ -1429,7 +1429,6 @@ function PracticeView({
           notation={shownNotation}
           layout={view}
           main={drill !== undefined}
-          nameOnly={nameOnly}
           hardest={
             status.finished && summary
               ? summary.hardestMeasures.map((m) => m.measureIndex)

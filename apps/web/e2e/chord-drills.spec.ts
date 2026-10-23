@@ -155,6 +155,25 @@ test('name only hides the chords to come until they are played or asked for', as
   await expect(page.getByTestId('chord-first-try')).toHaveText('1 of 2 at the first try');
 });
 
+test('name only keeps the ledger lines of a hidden chord hidden, and shows them with it', async ({
+  page,
+}) => {
+  await page.goto('./#/drills/chords');
+  await page.getByRole('combobox', { name: 'Chord names' }).selectOption('name-only');
+  // Seed 2 starts on C major in root position: middle C needs its ledger line, no other chord does.
+  const id = 'chords.l1.hr.n4.t60.s2';
+  await page.goto(`./#/practice/drill/${id}`);
+  await expect(score(page)).toBeVisible({ timeout: 20_000 });
+  const first = page.locator('[data-testid="score-strip"] g.measure').first();
+  const ledger = first.locator('g.ledgerLines');
+  // A ledger line is a flat path, so its computed visibility says whether it is drawn.
+  const shown = () => ledger.evaluate((el) => getComputedStyle(el).visibility);
+  await expect(ledger).toHaveCount(1);
+  await expect.poll(shown).toBe('hidden');
+  await playChord(page, chordKeys(id)[0] ?? []);
+  await expect.poll(shown).toBe('visible');
+});
+
 test('falling keys draw the chord names on the bars and light the keys, as the level says', async ({
   page,
 }) => {
@@ -200,7 +219,13 @@ test('seventh chords at level 6 read from the sheet', async ({ page }) => {
 test('a chord drill at a tempo counts in and plays along', async ({ page }) => {
   await page.goto('./#/drills/chords');
   await page.getByRole('combobox', { name: 'Pace' }).selectOption('tempo');
-  await expect(page.getByRole('spinbutton', { name: 'Beats a minute' })).toHaveValue('60');
+  const bpm = page.getByRole('combobox', { name: 'Beats a minute' });
+  await expect(bpm).toHaveValue('60');
+  await bpm.selectOption('90');
+  await expect(page.getByRole('link', { name: 'Start chords' })).toHaveAttribute(
+    'href',
+    /chords\.l\d\.h\w\.n\d+\.t90\.s\d+$/,
+  );
   await page.goto('./#/practice/drill/chords.l1.hr.n2.t120.s5');
   await expect(page.getByRole('button', { name: 'Play along' })).toHaveAttribute(
     'aria-pressed',

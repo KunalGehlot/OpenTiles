@@ -195,12 +195,12 @@
 }
 
 /* "Name only" in a chord drill (P7-05): notes still to play are hidden, and so are the ledger lines
-   that would show where they sit. */
+   of their bars, which would show where they sit. */
 .ot-score-strip g.note.ot-hidden {
   visibility: hidden;
 }
 
-.ot-score-panel.ot-name-only g.ledgerLines {
+.ot-score-strip g.measure.ot-chord-hidden g.ledgerLines {
   visibility: hidden;
 }
 
