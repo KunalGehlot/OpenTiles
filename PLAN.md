@@ -57,9 +57,9 @@ it belongs, and say why in the changelog; do not open a new phase for it.
 
 **Next**
 
-2. **P7-14** Scales: planned in [docs/phase-7/scales.md](docs/phase-7/scales.md) and waiting
-   for the maintainer's answers to its Q1–Q10; then **P7-15 to P7-24**, built on the drills'
-   generator, judging and pages. It finishes the drills that issue #47 asked for.
+2. **P7-15 to P7-23** Scales, planned in [docs/phase-7/scales.md](docs/phase-7/scales.md)
+   (P7-14, ADR 0024) and built on the drills' generator, judging and pages. It finishes the
+   drills that issue #47 asked for.
 
 **Later** (in this order unless the maintainer reorders it)
 
@@ -79,8 +79,6 @@ it belongs, and say why in the changelog; do not open a new phase for it.
 
 **Waiting on the maintainer** (no code until they act or decide)
 
-- **Scales:** answers to Q1–Q10 of the [scales plan](docs/phase-7/scales.md#7-questions-for-the-maintainer)
-  (P7-14), before P7-15 starts.
 - **G0, the microphone gate:** record the test set (P0-04), measure latency on iPads (P0-11), then
   the thresholds and gate report (P0-13). Four-note chords on real recordings join it (P7-10), and
   so do the microphone's harmonic profile and a check on a real piano (P1-20).
@@ -97,7 +95,7 @@ it belongs, and say why in the changelog; do not open a new phase for it.
   README.
 - **Catalogue growth:** reviewing new pieces (P2-06, P2-07, P3-05, P4-13, P4-13b), and PDMX's
   complexity in the difficulty levels (P2-05).
-- **Proposed ADRs** waiting for a decision: 0015 to 0023, and the
+- **Proposed ADRs** waiting for a decision: 0015 to 0024, and the
   [open decisions](#open-decisions).
 
 ## iPad device checklist
@@ -146,7 +144,7 @@ Each phase ends at a gate. If a gate fails, re-plan before continuing.
 | 4 — After v1.0            | Several features built early; the rest is in the queue                   | —                                                                                                    |
 | 5 — Release polish        | Built, but for free play (P5-06) and collections (P5-08)                 | The release gate (P5-10)                                                                             |
 | 6 — The Player            | Built; the maintainer's checks are open                                  | The maintainer's checks (P6-13)                                                                      |
-| 7 — Chord drills          | Built 2026-10-23; scales planned, waiting on answers                     | The maintainer plays it and approves it (P7-13)                                                      |
+| 7 — Chord drills          | Built 2026-10-23; scales being built (P7-15 to P7-23)                    | The maintainer plays it and approves it (P7-13)                                                      |
 
 If **G0** fails, v1.0 becomes MIDI-first and the microphone ships marked as beta (spec §11).
 
@@ -885,8 +883,8 @@ on 2026-10-22, and the decisions go into ADR 0022 (P7-00).
 - [x] **P7-12** (GOV) User guide, README, architecture, German strings.
 - [~] **P7-13** (human) The maintainer's checks. Done: the reply on issue #47 (2026-10-23, by the
   maintainer; the issue is closed). Left: the checks on a real keyboard and an iPad.
-- [~] **P7-14** (GOV) Scales planned on the same pieces (Q4): [docs/phase-7/scales.md](docs/phase-7/scales.md).
-  Left: the maintainer's answers to its Q1–Q10, then ADR 0024.
+- [x] **P7-14** (GOV) Scales planned on the same pieces (Q4): [docs/phase-7/scales.md](docs/phase-7/scales.md);
+      Q1–Q10 handed over by the maintainer, decided as recommended (ADR 0024).
 - [ ] **P7-15** (PRAC) Scale vocabulary: kinds, spelling, key signatures, the notes up and down.
 - [ ] **P7-16** (PRAC) Scale fingering by the rules scale books follow, written into the drill.
 - [ ] **P7-17** (PRAC) The seeded scale drill generator (MusicXML with key changes, names, fingers).

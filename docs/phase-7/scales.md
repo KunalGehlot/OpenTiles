@@ -1,9 +1,10 @@
 # Phase 7 — Scale drills
 
-- **Status:** planned on 2026-10-23 (P7-14); nothing built yet. The questions in section 7 wait for
-  the maintainer's answers; the tasks are P7-15 to P7-24 in
-  [PLAN.md](../../PLAN.md#phase-7--chord-drills-planned-2026-10-22). Built after the answers, on
-  the chord drills' pieces ([chord-drills.md](chord-drills.md), ADR 0022).
+- **Status:** planned on 2026-10-23 (P7-14); the maintainer handed the questions in section 7 over
+  the same day, so the recommendations stand and [ADR 0024](../adr/0024-scale-drills.md) records
+  them. The tasks are P7-15 to P7-24 in
+  [PLAN.md](../../PLAN.md#phase-7--chord-drills-planned-2026-10-22), built on the chord drills'
+  pieces ([chord-drills.md](chord-drills.md), ADR 0022).
 - **Where it came from:** [issue #47](https://github.com/KunalGehlot/OpenTiles/issues/47), "New
   section scale/chords training". The chord drills answered half of it; the maintainer's reply on
   2026-10-23, when they went live, says "Scales are next, built on the same pieces". The issue is
@@ -355,9 +356,11 @@ A level ladder to start from (Q1; tune after playing it):
 "One" is the right hand unless the learner picks the left. As with chords, the Hands and Octaves
 selectors override a level's default.
 
-## 7. Questions for the maintainer
+## 7. Questions for the maintainer, decided 2026-10-23
 
-Each has a recommendation. The answers go into ADR 0024 (P7-14).
+Each had a recommendation. The maintainer, who has little music theory, handed the decisions over
+("go ahead with best of your knowledge"), so every recommendation was taken; ADR 0024 records
+them.
 
 | #   | Question                                                                                                                                                                                                                                   | Recommendation                                                                                             |
 | --- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------- |
