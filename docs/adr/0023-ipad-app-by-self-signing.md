@@ -37,9 +37,10 @@ year with a paid membership), at most three such apps at once, ten new app ident
   and an AltStore / SideStore source (`altstore.json`, written from the IPA's own Info.plist) go
   onto a **draft** release that the maintainer reads and publishes by hand. The source's stable URL
   is `…/releases/latest/download/altstore.json`, so AltStore and SideStore offer each new release
-  as an update. Pull requests that touch the app build it too.
-- **Versions.** `CFBundleShortVersionString` is the shell's package version; `CFBundleVersion` is
-  the commit count, so every build is newer than the last.
+  as an update. Every pull request and every push to `main` build it too (amended 2026-10-23,
+  PLAN.md P3-09: the app ships the web app, so a change to the site is a change to the app).
+- **Versions.** `CFBundleShortVersionString` is the shell's package version, which `apps/web`
+  shares (since 0.2.0); `CFBundleVersion` is the commit count, so every build is newer than the last.
 - **No service worker in the app.** The app carries its files and is updated as a whole, so the web
   app skips worker registration inside it.
 - The user-facing steps are in `docs/ipad-app.md`.

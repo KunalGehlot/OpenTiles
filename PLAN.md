@@ -13,50 +13,129 @@ file says **in which order**, **who picks up what**, and **what is done**.
 **Status legend:** `[x]` done · `[~]` in progress / partially done · `[ ]` not started ·
 **(human)** needs a person, a device or a decision, not just code.
 
-## Current focus
+## How this plan works
 
-**Release preparation (October 2026).** The code covers most of Phases 1 to 4: practice modes, falling
-notes and score views with scrubbing, MIDI in and out (Chrome, Edge, Firefox; the iPad app builds), the
-microphone detector, imports, an 81-piece verified catalogue, English and German, encrypted backup and
-sync, and release hardening. What is left is mostly human work and gates:
+Since 2026-10-23 the order of work is one queue, [Now, next, later](#now-next-later), worked from
+the top, one item at a time. An item is finished on the website and in the iPad app before the next
+one starts. The phases further down are the **task register**. They group tasks by topic and keep
+their IDs, which branches, commits, ADRs and code comments use, so a task never changes its ID.
+Phase numbers say when a topic was first planned, not when its work happens. The dates in the
+first plan (v1.0 in August 2027) were an estimate made on 2026-10-07; most of Phases 1 to 4 was
+built in October 2026 instead, so the windows have been dropped and only the gates kept.
 
-- **G0, the microphone gate:** record the test set on real pianos (P0-04), measure latency on iPads
-  (P0-11), tune and write the gate report (P0-13).
-- **Legal and publishing:** the legal consultation (P2-18) and the trademark. The site deploys to GitHub Pages at opentiles.site (P5-11, ADR 0016).
-- **iPad app:** builds as an unsigned IPA that people sign with their own Apple ID (ADR 0023); install
-  on an iPad and test with a keyboard (P3-01); App Store (P3-02).
-- **Code still open:** MIDI out and Bluetooth MIDI pairing in the iPad app, the sustain pedal, frame time
-  on an older iPad, a native speaker's read-through of the German, more catalogue pieces (P3-05).
+Why: until 2026-10-23 every new request opened its own phase (5, 6, 7) while older phases still
+had open ends, and the iPad app fell behind the site (its v0.1.0 has no chord drills). One queue
+and one release for both fix both problems.
 
-The task list for this round is [Phase 5 — Release polish](#phase-5--release-polish-from-2026-10-09).
-P5-01 to P5-05 and P5-07 are in `main` (merged 2026-10-10); left are P5-06 (free play), P5-09 (the
-smoothness pass with the maintainer), P5-10 (the human release gate) and P5-11 (going live on
-opentiles.site). The repository is public; the maintainer decided not to recreate it (P5-00).
+### The website and the iPad app together
 
-**Now: [Phase 6 — The Player](#phase-6--the-player-from-2026-10-11)** (started 2026-10-17). A Player
-page that plays the whole library and catalogue on the learner's own keyboard, and a visible "Plays
-on" choice in practice so Listen can play on the keyboard only. The full plan is
-[docs/phase-6/player.md](docs/phase-6/player.md); on 2026-10-18 the maintainer chose to make the
-Player a self-playing grand piano, described in
-[docs/phase-6/player-piano.md](docs/phase-6/player-piano.md).
+The iPad app is the web app inside a native shell (ADR 0023), so a feature reaches both or neither.
 
-**Then: [Phase 7 — Chord drills](#phase-7--chord-drills-planned-2026-10-22)**, planned from issue #47
-and built on 2026-10-23 (P7-00 to P7-12); left are the real four-note recordings (P7-10), the
-maintainer's checks (P7-13) and scales (P7-14). See [docs/phase-7/chord-drills.md](docs/phase-7/chord-drills.md).
+- **Done means done on both.** A task that changes what a learner sees or hears is finished when it
+  works on the site with its tests, **and** the iPad app builds with it in CI (the `iPad app`
+  workflow runs on every pull request and on `main`) with the app's tests passing.
+- **Device checks never block.** Anything that may behave differently on an iPad (touch, audio,
+  MIDI, the microphone, storage, Split View, the app's WebView) goes into the
+  [iPad device checklist](#ipad-device-checklist) in the same pull request. The maintainer works
+  through it when they have the iPad to hand; what they find goes to the top of the queue.
+- **One version, one release.** `apps/web` and `apps/ios-shell` share a version number. Every queue
+  item that changes the app ends with a release: the site deploys from `main` on every merge, and
+  a tag `v<version>` builds the IPA and an AltStore source onto a draft release, which the
+  maintainer publishes by hand. Bump the minor version (0.2.0, 0.3.0, …) for a queue item and the
+  patch version for a fix in between.
+
+## Now, next, later
+
+Work from the top. Add a new request to this list in the pull request that plans it, at the place
+it belongs, and say why in the changelog; do not open a new phase for it.
+
+**Now**
+
+1. **P3-09** The website and the iPad app together: this plan, the `iPad app` workflow on every
+   pull request and on `main`, one version for both, release v0.2.0 (the chord drills and the
+   count-in reach the app).
+2. **P3-10** The app on an iPad simulator in CI: a UI test that starts the app with no network and
+   opens Home, a catalogue piece in practice and a chord drill, so a change that breaks the app's
+   WebView fails CI, not the maintainer's iPad.
+
+**Next**
+
+3. **P5-19** Loose ends: go through every "Left:" in the task register. Strike what is done
+   already, fix the small code items (a day or less each), and give the rest a place in this list.
+4. **P7-14** Scales, planned first with the maintainer's answers (as the chord drills were), then
+   built on the drills' generator, judging and pages. It finishes the drills that issue #47 asked
+   for.
+
+**Later** (in this order unless the maintainer reorders it)
+
+5. **P6-16** Dynamics marks and hairpins from imported MusicXML (a `Song` model change; ask first).
+6. **P5-05** Sight-reading: accidentals beyond the key, then rhythm reading.
+7. **P5-08** Library preview before opening, and collections.
+8. **P5-06** Free play with recording and listen-back (needs an ADR and the lawyer's answer, P2-18).
+9. **P3-03** Encrypted sync goes live (needs the open decisions below and EU storage).
+10. **P4-05** Teacher features, **P4-03** courses, **P4-01** optical music recognition.
+
+**Waiting on the maintainer** (no code until they act or decide)
+
+- **G0, the microphone gate:** record the test set (P0-04), measure latency on iPads (P0-11), then
+  the thresholds and gate report (P0-13). Four-note chords on real recordings join it (P7-10).
+- **Checks:** the [iPad device checklist](#ipad-device-checklist), their keyboard and the Player
+  on the Mac (P6-13), the chord drills on a real keyboard (P7-13), the release gate (P5-10).
+- **Legal and publishing:** the legal consultation (P2-18), the trademark (P0-02), the Impressum's
+  postal address (P2-17), HTTPS enforced on GitHub Pages, and whether the README and user guide
+  link to opentiles.site (P5-11).
+- **App Store:** the Apple Developer Program (P3-02), after the licence question in the app's
+  README.
+- **Catalogue growth:** reviewing new pieces (P2-06, P2-07, P3-05, P4-13).
+- **Proposed ADRs** waiting for a decision: 0015 to 0019 and 0021 to 0023, and the
+  [open decisions](#open-decisions).
+
+## iPad device checklist
+
+Every check that needs a real iPad, in one place. "Safari" is the website in Safari or any other
+iPad browser (all use WebKit); "App" is the iPad app. How to run the app checks is in the app's
+[first-build checklist](apps/ios-shell/README.md#first-build-checklist). Tick a row with the date
+and the device; a failure becomes a task at the top of the queue.
+
+| Check                                                                                  | Where  | Task         | Status                               |
+| -------------------------------------------------------------------------------------- | ------ | ------------ | ------------------------------------ |
+| The app installs with `pnpm device` and a free Apple ID                                | App    | P3-01        | ✓ 2026-10-22, iPad Pro M1, iPadOS 27 |
+| A USB MIDI keyboard connects and wait mode follows it                                  | App    | P3-01        | ✓ 2026-10-22                         |
+| The sampled piano plays (not the stand-in synth)                                       | App    | P3-01        | ✓ 2026-10-22, after a fix            |
+| AltStore, SideStore or Sideloadly install the release with a free Apple ID             | App    | P3-01        | open                                 |
+| v0.2.0: the chord drills (sheet and falling keys) and the 3, 2, 1 count-in             | App    | P3-09        | open                                 |
+| Starts with no network; the catalogue opens; the top bar clears the status bar         | App    | P3-01        | open                                 |
+| Play-along with a USB keyboard is judged on time; unplug and replug resumes            | App    | P3-01        | open                                 |
+| A Bluetooth MIDI keyboard pairs from Settings and plays                                | App    | P3-01, P6-12 | open                                 |
+| "Plays on: My keyboard": Listen and the Player on the keyboard's own sound, with pedal | App    | P6-12        | open                                 |
+| The microphone: permission text, set-up and detection in practice                      | Both   | P1-20        | open                                 |
+| Sound with the Ring/Silent switch on and off                                           | Both   | P3-01        | open                                 |
+| A library piece is still there after quitting; no "Add to Home Screen" hint in the app | Both   | P1-22        | open                                 |
+| Split View and Slide Over at ⅓ width, and rotation                                     | Both   | P1-27        | open                                 |
+| Chords with several fingers on the on-screen keys                                      | Both   | P7-11        | open                                 |
+| The screen stays awake while practising                                                | Both   | P5-02        | open                                 |
+| Frame time on an older iPad (falling notes, score, Player)                             | Both   | P5-10        | open                                 |
+| The richer piano and the Player's room; stand mode                                     | Both   | P6-15, P6-17 | open                                 |
+| The Player over USB audio, and whether the microphone hears it                         | Safari | P6-13        | open                                 |
+| Holding notes (hold longer / let go) on the on-screen keys                             | Both   | P4-09        | open                                 |
+| Score views, a MIDI piece's score and the learner's PDF, picking a PDF with its MIDI   | Both   | P5-13–P5-15  | open                                 |
+| Each keyboard size draws exactly its keys                                              | Both   | P5-16        | open                                 |
+| Release checklist on every row of the compatibility matrix (spec §5)                   | Both   | P3-06        | open                                 |
 
 ## Phases and gates
 
-v1.0 is planned for August 2027 at roughly 8–10 hours a week, with December 2026 kept light. Each
-phase ends at a gate. If a gate fails, re-plan the next phase before continuing.
+Each phase ends at a gate. If a gate fails, re-plan before continuing.
 
-| Phase                     | Window                          | Outcome                                                    | Gate at the end                                                                                      |
-| ------------------------- | ------------------------------- | ---------------------------------------------------------- | ---------------------------------------------------------------------------------------------------- |
-| 0 — Feasibility           | Oct 7 – Nov 18, 2026 (6 weeks)  | Microphone detector proven (or not) on iPad Safari         | **G0 Go/no-go:** accuracy and latency targets on the recorded test set                               |
-| 1 — Core practice loop    | Nov 19, 2026 – Mar 31, 2027     | Journeys A and B work end to end, offline                  | **G1 Alpha:** a beginner can import or pick a piece and practise it in wait mode on iPad and desktop |
-| 2 — Catalogue and breadth | Apr – Jun 2027                  | 150 verified pieces, looping, ABC/MuseScore import, backup | **G2 Public beta:** legal guardrails all met, device lab passes                                      |
-| 3 — v1.0                  | Jul – Aug 2027                  | iPad MIDI shell, 300 pieces, release hardening             | **G3 v1.0 release:** the definition of success in spec §1 holds                                      |
-| 4 — After v1.0            | Sep 2027 →                      | OMR, audio import, courses, community arrangements         | —                                                                                                    |
-| 7 — Chord drills          | Planned 2026-10-22; built 10-23 | Random chords to practise, on the sheet or as falling keys | The maintainer plays it and approves it (P7-13)                                                      |
+| Phase                     | Status (2026-10-23)                                                      | Gate at the end                                                                                      |
+| ------------------------- | ------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------- |
+| 0 — Feasibility           | Detector, harness and Detector Lab built; real recordings not made yet   | **G0 Go/no-go:** accuracy and latency targets on the recorded test set                               |
+| 1 — Core practice loop    | Built; the iPad checks are open                                          | **G1 Alpha:** a beginner can import or pick a piece and practise it in wait mode on iPad and desktop |
+| 2 — Catalogue and breadth | Built; 81 verified pieces of 150; the legal consultation is open         | **G2 Public beta:** legal guardrails all met, device lab passes                                      |
+| 3 — v1.0                  | The iPad app is released for self-signing (v0.1.0); App Store, sync open | **G3 v1.0 release:** the definition of success in spec §1 holds                                      |
+| 4 — After v1.0            | Several features built early; the rest is in the queue                   | —                                                                                                    |
+| 5 — Release polish        | Built, but for free play (P5-06) and collections (P5-08)                 | The release gate (P5-10)                                                                             |
+| 6 — The Player            | Built; the maintainer's checks are open                                  | The maintainer's checks (P6-13)                                                                      |
+| 7 — Chord drills          | Built 2026-10-23; scales are next                                        | The maintainer plays it and approves it (P7-13)                                                      |
 
 If **G0** fails, v1.0 becomes MIDI-first and the microphone ships marked as beta (spec §11).
 
@@ -74,7 +153,7 @@ If **G0** fails, v1.0 becomes MIDI-first and the microphone ships marked as beta
 
 ---
 
-## Phase 0 — Feasibility (Oct 7 – Nov 18, 2026)
+## Phase 0 — Feasibility
 
 Goal: answer "can the microphone reliably tell whether the expected notes were played, fast enough,
 on an iPad in Safari?" before any app polish.
@@ -112,7 +191,7 @@ on an iPad in Safari?" before any app polish.
 - End-to-end microphone feedback latency ≤ 100 ms on the older iPad.
 - Detector processing ≤ 2 ms per hop on the older iPad.
 
-## Phase 1 — Core practice loop (Nov 19, 2026 – Mar 31, 2027)
+## Phase 1 — Core practice loop
 
 Goal: Journeys A and B from spec §3 work end to end, offline, on iPad Safari and desktop Chrome.
 
@@ -185,7 +264,7 @@ Goal: Journeys A and B from spec §3 work end to end, offline, on iPad Safari an
 with no account; the app works offline after the first visit; Playwright suite green on all three
 engines.
 
-## Phase 2 — Catalogue and breadth (Apr – Jun 2027)
+## Phase 2 — Catalogue and breadth
 
 ### Catalogue (CAT)
 
@@ -197,7 +276,7 @@ engines.
 - [x] **P2-04** Automatic file validation: renders, plays, survives a `Song` round trip. Done: XML and musical sanity checks in the validator, Song round trip in the song-model tests, and a render check with Verovio in CI (`apps/web/test/catalogue-render.test.ts`: every catalogue score draws, every note has its glyph, every triplet group is drawn as one). It found triplets written without `<tuplet>` marks, which Verovio drew as plain sixteenths in Für Elise (complete) and the Menuett WoO 82; `arrange.py` now writes the marks.
 - [~] **P2-05** Difficulty scoring (PDMX complexity + own measures → 5 levels). Done: estimateDifficulty in song-model, shown on the import review screen, within ±1 of the catalogue levels. Left: combine with PDMX complexity in the pipeline.
 - [~] **P2-06** Human review workflow: catalogue PR template, `verified: true`, ~10 min per piece.
-- [~] **P2-07** Publish static `.mxl` + JSON index with stable URLs; **150 verified pieces**. Done: 31 CC0 arrangements and the PDMX/Wikidata/edition pipeline. Left: human review (all are `verified: false`) and growth to 150.
+- [~] **P2-07** Publish static `.mxl` + JSON index with stable URLs; **150 verified pieces**. Done: the PDMX/Wikidata/edition pipeline and 81 pieces, all verified after the music review (P4-13c). Left: growth to 150.
 
 ### Practice and import breadth (PRAC, SONG, APP)
 
@@ -227,7 +306,7 @@ engines.
 [docs/legal-guardrails.md](docs/legal-guardrails.md) checked; device lab passes on every row of the
 compatibility matrix (spec §5).
 
-## Phase 3 — v1.0 (Jul – Aug 2027)
+## Phase 3 — v1.0
 
 - [~] **P3-01** Capacitor iPad shell with a Swift CoreMIDI plugin (`NativeMidiInput`), in
   `apps/ios-shell`. Done: Capacitor 8 shell, Swift CoreMIDI plugin, NativeMidiInput; the app
@@ -241,6 +320,15 @@ compatibility matrix (spec §5).
   plugin tests pass in CI. Left: the rest of the first-build checklist in the app's README
   (Bluetooth, microphone, MIDI out on the keyboard's own sound, Split View), AltStore / SideStore /
   Sideloadly with a free Apple ID.
+- [~] **P3-09** (GOV, APP, iOS) The website and the iPad app together (maintainer, 2026-10-23: "the
+  iPad app needs to be brought up at the same time, even though user tests are not possible every
+  time"). Done: the plan's one queue and its rules ([How this plan works](#how-this-plan-works)),
+  the [iPad device checklist](#ipad-device-checklist), the `iPad app` workflow on every pull request
+  and on `main`, one version for the site and the app (0.2.0), the definition of done and the pull
+  request template. Left: the v0.2.0 tag and release.
+- [ ] **P3-10** (APP, iOS) The app on an iPad simulator in CI: a UI test target that starts the app
+      with no network and opens Home, a catalogue piece in practice and a chord drill in the WebView,
+      run by the `iPad app` workflow.
 - [ ] **P3-02** (human) Apple Developer Program, free App Store release.
 - [~] **P3-03** Encrypted sync: passkeys / email link, Argon2id-wrapped library key, AES-GCM blobs,
   EU object storage, 250 MB quota, one-step account deletion. (Open decision: v1.0 or right
@@ -415,7 +503,7 @@ images, sounds or fonts, and credit the inspiration in [CREDITS.md](CREDITS.md).
       run; tap a bar to go there, drag to loop bars, a handle on each end of the loop that also
       moves with the arrow keys). It uses the session's own loop and seek, so the loop controls,
       the canvas drag and the strip always agree. Hidden in short landscape windows.
-- [ ] **P5-08** (APP) Library preview before opening and collections. Not selected for this round.
+- [ ] **P5-08** (APP) Library preview before opening and collections.
 - [~] **P5-09** (APP) Smoothness pass, reviewed together in the maintainer's dark-mode Chrome: home to
   playing in two clicks, one transport bar, route and panel transitions, 44 px touch targets on
   coarse pointers, a manual light/dark switch, a refreshed logo, Detector Lab polish.
@@ -521,6 +609,11 @@ images, sounds or fonts, and credit the inspiration in [CREDITS.md](CREDITS.md).
   unedited maps are read again once), and `songToMusicXml` following them. Left: the maintainer's
   pair again for a real check of the whole path; octave signs (the writer has none) and clef
   changes inside a bar; scans.
+
+- [ ] **P5-19** (all) Loose ends (2026-10-23): the task register has about 40 "Left:" notes, some
+      on tasks marked done and some already done elsewhere. Check each against the code, strike what
+      is done, fix the small code items, move device checks to the
+      [iPad device checklist](#ipad-device-checklist) and give the rest a place in the queue.
 
 Left out on purpose: 128 General MIDI instruments (a piano trainer, and extra sample licences and
 size), Sightread's song library and assets, and any analytics.
@@ -650,7 +743,8 @@ without a word when no MIDI output is found.
   `flush`; the web side's `NativeMidiInput.output()` (clock mapping, one bridge call per tick,
   `flush` as `clear()`), the Player through it, Apple's Bluetooth MIDI pairing screen from Settings,
   and `keepAwake` while the Player plays. The plugin and its tests compile for iOS with Xcode 27.
-  Left: running the Swift tests (no simulator runtime here) and the device test (P3-01, P6-13).
+  The plugin's Swift tests run in CI on an iPad simulator (2026-10-22). Left: the device test
+  (the [iPad device checklist](#ipad-device-checklist)).
 - [ ] **P6-13** (human) The maintainer's checks: their keyboard in Chrome, Edge and Firefox on the Mac;
       the Player over USB audio on the iPad, and whether the microphone hears the keyboard's USB
       audio; the iPad app; design approval; the media keys and Now Playing showing the piece in
@@ -786,6 +880,13 @@ Record the outcome as an ADR in `docs/adr/` and tick it here.
 - [x] Engine exposes a plain C ABI instead of wasm-bindgen glue — ADR 0002.
 
 ## Changelog
+
+- **2026-10-23** — The plan is one queue ([Now, next, later](#now-next-later)) worked from the top,
+  and the website and the iPad app ship together: one version, the app built and tested in CI on
+  every change, every iPad check in one [checklist](#ipad-device-checklist) that never blocks the
+  next task. Why: new requests kept opening phases while older ones had open ends, and the app's
+  v0.1.0 fell behind the site. The phases stay as the task register; their date windows (an
+  estimate from 2026-10-07) are gone. New: P3-09, P3-10, P5-19.
 
 - **2026-10-23** — P7-00 to P7-12: chord drills. The Drills page has Sight-reading and Chords: random
   chords at eight levels or from your own set, on the sheet (names shown, hidden or name only) or as

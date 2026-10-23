@@ -10,6 +10,8 @@
 
 - [ ] Tests added or updated; `pnpm check` passes (and `cargo test` / catalogue checks if touched)
 - [ ] PLAN.md updated (task ticked or marked `[~]`)
+- [ ] The `iPad app` workflow is green; iPad checks this change needs are in PLAN.md's iPad device
+      checklist
 - [ ] New dependencies, if any, and their licences are listed above
 - [ ] Every commit is signed off (`git commit -s`)
 - [ ] **Legal guardrails:** this change adds no sharing or publishing of library items, no URL

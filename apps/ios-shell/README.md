@@ -6,8 +6,8 @@ browser has Web MIDI (spec §5), so this app is the only way to practise with a 
 iPad. Everything else (microphone, on-screen keys, library, catalogue) is the web app as it is.
 PLAN.md task **P3-01**.
 
-> **Status: builds; not yet run on a device.** Written on Linux; first built on macOS with Xcode 27
-> on 2026-10-09 (`xcodebuild -scheme App -destination 'generic/platform=iOS'`, no errors). Since
+> **Status: released for self-signing (v0.1.0, 2026-10-22).** Written on Linux; first built on macOS
+> with Xcode 27 on 2026-10-09 (`xcodebuild -scheme App -destination 'generic/platform=iOS'`, no errors). Since
 > 2026-10-22 it builds as an unsigned IPA that anyone can sign and install themselves
 > ([Install it yourself](#install-it-yourself), ADR 0023). First installed on an iPad Pro (M1,
 > iPadOS 27) with `pnpm device` on 2026-10-22 and played with a USB digital piano; the plugin tests
@@ -114,14 +114,19 @@ TEAM=ABCDE12345 pnpm --filter @opentiles/ios-shell device  # sign with your team
 -allowProvisioningDeviceRegistration` for team `TEAM`, and installs with `xcrun devicectl`. The
   bundle identifier becomes `org.opentiles.app.<TEAM>` (`BUNDLE_SUFFIX` changes the part after
   `org.opentiles.app`) through `OPENTILES_BUNDLE_SUFFIX`, which only the App target reads.
-- **Versions:** `CFBundleShortVersionString` is this package's `version`, `CFBundleVersion` the
+- **Versions:** `CFBundleShortVersionString` is this package's `version` (`apps/web` has the same
+  one, and both move together at each release, PLAN.md P3-09), `CFBundleVersion` the
   commit count (`BUILD_NUMBER` overrides it). `SKIP_WEB=1` reuses the web build already synced.
-- **CI** (`.github/workflows/ios.yml`, macOS): pull requests that touch the app build the IPA and run
-  the plugin tests on an iPad simulator. A tag `v<version>` also puts `OpenTiles.ipa` and
+- **CI** (`.github/workflows/ios.yml`, macOS): every pull request and every push to `main` builds
+  the IPA and runs the plugin tests on an iPad simulator, because every change to the web app is a
+  change to the app. A tag `v<version>` also puts `OpenTiles.ipa` and
   `altstore.json` on a **draft** release; read it, then publish it by hand. AltStore and SideStore
   read the source at `…/releases/latest/download/altstore.json`.
 
 ### First-build checklist
+
+How to run each check. Which ones are done is tracked in one place, the
+[iPad device checklist](../../PLAN.md#ipad-device-checklist) in PLAN.md.
 
 1. ✓ The app and the plugin compile (2026-10-09), with MIDI out (2026-10-17). ✓ `pnpm ipa` makes
    an unsigned IPA with no entitlements, and the plugin tests pass in CI on an iPad simulator
