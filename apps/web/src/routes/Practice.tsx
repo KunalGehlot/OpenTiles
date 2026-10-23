@@ -478,6 +478,7 @@ function PracticeView({
         : 'all';
     session.hideAhead =
       chords !== null && chords.prefs.show === 'sheet' && chords.prefs.names === 'name-only';
+    session.judgeHolds = chords === null;
     session.onFinish = (summary, seconds) => {
       if (!drill) return void recordRun(progressKey, summary.accuracy, seconds);
       void recordPracticeTime(seconds);

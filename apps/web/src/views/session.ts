@@ -247,6 +247,11 @@ export class PracticeSession {
   readonly chords = new ChordTally();
   /** Which keys to press light up (P7-06): all of them, a chord drill's root only, or none. */
   keyHint: 'all' | 'root' | 'none' = 'all';
+  /**
+   * Judge how long notes are held (P4-09). Off in chord drills: a chord is a whole note to find,
+   * not to hold for four beats, and "hold longer" on every chord was noise.
+   */
+  judgeHolds = true;
   /** Notes not played yet stay hidden on the score ("Name only", P7-05). */
   hideAhead = false;
   /** The wait-mode step the learner asked to see ("Show me"); -1 for none. */
@@ -962,7 +967,7 @@ export class PracticeSession {
 
   private startHold(n: SongNote, e: NoteEvent): void {
     // The microphone hears a note start but not the key coming up.
-    if (e.source === 'microphone') return;
+    if (e.source === 'microphone' || !this.judgeHolds) return;
     const start = e.time - (this.latency[e.source] ?? 0);
     this.holds.set(n.pitch, {
       pitch: n.pitch,

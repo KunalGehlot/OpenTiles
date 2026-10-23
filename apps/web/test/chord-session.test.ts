@@ -60,14 +60,17 @@ describe('a chord drill in wait mode', () => {
     expect(session.status().chords).toMatchObject({ judged: 0 });
   });
 
-  it('has judged every chord when the run ends', () => {
+  it('has judged every chord when the run ends, and judges no holds', () => {
     const { session, press, pitches } = setup();
+    session.judgeHolds = false;
     let judged = -1;
     session.onFinish = () => {
       judged = session.chords.attempts.length;
     };
     for (let i = 0; i < 4; i++) for (const p of pitches(i)) press(p);
     expect(judged).toBe(4);
+    expect(session.holds.size).toBe(0);
+    expect(session.status().holds).toEqual({ good: 0, short: 0, long: 0 });
   });
 
   it('shows the chord asked for and counts it as a miss', () => {
