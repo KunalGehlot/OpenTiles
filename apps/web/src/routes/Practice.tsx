@@ -17,17 +17,28 @@ import {
 import {
   CHORD_SPREAD,
   customKeyboard,
+  evennessWord,
   hardestChords,
+  hardestScales,
   isChordDrillId,
+  isScaleDrillId,
   KEYBOARD_PRESETS,
   keyCount,
   mainCause,
+  mainScaleCause,
   mostNotesAtOnce,
   pitchClassOf,
+  recentScaleShares,
   recentShares,
   STRICT_CHORD_SPREAD,
 } from '@opentiles/practice';
-import type { ChordRoundSummary, ChordStats, HandFilter } from '@opentiles/practice';
+import type {
+  ChordRoundSummary,
+  ChordStats,
+  HandFilter,
+  ScaleRoundSummary,
+  ScaleStats,
+} from '@opentiles/practice';
 import type { ScoreHints, Song } from '@opentiles/song-model';
 import { audioContext, audioStarted, now, unlockAudio } from '../audio/context';
 import { MidiOutInstrument, playbackInstrument, SentNotes } from '../audio/midi-out';
@@ -72,6 +83,22 @@ import {
   weakFocus,
 } from '../practice/chord-drill';
 import type { ChordDrillPrefs, LoadedChordDrill } from '../practice/chord-drill';
+import {
+  afterScaleRound,
+  evennessText,
+  loadScaleDrill,
+  loadScaleDrillPrefs,
+  loadScaleStats,
+  recordScaleRound,
+  saveScaleDrillPrefs,
+  scaleCauseName,
+  scaleDrillRoute,
+  scaleHintFor,
+  scaleKindLabel,
+  stepTonics,
+  weakScaleFocus,
+} from '../practice/scale-drill';
+import type { LoadedScaleDrill, ScaleDrillPrefs } from '../practice/scale-drill';
 import type { Route } from '../lib/router';
 import { LiveStatsStrip } from '../practice/LiveStatsStrip';
 import { OverviewStrip } from '../practice/OverviewStrip';
@@ -152,8 +179,8 @@ interface Loaded {
 }
 
 /**
- * A drill (P5-05, P7-04): what the screen gives away, and the choices for the next one. A chord
- * drill also carries its chords and names.
+ * A drill (P5-05, P7-04, P7-20): what the screen gives away, and the choices for the next one. A
+ * chord or scale drill also carries its chords or scales and their names.
  */
 type DrillInfo =
   | { kind: 'sight'; guide: 'keys' | 'none'; prefs: DrillPrefs }
@@ -162,11 +189,25 @@ type DrillInfo =
       guide: 'full' | 'keys' | 'none';
       prefs: ChordDrillPrefs;
       drill: LoadedChordDrill;
+    }
+  | {
+      kind: 'scales';
+      guide: 'full' | 'keys' | 'none';
+      prefs: ScaleDrillPrefs;
+      drill: LoadedScaleDrill;
     };
 
-/** The next drill with the same choices. */
-const nextDrill = (d: DrillInfo, chordPrefs?: ChordDrillPrefs, focus: string[] = []): Route =>
-  d.kind === 'chords' ? chordDrillRoute(chordPrefs ?? d.prefs, focus) : drillRoute(d.prefs);
+/** The next drill with the same choices, or with those a finished round changed (the tempo ladder). */
+const nextDrill = (
+  d: DrillInfo,
+  next: { chords?: ChordDrillPrefs | null; scales?: ScaleDrillPrefs | null } = {},
+  focus: string[] = [],
+): Route =>
+  d.kind === 'chords'
+    ? chordDrillRoute(next.chords ?? d.prefs, focus)
+    : d.kind === 'scales'
+      ? scaleDrillRoute(next.scales ?? d.prefs, focus)
+      : drillRoute(d.prefs);
 
 const NO_BARS: readonly number[] = [];
 
@@ -210,6 +251,24 @@ export function Practice({
     setLoaded(null);
     setError(null);
     const load = async (): Promise<Loaded> => {
+      if (source === 'drill' && isScaleDrillId(id)) {
+        const scalePrefs = await loadScaleDrillPrefs();
+        const d = loadScaleDrill(id, scalePrefs.fingers);
+        return {
+          source,
+          song: d.song,
+          title: d.title,
+          subtitle: t('Scales'),
+          progressKey: `drill:${id}`,
+          notation: { kind: 'musicxml', text: d.musicxml, transpose: 0 },
+          drill: {
+            kind: 'scales',
+            guide: scalePrefs.show === 'falling' ? 'full' : scalePrefs.showKeys ? 'keys' : 'none',
+            prefs: scalePrefs,
+            drill: d,
+          },
+        };
+      }
       if (source === 'drill' && isChordDrillId(id)) {
         const chordPrefs = await loadChordDrillPrefs();
         const d = loadChordDrill(id, chordPrefs.names);
@@ -329,16 +388,18 @@ function PracticeView({
   // A drill starts in wait mode with both hands, shows the score and nothing that gives the notes
   // away (no falling notes, no overview), and keeps the learner's choices for pieces as they are.
   // A chord drill at a tempo plays along at the tempo written into it (P7-07).
+  // So does a scale drill (P7-20).
   const chordDrill = drill?.kind === 'chords' ? drill : null;
+  const scaleDrill = drill?.kind === 'scales' ? drill : null;
   const prefs = useMemo<PracticePrefs>(() => {
     if (!drill) return savedPrefs;
-    const atTempo = drill.kind === 'chords' && drill.prefs.pace === 'tempo';
+    const atTempo = drill.kind !== 'sight' && drill.prefs.pace === 'tempo';
     return {
       ...savedPrefs,
       mode: atTempo ? 'play-along' : 'wait',
       hands: 'both',
       overview: false,
-      ...(drill.kind === 'chords' ? { tempo: 1, accompany: false } : {}),
+      ...(drill.kind !== 'sight' ? { tempo: 1, accompany: false } : {}),
     };
   }, [drill, savedPrefs]);
   // A chord drill's choices after this round (the tempo ladder may move), its progress before the
@@ -351,6 +412,26 @@ function PracticeView({
     tempo: { from: number; to: number } | null;
   } | null>(null);
   const [chordFocus, setChordFocus] = useState<string[]>([]);
+  // The same for a scale drill (P7-21).
+  const [scalePrefs, setScalePrefs] = useState<ScaleDrillPrefs | null>(scaleDrill?.prefs ?? null);
+  const [scaleRound, setScaleRound] = useState<{
+    summary: ScaleRoundSummary;
+    before: ScaleStats;
+    tempo: { from: number; to: number } | null;
+  } | null>(null);
+  const [scaleFocus, setScaleFocus] = useState<string[]>([]);
+  useEffect(() => {
+    if (!scaleDrill?.prefs.weak) return;
+    let cancelled = false;
+    void loadScaleStats().then(
+      (stats) => !cancelled && setScaleFocus(weakScaleFocus(stats, scaleDrill.prefs)),
+    );
+    return () => {
+      cancelled = true;
+    };
+  }, [scaleDrill]);
+  const nextPrefs = { chords: chordPrefs, scales: scalePrefs };
+  const nextFocus = drill?.kind === 'scales' ? scaleFocus : chordFocus;
   useEffect(() => {
     if (!chordDrill?.prefs.weak) return;
     let cancelled = false;
@@ -371,7 +452,12 @@ function PracticeView({
   // The piece fitted to the learner's keyboard (P4-07), with the fingers they chose (P4-08).
   // Keyed on plain values: other settings changing must not restart the run.
   const { size, low, keys } = settings.keyboard;
-  const fingering = drill ? 'off' : settings.fingering;
+  // A scale drill writes its fingers in (P7-16): they are the point of it, unless hidden.
+  const fingering = drill
+    ? drill.kind === 'scales' && drill.prefs.fingers
+      ? 'written'
+      : 'off'
+    : settings.fingering;
   const range = useMemo(() => keyboardRange({ size, low, keys }), [size, low, keys]);
   // Semitones the learner moved the piece by (P5-04), remembered per piece. The score is drawn
   // moved too, and suggested fingers are worked out again for the new key. It comes with the piece,
@@ -467,9 +553,14 @@ function PracticeView({
   const pointers = useRef(new Map<number, number>());
   const [loopDrag] = useState(() => new LoopDrag(session, () => rendererRef.current));
   const [chosenView, setView] = usePracticeView(notation, sheet !== undefined);
-  // The page view shows the whole drill at once, so the learner can read ahead; a chord drill can
-  // show falling keys instead (P7-06).
-  const view = chordDrill?.prefs.show === 'falling' ? 'falling' : drill ? 'page' : chosenView;
+  // The page view shows the whole drill at once, so the learner can read ahead; a chord or scale
+  // drill can show falling keys instead (P7-06).
+  const view =
+    chordDrill?.prefs.show === 'falling' || scaleDrill?.prefs.show === 'falling'
+      ? 'falling'
+      : drill
+        ? 'page'
+        : chosenView;
   useScreenWakeLock(session, status.playing);
   // After a run the position glides back to the start; under Reduce motion it jumps there.
   const { reducedMotion } = useEffectiveAccessibility();
@@ -494,16 +585,43 @@ function PracticeView({
           spread: chords.prefs.strict ? STRICT_CHORD_SPREAD : CHORD_SPREAD,
         }
       : null;
+    // A scale drill judges whole scales (P7-18) and, from memory, keeps the notes to come hidden.
+    const scales = drill?.kind === 'scales' ? drill : null;
+    session.scaleDrill = scales
+      ? { steps: scales.drill.steps, tonics: stepTonics(scales.drill), spread: CHORD_SPREAD }
+      : null;
     session.keyHint =
       chords && chords.prefs.show === 'falling'
         ? hintFor(chords.prefs, chords.drill.options.level)
-        : 'all';
+        : scales && scales.prefs.show === 'falling'
+          ? scaleHintFor(scales.prefs, scales.drill.options.level)
+          : 'all';
     session.hideAhead =
-      chords !== null && chords.prefs.show === 'sheet' && chords.prefs.names === 'name-only';
-    session.judgeHolds = chords === null;
+      (chords !== null && chords.prefs.show === 'sheet' && chords.prefs.names === 'name-only') ||
+      scales?.prefs.show === 'memory';
+    // Notes in drills are to find, not to hold: "hold longer" on each would be noise.
+    session.judgeHolds = chords === null && scales === null;
     session.onFinish = (summary, seconds) => {
       if (!drill) return void recordRun(progressKey, summary.accuracy, seconds);
       void recordPracticeTime(seconds);
+      if (scales) {
+        const round = session.scales.summary();
+        void recordScaleRound(round).then(({ before, after }) => {
+          const next = afterScaleRound(scales.prefs, round.share);
+          if (next !== scales.prefs) void saveScaleDrillPrefs(next);
+          setScalePrefs(next);
+          setScaleRound({
+            summary: round,
+            before,
+            tempo:
+              next.tempo !== scales.prefs.tempo
+                ? { from: scales.prefs.tempo, to: next.tempo }
+                : null,
+          });
+          if (next.weak) setScaleFocus(weakScaleFocus(after, next));
+        });
+        return;
+      }
       if (!chords) return;
       const round = session.chords.summary();
       void recordChordRound(round, session.chords.attempts).then(({ before, after }) => {
@@ -531,7 +649,7 @@ function PracticeView({
     );
     // A run the learner plays counts in and starts by itself (P6-20); a drill waits for its first
     // note. The count-in's opening waits while it could not be heard.
-    session.countIn = !drill || (drill.kind === 'chords' && drill.prefs.pace === 'tempo');
+    session.countIn = !drill || (drill.kind !== 'sight' && drill.prefs.pace === 'tempo');
     session.soundReady = () => audioStarted() || keyboardOut.current !== null || soundTried.current;
     // Start from the learner's last choices.
     session.setMode(prefs.mode);
@@ -554,17 +672,22 @@ function PracticeView({
   const finished = status.finished;
   useEffect(() => {
     if (!finished || !drill?.prefs.endless) return;
-    // A chord round waits for its result to be kept, so the next round has the new tempo.
+    // A chord or scale round waits for its result to be kept, so the next round has the new tempo.
     if (drill.kind === 'chords' && !chordRound) return;
+    if (drill.kind === 'scales' && !scaleRound) return;
+    const next = { chords: chordPrefs, scales: scalePrefs };
+    const focus = drill.kind === 'scales' ? scaleFocus : chordFocus;
     const timer = window.setTimeout(
-      () => navigate(nextDrill(drill, chordPrefs ?? undefined, chordFocus)),
+      () => navigate(nextDrill(drill, next, focus)),
       ENDLESS_PAUSE_MS,
     );
     return () => window.clearTimeout(timer);
-  }, [finished, drill, chordRound, chordPrefs, chordFocus]);
+  }, [finished, drill, chordRound, chordPrefs, chordFocus, scaleRound, scalePrefs, scaleFocus]);
   // A new run of the same drill starts a new round.
   useEffect(() => {
-    if (!finished) setChordRound(null);
+    if (finished) return;
+    setChordRound(null);
+    setScaleRound(null);
   }, [finished]);
 
   useEffect(() => {
@@ -627,16 +750,23 @@ function PracticeView({
 
   // Canvas: resize and draw every frame.
   const initialRange = useRef(keysRange);
-  // A chord drill's names on the falling bars (P7-06), unless the learner hides them.
+  // A chord drill's names on the falling bars (P7-06), unless the learner hides them; a scale
+  // drill's over each scale's first note.
   const chordLabels = useRef(
     chordDrill && chordDrill.prefs.show === 'falling' && chordDrill.prefs.names !== 'hidden'
       ? chordDrill.drill.chords.map((c, i) => ({
           beat: c.beat,
           text: chordDrill.drill.names[i] ?? '',
         }))
-      : [],
+      : scaleDrill && scaleDrill.prefs.show === 'falling'
+        ? scaleDrill.drill.scales.map((s, i) => ({
+            beat: s.beat,
+            text: scaleDrill.drill.names[i] ?? '',
+          }))
+        : [],
   );
-  // A chord drill's notes are named as its chords spell them (P7-06).
+  // A chord drill's notes are named as its chords spell them (P7-06), a scale drill's as its key
+  // spells them.
   const spelledNames = useRef(
     chordDrill
       ? new Map(
@@ -646,7 +776,15 @@ function PracticeView({
             ),
           ),
         )
-      : null,
+      : scaleDrill
+        ? new Map(
+            scaleDrill.drill.scales.flatMap((s) =>
+              [...s.lower, ...s.upper].map(
+                (n) => [spellKey(n.beat, n.midi), spelledName(n.letter, n.alter)] as const,
+              ),
+            ),
+          )
+        : null,
   );
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -1021,13 +1159,33 @@ function PracticeView({
     source === 'library'
       ? { name: 'library' }
       : drill
-        ? { name: 'drills', page: drill.kind === 'chords' ? 'chords' : 'sight-reading' }
+        ? {
+            name: 'drills',
+            page:
+              drill.kind === 'chords'
+                ? 'chords'
+                : drill.kind === 'scales'
+                  ? 'scales'
+                  : 'sight-reading',
+          }
         : { name: 'home' };
   // Four or more notes at once on the microphone are best effort until P7-10 has numbers (Q6).
   const manyNotes = chordDrill !== null && mostNotesAtOnce(chordDrill.drill.chords) > 3;
   const nameOnly = chordDrill?.prefs.show === 'sheet' && chordDrill.prefs.names === 'name-only';
   const hardest = chordRound ? hardestChords(chordRound.summary) : [];
-  const lastShares = chordRound ? recentShares(chordRound.before) : [];
+  const lastShares = chordRound
+    ? recentShares(chordRound.before)
+    : scaleRound
+      ? recentScaleShares(scaleRound.before)
+      : [];
+  // Both hands on the microphone are best effort until P7-22 has numbers (ADR 0024).
+  const handsOnMic =
+    scaleDrill !== null &&
+    (scaleDrill.prefs.hands === 'together' || scaleDrill.prefs.hands === 'contrary');
+  const fromMemory = scaleDrill?.prefs.show === 'memory';
+  const hardestScaleKinds = scaleRound ? hardestScales(scaleRound.summary) : [];
+  const roundTempo = chordRound?.tempo ?? scaleRound?.tempo ?? null;
+  const firstTry = status.chords ?? status.scales;
   const lastShare =
     lastShares.length > 0 ? lastShares.reduce((a, b) => a + b, 0) / lastShares.length : null;
 
@@ -1373,11 +1531,11 @@ function PracticeView({
                   })}
             </span>
           ) : null}
-          {status.chords && status.chords.judged > 0 && (
+          {firstTry && firstTry.judged > 0 && (
             <span className="stat" data-testid="chord-first-try">
               {t('{n} of {count} at the first try', {
-                n: status.chords.firstTry,
-                count: status.chords.judged,
+                n: firstTry.firstTry,
+                count: firstTry.judged,
               })}
             </span>
           )}
@@ -1394,9 +1552,23 @@ function PracticeView({
             {t('Show me')}
           </button>
         )}
+        {fromMemory && mode === 'wait' && !status.finished && (
+          <button
+            onClick={() => session.revealScale()}
+            disabled={status.revealed}
+            title={t('Shows the scale on the sheet; it counts as a miss.')}
+          >
+            {t('Show me')}
+          </button>
+        )}
         {mic && manyNotes && (
           <span className="hint" role="status" data-testid="chord-mic-hint">
             {t('Four-note chords work best with a MIDI keyboard or the on-screen keys.')}
+          </span>
+        )}
+        {mic && handsOnMic && (
+          <span className="hint" role="status" data-testid="scale-mic-hint">
+            {t('Hands together work best with a MIDI keyboard or the on-screen keys.')}
           </span>
         )}
         {inputError && <span className="error">{inputError}</span>}
@@ -1501,25 +1673,21 @@ function PracticeView({
           <div className="overlay">
             <div className="panel stack summary">
               <h2>{t('Well played!')}</h2>
-              {chordDrill && status.chords ? (
+              {(chordDrill || scaleDrill) && firstTry ? (
                 <div
                   className="ring"
                   role="img"
                   aria-label={t('{percent} % at the first try', {
-                    percent: Math.round(
-                      (status.chords.firstTry / Math.max(1, status.chords.judged)) * 100,
-                    ),
+                    percent: Math.round((firstTry.firstTry / Math.max(1, firstTry.judged)) * 100),
                   })}
                   style={
                     {
-                      '--pct': Math.round(
-                        (status.chords.firstTry / Math.max(1, status.chords.judged)) * 100,
-                      ),
+                      '--pct': Math.round((firstTry.firstTry / Math.max(1, firstTry.judged)) * 100),
                     } as React.CSSProperties
                   }
                 >
                   <span className="ring__value">
-                    {Math.round((status.chords.firstTry / Math.max(1, status.chords.judged)) * 100)}
+                    {Math.round((firstTry.firstTry / Math.max(1, firstTry.judged)) * 100)}
                     <small> %</small>
                   </span>
                   <span className="ring__label">{t('first try')}</span>
@@ -1583,14 +1751,78 @@ function PracticeView({
                       })}
                     </ul>
                   )}
-                  {chordRound?.tempo && (
+                  {roundTempo && (
                     <p className="muted" role="status">
-                      {chordRound.tempo.to > chordRound.tempo.from
+                      {roundTempo.to > roundTempo.from
                         ? t('Next round: {bpm} beats a minute, a step faster.', {
-                            bpm: chordRound.tempo.to,
+                            bpm: roundTempo.to,
                           })
                         : t('Next round: {bpm} beats a minute, a step slower.', {
-                            bpm: chordRound.tempo.to,
+                            bpm: roundTempo.to,
+                          })}
+                    </p>
+                  )}
+                </div>
+              )}
+              {scaleDrill && status.scales && (
+                <div className="chord-result" data-testid="scale-result">
+                  <p className="drill-speed">
+                    <strong>
+                      {mode === 'wait'
+                        ? t('{n} notes a minute', { n: status.scales.perMinute })
+                        : t('{n} of {count} scales clean and on time', {
+                            n: status.scales.firstTry,
+                            count: status.scales.judged,
+                          })}
+                    </strong>
+                    {mode === 'wait' && (
+                      <>
+                        {' · '}
+                        {t('{n} of {count} scales at the first try', {
+                          n: status.scales.firstTry,
+                          count: status.scales.judged,
+                        })}
+                      </>
+                    )}
+                  </p>
+                  {scaleRound && scaleRound.summary.evenness !== null && (
+                    <p data-testid="scale-evenness">
+                      {evennessText(
+                        evennessWord(scaleRound.summary.evenness),
+                        scaleRound.summary.unevenAt,
+                      )}
+                    </p>
+                  )}
+                  {lastShare !== null && (
+                    <p className="muted">
+                      {t('Your last rounds: {percent} % at the first try', {
+                        percent: Math.round(lastShare * 100),
+                      })}
+                    </p>
+                  )}
+                  {hardestScaleKinds.length > 0 && (
+                    <ul className="chord-hardest">
+                      {hardestScaleKinds.map((k) => {
+                        const cause = mainScaleCause(k);
+                        const times = cause ? (k.causes[cause] ?? 0) : 0;
+                        return (
+                          <li key={k.kind}>
+                            <strong>{scaleKindLabel(k.kind)}</strong>
+                            {cause &&
+                              ` ${t('{cause}, {n}×', { cause: scaleCauseName(cause), n: times })}`}
+                          </li>
+                        );
+                      })}
+                    </ul>
+                  )}
+                  {roundTempo && (
+                    <p className="muted" role="status">
+                      {roundTempo.to > roundTempo.from
+                        ? t('Next round: {bpm} beats a minute, a step faster.', {
+                            bpm: roundTempo.to,
+                          })
+                        : t('Next round: {bpm} beats a minute, a step slower.', {
+                            bpm: roundTempo.to,
                           })}
                     </p>
                   )}
@@ -1637,7 +1869,7 @@ function PracticeView({
                   {summary.extra > 0 && <>, {t('{n} extra', { n: summary.extra })}</>}
                 </p>
               )}
-              {summary.hardestMeasures.length > 0 && !chordDrill && (
+              {summary.hardestMeasures.length > 0 && !chordDrill && !scaleDrill && (
                 <p className="muted">
                   {t('Hardest bars: {bars}', {
                     bars: summary.hardestMeasures
@@ -1661,15 +1893,19 @@ function PracticeView({
                   <>
                     <a
                       className="button primary"
-                      href={href(nextDrill(drill, chordPrefs ?? undefined, chordFocus))}
+                      href={href(nextDrill(drill, nextPrefs, nextFocus))}
                     >
-                      <Play /> {drill.kind === 'chords' ? t('Next round') : t('Next drill')}
+                      <Play /> {drill.kind === 'sight' ? t('Next drill') : t('Next round')}
                     </a>
                     <button onClick={() => session.rebuild()}>
                       <RotateCcw /> {t('Play again')}
                     </button>
                     <a className="button" href={href(backRoute)}>
-                      {drill.kind === 'chords' ? t('Change the chords') : t('Change the drill')}
+                      {drill.kind === 'chords'
+                        ? t('Change the chords')
+                        : drill.kind === 'scales'
+                          ? t('Change the scales')
+                          : t('Change the drill')}
                     </a>
                   </>
                 ) : (
@@ -1685,7 +1921,7 @@ function PracticeView({
               </div>
               {drill?.prefs.endless && (
                 <p className="muted" role="status">
-                  {drill.kind === 'chords'
+                  {drill.kind !== 'sight'
                     ? t('The next round starts in a moment.')
                     : t('The next drill starts in a moment.')}
                 </p>

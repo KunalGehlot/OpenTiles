@@ -18,6 +18,7 @@ import {
   PlaybackCursor,
   polished,
   pulseAt,
+  ScaleTally,
   summarise,
   Timeline,
   WaitMode,
@@ -35,6 +36,7 @@ import type {
   PlayedNote,
   RenderNote,
   RunSummary,
+  ScaleStep,
   Step,
   TimedNote,
   TimedNoteWithLength,
@@ -175,8 +177,19 @@ export interface SessionStatus {
   tapToStart: boolean;
   /** A chord drill's whole chords so far (P7-03): judged, right at the first try, a minute. */
   chords: { judged: number; firstTry: number; perMinute: number } | null;
-  /** The learner asked to see the chord to play now ("Show me", P7-05). */
+  /** A scale drill's whole scales so far (P7-18): judged, right at the first try, notes a minute. */
+  scales: { judged: number; firstTry: number; perMinute: number } | null;
+  /** The learner asked to see the chord or scale to play now ("Show me", P7-05). */
   revealed: boolean;
+}
+
+/** What a scale drill tells the session about each step (P7-18, ADR 0024). */
+export interface ScaleDrillSteps {
+  steps: ScaleStep[];
+  /** The tonic's pitch class per step, for the tonic-only hint. */
+  tonics: number[];
+  /** Seconds two hands may be apart at a tempo and still count as together. */
+  spread: number;
 }
 
 /** What a chord drill tells the session about each step (P7-03, ADR 0022). */
@@ -245,7 +258,10 @@ export class PracticeSession {
    */
   chordDrill: ChordDrillSteps | null = null;
   readonly chords = new ChordTally();
-  /** Which keys to press light up (P7-06): all of them, a chord drill's root only, or none. */
+  private scaleDrillValue: ScaleDrillSteps | null = null;
+  /** A scale drill's scales, each judged as a run (P7-18). */
+  readonly scales = new ScaleTally();
+  /** Which keys to press light up (P7-06): all of them, the root or tonic only, or none. */
   keyHint: 'all' | 'root' | 'none' = 'all';
   /**
    * Judge how long notes are held (P4-09). Off in chord drills: a chord is a whole note to find,
@@ -254,8 +270,9 @@ export class PracticeSession {
   judgeHolds = true;
   /** Notes not played yet stay hidden on the score ("Name only", P7-05). */
   hideAhead = false;
-  /** The wait-mode step the learner asked to see ("Show me"); -1 for none. */
+  /** The wait-mode steps the learner asked to see ("Show me"), first to last; -1 for none. */
   revealed = -1;
+  revealedTo = -1;
   private chordResults = new Map<number, NoteResult[]>();
   private chordWrongs = new Map<number, number[]>();
   private chordStepOf: Map<string, number> | null = null;
@@ -502,7 +519,12 @@ export class PracticeSession {
       countdown: this.countdownNumber(),
       tapToStart: this.leadPending,
       chords: this.chordDrill ? this.chordStatus() : null,
-      revealed: this.mode === 'wait' && this.revealed >= 0 && this.revealed === this.wait.index,
+      scales: this.scaleDrill ? this.scaleStatus() : null,
+      revealed:
+        this.mode === 'wait' &&
+        this.revealed >= 0 &&
+        this.wait.index >= this.revealed &&
+        this.wait.index <= this.revealedTo,
     };
   }
 
@@ -511,16 +533,33 @@ export class PracticeSession {
     return { judged: s.chords, firstTry: s.firstTry, perMinute: s.perMinute };
   }
 
-  /** Clears the chord judging for a new run. */
+  private scaleStatus(): SessionStatus['scales'] {
+    const s = this.scales.summary();
+    return { judged: s.scales, firstTry: s.firstTry, perMinute: s.notesPerMinute };
+  }
+
+  /** A scale drill (P7-18): each run of steps is also judged as a whole scale. Null otherwise. */
+  get scaleDrill(): ScaleDrillSteps | null {
+    return this.scaleDrillValue;
+  }
+
+  set scaleDrill(info: ScaleDrillSteps | null) {
+    this.scaleDrillValue = info;
+    this.scales.setSteps(info?.steps ?? []);
+  }
+
+  /** Clears the chord and scale judging for a new run. */
   private resetChords(): void {
     this.chords.reset();
+    this.scales.reset();
     this.chordResults.clear();
     this.chordWrongs.clear();
     this.chordStepOf = null;
     this.revealed = -1;
+    this.revealedTo = -1;
   }
 
-  /** The step a note belongs to, by its id (a chord drill has one step a bar). */
+  /** The step a note belongs to, by its id. */
   private chordStepIndex(id: string): number | undefined {
     this.chordStepOf ??= new Map(
       this.steps.flatMap((s, i) => s.notes.map((n) => [n.id, i] as const)),
@@ -544,18 +583,43 @@ export class PracticeSession {
     if (!this.chords.active) this.startChord(this.wait.index, step, this.time());
     this.chords.reveal();
     this.revealed = this.wait.index;
+    this.revealedTo = this.wait.index;
     this.emitStatus();
   }
 
-  /** A play-along result for a chord drill's note: the chord is judged once all its notes are. */
+  /**
+   * "Show me" in a scale drill (P7-20): the rest of the scale to play now is shown on the score and
+   * the scale counts as a miss. Wait mode only.
+   */
+  revealScale(): void {
+    const info = this.scaleDrill;
+    const index = this.wait.index;
+    const scale = info?.steps[index]?.scale;
+    if (!info || this.mode !== 'wait' || scale === undefined) return;
+    this.scales.reveal(index);
+    let last = index;
+    while (info.steps[last + 1]?.scale === scale) last += 1;
+    this.revealed = index;
+    this.revealedTo = last;
+    this.emitStatus();
+  }
+
+  /**
+   * A play-along result for a chord or scale drill's note: the chord, or the scale's step, is judged
+   * once all its notes are.
+   */
   private chordNote(r: NoteResult): void {
     const info = this.chordDrill;
-    const i = info ? this.chordStepIndex(r.note.id) : undefined;
-    if (!info || i === undefined) return;
+    const scales = this.scaleDrill;
+    const i = info || scales ? this.chordStepIndex(r.note.id) : undefined;
+    if (i === undefined) return;
     const list = this.chordResults.get(i) ?? [];
     list.push(r);
     this.chordResults.set(i, list);
-    if (list.length === this.steps[i]?.notes.length) {
+    if (list.length !== this.steps[i]?.notes.length) return;
+    if (scales) {
+      this.scales.judged(i, list, this.chordWrongs.get(i) ?? [], scales.spread);
+    } else if (info) {
       this.chords.judged(
         i,
         info.kinds[i] ?? '',
@@ -567,10 +631,10 @@ export class PracticeSession {
     }
   }
 
-  /** A key outside every chord at a tempo: it counts against the chord nearest in time. */
+  /** A key outside every chord (or scale note) at a tempo: it counts against the nearest in time. */
   private chordExtra(pitch: number, t: number): void {
     const tl = this.timeline;
-    if (!this.chordDrill || !tl) return;
+    if ((!this.chordDrill && !this.scaleDrill) || !tl) return;
     let best = -1;
     let distance = Infinity;
     for (const [i, s] of this.steps.entries()) {
@@ -592,7 +656,7 @@ export class PracticeSession {
   litNotes(): SongNote[] {
     if (this.guide === 'none' || this.keyHint === 'none') return [];
     const notes = this.expectedNotes();
-    const roots = this.chordDrill?.roots;
+    const roots = this.chordDrill?.roots ?? this.scaleDrill?.tonics;
     if (this.keyHint !== 'root' || !roots) return notes;
     return notes.filter((n) => {
       const i = this.chordStepIndex(n.id);
@@ -869,11 +933,12 @@ export class PracticeSession {
       if (this.chordDrill && before && !this.chords.active) {
         this.startChord(this.wait.index, before, t);
       }
-      // The chord is complete before wait mode moves on, which ends the run after the last one.
+      // The chord (or the scale's note) is complete before wait mode moves on, which ends the run
+      // after the last one.
       const remaining = this.wait.remaining;
-      if (this.chordDrill && remaining.length === 1 && remaining[0] === e.pitch) {
-        this.chords.complete(t);
-      }
+      const completes = remaining.length === 1 && remaining[0] === e.pitch;
+      if (this.chordDrill && completes) this.chords.complete(t);
+      if (this.scaleDrill && completes && before) this.scales.played(before.index, t);
       const out = this.wait.handle(e);
       if (out.kind === 'correct') {
         this.keys.set(e.pitch, 'correct');
@@ -899,6 +964,7 @@ export class PracticeSession {
         this.flash(e.pitch, 'wrong', t);
         this.tally.wrong();
         this.chords.wrong(e.pitch);
+        if (this.scaleDrill) this.scales.wrong(this.wait.index, e.pitch);
         this.stepHadWrong = true;
         for (const n of before?.notes ?? [])
           if (!this.done.has(n.id)) this.marks.set(n.id, 'wrong');
@@ -1396,6 +1462,7 @@ export class PracticeSession {
     let summary: RunSummary | null = null;
     if (scorer && tl && this.mode === 'play-along') {
       for (const r of scorer.finish()) this.chordNote(r);
+      if (this.scaleDrill) this.scales.finish();
       const measureAt = (time: number) => {
         const beat = tl.beatAt(time);
         return this.song.measures.findLast((m) => m.startBeat <= beat + 1e-6)?.index;
