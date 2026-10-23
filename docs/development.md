@@ -154,6 +154,9 @@ docs and on the About page.
 - The behaviour in the task is implemented and covered by tests.
 - Lint, typecheck, format, unit tests and (when relevant) `cargo test` and catalogue checks pass.
 - No hard rule is broken; new dependencies have their licence named in the PR.
+- The iPad app builds with the change in CI (the `iPad app` workflow) and its tests pass. Anything
+  that may behave differently on an iPad is added to the
+  [iPad device checklist](../PLAN.md#ipad-device-checklist); a device check never blocks merging.
 - PLAN.md and any affected docs are updated.
 - User-facing text is plain, British English, and German strings are added once i18n exists
   (P2-14).
