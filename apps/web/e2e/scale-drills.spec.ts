@@ -135,11 +135,31 @@ test('falling keys draw the scale names over the bars', async ({ page }) => {
   await expect(page.locator('.stats')).toContainText('Step 3/30');
 });
 
+test('hands together and contrary motion are written on two staves with every finger', async ({
+  page,
+}) => {
+  // The left hand is below the computer keys: this checks the drawing, not the playing.
+  await page.goto('./#/practice/drill/scales.lc.k1.r1.ht.o1.d4.n1.t80.s1');
+  await expect(score(page)).toBeVisible({ timeout: 20_000 });
+  await expect(page.locator('[data-testid="score-strip"] g.staff').first()).toBeVisible();
+  await expect(page.locator('[data-testid="score-strip"] g.fing')).toHaveCount(30);
+  await expect(page.locator('[data-testid="score-strip"] g.note')).toHaveCount(30);
+  await expect(page.locator('.stats')).toContainText('Step 1/15');
+  await expect(page.locator('g.note.ot-expected')).toHaveCount(2);
+  // Contrary motion starts both hands on middle C: one key, two notes on the page.
+  await page.goto('./#/practice/drill/scales.lc.k1.r1.hc.o1.d4.n1.t80.s1');
+  await expect(score(page)).toBeVisible({ timeout: 20_000 });
+  await expect(page.locator('[data-testid="score-strip"] g.note')).toHaveCount(30);
+  await expect(page.locator('.stats')).toContainText('Step 1/15');
+  await page.keyboard.press('KeyA');
+  await expect(page.locator('.stats')).toContainText('Step 2/15');
+});
+
 test('a scale drill at a tempo counts in and plays along, in quavers if chosen', async ({
   page,
 }) => {
   await choose(page, 'Pace', 'tempo');
-  await page.getByRole('combobox', { name: 'Notes' }).selectOption('quavers');
+  await page.getByRole('combobox', { name: 'Note values' }).selectOption('quavers');
   await page.getByRole('combobox', { name: 'Beats a minute' }).selectOption('100');
   await expect(page.getByRole('link', { name: 'Start scales' })).toHaveAttribute(
     'href',

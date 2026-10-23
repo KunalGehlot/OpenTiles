@@ -1081,6 +1081,8 @@ export const de: Readonly<Record<string, string>> = {
   'Play each scale up and back down, with the fingers written over the notes. Every drill is new, made on this device. Your results stay here.':
     'Spiele jede Tonleiter hinauf und wieder hinunter, mit den Fingern über den Noten. Jede Übung ist neu und auf diesem Gerät erstellt. Deine Ergebnisse bleiben hier.',
   'Your scales': 'Deine Tonleitern',
+  Keynotes: 'Grundtöne',
+  'Note values': 'Notenwerte',
   '{tonic} major': '{tonic}-Dur',
   '{tonic} natural minor': '{tonic}-Moll natürlich',
   '{tonic} harmonic minor': '{tonic}-Moll harmonisch',

@@ -9,6 +9,7 @@ import {
   parseScaleDrillId,
   scaleOn,
 } from '@opentiles/practice';
+import { isDeviceSetting } from '../src/backup/backup';
 import { setLanguage } from '../src/i18n';
 import { setNoteLabelStyle } from '../src/lib/notes';
 import { href, parseHash } from '../src/lib/router';
@@ -132,6 +133,11 @@ describe('loading a scale drill', () => {
     const bare = loadScaleDrill(route.id, false, domParser);
     expect(bare.musicxml).not.toContain('<fingering');
     expect(bare.song.notes.map((n) => n.pitch)).toEqual(d.song.notes.map((n) => n.pitch));
+  });
+
+  it('keeps the choices and the progress in the backup, as chord drills do', () => {
+    expect(isDeviceSetting('scaleDrillPrefs')).toBe(false);
+    expect(isDeviceSetting('scaleStats')).toBe(false);
   });
 
   it('finds weak scales among those the choices draw', () => {

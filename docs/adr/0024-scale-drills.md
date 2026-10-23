@@ -74,8 +74,11 @@ knowledge"), so the recommendations were taken as they stood.
 - **Names** (Q10): the tonic follows the note-name setting and the words the interface language;
   in German a key is named as German books do ("Es-Dur", "b-Moll harmonisch", the tonic in lower
   case for a minor key when it is a German letter).
-- **Microphone** (P7-22): until hands together are measured, a scale drill with both hands and the
-  microphone says that a MIDI keyboard or the on-screen keys work best, as four-note chords do.
+- **Microphone** (P7-22): hands together measured on synthetic audio fall short of the targets
+  (wait 87.2 % / 6.4 %, play-along 65.6 % / 4.1 %, against 95 % and 3 %; an octave below a played
+  note is the commonest wrong note accepted). Until real recordings meet the targets, a scale
+  drill with both hands and the microphone says that a MIDI keyboard or the on-screen keys work
+  best, as four-note chords do.
 
 ## Consequences
 

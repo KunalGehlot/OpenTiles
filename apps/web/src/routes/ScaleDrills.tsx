@@ -99,7 +99,7 @@ export function ScaleDrills() {
         {custom && (
           <div className="chord-set panel" role="group" aria-label={t('My own set')}>
             <p className="setting__label" id="scale-tonics">
-              {t('Keys')}
+              {t('Keynotes')}
             </p>
             <div className="chord-roots" role="group" aria-labelledby="scale-tonics">
               {TONICS.map((pc) => {
@@ -241,7 +241,7 @@ export function ScaleDrills() {
                 ))}
               </select>
             </Setting>
-            <Setting label={t('Notes')}>
+            <Setting label={t('Note values')}>
               <select
                 value={p.rhythm}
                 onChange={(e) =>
