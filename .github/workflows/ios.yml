@@ -53,8 +53,7 @@ jobs:
           fi
       # The public web build (as deployed), cap sync, then an unsigned Release build zipped as an IPA.
       - run: pnpm --filter @opentiles/ios-shell ipa
-      - name: Plugin tests on an iPad simulator
-        working-directory: apps/ios-shell/plugins/core-midi
+      - name: Choose an iPad simulator
         run: |
           udid="$(xcrun simctl list devices available --json | node -e '
             const { devices } = JSON.parse(require("node:fs").readFileSync(0, "utf8"));
@@ -65,7 +64,25 @@ jobs:
             if (!ipad) { console.error("No iPad simulator on this runner"); process.exit(1); }
             console.log(ipad.udid);
           ')"
-          xcodebuild test -quiet -scheme OpentilesCapacitorCoreMidi -destination "id=$udid"
+          echo "IPAD_UDID=$udid" >> "$GITHUB_ENV"
+      - name: Plugin tests on an iPad simulator
+        working-directory: apps/ios-shell/plugins/core-midi
+        run: xcodebuild test -quiet -scheme OpentilesCapacitorCoreMidi -destination "id=$IPAD_UDID"
+      # The app itself with the web build that `ipa` synced: it starts, and Home, a catalogue piece
+      # and a chord drill open in its WebView (ios/App/AppUITests, PLAN.md P3-10).
+      - name: The app on an iPad simulator
+        working-directory: apps/ios-shell
+        run: >-
+          xcodebuild test -quiet -project ios/App/App.xcodeproj -scheme App
+          -destination "id=$IPAD_UDID" -derivedDataPath build/dd-test
+          -resultBundlePath build/AppUITests.xcresult CODE_SIGNING_ALLOWED=NO
+      - name: Keep the UI test results (screenshots) when they fail
+        if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: AppUITests-xcresult
+          path: apps/ios-shell/build/AppUITests.xcresult
+          if-no-files-found: ignore
       - name: AltStore / SideStore source
         run: >-
           node apps/ios-shell/scripts/altstore-source.mjs apps/ios-shell/build/OpenTiles.ipa
