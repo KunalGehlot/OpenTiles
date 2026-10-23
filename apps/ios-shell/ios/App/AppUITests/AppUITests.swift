@@ -16,17 +16,18 @@ final class AppUITests: XCTestCase {
 
     func testHomeOpensACataloguePieceInWaitMode() {
         let web = launch()
-        tap(link(in: web, containing: "Ode to Joy (theme)"), in: web)
-        expectText(in: web, containing: "Step 1/")
+        let piece = link(in: web, containing: "Ode to Joy (theme)")
+        tap(piece, in: web, until: text(in: web, containing: "Step 1/"))
         attachScreenshot(named: "Practice")
     }
 
     func testAChordDrillStartsFromTheDrillsPage() {
         let web = launch()
-        tap(web.links["Drills"].firstMatch, in: web)
-        tap(link(in: web, containing: "Chords"), in: web)
-        tap(web.links["Start chords"].firstMatch, in: web)
-        expectText(in: web, containing: "Chord 1/")
+        let chords = link(in: web, containing: "Chords")
+        let start = web.links["Start chords"].firstMatch
+        tap(web.links["Drills"].firstMatch, in: web, until: chords)
+        tap(chords, in: web, until: start)
+        tap(start, in: web, until: text(in: web, containing: "Chord 1/"))
         attachScreenshot(named: "Chord drill")
     }
 
@@ -47,10 +48,18 @@ final class AppUITests: XCTestCase {
         web.links.matching(NSPredicate(format: "label CONTAINS %@", label)).firstMatch
     }
 
+    private func text(in web: XCUIElement, containing text: String) -> XCUIElement {
+        web.staticTexts.matching(NSPredicate(format: "label CONTAINS %@", text)).firstMatch
+    }
+
     /// Waits for `element`, scrolls the page until it can be tapped (a card may start below the
-    /// fold in portrait), then taps it.
+    /// fold in portrait), taps it and waits for `next`, the sign that the tap was taken. WebKit
+    /// takes a tap for a hover when the page changes under the finger, which a page still loading
+    /// does (seen on CI's slower simulator: "Drills" lit up and nothing happened), so it taps again
+    /// as a person would.
     private func tap(
-        _ element: XCUIElement, in web: XCUIElement, file: StaticString = #filePath, line: UInt = #line
+        _ element: XCUIElement, in web: XCUIElement, until next: XCUIElement,
+        file: StaticString = #filePath, line: UInt = #line
     ) {
         guard element.waitForExistence(timeout: timeout) else {
             attachScreenshot(named: "Missing element")
@@ -60,14 +69,19 @@ final class AppUITests: XCTestCase {
         for _ in 0..<6 where !element.isHittable {
             web.swipeUp()
         }
-        element.tap()
+        for attempt in 1...3 {
+            if attempt > 1 && !element.exists { break }
+            element.tap()
+            if next.waitForExistence(timeout: attempt < 3 ? 10 : timeout) { return }
+        }
+        attachScreenshot(named: "Tap not taken")
+        XCTFail("Tapped \(element), but \(next) did not appear", file: file, line: line)
     }
 
     private func expectText(
         in web: XCUIElement, containing text: String, file: StaticString = #filePath, line: UInt = #line
     ) {
-        let match = web.staticTexts.matching(NSPredicate(format: "label CONTAINS %@", text)).firstMatch
-        if !match.waitForExistence(timeout: timeout) {
+        if !self.text(in: web, containing: text).waitForExistence(timeout: timeout) {
             attachScreenshot(named: "Missing text")
             XCTFail("No text containing “\(text)”", file: file, line: line)
         }

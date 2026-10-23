@@ -333,7 +333,9 @@ compatibility matrix (spec §5).
   bundle; the `iPad app` workflow runs them on an iPad simulator after the IPA build and keeps the
   results when they fail. Both pass on an iPad Pro 11-inch (M5) simulator with iOS 27.1 (Xcode
   27.1, 2026-10-23, 22 s and 27 s); the screenshots show the piece counting in and the drill's
-  chord names over the bars. Left: a green run in CI.
+  chord names over the bars. The first CI run (iOS 26.4) showed "Drills" lit up by a tap that
+  WebKit took for a hover while Home was still loading; each tap now waits for the next page and
+  taps again, as a person would. Left: a green run in CI.
 - [ ] **P3-02** (human) Apple Developer Program, free App Store release.
 - [~] **P3-03** Encrypted sync: passkeys / email link, Argon2id-wrapped library key, AES-GCM blobs,
   EU object storage, 250 MB quota, one-step account deletion. (Open decision: v1.0 or right
