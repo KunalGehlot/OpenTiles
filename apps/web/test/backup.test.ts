@@ -152,6 +152,22 @@ describe('encrypted backup', () => {
     expect(isDeviceSetting('sync.session')).toBe(true);
     expect(isDeviceSetting('rightsConfirmed')).toBe(false);
   });
+
+  it('carries the chord progress, which is the learner’s own (P7-08, ADR 0022)', async () => {
+    const stats = {
+      version: 1,
+      rounds: [{ at: 1, chords: 2, firstTry: 1, perMinute: 9, kinds: {} }],
+    };
+    await db.settings.bulkPut([
+      { key: 'chordStats', value: stats },
+      { key: 'chordDrillPrefs', value: { level: 3 } },
+    ]);
+    const data = await collectBackupData();
+    const settings = data.settings as { key: string; value: unknown }[];
+    expect(settings.find((s) => s.key === 'chordStats')?.value).toEqual(stats);
+    expect(settings.some((s) => s.key === 'chordDrillPrefs')).toBe(true);
+    expect(isDeviceSetting('chordStats')).toBe(false);
+  });
 });
 
 // Sheet-music PDFs kept with a piece (P5-15, ADR 0018).

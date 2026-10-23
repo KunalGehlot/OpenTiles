@@ -44,6 +44,9 @@ export class ScoreController {
   private anchors: Anchor[] = [];
   private elements = new Map<string, Element>();
   private applied = new Map<string, NoteState>();
+  /** Glyphs hidden for "Name only" (P7-05), and the bars they are in. */
+  private hidden = new Set<string>();
+  private hiddenBars = new Set<Element>();
   private lastSignature = '';
   private lastBeat = Number.NaN;
   private lastForced = 0;
@@ -306,7 +309,7 @@ export class ScoreController {
       s.mode === 'wait' ? new Set((s.wait.current?.notes ?? []).map((n) => n.id)) : null;
     let wrong = 0;
     for (const v of s.marks.values()) if (v === 'wrong') wrong += 1;
-    const signature = `${this.boundaryIndex(beat)}|${s.wait.index}|${s.marks.size}|${wrong}|${s.hands}|${this.shown}`;
+    const signature = `${this.boundaryIndex(beat)}|${s.wait.index}|${s.marks.size}|${wrong}|${s.hands}|${this.shown}|${s.hideAhead ? `${s.done.size}.${s.revealed}` : ''}`;
     if (signature === this.lastSignature && now - this.lastForced < 0.5) return;
     this.lastSignature = signature;
     this.lastForced = now;
@@ -328,6 +331,47 @@ export class ScoreController {
       if (next) this.applied.set(glyph, next);
       else this.applied.delete(glyph);
     }
+    this.hideAhead(beat);
+  }
+
+  /**
+   * "Name only" in a chord drill (P7-05, ADR 0022): the notes still to play are hidden until they
+   * have been played or have gone by, so the learner finds the chord from its name. The chord the
+   * learner asked to see ("Show me") is shown.
+   */
+  private hideAhead(beat: number): void {
+    const s = this.session;
+    const hidden = new Set<string>();
+    if (s.hideAhead) {
+      const shown = s.mode === 'wait' && s.revealed >= 0 ? s.steps[s.revealed] : undefined;
+      const from = s.mode === 'wait' ? (s.wait.current?.beat ?? Infinity) : beat;
+      const hide = (id: string) => {
+        const n = this.noteById.get(id);
+        if (!n || s.done.has(id)) return false;
+        if (shown && Math.abs(n.startBeat - shown.beat) < 1e-3) return false;
+        // Wait mode: the chord to play and those after it; at a tempo, chords not yet gone by.
+        return s.mode === 'wait'
+          ? n.startBeat >= from - 1e-3
+          : n.startBeat + n.durationBeats > beat + 1e-3;
+      };
+      for (const [glyph, ids] of this.links.notesOf) if (ids.every(hide)) hidden.add(glyph);
+    }
+    const bars = new Set<Element>();
+    for (const [glyph, el] of this.elements) {
+      const on = hidden.has(glyph);
+      if (on) {
+        const bar = el.closest('g.measure');
+        if (bar) bars.add(bar);
+      }
+      if (on === this.hidden.has(glyph)) continue;
+      el.classList.toggle('ot-hidden', on);
+    }
+    // A bar whose chord is hidden hides its ledger lines too, which would show where the notes sit;
+    // once the chord shows, so do they.
+    for (const bar of this.hiddenBars) if (!bars.has(bar)) bar.classList.remove('ot-chord-hidden');
+    for (const bar of bars) bar.classList.add('ot-chord-hidden');
+    this.hidden = hidden;
+    this.hiddenBars = bars;
   }
 
   /** Half a view of room on each side, so the first and last notes can reach the middle bar. */

@@ -274,6 +274,9 @@ pub struct PassageOptions {
     pub max_chord: usize,
     pub min_gap_s: f32,
     pub max_gap_s: f32,
+    /// Every event a four-note chord as the chord drills play them (P7-10): sevenths, add9 and
+    /// sixth chords, some inverted, within a tenth.
+    pub four_note: bool,
 }
 
 impl Default for PassageOptions {
@@ -285,17 +288,52 @@ impl Default for PassageOptions {
             max_chord: 3,
             min_gap_s: 0.30,
             max_gap_s: 0.80,
+            four_note: false,
         }
     }
 }
 
-/// A random passage of single notes and 2–3 note chords (spans up to an octave), starting at
-/// 0.3 s. Returns the notes and the passage length in seconds.
+/// Four-note chord shapes in semitones above the lowest note: maj7, 7, m7, m7♭5, dim7, add9, 6 and
+/// m6 in root position, and the first inversions of maj7, 7 and m7.
+const FOUR_NOTE_SHAPES: [[u8; 4]; 11] = [
+    [0, 4, 7, 11],
+    [0, 4, 7, 10],
+    [0, 3, 7, 10],
+    [0, 3, 6, 10],
+    [0, 3, 6, 9],
+    [0, 4, 7, 14],
+    [0, 4, 7, 9],
+    [0, 3, 7, 9],
+    [0, 3, 7, 8],
+    [0, 3, 6, 8],
+    [0, 4, 7, 9],
+];
+
+/// A random passage of single notes and 2–3 note chords (spans up to an octave), or of four-note
+/// chords with `four_note`, starting at 0.3 s. Returns the notes and the passage length in
+/// seconds.
 pub fn random_passage(rng: &mut Rng, opts: &PassageOptions) -> (Vec<SynthNote>, f32) {
     let mut notes = Vec::new();
     let mut t = 0.3f32;
     const INTERVALS: [u8; 7] = [3, 4, 5, 7, 8, 9, 12];
     for _ in 0..opts.chords {
+        if opts.four_note {
+            let shape = FOUR_NOTE_SHAPES[rng.int(0, FOUR_NOTE_SHAPES.len() as i32 - 1) as usize];
+            let top = opts.high.saturating_sub(shape[3]).max(opts.low);
+            let root = rng.int(opts.low as i32, top as i32) as u8;
+            let gap = rng.range(opts.min_gap_s, opts.max_gap_s);
+            let velocity = rng.range(0.3, 1.0);
+            for iv in shape {
+                notes.push(SynthNote {
+                    pitch: root + iv,
+                    onset_s: t + rng.range(0.0, 0.008),
+                    duration_s: gap * rng.range(0.5, 0.95),
+                    velocity: (velocity + rng.range(-0.1, 0.1)).clamp(0.2, 1.0),
+                });
+            }
+            t += gap;
+            continue;
+        }
         let size = match rng.f32() {
             x if x < 0.5 => 1,
             x if x < 0.8 => 2,

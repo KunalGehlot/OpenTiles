@@ -100,3 +100,45 @@ export function noteLabel(
 ): string {
   return `${pitchClassName(pitch, spelling, style)}${Math.floor(Math.round(pitch) / 12) - 1}`;
 }
+
+// Spelled names for chords (P7-04): a letter and its alteration, so B♯ and E♯ stay what they are.
+const SPELLED: Record<NoteLabelStyle, readonly string[]> = {
+  letters: ['C', 'D', 'E', 'F', 'G', 'A', 'B'],
+  german: ['C', 'D', 'E', 'F', 'G', 'A', 'H'],
+  'fixed-do': ['Do', 'Re', 'Mi', 'Fa', 'Sol', 'La', 'Si'],
+};
+
+/** A spelled pitch's name (letter 0 is C, alter −1 to 1): "B♭", German "B" (and "H" for B), "Si♭". */
+export function spelledName(
+  letter: number,
+  alter: number,
+  style: NoteLabelStyle = currentStyle,
+): string {
+  const base = (SPELLED[style] ?? SPELLED.letters)[letter] ?? '?';
+  if (style !== 'german') return base + (alter > 0 ? '♯' : alter < 0 ? '♭' : '');
+  if (alter === 0) return base;
+  if (alter > 0) return `${base}is`;
+  // German flats: B is B flat; Es and As drop the e; the rest add -es (Ces, Des, Fes, Ges).
+  if (letter === 6) return 'B';
+  if (letter === 2) return 'Es';
+  if (letter === 5) return 'As';
+  return `${base}es`;
+}
+
+export interface ChordNameParts {
+  root: { letter: number; alter: number };
+  suffix: string;
+  bass?: { letter: number; alter: number };
+}
+
+/**
+ * A chord's name in the learner's style (P7-04, ADR 0022): "B♭maj7", "C/E"; German "Bmaj7" for
+ * B♭ and "Hm" for B minor; fixed-do "Si♭ maj7", with a space so "Do m" is not read as a word.
+ * Minor keeps its `m` in every style.
+ */
+export function chordName(parts: ChordNameParts, style: NoteLabelStyle = currentStyle): string {
+  const root = spelledName(parts.root.letter, parts.root.alter, style);
+  const gap = style === 'fixed-do' && parts.suffix ? ' ' : '';
+  const bass = parts.bass ? `/${spelledName(parts.bass.letter, parts.bass.alter, style)}` : '';
+  return `${root}${gap}${parts.suffix}${bass}`;
+}

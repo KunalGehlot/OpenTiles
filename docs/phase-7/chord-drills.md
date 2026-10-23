@@ -1,6 +1,8 @@
 # Phase 7 — Chord drills
 
-- **Status:** planned on 2026-10-22. Nothing is built. The tasks are P7-00 to P7-14 in
+- **Status:** planned on 2026-10-22; the questions in section 7 were decided the same day. Built on
+  2026-10-23 (P7-00 to P7-12, ADR 0022); left are real four-note recordings (P7-10), a real-iPad
+  check of several fingers (P7-11), the maintainer's checks (P7-13) and scales (P7-14). The tasks are P7-00 to P7-14 in
   [PLAN.md](../../PLAN.md#phase-7--chord-drills-planned-2026-10-22). Start after the Phase 6
   human checks (P6-13) or in parallel with them: this phase touches the drills, not the Player.
 - **Where it came from:** [issue #47](https://github.com/KunalGehlot/OpenTiles/issues/47), "New
@@ -105,9 +107,9 @@ Sizes: S under a day, M a day or two, L several days.
 
 ### P7-00 (GOV) This plan, ADR 0022, and the maintainer's answers
 
-Done on branch `P7-00-chord-drills-plan`: this file and the Phase 7 section in PLAN.md. Left: the
-maintainer's answers to section 7, then **ADR 0022 "Chord drills"** (copy
-`docs/adr/0000-template.md`) recording the choices in tasks P7-01 to P7-09. Size: S.
+Done: this file, the Phase 7 section in PLAN.md and the answers to section 7 (2026-10-22). Left:
+**ADR 0022 "Chord drills"** (copy `docs/adr/0000-template.md`) recording the choices in tasks P7-01
+to P7-09 and section 7. Size: S.
 
 ### P7-01 (PRAC) Chord vocabulary
 
@@ -116,7 +118,7 @@ maintainer's answers to section 7, then **ADR 0022 "Chord drills"** (copy
 **Build.** `packages/practice/src/chords.ts`, pure like the rest of the package:
 
 - `ChordQuality`: `maj`, `min`, `dim`, `aug`, `sus2`, `sus4`, `maj7`, `dom7`, `min7`, `m7b5`, `dim7`,
-  later `add9`, `six`, `mMaj7`. Each has its intervals above the root in semitones **and in letter
+  `add9`, `six` and `min6` (level 7 needs the last three, Q5), later `mMaj7`. Each has its intervals above the root in semitones **and in letter
   steps**, so spelling is right: E♭ major is E♭ G B♭, never D♯ G A♯.
 - `Chord { root: { letter, alter }, quality, inversion }` and `chordNotes(chord, octave)` giving
   spelled pitches (`{ step, alter, octave, midi }`), for any of the twelve roots, with the sharp or
@@ -148,8 +150,8 @@ the root with fewer accidentals and list the roots excluded in the code comment.
   `seed`. `normaliseChordDrillOptions` clamps anything, as `normaliseDrillOptions` does.
 - `generateChordDrill(options)` returns `{ options, chords, musicxml }`. One chord per bar of 4/4 as a
   whole note, so there is one accidental context per chord and the page stays readable. Two staves
-  for "both hands": the right hand plays the chord; the left hand plays the root, the root and fifth,
-  or the same chord an octave lower, by level. Accidentals are written explicitly, with a C major key
+  for "both hands": the right hand plays the chord; the left hand plays the root (levels 1 to 7),
+  the root and fifth (level 8), or the same chord an octave lower (custom set only, Q5). Accidentals are written explicitly, with a C major key
   signature, because chord roots jump around.
 - A `<harmony>` element per chord (root, kind, bass) so Verovio draws the chord symbol above the
   staff when the learner wants it, and so the file is a normal lead sheet. Whether Verovio's
@@ -218,8 +220,10 @@ events, not only the counts. Size: M.
   returning `{ song, musicxml, chords, title }`.
 - Chord names in the learner's label style. A `chordName(parts, style)` in `lib/notes.ts` using the
   existing `NoteLabelStyle`: letters (`B♭maj7`), German (`Bmaj7` for B♭, `Hmaj7` for B), fixed-do
-  (`Si♭ maj7`). German strings for every new label are added once, keyed by the English text (ADR
-  0014), with British spelling in English ("practise", "colour").
+  (`Si♭ maj7`). Minor is written with the `m` suffix in every style (`Am`, `Bm` for B♭ minor in
+  German), never as a lowercase root, so the suffixes stay one system (Q9). German strings for every
+  new label are added once, keyed by the English text (ADR 0014), with British spelling in English
+  ("practise", "colour").
 
 **Tests.** Component tests for the page; unit tests for `chordName` in all three styles over all
 twelve roots; the old drill links still open sight-reading. Size: M.
@@ -311,28 +315,34 @@ nothing comes back to look at. Chords are different: the point is coming back. S
 
 **Build.** Wire the pace and the level selectors from P7-04 to P7-07, and the difficulty ladder:
 
-| Level | Adds                                                                       | Hands |
-| ----- | -------------------------------------------------------------------------- | ----- |
-| 1     | Major and minor triads, root position: C, F, G major; A, D, E minor        | Right |
-| 2     | Every white-key root, major and minor                                      | Right |
-| 3     | All twelve roots (sharps and flats)                                        | Right |
-| 4     | First and second inversions                                                | Right |
-| 5     | Diminished, augmented, sus2 and sus4                                       | Right |
-| 6     | Seventh chords in root position: maj7, 7, m7, m7♭5, dim7                   | Right |
-| 7     | Seventh chord inversions, add9, sixth chords                               | Right |
-| 8     | Left hand root and fifth under any of the above, then both hands in chords | Both  |
+| Level | Adds                                                                | Hands |
+| ----- | ------------------------------------------------------------------- | ----- |
+| 1     | Major and minor triads, root position: C, F, G major; A, D, E minor | Right |
+| 2     | Every white-key root, major and minor                               | Right |
+| 3     | All twelve roots (sharps and flats)                                 | Right |
+| 4     | First and second inversions                                         | Right |
+| 5     | Diminished, augmented, sus2 and sus4                                | Right |
+| 6     | Seventh chords in root position: maj7, 7, m7, m7♭5, dim7            | Right |
+| 7     | Seventh chord inversions, add9, sixth chords (6 and m6)             | Right |
+| 8     | Left hand root and fifth under any of the above                     | Both  |
 
-Levels are a starting point for the maintainer to tune after trying them (Q5). A custom set sits
-beside them. Size: S, since most of the parts exist by then.
+Levels are a starting point for the maintainer to tune after trying them (Q5). The Hands column is
+each level's default; the Hands selector on the setup page overrides it, and "Both" below level 8
+puts the root alone in the left hand. Chords in both hands (the same chord an octave lower) are in
+the custom set, not a level. A custom set sits beside the levels. Size: S, since most of the parts
+exist by then.
 
 ### P7-10 (ENG) Four-note chords on the microphone
 
-**Why.** Levels 6 and up have four notes. The detector's targets (spec, "Accuracy targets and test set") cover two and three notes.
+**Why.** Levels 6 and up have four notes, and both hands at any level add the left hand's root or
+root and fifth under a triad (four or five notes at once). The detector's targets (spec, "Accuracy
+targets and test set") cover two and three notes.
 
 **Build.** Add 4-note chords to `packages/engine/tests/synthetic_accuracy.rs` (the same scenarios:
 wait mode with and without pedal, play-along), report before and after numbers, and record a few
 real four-note chords for the Phase 0 set (P0-04). Until the numbers meet the 95 % and 3 % targets,
-a chord drill with the microphone at level 6 or higher shows the hint "Four-note chords work best
+a chord drill with the microphone whose chords sound more than three notes at once (counted from
+the drill's chords, not from the level number) shows the hint "Four-note chords work best
 with a MIDI keyboard or the on-screen keys." Never loosen thresholds to make the number pass. Size: M.
 
 ### P7-11 (APP) The on-screen keyboard with several fingers
@@ -385,21 +395,42 @@ Chords
 Result card: chords a minute, right at the first try, the three hardest chords with what went wrong
 ("A♭ aug: one note missing, 3 times"), and "Again" and "Next level".
 
-## 7. Open questions for the maintainer
+## 7. Questions for the maintainer, decided 2026-10-22
 
-Each has a recommendation so work can start.
+Each question had a recommendation; the maintainer handed the decisions over on 2026-10-22, and the
+recommendations were taken with the refinements noted below the table. ADR 0022 records them.
 
-| #   | Question                                                                             | Recommendation                                                                          |
+| #   | Question                                                                             | Decision                                                                                |
 | --- | ------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------- |
 | Q1  | Where does it live?                                                                  | A second card on the Drills page (hub), so sight-reading links keep working             |
 | Q2  | Add "Name only" (see the name, find the notes) to the two displays you named?        | Yes: it is the one that teaches recall, and the issue's author wants patterns           |
 | Q3  | Keep chord progress, and include it in the encrypted backup?                         | Yes, on the device and in the backup; nothing leaves otherwise                          |
 | Q4  | Scales now or after chords?                                                          | After (P7-14), on the same pieces                                                       |
-| Q5  | The level ladder in P7-09: right order?                                              | Start as written, tune after trying it                                                  |
-| Q6  | Four-note chords on the microphone before P7-10 has numbers?                         | Allowed with a hint to use MIDI or touch                                                |
+| Q5  | The level ladder in P7-09: right order?                                              | As written, with level 7 and 8 made consistent (below); tune after trying it            |
+| Q6  | Four-note chords on the microphone before P7-10 has numbers?                         | Allowed with a hint to use MIDI or touch, shown by notes at once, not by level          |
 | Q7  | Tempo ladder on or off by default?                                                   | Off                                                                                     |
 | Q8  | One chord per bar for every level, or two chords per bar at the highest speeds?      | One per bar; revisit if players want faster                                             |
 | Q9  | Chord symbols for German users: write B and H (German), or B♭ and B (international)? | Follow the existing note-name setting (P5-03); German by default for a German interface |
+
+Refinements and checks behind the decisions:
+
+- **Q2.** "Name only" depends on what P7-02 tries first: whether Verovio draws `<harmony>` and
+  honours `print-object="no"` on pitched notes. If it does not, the fallback in P7-02 (a
+  `<direction><words>` name, the notes left out of the picture but kept in the `Song`) gives the
+  same display, so the decision stands either way.
+- **Q3.** Checked in `backup/backup.ts`: `isDeviceSetting` keeps back only `device.` and `sync.` keys,
+  so a `chordStats` setting is in the encrypted backup with no code change. ADR 0022 says why chords
+  keep progress when sight-reading drills do not (ADR 0015).
+- **Q5.** Level 7 uses add9 and sixth chords, so `add9`, `six` and `min6` join P7-01's first set
+  of qualities (`mMaj7` stays for later). Level 8 is one step, the left hand's root and fifth; chords
+  in both hands move to the custom set. The Hands column is a default the Hands selector overrides
+  (P7-09).
+- **Q6.** A both-hands drill puts four or five notes down at once at any level, so the microphone
+  hint follows the most notes a drill's chords sound together (more than three), not the level
+  number (P7-10).
+- **Q9.** Checked in `lib/notes.ts`: the "auto" note-name setting already gives German names for a
+  German interface. Minor keeps the `m` suffix in every style (`Am`, not `a`), so the chord
+  suffixes stay one system (P7-04).
 
 ## 8. Out of scope, and why
 

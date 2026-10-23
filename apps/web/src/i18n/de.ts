@@ -953,4 +953,124 @@ export const de: Readonly<Record<string, string>> = {
   '“{name}” is not a PDF file, so it cannot be kept as sheet music.':
     '„{name}“ ist keine PDF-Datei und kann daher nicht als Notenblatt gespeichert werden.',
   'sheet music added to {n} of them': 'bei {n} davon das Notenblatt ergänzt',
+
+  // Chord drills (P7-04 to P7-12).
+  Drills: 'Übungen',
+  'C, F and G major; A, D and E minor': 'C-, F- und G-Dur; a-, d- und e-Moll',
+  'Major and minor on every white key': 'Dur und Moll auf jeder weißen Taste',
+  'All twelve roots': 'Alle zwölf Grundtöne',
+  'First and second inversions': 'Erste und zweite Umkehrung',
+  'Diminished, augmented and suspended': 'Vermindert, übermäßig und Vorhalt',
+  'Seventh chords': 'Septakkorde',
+  'Seventh inversions, add9 and sixths': 'Umkehrungen der Septakkorde, add9 und Sexten',
+  'The left hand plays root and fifth': 'Die linke Hand spielt Grundton und Quinte',
+  'My own set': 'Eigene Auswahl',
+  Major: 'Dur',
+  Minor: 'Moll',
+  Diminished: 'Vermindert',
+  Augmented: 'Übermäßig',
+  'Suspended second (sus2)': 'Sekundvorhalt (sus2)',
+  'Suspended fourth (sus4)': 'Quartvorhalt (sus4)',
+  'Major seventh (maj7)': 'Große Septime (maj7)',
+  'Dominant seventh (7)': 'Dominantseptakkord (7)',
+  'Minor seventh (m7)': 'Moll mit kleiner Septime (m7)',
+  'Half-diminished (m7♭5)': 'Halbvermindert (m7♭5)',
+  'Diminished seventh (dim7)': 'Verminderter Septakkord (dim7)',
+  'Added ninth (add9)': 'Mit None (add9)',
+  'Sixth (6)': 'Sexte (6)',
+  'Minor sixth (m6)': 'Moll mit Sexte (m6)',
+  'a note missing': 'ein Ton fehlte',
+  'a note not in the chord': 'ein Ton, der nicht zum Akkord gehört',
+  'the wrong third or fifth': 'die falsche Terz oder Quinte',
+  'the wrong inversion': 'die falsche Umkehrung',
+  Chords: 'Akkorde',
+  'Level {n}: {name}': 'Stufe {n}: {name}',
+  'All drills': 'Alle Übungen',
+  'Find each chord and press all its notes together. Every drill is new, made on this device. Your results stay here.':
+    'Finde jeden Akkord und drücke alle seine Töne zusammen. Jede Übung ist neu und wird auf diesem Gerät erstellt. Deine Ergebnisse bleiben hier.',
+  'Your chords': 'Deine Akkorde',
+  Level: 'Stufe',
+  'Each level adds to the ones before it.': 'Jede Stufe baut auf den vorigen auf.',
+  Roots: 'Grundtöne',
+  Inversions: 'Umkehrungen',
+  'Triads and seventh chords also come with another note at the bottom.':
+    'Dreiklänge und Septakkorde kommen auch mit einem anderen Ton unten.',
+  'Left hand': 'Linke Hand',
+  'Both hands': 'Beide Hände',
+  'Left hand plays': 'Die linke Hand spielt',
+  'The root': 'Den Grundton',
+  'Root and fifth': 'Grundton und Quinte',
+  'The chord, lower': 'Den Akkord, tiefer',
+  'The left hand plays the root and fifth under each chord.':
+    'Die linke Hand spielt unter jedem Akkord Grundton und Quinte.',
+  'The left hand plays the root under each chord.':
+    'Die linke Hand spielt unter jedem Akkord den Grundton.',
+  'Sheet, no help': 'Noten, ohne Hilfe',
+  'Falling keys': 'Fallende Tasten',
+  'Chord names': 'Akkordnamen',
+  'Only the name is shown; the notes appear once you have played them.':
+    'Nur der Name wird gezeigt; die Noten erscheinen, sobald du sie gespielt hast.',
+  Shown: 'Gezeigt',
+  Hidden: 'Verborgen',
+  'Name only': 'Nur der Name',
+  'A first step: the keys light up, as in the other pieces.':
+    'Ein erster Schritt: Die Tasten leuchten auf, wie in den anderen Stücken.',
+  'Keys lit': 'Leuchtende Tasten',
+  'How much the keyboard shows as the chord arrives.':
+    'Wie viel die Tastatur zeigt, wenn der Akkord ankommt.',
+  'As the level says': 'Wie die Stufe es vorsieht',
+  'Every key of the chord': 'Jede Taste des Akkords',
+  'The root only': 'Nur den Grundton',
+  Pace: 'Tempo',
+  'The next chord comes when the last one is right.':
+    'Der nächste Akkord kommt, wenn der letzte stimmt.',
+  'A chord every bar of four beats, after a count-in.':
+    'Ein Akkord in jedem Takt zu vier Schlägen, nach einem Einzählen.',
+  'Wait for me': 'Auf mich warten',
+  'At a tempo': 'Im Takt',
+  'Beats a minute': 'Schläge pro Minute',
+  '60 is a chord every four seconds.': '60 ist ein Akkord alle vier Sekunden.',
+  'Speed up as I improve': 'Schneller werden, wenn ich besser werde',
+  'Five beats a minute faster after three rounds with 90 % right at the first try; slower after a round under 60 %.':
+    'Fünf Schläge pro Minute schneller nach drei Runden mit 90 % beim ersten Versuch richtig; langsamer nach einer Runde unter 60 %.',
+  'Strict chords': 'Strenge Akkorde',
+  'All notes of a chord within 60 ms instead of 120 ms.':
+    'Alle Töne eines Akkords innerhalb von 60 ms statt 120 ms.',
+  'Chords a round': 'Akkorde pro Runde',
+  'The next round starts as soon as one ends.': 'Die nächste Runde beginnt, sobald eine endet.',
+  'Keep the hand close': 'Die Hand nah halten',
+  'Each chord comes in the inversion nearest the last one, as when playing a song.':
+    'Jeder Akkord kommt in der Umkehrung, die dem letzten am nächsten liegt, wie beim Spielen eines Lieds.',
+  'Practise my weak chords': 'Meine schwachen Akkorde üben',
+  'More often: {chords}.': 'Öfter: {chords}.',
+  '{chord} {percent} %': '{chord} {percent} %',
+  'Chords under 80 % right at the first try come more often, once you have played a few rounds.':
+    'Akkorde unter 80 % beim ersten Versuch richtig kommen öfter, sobald du ein paar Runden gespielt hast.',
+  'Start chords': 'Akkorde starten',
+  'Short exercises made on this device, new every time. Choose what to practise.':
+    'Kurze Übungen, auf diesem Gerät erstellt und jedes Mal neu. Wähle, was du üben möchtest.',
+  'Read single notes or short phrases from the staff.':
+    'Lies einzelne Noten oder kurze Phrasen aus dem Notensystem.',
+  'Random chords to find and press, on the sheet or as falling keys.':
+    'Zufällige Akkorde zum Finden und Drücken, in den Noten oder als fallende Tasten.',
+  'Chord {step}/{count}': 'Akkord {step}/{count}',
+  '{n} of {count} at the first try': '{n} von {count} beim ersten Versuch',
+  'Shows the chord on the sheet; it counts as a miss.':
+    'Zeigt den Akkord in den Noten; das zählt als Fehler.',
+  'Show me': 'Zeig es mir',
+  'Four-note chords work best with a MIDI keyboard or the on-screen keys.':
+    'Akkorde mit vier Tönen klappen am besten mit einem MIDI-Keyboard oder den Tasten auf dem Bildschirm.',
+  'first try': 'erster Versuch',
+  '{n} chords a minute': '{n} Akkorde pro Minute',
+  '{n} of {count} chords together and on time': '{n} von {count} Akkorden zusammen und im Takt',
+  'Your last rounds: {percent} % at the first try':
+    'Deine letzten Runden: {percent} % beim ersten Versuch',
+  '{cause}, {n}×': '{cause}, {n}×',
+  'Next round: {bpm} beats a minute, a step faster.':
+    'Nächste Runde: {bpm} Schläge pro Minute, eine Stufe schneller.',
+  'Next round: {bpm} beats a minute, a step slower.':
+    'Nächste Runde: {bpm} Schläge pro Minute, eine Stufe langsamer.',
+  'Next round': 'Nächste Runde',
+  'Change the chords': 'Akkorde ändern',
+  'The next round starts in a moment.': 'Die nächste Runde beginnt gleich.',
 };

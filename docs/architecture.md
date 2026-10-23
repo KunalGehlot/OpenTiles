@@ -267,6 +267,21 @@ notes match. Drills show the page view, not the falling notes.
 falling notes and the keys to press unless the learner asks for the keys. Drills add practice time
 (`recordPracticeTime`) but no progress record.
 
+## Chord drills (P7-01 to P7-11, ADR 0022)
+
+`packages/practice/src/chords.ts` spells chords (letter steps as well as semitones);
+`chord-drills.ts` draws seeded chords from a level or a set and writes one whole-note chord a bar
+as MusicXML, with each name as words above the staff in the learner's label style; ids start with
+`chords.` (`#/practice/drill/chords.l3.hr.n16.t60.s12345`), anything else is sight-reading.
+`chord-tally.ts` judges whole chords on top of wait mode and play-along: right at the first try,
+seconds, the cause of a miss, and the spread of a chord at a tempo. The session holds it as
+`PracticeSession.chords` when `chordDrill` is set; `keyHint` (all, root, none) filters the lit keys,
+`hideAhead` keeps the notes to come off the score ("Name only", a class on the drawn glyphs) and
+`revealChord()` is "Show me". The renderer draws chord names on the falling bars and names a
+chord's notes as it spells them (`chordLabels`, `spelledNames`). Finished rounds go into the
+`chordStats` setting (`chord-stats.ts`: at most 200 rounds, counts per kind of chord), which the
+encrypted backup carries and "Practise my weak chords" reads.
+
 ## Sheet music PDFs (P5-14, ADR 0018)
 
 A library piece can keep the learner's own PDF (`LibraryItem.sheet`). The practice screen's Sheet

@@ -74,6 +74,7 @@ for (const width of [1180, 375]) {
       '#/library',
       '#/player',
       '#/drills',
+      '#/drills/chords',
       '#/settings',
       '#/about',
       '#/sheet-music',

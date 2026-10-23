@@ -9,7 +9,24 @@ use opentiles_engine::eval::{evaluate, EvalOptions, EvalReport, TruthNote};
 use opentiles_engine::synth::{random_passage, render, PassageOptions, Rng, SynthOptions};
 use opentiles_engine::{DetectorConfig, Mode};
 
+/// Bounds (correct at least, wrong at most) for the four-note suites below, a little under what
+/// was measured on 2026-10-23 (wait 81.2 % / 9.6 %, pedal 59.3 % / 8.1 %, play-along
+/// 72.5 % / 2.7 %): regression guards, far from the spec's 95 % and 3 %; see `four_note`.
+const FOUR_NOTE_WAIT: (f64, f64) = (0.78, 0.12);
+const FOUR_NOTE_PEDAL: (f64, f64) = (0.55, 0.11);
+const FOUR_NOTE_PLAY: (f64, f64) = (0.70, 0.04);
+
 fn run_suite(mode: Mode, pedal: bool, seeds: std::ops::Range<u64>, sample_rate: f32) -> EvalReport {
+    run_passages(mode, pedal, seeds, sample_rate, &PassageOptions::default())
+}
+
+fn run_passages(
+    mode: Mode,
+    pedal: bool,
+    seeds: std::ops::Range<u64>,
+    sample_rate: f32,
+    passage: &PassageOptions,
+) -> EvalReport {
     let mut total = EvalReport::default();
     for seed in seeds {
         let opts = SynthOptions {
@@ -19,7 +36,7 @@ fn run_suite(mode: Mode, pedal: bool, seeds: std::ops::Range<u64>, sample_rate: 
             ..SynthOptions::default()
         };
         let mut rng = Rng::new(seed * 7919);
-        let (notes, length) = random_passage(&mut rng, &PassageOptions::default());
+        let (notes, length) = random_passage(&mut rng, passage);
         let audio = render(&notes, length, &opts);
         let truth: Vec<TruthNote> = notes
             .iter()
@@ -94,4 +111,75 @@ fn decisions_are_fast_enough() {
     println!("decision latency median {median:.1} ms, p90 {p90:.1} ms");
     // Spec §7 budget: analysis window + hop ≤ 50 ms (bass notes are allowed their longer window).
     assert!(median <= 50.0, "median decision latency {median} ms");
+}
+
+/// Four-note chords as the chord drills play them (P7-10): sevenths, add9 and sixths, some
+/// inverted, from C3 to C6. Spec targets cover single notes and 2–3 note chords; four notes are
+/// "best effort", so these bounds guard the numbers measured when they were added (2026-10-23)
+/// and the drills show a hint to use MIDI or the on-screen keys until real recordings meet the
+/// targets. Never loosen the detector to make these pass.
+fn four_note() -> PassageOptions {
+    PassageOptions {
+        low: 48,
+        high: 84,
+        four_note: true,
+        ..PassageOptions::default()
+    }
+}
+
+#[test]
+fn four_note_chords_in_wait_mode() {
+    let r = run_passages(Mode::Wait, false, 41..47, 48000.0, &four_note());
+    println!(
+        "Four-note chords, wait mode, no pedal, 48 kHz\n{}",
+        r.summary()
+    );
+    assert!(
+        r.correct.rate() >= FOUR_NOTE_WAIT.0,
+        "correct-note acceptance {}",
+        r.correct.rate()
+    );
+    assert!(
+        r.wrong.rate() <= FOUR_NOTE_WAIT.1,
+        "wrong-note acceptance {}",
+        r.wrong.rate()
+    );
+}
+
+#[test]
+fn four_note_chords_with_pedal() {
+    let r = run_passages(Mode::Wait, true, 51..57, 48000.0, &four_note());
+    println!(
+        "Four-note chords, wait mode, sustain pedal, 48 kHz\n{}",
+        r.summary()
+    );
+    assert!(
+        r.correct.rate() >= FOUR_NOTE_PEDAL.0,
+        "correct-note acceptance {}",
+        r.correct.rate()
+    );
+    assert!(
+        r.wrong.rate() <= FOUR_NOTE_PEDAL.1,
+        "wrong-note acceptance {}",
+        r.wrong.rate()
+    );
+}
+
+#[test]
+fn four_note_chords_in_play_along() {
+    let r = run_passages(Mode::PlayAlong, false, 61..65, 44100.0, &four_note());
+    println!(
+        "Four-note chords, play-along, no pedal, 44.1 kHz\n{}",
+        r.summary()
+    );
+    assert!(
+        r.correct.rate() >= FOUR_NOTE_PLAY.0,
+        "correct-note acceptance {}",
+        r.correct.rate()
+    );
+    assert!(
+        r.wrong.rate() <= FOUR_NOTE_PLAY.1,
+        "wrong-note acceptance {}",
+        r.wrong.rate()
+    );
 }

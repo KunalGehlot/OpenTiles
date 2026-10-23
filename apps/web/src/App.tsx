@@ -26,7 +26,7 @@ function nav(): { route: Route; label: string }[] {
     { route: { name: 'home' }, label: t('Pieces') },
     { route: { name: 'library' }, label: t('My library') },
     { route: { name: 'player' }, label: t('Player') },
-    { route: { name: 'drills' }, label: t('Sight-reading') },
+    { route: { name: 'drills' }, label: t('Drills') },
     { route: { name: 'sheet-music' }, label: t('Find sheet music') },
     { route: { name: 'lab' }, label: t('Detector Lab') },
     { route: { name: 'about' }, label: t('About') },
@@ -70,7 +70,7 @@ export function App() {
           {route.name === 'library' && <Library />}
           {route.name === 'player' && <Player />}
           {route.name === 'practice' && <Practice source={route.source} id={route.id} />}
-          {route.name === 'drills' && <Drills />}
+          {route.name === 'drills' && <Drills page={route.page} />}
           {route.name === 'lab' && <DetectorLab />}
           {route.name === 'about' && <About />}
           {route.name === 'sheet-music' && <SheetMusic />}

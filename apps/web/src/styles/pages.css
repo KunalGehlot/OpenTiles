@@ -757,3 +757,80 @@ button.copy-link--done {
   margin-top: auto;
   font-size: var(--text-sm);
 }
+
+/* The drills hub (P7-04): a card for each kind of drill. */
+.drill-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
+  gap: var(--space-3);
+}
+
+.drill-card svg {
+  width: 1.75rem;
+  height: 1.75rem;
+  color: var(--accent);
+}
+
+.drill-card p {
+  margin: 0;
+}
+
+.back-link {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  min-height: 44px;
+  margin-bottom: var(--space-1);
+  text-decoration: none;
+}
+
+.back-link svg {
+  width: 1.1em;
+  height: 1.1em;
+}
+
+/* A chord set of one's own: twelve root buttons and the qualities. */
+.chord-set {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.chord-set > p {
+  margin: 0;
+}
+
+.chord-roots {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(3.25rem, 1fr));
+  gap: var(--space-1);
+}
+
+.chord-roots button {
+  min-height: 44px;
+  padding-inline: var(--space-1);
+}
+
+.chord-roots button[aria-pressed='true'] {
+  border-color: var(--accent);
+  background: var(--accent);
+  color: var(--accent-text, #fff);
+}
+
+.chord-qualities {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(14rem, 1fr));
+  gap: var(--space-1) var(--space-3);
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.chord-qualities legend {
+  margin-bottom: var(--space-1);
+  padding: 0;
+}
+
+.chord-qualities .check {
+  min-height: 44px;
+}
