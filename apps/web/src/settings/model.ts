@@ -84,7 +84,7 @@ export interface AppSettings {
   largePrint: boolean;
   highContrast: TriState;
   reducedMotion: TriState;
-  /** Practice controls on the left. The practice view reads it through `useLeftHanded`. */
+  /** Practice controls on the left: `data-left-handed` on the root mirrors the practice bars. */
   leftHanded: boolean;
   pedal: PedalSettings;
   /** Opt-in anonymous crash reports (P3-08). Off unless the user switches them on. */
