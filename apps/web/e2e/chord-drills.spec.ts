@@ -216,3 +216,66 @@ test('a chord drill at a tempo counts in and plays along', async ({ page }) => {
     },
   );
 });
+
+/** The middle of a white key's front (CSS px, page coordinates), from the drawn keyboard. */
+async function whiteKeyAt(page: Page, pitch: number): Promise<{ x: number; y: number }> {
+  const [low = 0, high = 0] = ((await page.locator('canvas').getAttribute('data-drawn')) ?? '')
+    .split('-')
+    .map(Number);
+  const white = (p: number) => ![1, 3, 6, 8, 10].includes(p % 12);
+  const whites: number[] = [];
+  for (let p = low; p <= high; p++) if (white(p)) whites.push(p);
+  const box = await page.locator('canvas').boundingBox();
+  if (!box) throw new Error('No canvas');
+  // The keys fill the canvas's width (a wider window may centre them: measure the edges).
+  const edges = await page.evaluate(() => {
+    const canvas = document.querySelector('canvas');
+    const ctx = canvas?.getContext('2d');
+    if (!canvas || !ctx) return { left: 0, right: 0 };
+    const scale = canvas.width / canvas.getBoundingClientRect().width;
+    const data = ctx.getImageData(0, Math.round(canvas.height - 2 * scale), canvas.width, 1).data;
+    const bg = parseInt(
+      getComputedStyle(canvas).getPropertyValue('--canvas-bg').trim().slice(1),
+      16,
+    );
+    const rgb = [(bg >> 16) & 255, (bg >> 8) & 255, bg & 255];
+    let first = -1;
+    let last = -1;
+    for (let x = 0; x < canvas.width; x++) {
+      if (rgb.every((c, i) => Math.abs((data[x * 4 + i] ?? 0) - c) < 8)) continue;
+      if (first < 0) first = x;
+      last = x;
+    }
+    return { left: first / scale, right: (last + 1) / scale };
+  });
+  const w = (edges.right - edges.left) / whites.length;
+  return { x: box.x + edges.left + (whites.indexOf(pitch) + 0.5) * w, y: box.y + box.height - 12 };
+}
+
+test('a chord pressed with three fingers at once on the on-screen keys', async ({
+  page,
+  browserName,
+}) => {
+  // Several touch points at once need Chromium's touch events; WebKit is checked by hand.
+  test.skip(browserName !== 'chromium', 'multi-touch through CDP');
+  const id = 'chords.l1.hr.n2.t60.s5';
+  const [first = [], second = []] = drillChords(parseChordDrillId(id)).map((c) =>
+    c.upper.map((n) => n.midi),
+  );
+  await page.goto(`./#/practice/drill/${id}`);
+  await expect(page.locator('.stats')).toContainText('Chord 1/2');
+  const cdp = await page.context().newCDPSession(page);
+  const touch = async (pitches: number[]) => {
+    const points = await Promise.all(
+      pitches.map(async (p, i) => ({ ...(await whiteKeyAt(page, p)), id: i + 1 })),
+    );
+    await cdp.send('Input.dispatchTouchEvent', { type: 'touchStart', touchPoints: points });
+    await cdp.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] });
+  };
+  await touch(first);
+  await expect(page.locator('.stats')).toContainText('Chord 2/2');
+  await expect(page.getByTestId('chord-first-try')).toHaveText('1 of 1 at the first try');
+  // No key stayed down: the next chord, pressed the same way, completes the round.
+  await touch(second);
+  await expect(page.getByTestId('chord-result')).toContainText('2 of 2 at the first try');
+});

@@ -90,6 +90,7 @@ import {
 import { useScreenWakeLock } from '../practice/wake-lock';
 import { fitMessage, keyboardRange } from '../settings/model';
 import type { FingeringDisplay, MidiPlayback } from '../settings/model';
+import { spelledName } from '../lib/notes';
 import type { SpellingSetting } from '../lib/notes';
 import { loadPracticePrefs, savePracticePrefs } from '../practice/prefs';
 import type { PracticePrefs } from '../practice/prefs';
@@ -106,7 +107,7 @@ import type { SheetAttachment } from '../storage/db';
 import { hitTest, rangeFor } from '../views/keyboard';
 import type { KeysToDraw } from '../views/keyboard';
 import { LoopDrag } from '../views/loop-drag';
-import { PracticeRenderer } from '../views/renderer';
+import { PracticeRenderer, spellKey } from '../views/renderer';
 import { PracticeSession } from '../views/session';
 import type { PracticeMode, SessionStatus } from '../views/session';
 import { formatOfPath, scoreFor } from '../views/score/notation';
@@ -612,6 +613,18 @@ function PracticeView({
         }))
       : [],
   );
+  // A chord drill's notes are named as its chords spell them (P7-06).
+  const spelledNames = useRef(
+    chordDrill
+      ? new Map(
+          chordDrill.drill.chords.flatMap((c) =>
+            [...c.lower, ...c.upper].map(
+              (n) => [spellKey(c.beat, n.midi), spelledName(n.letter, n.alter)] as const,
+            ),
+          ),
+        )
+      : null,
+  );
   useEffect(() => {
     const canvas = canvasRef.current;
     const wrap = wrapRef.current;
@@ -619,6 +632,7 @@ function PracticeView({
     const renderer = new PracticeRenderer(canvas, initialRange.current);
     rendererRef.current = renderer;
     renderer.chordLabels = chordLabels.current;
+    renderer.spelledNames = spelledNames.current;
     const ro = new ResizeObserver(() => renderer.resize(wrap.clientWidth, wrap.clientHeight));
     ro.observe(wrap);
     renderer.resize(wrap.clientWidth, wrap.clientHeight);
@@ -1601,7 +1615,7 @@ function PracticeView({
                   {summary.extra > 0 && <>, {t('{n} extra', { n: summary.extra })}</>}
                 </p>
               )}
-              {summary.hardestMeasures.length > 0 && (
+              {summary.hardestMeasures.length > 0 && !chordDrill && (
                 <p className="muted">
                   {t('Hardest bars: {bars}', {
                     bars: summary.hardestMeasures

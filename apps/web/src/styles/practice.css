@@ -592,9 +592,28 @@ html[data-reduced-motion] .countdown__number {
   font-variant-numeric: tabular-nums;
 }
 
+/* A chord drill's round (P7-05): speed, first tries, and the chords that went wrong most. */
+.chord-result {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.chord-hardest {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.chord-hardest strong {
+  margin-right: 0.35em;
+}
+
 .ring {
   --size: 8rem;
 
+  /* A short panel scrolls rather than squashing the ring. */
+  flex-shrink: 0;
   position: relative;
   display: grid;
   place-content: center;

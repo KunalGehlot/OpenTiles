@@ -113,6 +113,10 @@ export function readPalette(el: Element): Palette {
   };
 }
 
+/** The key of `PracticeRenderer.spelledNames`: a beat (to the thousandth) and a pitch class. */
+export const spellKey = (beat: number, pitch: number): string =>
+  `${Math.round(beat * 1000)}:${((Math.round(pitch) % 12) + 12) % 12}`;
+
 export interface RenderOptions {
   /** Beats visible above the now-line. */
   lookahead: number;
@@ -125,6 +129,11 @@ export class PracticeRenderer {
   preview: { fromBeat: number; toBeat: number } | null = null;
   /** Chord names to draw on the falling bars of a chord drill, by the beat they start on (P7-06). */
   chordLabels: readonly { beat: number; text: string }[] = [];
+  /**
+   * A chord drill's notes named as its chords spell them (D♭ F A♭, not C♯ F G♯), by `spellKey`:
+   * the beat and the pitch class, so a piece moved by octaves to fit the keyboard keeps them.
+   */
+  spelledNames: ReadonlyMap<string, string> | null = null;
   private width = 0;
   private height = 0;
   private dpr = 1;
@@ -267,6 +276,12 @@ export class PracticeRenderer {
     this.drawProgress(ctx, session);
   }
 
+  /** A note's name: as a chord drill spells it, or by the piece's key (P5-04). */
+  private nameOf(pitch: number, beat?: number): string {
+    const spelled = beat === undefined ? undefined : this.spelledNames?.get(spellKey(beat, pitch));
+    return spelled ?? pitchClassName(pitch, this.spelling);
+  }
+
   /** Sets the font only when it differs from the last one; sizes snap to half pixels. */
   private setFont(ctx: CanvasRenderingContext2D, weight: number, size: number): void {
     const next = `${weight} ${Math.round(size * 2) / 2}px ${FONT}`;
@@ -359,8 +374,14 @@ export class PracticeRenderer {
       if (y0 < 0 || y0 > top + 1) continue;
       let left = Infinity;
       let right = -Infinity;
-      for (const n of session.song.notes) {
-        if (Math.abs(n.startBeat - label.beat) > 1e-3 || !session.inHands(n)) continue;
+      // Over the right hand's notes when both hands play: the left hand's root is far below.
+      const notes = session.song.notes.filter(
+        (n) => Math.abs(n.startBeat - label.beat) < 1e-3 && session.inHands(n),
+      );
+      const upper = notes.some((n) => n.hand === 'right')
+        ? notes.filter((n) => n.hand === 'right')
+        : notes;
+      for (const n of upper) {
         const key = keyAt(this.layout, n.pitch);
         if (!key) continue;
         left = Math.min(left, key.x);
@@ -602,7 +623,7 @@ export class PracticeRenderer {
         this.setFont(ctx, 600, Math.min(size, w * 0.62));
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
-        ctx.fillText(pitchClassName(n.pitch, this.spelling), x + w / 2, y + size * 0.5 + 5);
+        ctx.fillText(this.nameOf(n.pitch, n.startBeat), x + w / 2, y + size * 0.5 + 5);
         ctx.textBaseline = 'alphabetic';
       }
     }
@@ -632,8 +653,10 @@ export class PracticeRenderer {
     const handOf = new Map<number, 'left' | 'right'>();
     // Fingers on the keys to play next (P4-08); the song carries them only when they are shown.
     const fingerOf = new Map<number, number>();
+    const beatOf = new Map<number, number>();
     for (const n of expectedNotes) {
       handOf.set(n.pitch, n.hand);
+      beatOf.set(n.pitch, n.startBeat);
       if (n.fingering !== undefined) fingerOf.set(n.pitch, n.fingering);
     }
     const flashOf = new Map<number, string>();
@@ -670,7 +693,7 @@ export class PracticeRenderer {
       ctx.textAlign = 'center';
       if (this.noteNames && expected.has(k.pitch)) {
         // The key to play is named at its front edge, below its finger when there is room (P5-03).
-        const name = pitchClassName(k.pitch, this.spelling);
+        const name = this.nameOf(k.pitch, beatOf.get(k.pitch));
         const size = Math.min(Math.max(k.width * 0.42, 10), 15) * this.scale;
         const finger = fingerOf.has(k.pitch)
           ? top + bh + (height - bh) * 0.4 + this.fingerSize(k) / 2 + 2
@@ -710,7 +733,7 @@ export class PracticeRenderer {
       this.drawStrike(ctx, k, session, now, top, bh);
       if (this.noteNames && expected.has(k.pitch)) {
         // Above the finger, which sits near the front edge; only where the name fits the key.
-        const name = pitchClassName(k.pitch, this.spelling);
+        const name = this.nameOf(k.pitch, beatOf.get(k.pitch));
         const size = Math.min(Math.max(k.width * 0.5, 9), 13) * this.scale;
         if (bh >= 60 && this.fitFont(ctx, name, 600, size, k.width - 2)) {
           ctx.fillStyle = p.onHand;
