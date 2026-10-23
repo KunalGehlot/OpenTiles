@@ -1,8 +1,9 @@
-// Sight-reading drills (P5-05, ADR 0015): choose a clef, a key and how far from middle C the notes
-// go, then read new notes from the staff. Every drill is generated on this device; the choices
-// are remembered for next time.
+// The drills: a hub with a card for each kind (P7-04), and their setup pages. Sight-reading
+// (P5-05, ADR 0015): choose a clef, a key and how far from middle C the notes go, then read new
+// notes from the staff. Chords (P7-04, ADR 0022) are in ChordDrills.tsx. Every drill is generated
+// on this device; the choices are remembered for next time.
 import { useEffect, useState } from 'react';
-import { Play } from 'lucide-react';
+import { Music, Play, Piano } from 'lucide-react';
 import {
   clefName,
   DEFAULT_DRILL_PREFS,
@@ -14,10 +15,39 @@ import {
 } from '../practice/drill';
 import type { DrillPrefs } from '../practice/drill';
 import { href } from '../lib/router';
+import type { DrillPage } from '../lib/router';
+import { BackToDrills, ChordDrills } from './ChordDrills';
 import { Setting, Toggle } from '../ui/SettingRow';
 import { t } from '../i18n';
 
-export function Drills() {
+export function Drills({ page }: { page?: DrillPage }) {
+  if (page === 'sight-reading') return <SightReading />;
+  if (page === 'chords') return <ChordDrills />;
+  return (
+    <div className="settings drills">
+      <h1>{t('Drills')}</h1>
+      <p className="lead">
+        {t('Short exercises made on this device, new every time. Choose what to practise.')}
+      </p>
+      <div className="drill-cards">
+        <a className="card drill-card" href={href({ name: 'drills', page: 'sight-reading' })}>
+          <Music aria-hidden="true" />
+          <h3>{t('Sight-reading')}</h3>
+          <p className="muted">{t('Read single notes or short phrases from the staff.')}</p>
+        </a>
+        <a className="card drill-card" href={href({ name: 'drills', page: 'chords' })}>
+          <Piano aria-hidden="true" />
+          <h3>{t('Chords')}</h3>
+          <p className="muted">
+            {t('Random chords to find and press, on the sheet or as falling keys.')}
+          </p>
+        </a>
+      </div>
+    </div>
+  );
+}
+
+function SightReading() {
   const [prefs, setPrefs] = useState<DrillPrefs | null>(null);
 
   useEffect(() => {
@@ -37,6 +67,7 @@ export function Drills() {
 
   return (
     <div className="settings drills">
+      <BackToDrills />
       <h1>{t('Sight-reading')}</h1>
       <p className="lead">
         {t(

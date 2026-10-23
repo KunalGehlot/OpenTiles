@@ -14,8 +14,20 @@ import {
   SlidersHorizontal,
   Square,
 } from 'lucide-react';
-import { customKeyboard, KEYBOARD_PRESETS, keyCount } from '@opentiles/practice';
-import type { HandFilter } from '@opentiles/practice';
+import {
+  CHORD_SPREAD,
+  customKeyboard,
+  hardestChords,
+  isChordDrillId,
+  KEYBOARD_PRESETS,
+  keyCount,
+  mainCause,
+  mostNotesAtOnce,
+  pitchClassOf,
+  recentShares,
+  STRICT_CHORD_SPREAD,
+} from '@opentiles/practice';
+import type { ChordRoundSummary, ChordStats, HandFilter } from '@opentiles/practice';
 import type { ScoreHints, Song } from '@opentiles/song-model';
 import { audioContext, audioStarted, now, unlockAudio } from '../audio/context';
 import { MidiOutInstrument, playbackInstrument, SentNotes } from '../audio/midi-out';
@@ -46,6 +58,21 @@ import { MidiLatencyCalibration } from '../practice/MidiLatencyCalibration';
 import { prepareSong } from '../practice/prepare';
 import { drillRoute, loadDrill, loadDrillPrefs, notesPerMinute } from '../practice/drill';
 import type { DrillPrefs } from '../practice/drill';
+import {
+  afterRound,
+  causeName,
+  chordDrillRoute,
+  hintFor,
+  kindLabel,
+  loadChordDrill,
+  loadChordDrillPrefs,
+  loadChordStats,
+  recordChordRound,
+  saveChordDrillPrefs,
+  weakFocus,
+} from '../practice/chord-drill';
+import type { ChordDrillPrefs, LoadedChordDrill } from '../practice/chord-drill';
+import type { Route } from '../lib/router';
 import { LiveStatsStrip } from '../practice/LiveStatsStrip';
 import { OverviewStrip } from '../practice/OverviewStrip';
 import { PlaysOnControl } from '../practice/PlaysOnControl';
@@ -99,8 +126,8 @@ interface Loaded {
   subtitle?: string;
   progressKey: string;
   notation: NotationSource;
-  /** A sight-reading drill (P5-05): what it hides, and the choices for the next one. */
-  drill?: { guide: 'keys' | 'none'; prefs: DrillPrefs };
+  /** A drill (P5-05, P7-04): what it hides, and the choices for the next one. */
+  drill?: DrillInfo;
   /**
    * The learner's sheet music for a library piece (ADR 0018), with its views: loaded with the
    * piece rather than lazily on first render, which React would hold back for a moment.
@@ -114,6 +141,23 @@ interface Loaded {
    */
   engraved?: { hints: ScoreHints | undefined };
 }
+
+/**
+ * A drill (P5-05, P7-04): what the screen gives away, and the choices for the next one. A chord
+ * drill also carries its chords and names.
+ */
+type DrillInfo =
+  | { kind: 'sight'; guide: 'keys' | 'none'; prefs: DrillPrefs }
+  | {
+      kind: 'chords';
+      guide: 'full' | 'keys' | 'none';
+      prefs: ChordDrillPrefs;
+      drill: LoadedChordDrill;
+    };
+
+/** The next drill with the same choices. */
+const nextDrill = (d: DrillInfo, chordPrefs?: ChordDrillPrefs, focus: string[] = []): Route =>
+  d.kind === 'chords' ? chordDrillRoute(chordPrefs ?? d.prefs, focus) : drillRoute(d.prefs);
 
 const NO_BARS: readonly number[] = [];
 /** How long an endless drill's result stays before the next drill starts. */
@@ -155,6 +199,24 @@ export function Practice({
     setLoaded(null);
     setError(null);
     const load = async (): Promise<Loaded> => {
+      if (source === 'drill' && isChordDrillId(id)) {
+        const chordPrefs = await loadChordDrillPrefs();
+        const d = loadChordDrill(id, chordPrefs.names);
+        return {
+          source,
+          song: d.song,
+          title: d.title,
+          subtitle: t('Chords'),
+          progressKey: `drill:${id}`,
+          notation: { kind: 'musicxml', text: d.musicxml, transpose: 0 },
+          drill: {
+            kind: 'chords',
+            guide: chordPrefs.show === 'falling' ? 'full' : chordPrefs.showKeys ? 'keys' : 'none',
+            prefs: chordPrefs,
+            drill: d,
+          },
+        };
+      }
       if (source === 'drill') {
         const drillPrefs = await loadDrillPrefs();
         const d = loadDrill(id, drillPrefs.letters);
@@ -165,7 +227,7 @@ export function Practice({
           subtitle: t('Sight-reading'),
           progressKey: `drill:${id}`,
           notation: { kind: 'musicxml', text: d.musicxml, transpose: 0 },
-          drill: { guide: drillPrefs.showKeys ? 'keys' : 'none', prefs: drillPrefs },
+          drill: { kind: 'sight', guide: drillPrefs.showKeys ? 'keys' : 'none', prefs: drillPrefs },
         };
       }
       if (source === 'catalogue') {
@@ -252,10 +314,39 @@ function PracticeView({
   const notation = written?.notation ?? loadedNotation;
   // A drill starts in wait mode with both hands, shows the score and nothing that gives the notes
   // away (no falling notes, no overview), and keeps the learner's choices for pieces as they are.
-  const prefs = useMemo<PracticePrefs>(
-    () => (drill ? { ...savedPrefs, mode: 'wait', hands: 'both', overview: false } : savedPrefs),
-    [drill, savedPrefs],
-  );
+  // A chord drill at a tempo plays along at the tempo written into it (P7-07).
+  const chordDrill = drill?.kind === 'chords' ? drill : null;
+  const prefs = useMemo<PracticePrefs>(() => {
+    if (!drill) return savedPrefs;
+    const atTempo = drill.kind === 'chords' && drill.prefs.pace === 'tempo';
+    return {
+      ...savedPrefs,
+      mode: atTempo ? 'play-along' : 'wait',
+      hands: 'both',
+      overview: false,
+      ...(drill.kind === 'chords' ? { tempo: 1, accompany: false } : {}),
+    };
+  }, [drill, savedPrefs]);
+  // A chord drill's choices after this round (the tempo ladder may move), its progress before the
+  // round, and the round itself, for the result card (P7-07, P7-08).
+  const [chordPrefs, setChordPrefs] = useState<ChordDrillPrefs | null>(chordDrill?.prefs ?? null);
+  const [chordRound, setChordRound] = useState<{
+    summary: ChordRoundSummary;
+    before: ChordStats;
+    after: ChordStats;
+    tempo: { from: number; to: number } | null;
+  } | null>(null);
+  const [chordFocus, setChordFocus] = useState<string[]>([]);
+  useEffect(() => {
+    if (!chordDrill?.prefs.weak) return;
+    let cancelled = false;
+    void loadChordStats().then(
+      (stats) => !cancelled && setChordFocus(weakFocus(stats, chordDrill.prefs)),
+    );
+    return () => {
+      cancelled = true;
+    };
+  }, [chordDrill]);
   const remember = useCallback(
     (patch: Partial<PracticePrefs>) => {
       if (!drill) savePracticePrefs(patch);
@@ -353,8 +444,9 @@ function PracticeView({
   const pointers = useRef(new Map<number, number>());
   const [loopDrag] = useState(() => new LoopDrag(session, () => rendererRef.current));
   const [chosenView, setView] = usePracticeView(notation, sheet !== undefined);
-  // The page view shows the whole drill at once, so the learner can read ahead.
-  const view = drill ? 'page' : chosenView;
+  // The page view shows the whole drill at once, so the learner can read ahead; a chord drill can
+  // show falling keys instead (P7-06).
+  const view = chordDrill?.prefs.show === 'falling' ? 'falling' : drill ? 'page' : chosenView;
   useScreenWakeLock(session, status.playing);
   // After a run the position glides back to the start; under Reduce motion it jumps there.
   const { reducedMotion } = useEffectiveAccessibility();
@@ -369,10 +461,41 @@ function PracticeView({
   useEffect(() => {
     session.onStatus = setStatus;
     session.guide = drill?.guide ?? 'full';
-    session.onFinish = (summary, seconds) =>
-      void (drill
-        ? recordPracticeTime(seconds)
-        : recordRun(progressKey, summary.accuracy, seconds));
+    // A chord drill judges whole chords (P7-03), lights the keys its level allows (P7-06) and, for
+    // "Name only", keeps the notes to come off the score (P7-05).
+    const chords = drill?.kind === 'chords' ? drill : null;
+    session.chordDrill = chords
+      ? {
+          kinds: chords.drill.chords.map((c) => `${pitchClassOf(c.chord.root)}.${c.chord.quality}`),
+          roots: chords.drill.chords.map((c) => pitchClassOf(c.chord.root)),
+          spread: chords.prefs.strict ? STRICT_CHORD_SPREAD : CHORD_SPREAD,
+        }
+      : null;
+    session.keyHint =
+      chords && chords.prefs.show === 'falling'
+        ? hintFor(chords.prefs, chords.drill.options.level)
+        : 'all';
+    session.hideAhead =
+      chords !== null && chords.prefs.show === 'sheet' && chords.prefs.names === 'name-only';
+    session.onFinish = (summary, seconds) => {
+      if (!drill) return void recordRun(progressKey, summary.accuracy, seconds);
+      void recordPracticeTime(seconds);
+      if (!chords) return;
+      const round = session.chords.summary();
+      void recordChordRound(round, session.chords.attempts).then(({ before, after }) => {
+        const next = afterRound(chords.prefs, round.share);
+        if (next !== chords.prefs) void saveChordDrillPrefs(next);
+        setChordPrefs(next);
+        setChordRound({
+          summary: round,
+          before,
+          after,
+          tempo:
+            next.tempo !== chords.prefs.tempo ? { from: chords.prefs.tempo, to: next.tempo } : null,
+        });
+        if (next.weak) setChordFocus(weakFocus(after, next));
+      });
+    };
     session.onTempo = (factor) => {
       setTempo(factor);
       remember({ tempo: factor });
@@ -384,7 +507,7 @@ function PracticeView({
     );
     // A run the learner plays counts in and starts by itself (P6-20); a drill waits for its first
     // note. The count-in's opening waits while it could not be heard.
-    session.countIn = !drill;
+    session.countIn = !drill || (drill.kind === 'chords' && drill.prefs.pace === 'tempo');
     session.soundReady = () => audioStarted() || keyboardOut.current !== null || soundTried.current;
     // Start from the learner's last choices.
     session.setMode(prefs.mode);
@@ -407,9 +530,18 @@ function PracticeView({
   const finished = status.finished;
   useEffect(() => {
     if (!finished || !drill?.prefs.endless) return;
-    const timer = window.setTimeout(() => navigate(drillRoute(drill.prefs)), ENDLESS_PAUSE_MS);
+    // A chord round waits for its result to be kept, so the next round has the new tempo.
+    if (drill.kind === 'chords' && !chordRound) return;
+    const timer = window.setTimeout(
+      () => navigate(nextDrill(drill, chordPrefs ?? undefined, chordFocus)),
+      ENDLESS_PAUSE_MS,
+    );
     return () => window.clearTimeout(timer);
-  }, [finished, drill]);
+  }, [finished, drill, chordRound, chordPrefs, chordFocus]);
+  // A new run of the same drill starts a new round.
+  useEffect(() => {
+    if (!finished) setChordRound(null);
+  }, [finished]);
 
   useEffect(() => {
     // While the microphone is being set up, the set-up decides what it listens for.
@@ -471,12 +603,22 @@ function PracticeView({
 
   // Canvas: resize and draw every frame.
   const initialRange = useRef(keysRange);
+  // A chord drill's names on the falling bars (P7-06), unless the learner hides them.
+  const chordLabels = useRef(
+    chordDrill && chordDrill.prefs.show === 'falling' && chordDrill.prefs.names !== 'hidden'
+      ? chordDrill.drill.chords.map((c, i) => ({
+          beat: c.beat,
+          text: chordDrill.drill.names[i] ?? '',
+        }))
+      : [],
+  );
   useEffect(() => {
     const canvas = canvasRef.current;
     const wrap = wrapRef.current;
     if (!canvas || !wrap) return;
     const renderer = new PracticeRenderer(canvas, initialRange.current);
     rendererRef.current = renderer;
+    renderer.chordLabels = chordLabels.current;
     const ro = new ResizeObserver(() => renderer.resize(wrap.clientWidth, wrap.clientHeight));
     ro.observe(wrap);
     renderer.resize(wrap.clientWidth, wrap.clientHeight);
@@ -838,8 +980,19 @@ function PracticeView({
   const holdCount = holds.good + holds.short + holds.long;
   const measureLabel = (index: number) => song.measures[index]?.number ?? String(index + 1);
 
-  const backRoute =
-    source === 'library' ? ({ name: 'library' } as const) : ({ name: 'home' } as const);
+  const backRoute: Route =
+    source === 'library'
+      ? { name: 'library' }
+      : drill
+        ? { name: 'drills', page: drill.kind === 'chords' ? 'chords' : 'sight-reading' }
+        : { name: 'home' };
+  // Four or more notes at once on the microphone are best effort until P7-10 has numbers (Q6).
+  const manyNotes = chordDrill !== null && mostNotesAtOnce(chordDrill.drill.chords) > 3;
+  const nameOnly = chordDrill?.prefs.show === 'sheet' && chordDrill.prefs.names === 'name-only';
+  const hardest = chordRound ? hardestChords(chordRound.summary) : [];
+  const lastShares = chordRound ? recentShares(chordRound.before) : [];
+  const lastShare =
+    lastShares.length > 0 ? lastShares.reduce((a, b) => a + b, 0) / lastShares.length : null;
 
   return (
     <>
@@ -847,7 +1000,7 @@ function PracticeView({
         <a className="back" href={href(backRoute)}>
           <ChevronLeft />
           <span className="back__label">
-            {source === 'library' ? t('My library') : t('Pieces')}
+            {source === 'library' ? t('My library') : drill ? t('Drills') : t('Pieces')}
           </span>
         </a>
         <h1 className="session-title">
@@ -1172,16 +1325,43 @@ function PracticeView({
         <span className="stats" aria-live="polite">
           {mode === 'wait' ? (
             <span className="stat">
-              {t('Step {step}/{count}', {
-                step: Math.min(status.stepIndex + 1, status.stepCount),
-                count: status.stepCount,
-              })}
+              {chordDrill
+                ? t('Chord {step}/{count}', {
+                    step: Math.min(status.stepIndex + 1, status.stepCount),
+                    count: status.stepCount,
+                  })
+                : t('Step {step}/{count}', {
+                    step: Math.min(status.stepIndex + 1, status.stepCount),
+                    count: status.stepCount,
+                  })}
             </span>
           ) : null}
+          {status.chords && status.chords.judged > 0 && (
+            <span className="stat" data-testid="chord-first-try">
+              {t('{n} of {count} at the first try', {
+                n: status.chords.firstTry,
+                count: status.chords.judged,
+              })}
+            </span>
+          )}
           <span className="stat stat--ok">✓ {status.correct}</span>
           <span className="stat stat--bad">✗ {status.wrong}</span>
         </span>
         {liveStats && <LiveStatsStrip stats={status.live} mode={mode} />}
+        {nameOnly && mode === 'wait' && !status.finished && (
+          <button
+            onClick={() => session.revealChord()}
+            disabled={status.revealed}
+            title={t('Shows the chord on the sheet; it counts as a miss.')}
+          >
+            {t('Show me')}
+          </button>
+        )}
+        {mic && manyNotes && (
+          <span className="hint" role="status" data-testid="chord-mic-hint">
+            {t('Four-note chords work best with a MIDI keyboard or the on-screen keys.')}
+          </span>
+        )}
         {inputError && <span className="error">{inputError}</span>}
         {route.problem && route.problem !== 'no-midi' && midiChecked && !midiWaiting && (
           <span className="hint" role="status" data-testid="plays-on-notice">
@@ -1235,6 +1415,7 @@ function PracticeView({
           notation={shownNotation}
           layout={view}
           main={drill !== undefined}
+          nameOnly={nameOnly}
           hardest={
             status.finished && summary
               ? summary.hardestMeasures.map((m) => m.measureIndex)
@@ -1284,21 +1465,102 @@ function PracticeView({
           <div className="overlay">
             <div className="panel stack summary">
               <h2>{t('Well played!')}</h2>
-              <div
-                className="ring"
-                role="img"
-                aria-label={t('Accuracy {percent} %', {
-                  percent: Math.round(summary.accuracy * 100),
-                })}
-                style={{ '--pct': Math.round(summary.accuracy * 100) } as React.CSSProperties}
-              >
-                <span className="ring__value">
-                  {Math.round(summary.accuracy * 100)}
-                  <small> %</small>
-                </span>
-                <span className="ring__label">{t('accuracy')}</span>
-              </div>
-              {drill && mode === 'wait' && status.elapsed > 0 && (
+              {chordDrill && status.chords ? (
+                <div
+                  className="ring"
+                  role="img"
+                  aria-label={t('{percent} % at the first try', {
+                    percent: Math.round(
+                      (status.chords.firstTry / Math.max(1, status.chords.judged)) * 100,
+                    ),
+                  })}
+                  style={
+                    {
+                      '--pct': Math.round(
+                        (status.chords.firstTry / Math.max(1, status.chords.judged)) * 100,
+                      ),
+                    } as React.CSSProperties
+                  }
+                >
+                  <span className="ring__value">
+                    {Math.round((status.chords.firstTry / Math.max(1, status.chords.judged)) * 100)}
+                    <small> %</small>
+                  </span>
+                  <span className="ring__label">{t('first try')}</span>
+                </div>
+              ) : (
+                <div
+                  className="ring"
+                  role="img"
+                  aria-label={t('Accuracy {percent} %', {
+                    percent: Math.round(summary.accuracy * 100),
+                  })}
+                  style={{ '--pct': Math.round(summary.accuracy * 100) } as React.CSSProperties}
+                >
+                  <span className="ring__value">
+                    {Math.round(summary.accuracy * 100)}
+                    <small> %</small>
+                  </span>
+                  <span className="ring__label">{t('accuracy')}</span>
+                </div>
+              )}
+              {chordDrill && status.chords && (
+                <div className="chord-result" data-testid="chord-result">
+                  <p className="drill-speed">
+                    <strong>
+                      {mode === 'wait'
+                        ? t('{n} chords a minute', { n: status.chords.perMinute })
+                        : t('{n} of {count} chords together and on time', {
+                            n: status.chords.firstTry,
+                            count: status.chords.judged,
+                          })}
+                    </strong>
+                    {mode === 'wait' && (
+                      <>
+                        {' · '}
+                        {t('{n} of {count} at the first try', {
+                          n: status.chords.firstTry,
+                          count: status.chords.judged,
+                        })}
+                      </>
+                    )}
+                  </p>
+                  {lastShare !== null && (
+                    <p className="muted">
+                      {t('Your last rounds: {percent} % at the first try', {
+                        percent: Math.round(lastShare * 100),
+                      })}
+                    </p>
+                  )}
+                  {hardest.length > 0 && (
+                    <ul className="chord-hardest">
+                      {hardest.map((k) => {
+                        const cause = mainCause(k);
+                        const times = cause ? (k.causes[cause] ?? 0) : 0;
+                        return (
+                          <li key={k.kind}>
+                            <strong>{kindLabel(k.kind)}</strong>
+                            {cause &&
+                              ` ${t('{cause}, {n}×', { cause: causeName(cause), n: times })}`}
+                          </li>
+                        );
+                      })}
+                    </ul>
+                  )}
+                  {chordRound?.tempo && (
+                    <p className="muted" role="status">
+                      {chordRound.tempo.to > chordRound.tempo.from
+                        ? t('Next round: {bpm} beats a minute, a step faster.', {
+                            bpm: chordRound.tempo.to,
+                          })
+                        : t('Next round: {bpm} beats a minute, a step slower.', {
+                            bpm: chordRound.tempo.to,
+                          })}
+                    </p>
+                  )}
+                </div>
+              )}
+              {drill?.kind === 'sight' && mode === 'wait' && status.elapsed > 0 && (
                 <p className="drill-speed" data-testid="drill-speed">
                   <strong>
                     {t('{n} notes a minute', {
@@ -1361,14 +1623,17 @@ function PracticeView({
               <div className="row summary__actions">
                 {drill ? (
                   <>
-                    <a className="button primary" href={href(drillRoute(drill.prefs))}>
-                      <Play /> {t('Next drill')}
+                    <a
+                      className="button primary"
+                      href={href(nextDrill(drill, chordPrefs ?? undefined, chordFocus))}
+                    >
+                      <Play /> {drill.kind === 'chords' ? t('Next round') : t('Next drill')}
                     </a>
                     <button onClick={() => session.rebuild()}>
                       <RotateCcw /> {t('Play again')}
                     </button>
-                    <a className="button" href={href({ name: 'drills' })}>
-                      {t('Change the drill')}
+                    <a className="button" href={href(backRoute)}>
+                      {drill.kind === 'chords' ? t('Change the chords') : t('Change the drill')}
                     </a>
                   </>
                 ) : (
@@ -1384,7 +1649,9 @@ function PracticeView({
               </div>
               {drill?.prefs.endless && (
                 <p className="muted" role="status">
-                  {t('The next drill starts in a moment.')}
+                  {drill.kind === 'chords'
+                    ? t('The next round starts in a moment.')
+                    : t('The next drill starts in a moment.')}
                 </p>
               )}
             </div>

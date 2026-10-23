@@ -5,6 +5,7 @@ import {
   asPlayed,
   buildPlayback,
   buildSteps,
+  ChordTally,
   holdOverdueAfter,
   judgeHold,
   LiveTally,
@@ -30,6 +31,7 @@ import type {
   LoopRange,
   LoopRunOutcome,
   NoteEvent,
+  NoteResult,
   PlayedNote,
   RenderNote,
   RunSummary,
@@ -171,6 +173,20 @@ export interface SessionStatus {
   countdown: number | null;
   /** A wait-mode run waits for a tap: its opening plays on this device, whose sound is not on yet. */
   tapToStart: boolean;
+  /** A chord drill's whole chords so far (P7-03): judged, right at the first try, a minute. */
+  chords: { judged: number; firstTry: number; perMinute: number } | null;
+  /** The learner asked to see the chord to play now ("Show me", P7-05). */
+  revealed: boolean;
+}
+
+/** What a chord drill tells the session about each step (P7-03, ADR 0022). */
+export interface ChordDrillSteps {
+  /** The chord's kind (`pitchClass.quality`) per step, for the statistics. */
+  kinds: string[];
+  /** The root's pitch class per step, for the root-only hint and the causes of a miss. */
+  roots: number[];
+  /** Seconds a chord's notes may spread at a tempo and still count as together. */
+  spread: number;
 }
 
 const LEAD_IN = 1.5;
@@ -223,6 +239,21 @@ export class PracticeSession {
    * only (`keys`), or nothing but the score (`none`, for sight-reading drills).
    */
   guide: 'full' | 'keys' | 'none' = 'full';
+  /**
+   * A chord drill (P7-03): each step is also judged as a whole chord, by `chords`. Null for pieces
+   * and sight-reading.
+   */
+  chordDrill: ChordDrillSteps | null = null;
+  readonly chords = new ChordTally();
+  /** Which keys to press light up (P7-06): all of them, a chord drill's root only, or none. */
+  keyHint: 'all' | 'root' | 'none' = 'all';
+  /** Notes not played yet stay hidden on the score ("Name only", P7-05). */
+  hideAhead = false;
+  /** The wait-mode step the learner asked to see ("Show me"); -1 for none. */
+  revealed = -1;
+  private chordResults = new Map<number, NoteResult[]>();
+  private chordWrongs = new Map<number, number[]>();
+  private chordStepOf: Map<string, number> | null = null;
   /**
    * Plays the notes of a MIDI keyboard on this device too (Settings → MIDI keyboard), for keyboards
    * with no speakers or for headphones on the computer. Null: the keyboard's own sound only.
@@ -465,7 +496,103 @@ export class PracticeSession {
       live: { ...this.tally.stats },
       countdown: this.countdownNumber(),
       tapToStart: this.leadPending,
+      chords: this.chordDrill ? this.chordStatus() : null,
+      revealed: this.mode === 'wait' && this.revealed >= 0 && this.revealed === this.wait.index,
     };
+  }
+
+  private chordStatus(): SessionStatus['chords'] {
+    const s = this.chords.summary();
+    return { judged: s.chords, firstTry: s.firstTry, perMinute: s.perMinute };
+  }
+
+  /** Clears the chord judging for a new run. */
+  private resetChords(): void {
+    this.chords.reset();
+    this.chordResults.clear();
+    this.chordWrongs.clear();
+    this.chordStepOf = null;
+    this.revealed = -1;
+  }
+
+  /** The step a note belongs to, by its id (a chord drill has one step a bar). */
+  private chordStepIndex(id: string): number | undefined {
+    this.chordStepOf ??= new Map(
+      this.steps.flatMap((s, i) => s.notes.map((n) => [n.id, i] as const)),
+    );
+    return this.chordStepOf.get(id);
+  }
+
+  private startChord(index: number, step: Step, t: number): void {
+    const info = this.chordDrill;
+    if (!info) return;
+    this.chords.start(index, info.kinds[index] ?? '', step.pitches, t, info.roots[index]);
+  }
+
+  /**
+   * "Show me" (P7-05): the chord to play now is shown on the score and counts as a miss. Wait mode
+   * only; at a tempo the chord goes by anyway.
+   */
+  revealChord(): void {
+    const step = this.wait.current;
+    if (!this.chordDrill || this.mode !== 'wait' || !step) return;
+    if (!this.chords.active) this.startChord(this.wait.index, step, this.time());
+    this.chords.reveal();
+    this.revealed = this.wait.index;
+    this.emitStatus();
+  }
+
+  /** A play-along result for a chord drill's note: the chord is judged once all its notes are. */
+  private chordNote(r: NoteResult): void {
+    const info = this.chordDrill;
+    const i = info ? this.chordStepIndex(r.note.id) : undefined;
+    if (!info || i === undefined) return;
+    const list = this.chordResults.get(i) ?? [];
+    list.push(r);
+    this.chordResults.set(i, list);
+    if (list.length === this.steps[i]?.notes.length) {
+      this.chords.judged(
+        i,
+        info.kinds[i] ?? '',
+        list,
+        this.chordWrongs.get(i) ?? [],
+        info.spread,
+        info.roots[i],
+      );
+    }
+  }
+
+  /** A key outside every chord at a tempo: it counts against the chord nearest in time. */
+  private chordExtra(pitch: number, t: number): void {
+    const tl = this.timeline;
+    if (!this.chordDrill || !tl) return;
+    let best = -1;
+    let distance = Infinity;
+    for (const [i, s] of this.steps.entries()) {
+      const d = Math.abs(tl.timeOf(s.beat) - t);
+      if (d < distance) {
+        best = i;
+        distance = d;
+      }
+    }
+    if (
+      best < 0 ||
+      (this.chordResults.get(best)?.length ?? 0) >= (this.steps[best]?.notes.length ?? 0)
+    )
+      return;
+    this.chordWrongs.set(best, [...(this.chordWrongs.get(best) ?? []), pitch]);
+  }
+
+  /** The keys to light up: the notes expected now, as `guide` and `keyHint` allow (P7-06). */
+  litNotes(): SongNote[] {
+    if (this.guide === 'none' || this.keyHint === 'none') return [];
+    const notes = this.expectedNotes();
+    const roots = this.chordDrill?.roots;
+    if (this.keyHint !== 'root' || !roots) return notes;
+    return notes.filter((n) => {
+      const i = this.chordStepIndex(n.id);
+      return i !== undefined && ((n.pitch % 12) + 12) % 12 === roots[i];
+    });
   }
 
   private countdownNumber(): number | null {
@@ -500,6 +627,7 @@ export class PracticeSession {
     this.strikes.clear();
     this.resetRun();
     this.tally.reset();
+    this.resetChords();
     this.stepHadWrong = false;
     this.summary = null;
     this.startedAt = 0;
@@ -732,6 +860,15 @@ export class PracticeSession {
     }
     if (this.mode === 'wait') {
       const before = this.wait.current;
+      // A chord drill's chord is timed from the first key of the run, then from the last chord.
+      if (this.chordDrill && before && !this.chords.active) {
+        this.startChord(this.wait.index, before, t);
+      }
+      // The chord is complete before wait mode moves on, which ends the run after the last one.
+      const remaining = this.wait.remaining;
+      if (this.chordDrill && remaining.length === 1 && remaining[0] === e.pitch) {
+        this.chords.complete(t);
+      }
       const out = this.wait.handle(e);
       if (out.kind === 'correct') {
         this.keys.set(e.pitch, 'correct');
@@ -749,11 +886,14 @@ export class PracticeSession {
           this.lead = null;
           this.leadPending = false;
           this.accompanyStep(before, t);
+          const next = this.wait.current;
+          if (this.chordDrill && next) this.startChord(this.wait.index, next, t);
         }
       } else if (out.kind === 'wrong') {
         this.keys.set(e.pitch, 'wrong');
         this.flash(e.pitch, 'wrong', t);
         this.tally.wrong();
+        this.chords.wrong(e.pitch);
         this.stepHadWrong = true;
         for (const n of before?.notes ?? [])
           if (!this.done.has(n.id)) this.marks.set(n.id, 'wrong');
@@ -768,6 +908,7 @@ export class PracticeSession {
         this.marks.set(note.id, 'correct');
         this.done.add(note.id);
         this.tally.right(judgement === 'hit' ? 'perfect' : 'good');
+        this.chordNote(out.result);
         if (judgement === 'early' || judgement === 'late') {
           // The right note at the wrong moment: a timing colour and a label, not the red of a
           // wrong note (P1-24).
@@ -787,6 +928,7 @@ export class PracticeSession {
         this.keys.set(e.pitch, 'wrong');
         this.flash(e.pitch, 'wrong', t);
         this.tally.wrong();
+        this.chordExtra(e.pitch, t);
       }
     }
     this.emitStatus();
@@ -1005,6 +1147,7 @@ export class PracticeSession {
     this.marks.clear();
     this.resetRun();
     this.tally.reset();
+    this.resetChords();
     this.finishedAt = 0;
     this.homed = false;
     this.homing = null;
@@ -1173,6 +1316,7 @@ export class PracticeSession {
           this.flash(r.note.pitch, 'missed', t);
           this.marks.set(r.note.id, 'wrong');
           this.tally.missed();
+          this.chordNote(r);
         }
         if (this.mode === 'play-along') {
           this.onExpected(this.upcomingPitches(t));
@@ -1246,7 +1390,7 @@ export class PracticeSession {
     this.finishedAt = t;
     let summary: RunSummary | null = null;
     if (scorer && tl && this.mode === 'play-along') {
-      scorer.finish();
+      for (const r of scorer.finish()) this.chordNote(r);
       const measureAt = (time: number) => {
         const beat = tl.beatAt(time);
         return this.song.measures.findLast((m) => m.startBeat <= beat + 1e-6)?.index;

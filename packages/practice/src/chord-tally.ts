@@ -109,6 +109,11 @@ export class ChordTally {
     return this.done;
   }
 
+  /** A chord has been shown and is not judged yet. */
+  get active(): boolean {
+    return this.current !== null;
+  }
+
   reset(): void {
     this.current = null;
     this.done.length = 0;

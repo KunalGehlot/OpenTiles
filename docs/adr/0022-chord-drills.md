@@ -30,7 +30,8 @@ Q9) were decided on 2026-10-22; this record holds those decisions and the ones t
   than leaving those roots out of the levels. add9 and the sixth chords come in root position only;
   triads and sevenths come in every inversion. Names are returned as parts (root, suffix, bass) and
   the web app writes them in the learner's label style (Q9): letters (B♭maj7), German (Bmaj7 for
-  B♭, Hmaj7 for B) or fixed-do (Si♭maj7). Minor keeps the `m` suffix in every style. Inversions are
+  B♭, Hmaj7 for B) or fixed-do (Si♭ maj7, with a space so "Do m" does not read as a word). Minor
+  keeps the `m` suffix in every style. Inversions are
   named as slash chords (C/E).
 - **Generator** (`chord-drills.ts`): one chord a bar as a whole note in 4/4 (Q8), C major key
   signature, every accidental written (Verovio does not draw an accidental from `<alter>` alone), and

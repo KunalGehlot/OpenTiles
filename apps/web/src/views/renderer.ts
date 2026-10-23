@@ -123,6 +123,8 @@ export class PracticeRenderer {
   layout: KeyboardLayout;
   /** Bars being selected by a drag, drawn as a dashed band until the pointer is released. */
   preview: { fromBeat: number; toBeat: number } | null = null;
+  /** Chord names to draw on the falling bars of a chord drill, by the beat they start on (P7-06). */
+  chordLabels: readonly { beat: number; text: string }[] = [];
   private width = 0;
   private height = 0;
   private dpr = 1;
@@ -254,6 +256,7 @@ export class PracticeRenderer {
         if (y1 > top || y0 < -10) continue;
         this.drawNote(ctx, n, y1, y0, session, current.has(n.id));
       }
+      if (this.chordLabels.length > 0) this.drawChordLabels(ctx, session, yOf, top);
     }
     // Now-line.
     ctx.fillStyle = p.nowLine;
@@ -333,6 +336,57 @@ export class PracticeRenderer {
     }
     ctx.stroke();
     ctx.setLineDash([]);
+  }
+
+  /**
+   * A chord drill's names (P7-06): a label over each chord's falling bars, just above their lower
+   * end, so it reaches the keyboard with the chord and can be read as it lands.
+   */
+  private drawChordLabels(
+    ctx: CanvasRenderingContext2D,
+    session: PracticeSession,
+    yOf: (b: number) => number,
+    top: number,
+  ): void {
+    const p = this.palette;
+    const size = 15 * this.scale;
+    const drawn: string[] = [];
+    this.setFont(ctx, 700, size);
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    for (const label of this.chordLabels) {
+      const y0 = yOf(label.beat);
+      if (y0 < 0 || y0 > top + 1) continue;
+      let left = Infinity;
+      let right = -Infinity;
+      for (const n of session.song.notes) {
+        if (Math.abs(n.startBeat - label.beat) > 1e-3 || !session.inHands(n)) continue;
+        const key = keyAt(this.layout, n.pitch);
+        if (!key) continue;
+        left = Math.min(left, key.x);
+        right = Math.max(right, key.x + key.width);
+      }
+      if (!Number.isFinite(left)) continue;
+      const w = ctx.measureText(label.text).width + 16 * this.scale;
+      const h = size + 10 * this.scale;
+      const cx = Math.min(this.width - w / 2, Math.max(w / 2, (left + right) / 2));
+      const cy = Math.max(h / 2, y0 - h / 2 - 6 * this.scale);
+      ctx.fillStyle = p.background;
+      ctx.globalAlpha = 0.9;
+      roundRect(ctx, cx - w / 2, cy - h / 2, w, h, h / 2);
+      ctx.fill();
+      ctx.globalAlpha = 1;
+      ctx.strokeStyle = p.accent;
+      ctx.lineWidth = 1.5;
+      ctx.stroke();
+      ctx.fillStyle = p.text;
+      ctx.fillText(label.text, cx, cy + 0.5);
+      drawn.push(label.text);
+    }
+    ctx.textBaseline = 'alphabetic';
+    // The names on screen, for the end-to-end tests (as `data-drawn` carries the keys).
+    const names = drawn.join(' ');
+    if (this.canvas.dataset.chords !== names) this.canvas.dataset.chords = names;
   }
 
   /** "early" / "late" just above the key that was played off the beat (P1-24). */
@@ -573,7 +627,7 @@ export class PracticeRenderer {
   ): void {
     const p = this.palette;
     const height = this.keyboardHeight;
-    const expectedNotes = session.guide === 'none' ? [] : session.expectedNotes();
+    const expectedNotes = session.litNotes();
     const expected = new Set(expectedNotes.map((n) => n.pitch));
     const handOf = new Map<number, 'left' | 'right'>();
     // Fingers on the keys to play next (P4-08); the song carries them only when they are shown.

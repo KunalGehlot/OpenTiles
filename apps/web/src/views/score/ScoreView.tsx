@@ -35,6 +35,8 @@ interface Props {
   main?: boolean;
   /** Playback measure indices to mark after a run (P1-24); empty while practising. */
   hardest: readonly number[];
+  /** A chord drill's "Name only" (P7-05): the ledger lines are hidden with the notes to come. */
+  nameOnly?: boolean;
 }
 
 export function ScoreView({
@@ -45,6 +47,7 @@ export function ScoreView({
   layout,
   hardest,
   main = false,
+  nameOnly = false,
 }: Props) {
   const hostRef = useRef<HTMLDivElement>(null);
   const stripRef = useRef<HTMLDivElement>(null);
@@ -156,7 +159,7 @@ export function ScoreView({
 
   return (
     <section
-      className={`ot-score-panel ${layout}${main ? ' ot-score-panel--main' : ''}`}
+      className={`ot-score-panel ${layout}${main ? ' ot-score-panel--main' : ''}${nameOnly ? ' ot-name-only' : ''}`}
       aria-label={layout === 'page' ? t('Score, page view') : t('Score, scrolling')}
     >
       {state === 'loading' && <p className="ot-score-status muted">{t('Drawing the score…')}</p>}

@@ -42,7 +42,7 @@ async function playStep(page: Page): Promise<void> {
 test('a drill is chosen, read from the score with nothing given away, and timed', async ({
   page,
 }) => {
-  await page.goto('./#/drills');
+  await page.goto('./#/drills/sight-reading');
   await expect(page.getByRole('heading', { level: 1, name: 'Sight-reading' })).toBeVisible();
   await page.getByRole('combobox', { name: 'Key' }).selectOption({ label: 'G major' });
   await page.getByRole('link', { name: 'Start a drill' }).click();
@@ -73,10 +73,10 @@ test('a short drill ends with the reading speed and starts the next one', async 
 test('an endless drill starts the next one by itself after showing the result', async ({
   page,
 }) => {
-  await page.goto('./#/drills');
+  await page.goto('./#/drills/sight-reading');
   await page.getByRole('checkbox', { name: 'Endless' }).check();
   // The choice is kept; a one-bar drill (four notes around middle C in C major) is opened directly.
-  await page.goto('./#/drills');
+  await page.goto('./#/drills/sight-reading');
   await expect(page.getByRole('checkbox', { name: 'Endless' })).toBeChecked();
   await page.goto('./#/practice/drill/treble.0.1.notes.1.123');
   await expect(page.locator('.stats')).toContainText('Step 1/4');
@@ -91,7 +91,7 @@ test('an endless drill starts the next one by itself after showing the result', 
 });
 
 test('showing the key to press lights it up', async ({ page }) => {
-  await page.goto('./#/drills');
+  await page.goto('./#/drills/sight-reading');
   await page.getByRole('checkbox', { name: /Show the key to press/ }).check();
   await page.getByRole('link', { name: 'Start a drill' }).click();
   await expect(page.locator('[data-testid="score-strip"] > svg')).toBeVisible({ timeout: 20_000 });

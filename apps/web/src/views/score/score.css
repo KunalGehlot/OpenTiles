@@ -193,3 +193,19 @@
 .ot-view-note {
   font-size: 0.85em;
 }
+
+/* "Name only" in a chord drill (P7-05): notes still to play are hidden, and so are the ledger lines
+   that would show where they sit. */
+.ot-score-strip g.note.ot-hidden {
+  visibility: hidden;
+}
+
+.ot-score-panel.ot-name-only g.ledgerLines {
+  visibility: hidden;
+}
+
+/* Chord names in a drill (P7-05) are words above the staff: in the app's typeface, which has the
+   ♭ and ♯ the score's serif lacks (a fallback glyph left a gap: "A ♭aug"). */
+.ot-score-panel--main g.dir text {
+  font-family: var(--font-sans);
+}
