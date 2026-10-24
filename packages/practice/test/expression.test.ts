@@ -35,7 +35,8 @@ function song(specs: Spec[], bars: number, bpm = 120, velocity?: number): Song {
     .map((n, i) => ({ ...n, id: `n${i}` }));
   return {
     title: 't',
-    format: 'musicxml',
+    // MIDI: velocities in these songs stand for a file's own touch; a score's come from its marks.
+    format: 'midi',
     notes,
     measures: Array.from({ length: bars }, (_, i) => ({
       index: i,
@@ -372,5 +373,61 @@ describe('a MIDI file written out by notation software (ADR 0021)', () => {
     };
     expect(mean(4, 8) - mean(0, 4)).toBeGreaterThan(35);
     expect(new Set(v.values()).size).toBeGreaterThan(4);
+  });
+});
+
+describe('a score with dynamics marks (P6-16)', () => {
+  const bars = (velocityAt: (beat: number) => number): Song => {
+    const s = song(
+      [0, 1, 2, 3, 4, 5, 6, 7].map((b): Spec => [60 + b, b, 1, 'right']),
+      2,
+    );
+    return {
+      ...s,
+      format: 'musicxml',
+      notes: s.notes.map((n) => ({ ...n, velocity: velocityAt(n.startBeat) })),
+    };
+  };
+
+  it('is never a performance, however a hairpin spreads its velocities', () => {
+    const hairpin = bars((b) => 33 + b * 11);
+    expect(new Set(hairpin.notes.map((n) => n.velocity)).size).toBe(8);
+    // Each onset a two-note chord whose notes differ: in a MIDI file, a pianist's hand …
+    const chords: Song = {
+      ...hairpin,
+      notes: hairpin.notes.flatMap((n) => [
+        n,
+        { ...n, id: `${n.id}b`, pitch: n.pitch - 12, velocity: (n.velocity ?? 0) - 9 },
+      ]),
+    };
+    expect(isPerformance({ ...chords, format: 'midi' })).toBe(true);
+    // … but in a score they are its marks (each staff its own): shaped and pedalled.
+    expect(isPerformance(chords)).toBe(false);
+    expect(isPerformance(hairpin)).toBe(false);
+    expect(expressiveVelocities(hairpin).size).toBe(8);
+  });
+
+  it('shapes the phrase around one mark, a p softer than no mark', () => {
+    const marked = bars(() => 0);
+    const unmarked: Song = { ...marked, notes: marked.notes.map(({ velocity: _, ...n }) => n) };
+    const p = expressiveVelocities(bars(() => 49));
+    const mf = expressiveVelocities(bars(() => 80));
+    const none = expressiveVelocities(unmarked);
+    expect([...mf]).toEqual([...none]);
+    for (const [id, v] of none) expect(v - (p.get(id) ?? 0)).toBeGreaterThan(20);
+    // The phrase still rises and falls around the level.
+    expect(new Set(p.values()).size).toBeGreaterThan(2);
+  });
+
+  it('follows a crescendo from p to f', () => {
+    const piece = bars((b) => (b < 4 ? 49 : 96));
+    const v = expressiveVelocities(piece);
+    const at = (inBar: (beat: number) => boolean) =>
+      piece.notes.filter((n) => inBar(n.startBeat)).map((n) => v.get(n.id) ?? 0);
+    const first = at((b) => b < 4);
+    const second = at((b) => b >= 4);
+    expect(first).toHaveLength(4);
+    expect(second).toHaveLength(4);
+    expect(Math.min(...second)).toBeGreaterThan(Math.max(...first));
   });
 });

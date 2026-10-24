@@ -12,7 +12,7 @@
 // The Player only (plan Q12): practice keeps natural touch and the file's own pedal. Applied at
 // playback and never stored. A file's own velocities and pedal marks always win. Pure, so it runs
 // in Node tests.
-import { PEDAL_DOWN, TempoMap } from '@opentiles/song-model';
+import { isNotated, PEDAL_DOWN, TempoMap, UNMARKED_VELOCITY } from '@opentiles/song-model';
 import type { PedalEvent, Song, SongNote } from '@opentiles/song-model';
 import { pulseAt } from './metronome';
 import { splitPhrases } from './phrases';
@@ -48,9 +48,11 @@ const NOTATED_LEVELS = 12;
  * leaves it as it is (ADR 0021). A pianist never strikes the notes of a chord exactly alike, so in
  * a recording most chords' velocities differ; a file written out by notation software gives a
  * chord one velocity, from its dynamics mark (p, f) or none. Without chords, a recording shows many
- * velocities and an export a few levels.
+ * velocities and an export a few levels. A score's velocities are its dynamics marks, so a score is
+ * never a performance, however its hairpins spread them.
  */
 export function isPerformance(song: Song): boolean {
+  if (isNotated(song.format)) return false;
   const onsets = new Map<number, number[]>();
   const levels = new Set<number>();
   for (const n of song.notes) {
@@ -87,16 +89,23 @@ function lerp(a: number, b: number, f: number): number {
  * Expressive velocities, by note id. A note without a velocity, or every note of a file that gives
  * all of them the same one, is shaped around a mezzo-forte. A file written out by notation software
  * with its dynamics (p here, f there) is shaped around its own velocities: the marks set the level,
- * the phrase and the balance of the hands move around it. A recorded performance keeps its own,
- * and its notes are not in the map.
+ * the phrase and the balance of the hands move around it. A score's marks (P6-16) do the same,
+ * a mezzo-forte mark shaped as a score without marks is, and a single mark still counts. A recorded
+ * performance keeps its own, and its notes are not in the map.
  */
 export function expressiveVelocities(song: Song): Map<string, number> {
   const out = new Map<string, number>();
   if (isPerformance(song)) return out;
-  const uniform = uniformVelocities(song);
+  const marks = isNotated(song.format);
+  const uniform = !marks && uniformVelocities(song);
   const unshaped = song.notes;
   /** The level a note is shaped around: its written dynamics, or mezzo-forte. */
-  const levelOf = (n: SongNote) => (uniform || n.velocity === undefined ? BASE : n.velocity);
+  const levelOf = (n: SongNote) =>
+    uniform || n.velocity === undefined
+      ? BASE
+      : marks
+        ? BASE + n.velocity - UNMARKED_VELOCITY
+        : n.velocity;
 
   const melody = melodyIds(song);
   // The bass: the lowest left-hand note of each onset.
