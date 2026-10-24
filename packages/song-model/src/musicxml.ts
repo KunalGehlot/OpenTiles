@@ -2,6 +2,8 @@
 // can pass any DOMParser-compatible implementation.
 import { assembleSong, parseEndingNumbers, rawMeasure } from './builder';
 import type { RawMeasure, RawPart } from './builder';
+import { dynamicFromName } from './dynamics';
+import type { RawDynamic } from './dynamics';
 import { ImportError } from './errors';
 import { stepToMidi } from './pitch';
 import type { PedalKind, Song, SongFormat } from './types';
@@ -95,6 +97,51 @@ function parsePedals(el: Element): { pedal: PedalKind; value: number }[] {
       if (value !== undefined && !out.some((p) => p.pedal === pedal)) out.push({ pedal, value });
     }
   }
+  return out;
+}
+
+/** "cresc.", "crescendo", "dim.", "decresc." written as words: a hairpin without the hairpin. */
+const CRESC_WORDS = /^\s*(cresc|crescendo)\b/i;
+const DIM_WORDS = /^\s*(dim|dimin|diminuendo|decresc|decrescendo)\b/i;
+
+/** A `<sound dynamics>` value: a percentage of forte, which MIDI plays at velocity 90. */
+function soundDynamics(sound: Element | undefined): number | undefined {
+  const percent = Number(sound?.getAttribute('dynamics') ?? NaN);
+  return Number.isFinite(percent) && percent >= 0 ? Math.round(percent * 0.9) : undefined;
+}
+
+/**
+ * The dynamics a direction gives at its place (P6-16): `<dynamics>` marks, `<wedge>` hairpins,
+ * "cresc." and "dim." as words, and the `<sound dynamics>` that says how loud a mark plays.
+ */
+function parseDynamics(direction: Element): Omit<RawDynamic, 'posBeats' | 'part' | 'staff'>[] {
+  const out: Omit<RawDynamic, 'posBeats' | 'part' | 'staff'>[] = [];
+  let level: Omit<RawDynamic, 'posBeats' | 'part' | 'staff'> | undefined;
+  for (const dt of elements(direction, 'direction-type')) {
+    for (const dynamics of elements(dt, 'dynamics')) {
+      for (const mark of elements(dynamics)) {
+        const known = dynamicFromName(mark.nodeName);
+        if (known && !level) level = known;
+      }
+    }
+    for (const wedge of elements(dt, 'wedge')) {
+      const type = wedge.getAttribute('type');
+      if (type === 'crescendo' || type === 'diminuendo' || type === 'stop')
+        out.push({ wedge: type });
+    }
+    for (const words of elements(dt, 'words')) {
+      const said = text(words) ?? '';
+      if (CRESC_WORDS.test(said)) out.push({ wedge: 'crescendo' });
+      else if (DIM_WORDS.test(said)) out.push({ wedge: 'diminuendo' });
+    }
+  }
+  // The sound says how loud a plain mark plays where it was written; an accent stays relative.
+  const sounded = soundDynamics(child(direction, 'sound'));
+  if (level && level.level !== undefined && !level.sforzando && level.onset === undefined) {
+    if (sounded !== undefined) level = { level: sounded };
+  } else if (!level && sounded !== undefined) level = { level: sounded };
+  // The level first, so "p cresc." grows from piano.
+  if (level) out.unshift(level);
   return out;
 }
 
@@ -244,6 +291,15 @@ export function parseMusicXml(xml: string, options: MusicXmlOptions = {}): Song 
             const offset = (num(child(el, 'offset')) ?? 0) / divisions;
             for (const p of parsePedals(el))
               raw.pedals.push({ posBeats: Math.max(0, pos + offset), ...p });
+            const staff = num(child(el, 'staff'));
+            for (const d of parseDynamics(el)) {
+              (raw.dynamics ??= []).push({
+                posBeats: Math.max(0, pos + offset),
+                part: partIdx,
+                ...(staff !== undefined ? { staff } : {}),
+                ...d,
+              });
+            }
             const sound = child(el, 'sound');
             if (sound) noteJumps(sound, warnings);
             break;
@@ -252,6 +308,10 @@ export function parseMusicXml(xml: string, options: MusicXmlOptions = {}): Song 
             const bpm = Number(el.getAttribute('tempo') ?? NaN);
             if (Number.isFinite(bpm) && bpm > 0) raw.tempos.push({ posBeats: pos, bpm });
             for (const p of parsePedals(el)) raw.pedals.push({ posBeats: pos, ...p });
+            const sounded = soundDynamics(el);
+            if (sounded !== undefined) {
+              (raw.dynamics ??= []).push({ posBeats: pos, part: partIdx, level: sounded });
+            }
             noteJumps(el, warnings);
             break;
           }

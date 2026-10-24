@@ -4,6 +4,8 @@
 // (positions relative to the measure), tempo, time and key changes, and repeat marks. This module
 // unrolls the repeats into playback order, lays the measures out on the beat axis, merges ties,
 // assigns hands and produces a sorted Song (spec §8, ADR 0003).
+import { applyDynamics } from './dynamics';
+import type { DynamicEvent, RawDynamic } from './dynamics';
 import { tidyPedals } from './pedals';
 import { DEFAULT_BPM } from './tempo';
 import type {
@@ -64,6 +66,8 @@ export interface RawMeasure extends RepeatMarks {
   tempos: { posBeats: number; bpm: number }[];
   /** Pedal marks and pedal sounds in the measure (P6-10). */
   pedals: { posBeats: number; pedal: PedalKind; value: number }[];
+  /** Dynamics marks and hairpins in the measure (P6-16). */
+  dynamics?: RawDynamic[];
   time?: { numerator: number; denominator: number };
   key?: { fifths: number; mode?: 'major' | 'minor' };
 }
@@ -96,6 +100,7 @@ export function rawMeasure(number: string): RawMeasure {
     notes: [],
     tempos: [],
     pedals: [],
+    dynamics: [],
     forwardRepeat: false,
     backwardRepeat: false,
     repeatTimes: 2,
@@ -212,6 +217,7 @@ export function assembleSong(input: SongDraft): Song {
   const measures: Measure[] = [];
   const tempos: TempoEvent[] = [];
   const pedals: PedalEvent[] = [];
+  const dynamics: DynamicEvent[] = [];
   const timeSignatures: TimeSignatureEvent[] = [];
   const keySignatures: KeySignatureEvent[] = [];
   const drafts: Draft[] = [];
@@ -251,6 +257,8 @@ export function assembleSong(input: SongDraft): Song {
     for (const p of raw.pedals ?? []) {
       pedals.push({ beat: beat + p.posBeats, pedal: p.pedal, value: p.value });
     }
+    for (const { posBeats, ...d } of raw.dynamics ?? [])
+      dynamics.push({ ...d, beat: beat + posBeats });
     for (const n of raw.notes) {
       drafts.push({
         pitch: n.pitch,
@@ -281,6 +289,7 @@ export function assembleSong(input: SongDraft): Song {
 
   const pedalled = tidyPedals(pedals);
   const merged = mergeTies(drafts);
+  applyDynamics(merged, dynamics);
   const hands = handAssigner(input.parts, merged);
   const notes: SongNote[] = merged
     .map(({ tieStart: _a, tieStop: _b, hand, ...n }) => ({

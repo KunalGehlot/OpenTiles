@@ -39,6 +39,14 @@ export {
   setBaseTempo,
   trimMeasures,
 } from './transform';
+export {
+  applyDynamics,
+  dynamicFromName,
+  DYNAMIC_VELOCITIES,
+  isNotated,
+  UNMARKED_VELOCITY,
+} from './dynamics';
+export type { DynamicEvent, DynamicNote, RawDynamic } from './dynamics';
 export { PEDAL_CONTROLLERS, PEDAL_DOWN, pedalsBefore, tidyPedals } from './pedals';
 export { estimateDifficulty } from './difficulty';
 export type { DifficultyEstimate, DifficultyMeasures } from './difficulty';
