@@ -371,8 +371,8 @@ The issue also asks for scales. A scale drill reuses the same hub, the generator
 displays and the tally: the "chord" is an ordered run of notes in a key (major, the three minors,
 modes, pentatonic, blues), one or two octaves, hands separately or together, with the fingering
 `packages/practice/src/fingering.ts` already suggests. Order matters, so it uses play-along or wait
-mode per note rather than per step. Plan it properly (a section here and its own tasks) once chords
-are live and the maintainer has played with them. Size: L.
+mode per note rather than per step. Planned on 2026-10-23 in [scales.md](scales.md), with its own
+tasks (P7-15 to P7-24). Size: L.
 
 ## 6. Sketch of the setup page (proposal for P7-04)
 

@@ -54,16 +54,16 @@ it belongs, and say why in the changelog; do not open a new phase for it.
 1. **P5-19** Loose ends: go through every "Left:" in the task register. Strike what is done
    already, fix the small code items (a day or less each), and give the rest a place in this list.
    Release v0.3.0.
+2. **P7-15 to P7-23** Scale drills, planned in [docs/phase-7/scales.md](docs/phase-7/scales.md)
+   (P7-14, ADR 0024) and built on the drills' generator, judging and pages; they finish the drills
+   that issue #47 asked for. Built 2026-10-23 on top of P5-19; release v0.4.0 after it.
 
 **Next**
 
-2. **P7-14** Scales, planned first with the maintainer's answers (as the chord drills were), then
-   built on the drills' generator, judging and pages. It finishes the drills that issue #47 asked
-   for.
+3. **P6-16** Dynamics marks and hairpins from imported MusicXML (a `Song` model change; ask first).
 
 **Later** (in this order unless the maintainer reorders it)
 
-3. **P6-16** Dynamics marks and hairpins from imported MusicXML (a `Song` model change; ask first).
 4. **P5-09** The rest of the smoothness pass: home to playing in two clicks, one transport bar,
    route and panel transitions, a refreshed logo, Detector Lab polish (reviewed in the
    maintainer's Chrome).
@@ -85,7 +85,7 @@ it belongs, and say why in the changelog; do not open a new phase for it.
 - **Release:** publish the v0.2.0 draft release (P3-09).
 - **Checks:** the [iPad device checklist](#ipad-device-checklist), their keyboard and the Player
   on the Mac (P6-13; with it P5-12's keyboard in their Chrome and Firefox and P6-05's ten minutes
-  in a hidden tab), the chord drills on a real keyboard (P7-13), their MuseScore PDF and MIDI pair
+  in a hidden tab), the chord and scale drills on a real keyboard (P7-13, P7-24), their MuseScore PDF and MIDI pair
   again (P5-18), the release gate (P5-10; with it a native German read-through, P2-14, and a pen
   test, P4-15), and the Player's screenshots for the README once they like its look (P6-14).
 - **Legal and publishing:** the legal consultation (P2-18), the trademark (P0-02), the Impressum's
@@ -95,7 +95,7 @@ it belongs, and say why in the changelog; do not open a new phase for it.
   README.
 - **Catalogue growth:** reviewing new pieces (P2-06, P2-07, P3-05, P4-13, P4-13b), and PDMX's
   complexity in the difficulty levels (P2-05).
-- **Proposed ADRs** waiting for a decision: 0015 to 0023, and the
+- **Proposed ADRs** waiting for a decision: 0015 to 0024, and the
   [open decisions](#open-decisions).
 
 ## iPad device checklist
@@ -123,6 +123,7 @@ and the device; a failure becomes a task at the top of the queue.
 | Chords with several fingers on the on-screen keys                                      | Both   | P7-11           | open                                 |
 | The screen stays awake while practising                                                | Both   | P5-02           | open                                 |
 | v0.3.0: a piece opens in the key it was last moved to; Options fits at ⅓ width         | Both   | P5-04, P2-15    | open                                 |
+| v0.4.0: scale drills from memory and in falling keys; fingers readable at ⅓ width      | Both   | P7-20, P7-24    | open                                 |
 | Frame time on an older iPad (falling notes, score, Player)                             | Both   | P4-11, P5-10    | open                                 |
 | The richer piano and the Player's room; stand mode                                     | Both   | P6-15, P6-17    | open                                 |
 | The Player over USB audio, and whether the microphone hears it                         | Safari | P6-13           | open                                 |
@@ -144,7 +145,7 @@ Each phase ends at a gate. If a gate fails, re-plan before continuing.
 | 4 — After v1.0            | Several features built early; the rest is in the queue                   | —                                                                                                    |
 | 5 — Release polish        | Built, but for free play (P5-06) and collections (P5-08)                 | The release gate (P5-10)                                                                             |
 | 6 — The Player            | Built; the maintainer's checks are open                                  | The maintainer's checks (P6-13)                                                                      |
-| 7 — Chord drills          | Built 2026-10-23; scales are next                                        | The maintainer plays it and approves it (P7-13)                                                      |
+| 7 — Chord drills          | Chords and scales built 2026-10-23                                       | The maintainer plays it and approves it (P7-13)                                                      |
 
 If **G0** fails, v1.0 becomes MIDI-first and the microphone ships marked as beta (spec §11).
 
@@ -881,8 +882,23 @@ on 2026-10-22, and the decisions go into ADR 0022 (P7-00).
 - [~] **P7-11** (APP) The on-screen keyboard with several fingers. Done: a three-finger chord test
   (Chromium) and ⅓ iPad width. Left: a check on a real iPad in WebKit ([checklist](#ipad-device-checklist)).
 - [x] **P7-12** (GOV) User guide, README, architecture, German strings.
-- [ ] **P7-13** (human) The maintainer's checks, then a reply on issue #47 with their approval.
-- [ ] **P7-14** (PRAC, APP) Scales, on the same pieces (optional, after chords; see Q4).
+- [~] **P7-13** (human) The maintainer's checks. Done: the reply on issue #47 (2026-10-23, by the
+  maintainer; the issue is closed). Left: the checks on a real keyboard and an iPad.
+- [x] **P7-14** (GOV) Scales planned on the same pieces (Q4): [docs/phase-7/scales.md](docs/phase-7/scales.md);
+      Q1–Q10 handed over by the maintainer, decided as recommended (ADR 0024).
+- [x] **P7-15** (PRAC) Scale vocabulary: kinds, spelling, key signatures, the notes up and down.
+- [x] **P7-16** (PRAC) Scale fingering by the rules scale books follow, written into the drill.
+- [x] **P7-17** (PRAC) The seeded scale drill generator (MusicXML with key changes, names, fingers).
+- [x] **P7-18** (PRAC) Judging a scale: first tries, causes (the key, the form of minor), evenness.
+- [x] **P7-19** (APP) The Scales card and setup page, scale names in the learner's label style.
+- [~] **P7-20** (APP) Scale drills on the practice screen: sheet, name only, falling keys, fingers.
+  Left: a check on a real iPad ([checklist](#ipad-device-checklist)).
+- [x] **P7-21** (STORE, APP) Scale progress and "Practise my weak scales".
+- [~] **P7-22** (ENG) Hands together on the microphone. Done: synthetic numbers (wait 87.2 % /
+  6.4 %, play-along 65.6 % / 4.1 %, against 95 % and 3 %) and the hint. Left: real recordings
+  (with P0-04).
+- [x] **P7-23** (GOV) User guide, README, architecture, German strings; version 0.4.0.
+- [ ] **P7-24** (human) The maintainer's checks of the scale drills.
 
 ## Cross-cutting checklists
 
@@ -908,6 +924,22 @@ Record the outcome as an ADR in `docs/adr/` and tick it here.
 - [x] Engine exposes a plain C ABI instead of wasm-bindgen glue — ADR 0002.
 
 ## Changelog
+
+- **2026-10-23** — P7-15 to P7-23: scale drills. The Drills page has a third card, Scales: random
+  scales from eight levels (majors, the three minors, modes, pentatonics, blues, chromatic) or a
+  set of one's own, in their key signatures with the fingering scale books print, one or both hands
+  or in contrary motion, one or two octaves, from the sheet, from memory or as falling keys, in wait
+  mode or at a tempo in crotchets or quavers. Each scale is judged as a run, with the cause of a
+  wrong note and how even it was; progress stays on the device and in the backup. Hands together on
+  the microphone measured on synthetic audio and below target, so the drill suggests MIDI or the
+  on-screen keys. The maintainer handed the plan's questions over; ADR 0024 records the answers.
+  Version 0.4.0.
+
+- **2026-10-23** — P7-14: scale drills planned in [docs/phase-7/scales.md](docs/phase-7/scales.md),
+  with ten questions for the maintainer and the build as P7-15 to P7-24. Checked first: the
+  app's suggested fingering gets most scales wrong (thumbs on black keys), so scales write their
+  fingers in; Verovio draws key signatures to seven and fingering marks. P7-13's reply on #47 was
+  posted by the maintainer, so only their checks are left.
 
 - **2026-10-23** — P5-19: the loose ends in the task register checked against the code. A piece
   now opens in the key it was last moved to, and the practice panels (Options, Plays on) stay on

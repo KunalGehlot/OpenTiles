@@ -23,7 +23,7 @@ export type Route =
   /** The sync service's email sign-in link (P3-03). */
   | { name: 'sign-in'; token: string };
 
-export type DrillPage = 'sight-reading' | 'chords';
+export type DrillPage = 'sight-reading' | 'chords' | 'scales';
 
 /** The legal pages are in English and German (P2-17). */
 export type LegalLang = 'en' | 'de';
@@ -53,7 +53,7 @@ export function parseHash(hash: string): Route {
       }
       return { name: 'home' };
     case 'drills':
-      return parts[1] === 'sight-reading' || parts[1] === 'chords'
+      return parts[1] === 'sight-reading' || parts[1] === 'chords' || parts[1] === 'scales'
         ? { name: 'drills', page: parts[1] }
         : { name: 'drills' };
     case 'lab':

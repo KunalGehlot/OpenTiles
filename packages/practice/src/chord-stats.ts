@@ -159,13 +159,21 @@ export const recentShares = (stats: ChordStats, n = 5): number[] =>
 /**
  * The tempo ladder (P7-07, off by default): after three rounds in a row with at least 90 % right
  * at the first try the tempo rises a step; after a round under 60 % it falls a step. `shares` are
- * the rounds played at `tempo`, oldest first.
+ * the rounds played at `tempo`, oldest first. Scale drills use it with their own `limits`.
  */
-export function nextChordTempo(shares: readonly number[], tempo: number): number {
+export function nextChordTempo(
+  shares: readonly number[],
+  tempo: number,
+  limits: { min: number; max: number; step: number } = {
+    min: MIN_CHORD_TEMPO,
+    max: MAX_CHORD_TEMPO,
+    step: CHORD_TEMPO_STEP,
+  },
+): number {
   const last = shares[shares.length - 1];
   let next = tempo;
-  if (last !== undefined && last < 0.6) next = tempo - CHORD_TEMPO_STEP;
+  if (last !== undefined && last < 0.6) next = tempo - limits.step;
   else if (shares.length >= 3 && shares.slice(-3).every((s) => s >= 0.9))
-    next = tempo + CHORD_TEMPO_STEP;
-  return Math.min(MAX_CHORD_TEMPO, Math.max(MIN_CHORD_TEMPO, next));
+    next = tempo + limits.step;
+  return Math.min(limits.max, Math.max(limits.min, next));
 }

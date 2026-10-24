@@ -194,13 +194,14 @@
   font-size: 0.85em;
 }
 
-/* "Name only" in a chord drill (P7-05): notes still to play are hidden, and so are the ledger lines
-   of their bars, which would show where they sit. */
+/* "Name only" in a chord or scale drill (P7-05, P7-20): notes still to play are hidden, and so are
+   the ledger lines and fingers of their bars, which would show where they sit. */
 .ot-score-strip g.note.ot-hidden {
   visibility: hidden;
 }
 
-.ot-score-strip g.measure.ot-chord-hidden g.ledgerLines {
+.ot-score-strip g.measure.ot-chord-hidden g.ledgerLines,
+.ot-score-strip g.measure.ot-chord-hidden g.fing {
   visibility: hidden;
 }
 

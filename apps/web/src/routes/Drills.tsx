@@ -1,9 +1,9 @@
 // The drills: a hub with a card for each kind (P7-04), and their setup pages. Sight-reading
 // (P5-05, ADR 0015): choose a clef, a key and how far from middle C the notes go, then read new
-// notes from the staff. Chords (P7-04, ADR 0022) are in ChordDrills.tsx. Every drill is generated
-// on this device; the choices are remembered for next time.
+// notes from the staff. Chords (P7-04, ADR 0022) are in ChordDrills.tsx, scales (P7-19, ADR 0024)
+// in ScaleDrills.tsx. Every drill is generated on this device; the choices are remembered.
 import { useEffect, useState } from 'react';
-import { Music, Play, Piano } from 'lucide-react';
+import { ChartNoAxesColumnIncreasing, Music, Play, Piano } from 'lucide-react';
 import {
   clefName,
   DEFAULT_DRILL_PREFS,
@@ -17,12 +17,14 @@ import type { DrillPrefs } from '../practice/drill';
 import { href } from '../lib/router';
 import type { DrillPage } from '../lib/router';
 import { BackToDrills, ChordDrills } from './ChordDrills';
+import { ScaleDrills } from './ScaleDrills';
 import { Setting, Toggle } from '../ui/SettingRow';
 import { t } from '../i18n';
 
 export function Drills({ page }: { page?: DrillPage }) {
   if (page === 'sight-reading') return <SightReading />;
   if (page === 'chords') return <ChordDrills />;
+  if (page === 'scales') return <ScaleDrills />;
   return (
     <div className="settings drills">
       <h1>{t('Drills')}</h1>
@@ -40,6 +42,13 @@ export function Drills({ page }: { page?: DrillPage }) {
           <h3>{t('Chords')}</h3>
           <p className="muted">
             {t('Random chords to find and press, on the sheet or as falling keys.')}
+          </p>
+        </a>
+        <a className="card drill-card" href={href({ name: 'drills', page: 'scales' })}>
+          <ChartNoAxesColumnIncreasing aria-hidden="true" />
+          <h3>{t('Scales')}</h3>
+          <p className="muted">
+            {t('Scales in every key with their fingering, from the sheet or from memory.')}
           </p>
         </a>
       </div>

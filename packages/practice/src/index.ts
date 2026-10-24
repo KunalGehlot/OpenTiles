@@ -186,3 +186,77 @@ export {
   weakChords,
 } from './chord-stats';
 export type { ChordKindStats, ChordRound, ChordStats } from './chord-stats';
+export {
+  isHeptatonic,
+  isMinor,
+  keyAlter,
+  keySignatureOf,
+  SCALE_KINDS,
+  scaleKind,
+  scaleLength,
+  scaleNotes,
+  scaleOn,
+  tonicMidi,
+} from './scales';
+export type { Scale, ScaleKind, ScaleNote } from './scales';
+export { degreeFingers, scaleFingers } from './scale-fingering';
+export type { ScaleHand } from './scale-fingering';
+export {
+  drillEntries as scaleDrillEntries,
+  drillScales,
+  generateScaleDrill,
+  isScaleDrillId,
+  levelDefaults as scaleLevelDefaults,
+  levelEntries as scaleLevelEntries,
+  MAX_SCALE_COUNT,
+  MAX_SCALE_TEMPO,
+  MIN_SCALE_TEMPO,
+  normaliseScaleDrillOptions,
+  normaliseScaleSet,
+  parseScaleDrillId,
+  SCALE_DRILL_DEFAULTS,
+  SCALE_LEVELS,
+  SCALE_TEMPO_STEP,
+  scaleDrillId,
+  scaleSteps,
+} from './scale-drills';
+export type {
+  DrillScale,
+  DrillScaleNote,
+  ScaleDrill,
+  ScaleDrillOptions,
+  ScaleEntry,
+  ScaleHands,
+  ScaleLevel,
+  ScaleRhythm,
+  ScaleSet,
+  ScaleStep,
+} from './scale-drills';
+export {
+  EVEN,
+  evennessOf,
+  evennessWord,
+  hardestScales,
+  mainScaleCause,
+  ScaleTally,
+  scaleMissCause,
+  summariseScales,
+  VERY_EVEN,
+} from './scale-tally';
+export type {
+  ScaleAttempt,
+  ScaleKindSummary,
+  ScaleMiss,
+  ScaleRoundSummary,
+  UnevenAt,
+} from './scale-tally';
+export {
+  addScaleRound,
+  normaliseScaleStats,
+  NO_SCALE_STATS,
+  recentScaleShares,
+  scaleRoundOf,
+  scaleTotals,
+  weakScales,
+} from './scale-stats';
+export type { ScaleKindStats, ScaleRound, ScaleStats } from './scale-stats';
