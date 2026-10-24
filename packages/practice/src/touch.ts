@@ -2,7 +2,10 @@
 // would play every note at one loudness, which sounds mechanical on a real piano. "Natural" plays
 // them the way a pianist leans into music: the melody over the accompaniment, the downbeat over the
 // off-beat, and a little variation, the same every time. "Even" keeps one loudness. Notes whose
-// file has a velocity (MIDI) always keep it. Pure, so it runs in Node tests.
+// file has a velocity (MIDI) always keep it. A score's velocities are its dynamics marks (P6-16):
+// natural touch leans the same way around the marked level, and "even" plays the marks as they are.
+// Pure, so it runs in Node tests.
+import { isNotated } from '@opentiles/song-model';
 import type { Song, SongNote } from '@opentiles/song-model';
 import { pulseAt } from './metronome';
 
@@ -61,20 +64,24 @@ export function melodyIds(song: Song): Set<string> {
 }
 
 /**
- * The velocity of each note that has none, by note id. With "even" every such note gets
- * `EVEN_VELOCITY`; notes with a velocity of their own are not in the map.
+ * The velocity of each note that has none, by note id, and with natural touch of each note of a
+ * score with dynamics marks. With "even" every note without a velocity gets `EVEN_VELOCITY`; notes
+ * with a velocity of their own are not in the map, and keep it.
  */
 export function touchVelocities(song: Song, touch: Touch = 'natural'): Map<string, number> {
   const out = new Map<string, number>();
-  const unshaped = song.notes.filter((n) => n.velocity === undefined);
   if (touch === 'even') {
-    for (const n of unshaped) out.set(n.id, EVEN_VELOCITY);
+    for (const n of song.notes) if (n.velocity === undefined) out.set(n.id, EVEN_VELOCITY);
     return out;
   }
+  // A mezzo-forte mark plays as a score without marks does; other marks move the level from there.
+  const marks = isNotated(song.format);
+  const unshaped = song.notes.filter((n) => marks || n.velocity === undefined);
   const melody = melodyIds(song);
   for (const n of unshaped) {
+    const level = BASE + (n.velocity === undefined ? 0 : n.velocity - EVEN_VELOCITY);
     const voice = melody.has(n.id) ? MELODY : n.hand === 'left' ? LEFT_HAND : 0;
-    const v = BASE + voice + metricAccent(song, n) + wobble(n.id);
+    const v = level + voice + metricAccent(song, n) + wobble(n.id);
     out.set(n.id, Math.max(1, Math.min(127, Math.round(v))));
   }
   return out;

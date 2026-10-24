@@ -136,12 +136,8 @@ export function buildPlayback(song: Song, options: PlaybackOptions = {}): Playba
       start: played(start),
       end: played(end),
       held: played(heldUntil(start, end)),
-      // Expressive touch also reshapes a file that gives every note one velocity.
-      velocity:
-        (expressive ? shaped.get(n.id) : undefined) ??
-        n.velocity ??
-        shaped.get(n.id) ??
-        DEFAULT_VELOCITY,
+      // The shaped touch has every note it reshapes: a file's own velocities are kept otherwise.
+      velocity: shaped.get(n.id) ?? n.velocity ?? DEFAULT_VELOCITY,
       hand: n.hand,
       noteId: n.id,
     });

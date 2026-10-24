@@ -34,7 +34,8 @@ function song(
 ): Song {
   return {
     title: 't',
-    format: 'musicxml',
+    // MIDI: velocities in these songs stand for a file's own touch; a score's come from its marks.
+    format: 'midi',
     notes,
     measures: measures.map((m, i) => ({
       index: i,
@@ -107,5 +108,29 @@ describe('natural touch (P6-11)', () => {
     );
     const v = touchVelocities(pickup);
     expect(v.get('down') ?? 0).toBeGreaterThan(v.get('up') ?? 0);
+  });
+});
+
+describe('natural touch over a score’s dynamics marks (P6-16)', () => {
+  const notes = [n('top', 67, 0, 'right'), n('inner', 64, 0, 'right'), n('off', 69, 0.5, 'right')];
+  const marked = (velocity?: number): Song => ({
+    ...song(notes.map((x) => ({ ...x, ...(velocity === undefined ? {} : { velocity }) }))),
+    format: 'musicxml',
+  });
+
+  it('leans the same way around the marked level, a mezzo-forte mark as no mark', () => {
+    const none = touchVelocities(marked());
+    const mf = touchVelocities(marked(EVEN_VELOCITY));
+    const p = touchVelocities(marked(49));
+    expect([...mf]).toEqual([...none]);
+    for (const id of ['top', 'inner', 'off']) {
+      expect((none.get(id) ?? 0) - (p.get(id) ?? 0)).toBe(EVEN_VELOCITY - 49);
+    }
+    expect(p.get('top') ?? 0).toBeGreaterThan(p.get('off') ?? 0);
+  });
+
+  it('plays the marks as they are when even', () => {
+    const events = buildPlayback(marked(49), { touch: 'even' });
+    expect(events.every((e) => e.kind !== 'note' || e.velocity === 49)).toBe(true);
   });
 });
