@@ -49,8 +49,8 @@ and track your progress. No account, no tracking, no payment. Ever.
   memory, with how even you played them. The chords and scales that went wrong most come back to
   practise next.
 - **The Player.** Your whole library and the catalogue played like a self-playing grand piano, on
-  your keyboard's own sound when one is connected, with the sustain pedal and phrasing, a queue and
-  a music-stand view.
+  your keyboard's own sound when one is connected, with the sustain pedal and phrasing, a score's
+  own dynamics, a queue and a music-stand view.
 - **81 public-domain pieces**, from folk tunes to Bach and Beethoven, sorted into a five-level path.
   Every piece has a recorded source and a reviewer.
 - **Bring your own music.** Import MusicXML, MuseScore, ABC or MIDI files, or even a recording of a

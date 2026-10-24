@@ -261,6 +261,10 @@ On a MIDI keyboard it plays the keyboard's own piano.
   as a pianist would: changed with each new harmony, and lifted where it would blur, and eases
   into the last chord. A piece's own pedal marks are kept, and a MIDI recording of a pianist plays
   exactly as recorded. Practice always plays exactly what is written.
+- **Dynamics:** in a score you import (MusicXML), the loudness marks are followed: p plays softly,
+  f strongly, crescendo and diminuendo hairpins (or the words "cresc." and "dim.") grow and fade,
+  and sf accents a note. This is the case in the Player and in practice; pieces imported before
+  version 0.5.0 follow them once imported again.
 - **Up next** shows what comes after this piece. Tap one to play it now, drag it by its handle (or
   use ↑ and ↓ on the handle, or Alt with them anywhere on its row) to move it, and × to take it
   out. The queue is kept on this device, so it is still there next time.

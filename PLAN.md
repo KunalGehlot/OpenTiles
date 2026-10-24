@@ -51,38 +51,34 @@ it belongs, and say why in the changelog; do not open a new phase for it.
 
 **Now**
 
-1. **P5-19** Loose ends: go through every "Left:" in the task register. Strike what is done
-   already, fix the small code items (a day or less each), and give the rest a place in this list.
-   Release v0.3.0.
-2. **P7-15 to P7-23** Scale drills, planned in [docs/phase-7/scales.md](docs/phase-7/scales.md)
-   (P7-14, ADR 0024) and built on the drills' generator, judging and pages; they finish the drills
-   that issue #47 asked for. Built 2026-10-23 on top of P5-19; release v0.4.0 after it.
+1. **P6-16** Dynamics marks and hairpins from imported MusicXML become note velocities, and
+   playback shapes the touch around them (ADR 0025; the maintainer chose velocities over a new
+   `Song` field, 2026-10-24). Release v0.5.0.
 
 **Next**
 
-3. **P6-16** Dynamics marks and hairpins from imported MusicXML (a `Song` model change; ask first).
+2. **P5-09** The rest of the smoothness pass: home to playing in two clicks, one transport bar,
+   route and panel transitions, a refreshed logo, Detector Lab polish (reviewed in the
+   maintainer's Chrome).
 
 **Later** (in this order unless the maintainer reorders it)
 
-4. **P5-09** The rest of the smoothness pass: home to playing in two clicks, one transport bar,
-   route and panel transitions, a refreshed logo, Detector Lab polish (reviewed in the
-   maintainer's Chrome).
-5. **P5-14, P5-18, P5-13** Import gaps: D.C. and D.S. jumps and multi-bar rests in the learner's
-   PDF, octave signs and clef changes inside a bar, grace notes from MIDI files, and re-importing
-   MIDI pieces already in a library.
-6. **P5-05** Sight-reading: accidentals beyond the key, then rhythm reading.
-7. **P5-08** Library preview before opening, and collections.
-8. **P4-19** A choice of audio output device for this device's piano (where the browser offers it).
-9. **P5-06** Free play with recording and listen-back (needs an ADR and the lawyer's answer, P2-18).
-10. **P3-03** Encrypted sync goes live (needs the open decisions below and EU storage).
-11. **P4-05** Teacher features, **P4-03** courses, **P4-01** optical music recognition.
+3. **P5-14, P5-18, P5-13** Import gaps: D.C. and D.S. jumps and multi-bar rests in the learner's
+   PDF, octave signs and clef changes inside a bar, grace notes from MIDI files, re-importing
+   MIDI pieces already in a library, and dynamics marks in MuseScore and ABC files (P6-16 reads
+   MusicXML's).
+4. **P5-05** Sight-reading: accidentals beyond the key, then rhythm reading.
+5. **P5-08** Library preview before opening, and collections.
+6. **P4-19** A choice of audio output device for this device's piano (where the browser offers it).
+7. **P5-06** Free play with recording and listen-back (needs an ADR and the lawyer's answer, P2-18).
+8. **P3-03** Encrypted sync goes live (needs the open decisions below and EU storage).
+9. **P4-05** Teacher features, **P4-03** courses, **P4-01** optical music recognition.
 
 **Waiting on the maintainer** (no code until they act or decide)
 
 - **G0, the microphone gate:** record the test set (P0-04), measure latency on iPads (P0-11), then
   the thresholds and gate report (P0-13). Four-note chords on real recordings join it (P7-10), and
   so do the microphone's harmonic profile and a check on a real piano (P1-20).
-- **Release:** publish the v0.2.0 draft release (P3-09).
 - **Checks:** the [iPad device checklist](#ipad-device-checklist), their keyboard and the Player
   on the Mac (P6-13; with it P5-12's keyboard in their Chrome and Firefox and P6-05's ten minutes
   in a hidden tab), the chord and scale drills on a real keyboard (P7-13, P7-24), their MuseScore PDF and MIDI pair
@@ -124,6 +120,7 @@ and the device; a failure becomes a task at the top of the queue.
 | The screen stays awake while practising                                                | Both   | P5-02           | open                                 |
 | v0.3.0: a piece opens in the key it was last moved to; Options fits at ⅓ width         | Both   | P5-04, P2-15    | open                                 |
 | v0.4.0: scale drills from memory and in falling keys; fingers readable at ⅓ width      | Both   | P7-20, P7-24    | open                                 |
+| v0.5.0: an imported score's p and f, hairpins and sf heard in the Player               | Both   | P6-16           | open                                 |
 | Frame time on an older iPad (falling notes, score, Player)                             | Both   | P4-11, P5-10    | open                                 |
 | The richer piano and the Player's room; stand mode                                     | Both   | P6-15, P6-17    | open                                 |
 | The Player over USB audio, and whether the microphone hears it                         | Safari | P6-13           | open                                 |
@@ -795,22 +792,27 @@ without a word when no MIDI output is found.
   re-rendered the page while it was being handled, so the Player's shortcuts missed it (Space did
   nothing the first time); they now listen once for the page's life. Left: the check on a real iPad
   ([checklist](#ipad-device-checklist)).
-- [~] **P6-16** (PRAC) Phrasing for the Player: phrases swell towards their high point and settle
-  at the end, the last bar slows by at most 10 % and the final chord is held; dynamics marks and
-  hairpins set the level when a file has them (none of the catalogue's scores has any). On in the
-  Player ("Expressive"), off in practice; applied at playback, never stored. Done (ADR 0021, after
-  the maintainer found the Player "very flat" on their piano, 2026-10-19): "Play expressively" in
-  the Player's options, on by default and kept; shaped touch (the melody over the accompaniment,
-  each phrase rising to its highest note and settling) for notes the file leaves unshaped; an
-  automatic sustain pedal where the file has none (a legato pedal at each new harmony, changed
-  where it would smear a step, up in rests, at the end and in passages too fast to pedal); every
-  pedal lifted as a piece ends. Over the catalogue: no semitone smeared by the pedal, the pedal
-  down 79 % of the time on average, velocities about 39–106 (59–89 before). The ending: from the
-  bar before the last chord the tempo eases to 90 %, and the last chord is held half as long
-  again; the transport, seek line and media controls take the longer length. A MIDI file written
-  out by notation software (chords at one velocity) is not taken for a recording: it is pedalled
-  and shaped around its own written dynamics. Left: dynamics marks and hairpins from imported
-  MusicXML (none of the catalogue's scores has any).
+- [x] **P6-16** (PRAC) Phrasing for the Player: phrases swell towards their high point and settle at
+      the end, the last bar slows by at most 10 % and the final chord is held; dynamics marks and
+      hairpins set the level when a file has them (none of the catalogue's scores has any). On in
+      the Player ("Expressive"), off in practice; applied at playback, never stored. Done (ADR 0021,
+      after the maintainer found the Player "very flat" on their piano, 2026-10-19): "Play
+      expressively" in the Player's options, on by default and kept; shaped touch (the melody over
+      the accompaniment, each phrase rising to its highest note and settling) for notes the file
+      leaves unshaped; an automatic sustain pedal where the file has none (a legato pedal at each
+      new harmony, changed where it would smear a step, up in rests, at the end and in passages too
+      fast to pedal); every pedal lifted as a piece ends. Over the catalogue: no semitone smeared by
+      the pedal, the pedal down 79 % of the time on average, velocities about 39–106 (59–89 before).
+      The ending: from the bar before the last chord the tempo eases to 90 %, and the last chord is
+      held half as long again; the transport, seek line and media controls take the longer length. A
+      MIDI file written out by notation software (chords at one velocity) is not taken for a
+      recording: it is pedalled and shaped around its own written dynamics. Dynamics marks and
+      hairpins from imported MusicXML done 2026-10-24 (ADR 0025): p, mf, ff and the rest set each
+      note's velocity at import (MuseScore's values, or the file's `<sound dynamics>`), hairpins and
+      "cresc."/"dim." grow note by note to the next mark or one step, sf and fp accent; a staff's
+      own marks are its hand's, otherwise the part's; natural and expressive touch are shaped around
+      the marked level, and a score is never taken for a recording. MuseScore and ABC files'
+      dynamics are in the queue's import gaps.
 - [x] **P6-17** (APP) Sound on this device: a soft room sound from an impulse response made in code
       (Player only), and a richer piano with more Salamander loudness layers as the default sound
       (maintainer, 2026-10-18), loaded after the current set and kept for offline use. Done (ADR
@@ -925,6 +927,12 @@ Record the outcome as an ADR in `docs/adr/` and tick it here.
 
 ## Changelog
 
+- **2026-10-24** — P6-16: an imported score's dynamics. MusicXML's p, mf, ff and the rest, its
+  hairpins and "cresc."/"dim." words, and sf and fp accents now set how loud each note plays, in
+  the Player and in practice, with the melody and the phrase still shaped around them; the
+  maintainer chose note velocities over a new `Song` field (ADR 0025). The queue: P5-19 and the
+  scale drills are released (v0.3.0, v0.4.0, both published with v0.2.0), so P6-16 is Now and P5-09
+  Next; dynamics in MuseScore and ABC files join the import gaps.
 - **2026-10-23** — P7-15 to P7-23: scale drills. The Drills page has a third card, Scales: random
   scales from eight levels (majors, the three minors, modes, pentatonics, blues, chromatic) or a
   set of one's own, in their key signatures with the fingering scale books print, one or both hands

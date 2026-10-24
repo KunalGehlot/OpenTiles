@@ -72,7 +72,8 @@ about 30 steps between the 10th and 90th percentile (39–106 in all), against 5
   a per-piece hint could come later.
 - A file's own pedal marks or recorded velocities always win, so imported performances are not
   touched.
-- Dynamics marks and hairpins from imported MusicXML (the rest of §5.3) are still to do.
+- Dynamics marks and hairpins from imported MusicXML (the rest of §5.3) became note velocities in
+  ADR 0025; expressive touch is shaped around them, and a score is never taken for a recording.
 
 ## Alternatives considered
 
