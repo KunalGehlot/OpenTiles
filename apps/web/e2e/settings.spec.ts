@@ -241,3 +241,46 @@ test('the new pages fit a ⅓-width iPad window, also with large print', async (
     expect(widths.page, url).toBeLessThanOrEqual(widths.viewport);
   }
 });
+
+for (const leftHanded of [false, true]) {
+  test(`practice panels stay inside a narrow or wide window${leftHanded ? ', left-handed' : ''} (P2-15)`, async ({
+    page,
+  }) => {
+    if (leftHanded) {
+      await page.goto('./#/settings');
+      await page.getByLabel(/Left-handed layout/).check();
+    }
+    for (const width of [360, 1280]) {
+      await page.setViewportSize({ width, height: 800 });
+      await page.goto('./#/practice/catalogue/ode-to-joy');
+      await expect(page.getByRole('button', { name: 'Options' })).toBeVisible();
+      const triggers = page.locator('.popover > button');
+      for (let i = 0; i < (await triggers.count()); i++) {
+        const trigger = triggers.nth(i);
+        if (!(await trigger.isVisible())) continue;
+        await trigger.click();
+        const panel = page.locator('.popover__panel');
+        await expect(panel).toBeVisible();
+        const box = await panel.boundingBox();
+        const name = `${width} px, ${(await trigger.getAttribute('aria-label')) ?? (await trigger.textContent())}`;
+        expect(box!.x, name).toBeGreaterThanOrEqual(0);
+        expect(box!.x + box!.width, name).toBeLessThanOrEqual(width);
+        await page.keyboard.press('Escape');
+        await expect(panel).toHaveCount(0);
+      }
+    }
+  });
+}
+
+test('a library piece opens in the key it was last moved to (P5-04)', async ({ page }) => {
+  await importMidi(page, 'My scale');
+  await page.getByRole('button', { name: 'Options' }).click();
+  await page.getByRole('button', { name: 'Up a semitone' }).click();
+  await expect(page.getByTestId('transpose')).toHaveText('+1');
+  await expect
+    .poll(() => page.evaluate(() => localStorage.getItem('opentiles:setting:pieceShifts')))
+    .toMatch(/^\{"library:\d+:scale\.mid":1\}$/);
+  await page.reload();
+  await page.getByRole('button', { name: 'Options' }).click();
+  await expect(page.getByTestId('transpose')).toHaveText('+1');
+});

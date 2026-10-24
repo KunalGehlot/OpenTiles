@@ -132,11 +132,6 @@ export function useEffectiveAccessibility(): EffectiveAccessibility {
   return useSyncExternalStore(subscribe, effectiveSettings, effectiveSettings);
 }
 
-/** True when practice controls should sit on the left (P2-15). For the practice view to read. */
-export function useLeftHanded(): boolean {
-  return useEffectiveAccessibility().leftHanded;
-}
-
 /** Starts the store: loads settings and follows OS preference changes. Call once at start-up. */
 export function initAppSettings(): Promise<AppSettings> {
   // The colours chosen last time, before IndexedDB answers, so the other theme never flashes up.

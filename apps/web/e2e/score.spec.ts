@@ -503,3 +503,35 @@ test('the piece can be shifted by semitones during practice (P5-04)', async ({ p
   await expect(page.getByRole('status').filter({ hasText: 'Transposed' })).toHaveCount(0);
   await expect(keyAccidentals).toHaveCount(0, { timeout: 20_000 });
 });
+
+test('a piece opens in the key it was last moved to (P5-04)', async ({ page }) => {
+  await page.goto('./#/practice/catalogue/ode-to-joy');
+  await page.getByRole('button', { name: 'Options' }).click();
+  await page.getByRole('button', { name: 'Down a semitone' }).click();
+  await expect(page.getByTestId('transpose')).toHaveText('−1');
+  await expect
+    .poll(() => page.evaluate(() => localStorage.getItem('opentiles:setting:pieceShifts')))
+    .toBe('{"catalogue:ode-to-joy":-1}');
+
+  // Another piece keeps its own key.
+  await page.goto('./#/practice/catalogue/twinkle-twinkle');
+  await page.getByRole('button', { name: 'Options' }).click();
+  await expect(page.getByTestId('transpose')).toHaveText('0');
+
+  await page.reload();
+  await page.goto('./#/practice/catalogue/ode-to-joy');
+  await expect(page.getByRole('status').filter({ hasText: 'Transposed' })).toHaveText(
+    'Transposed down a semitone.',
+  );
+  await page.getByRole('button', { name: 'Options' }).click();
+  await expect(page.getByTestId('transpose')).toHaveText('−1');
+  // Back to 0 forgets it.
+  await page.getByRole('button', { name: 'Up a semitone' }).click();
+  await expect(page.getByTestId('transpose')).toHaveText('0');
+  await expect
+    .poll(() => page.evaluate(() => localStorage.getItem('opentiles:setting:pieceShifts')))
+    .toBe('{}');
+  await page.reload();
+  await page.getByRole('button', { name: 'Options' }).click();
+  await expect(page.getByTestId('transpose')).toHaveText('0');
+});

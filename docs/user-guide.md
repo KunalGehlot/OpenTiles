@@ -120,7 +120,7 @@ All of these are on the practice screen or under **Options**.
   run goes round again instead of ending; narrow it with the bar selectors, by dragging across the
   falling notes, or phrase by phrase. Press **Loop** again to stop.
 - **Metronome.** A click track at the current tempo.
-- **Transpose.** Move the piece up or down in semitones.
+- **Transpose.** Move the piece up or down in semitones. The piece opens in that key next time.
 - **Fingering.** Show fingering numbers from the score, suggested ones where the score has none,
   or none.
 - **Overview strip.** The coloured strip above the notes shows the whole piece (blue is the right

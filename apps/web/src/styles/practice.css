@@ -688,6 +688,17 @@ html[data-left-handed] .session-status__view {
   margin-left: 0;
 }
 
+/* A mirrored bar's panels open from the other side too, or they run off the left edge (P2-15). */
+html[data-left-handed] .bar .popover__panel {
+  right: auto;
+  left: 0;
+}
+
+html[data-left-handed] .bar .popover--start .popover__panel {
+  right: 0;
+  left: auto;
+}
+
 /*
  * Compact: ⅓ iPad width (Split View, Slide Over), phones and short landscape windows. Smaller bars
  * that wrap, icon-only secondary buttons, and the canvas takes whatever height is left.
