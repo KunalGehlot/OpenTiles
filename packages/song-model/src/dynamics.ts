@@ -87,10 +87,9 @@ export function isNotated(format: SongFormat): boolean {
 export function dynamicFromName(
   name: string,
 ): Pick<RawDynamic, 'level' | 'onset' | 'sforzando'> | undefined {
-  const level = DYNAMIC_VELOCITIES[name];
-  if (level !== undefined) return { level };
-  const accent = ACCENTS[name];
-  return accent ? { ...accent } : undefined;
+  // Own keys only: an element called "constructor" is not a mark.
+  if (Object.hasOwn(DYNAMIC_VELOCITIES, name)) return { level: DYNAMIC_VELOCITIES[name] as number };
+  return Object.hasOwn(ACCENTS, name) ? { ...ACCENTS[name] } : undefined;
 }
 
 function clampVelocity(v: number): number {
@@ -178,7 +177,11 @@ export function applyDynamics(notes: DynamicNote[], events: DynamicEvent[]): voi
     let scope = scopes.get(key);
     if (!scope) {
       const ofPart = sorted.filter((e) => e.part === part);
-      const own = ofPart.some((e) => e.staff === staff);
+      // A staff has marks of its own when a level or an accent names it; a hairpin alone does not
+      // make the part's p and f someone else's.
+      const own = ofPart.some(
+        (e) => e.staff === staff && (e.level !== undefined || e.onset !== undefined || e.sforzando),
+      );
       const mine = ofPart.filter((e) => !own || e.staff === undefined || e.staff === staff);
       scope = {
         ...loudness(mine),

@@ -129,6 +129,16 @@ describe('natural touch over a score’s dynamics marks (P6-16)', () => {
     expect(p.get('top') ?? 0).toBeGreaterThan(p.get('off') ?? 0);
   });
 
+  it('keeps the softest marks audible', () => {
+    const left = (id: string, beat: number) => ({ ...n(id, 40, beat, 'left'), velocity: 16 });
+    const ppp = touchVelocities({
+      ...song([left('down', 0), left('off', 0.5)]),
+      format: 'musicxml',
+    });
+    for (const v of ppp.values()) expect(v).toBeGreaterThanOrEqual(12);
+    expect(ppp.get('down') ?? 0).toBeGreaterThanOrEqual(ppp.get('off') ?? 0);
+  });
+
   it('plays the marks as they are when even', () => {
     const events = buildPlayback(marked(49), { touch: 'even' });
     expect(events.every((e) => e.kind !== 'note' || e.velocity === 49)).toBe(true);

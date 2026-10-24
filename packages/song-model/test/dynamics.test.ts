@@ -212,6 +212,33 @@ describe('which marks a staff follows (P6-16)', () => {
     expect(of('left')).toEqual([33, 33]);
   });
 
+  it('a hairpin on one staff grows from the part’s mark', () => {
+    const lhWedge = (type: string) =>
+      `<direction placement="below"><direction-type><wedge type="${type}"/></direction-type><staff>2</staff></direction>`;
+    const song = parse(
+      score([
+        [
+          {
+            attributes: grand,
+            content:
+              dyn('p', 1) +
+              rh('C') +
+              rh('D') +
+              back +
+              lhWedge('crescendo') +
+              lh('C') +
+              lh('D') +
+              lhWedge('stop'),
+          },
+        ],
+      ]),
+    );
+    const of = (hand: string) => song.notes.filter((n) => n.hand === hand).map((n) => n.velocity);
+    expect(of('right')).toEqual([49, 49]);
+    // From p one step up to mp over the two beats.
+    expect(of('left')).toEqual([49, 57]);
+  });
+
   it('a part without marks is left alone', () => {
     const notes = [
       { startBeat: 0, part: 0, staff: 1 },
@@ -219,6 +246,12 @@ describe('which marks a staff follows (P6-16)', () => {
     ] as { startBeat: number; part: number; staff: number; velocity?: number }[];
     applyDynamics(notes, [{ beat: 0, part: 0, level: 33 }]);
     expect(notes.map((n) => n.velocity)).toEqual([33, undefined]);
+  });
+});
+
+describe('names that are not marks', () => {
+  it('ignores an element called after an object’s own properties', () => {
+    expect(velocities(oneBar(dyn('constructor') + q('C', 4)))).toEqual([undefined]);
   });
 });
 

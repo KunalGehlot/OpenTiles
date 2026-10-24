@@ -20,6 +20,9 @@ const LEFT_HAND = -6;
 const DOWNBEAT = 6;
 const SECOND_STRONG = 3;
 const OFF_BEAT = -4;
+/** A marked note is never shaped more than this far below its mark, nor below `QUIETEST`. */
+const BELOW_MARK = 16;
+const QUIETEST = 12;
 /** The variation each note gets from its id: −3 … +3. */
 const SPREAD = 3;
 
@@ -82,7 +85,9 @@ export function touchVelocities(song: Song, touch: Touch = 'natural'): Map<strin
     const level = BASE + (n.velocity === undefined ? 0 : n.velocity - EVEN_VELOCITY);
     const voice = melody.has(n.id) ? MELODY : n.hand === 'left' ? LEFT_HAND : 0;
     const v = level + voice + metricAccent(song, n) + wobble(n.id);
-    out.set(n.id, Math.max(1, Math.min(127, Math.round(v))));
+    // A ppp left-hand off-beat would otherwise come out silent.
+    const floor = n.velocity === undefined ? 1 : Math.max(QUIETEST, n.velocity - BELOW_MARK);
+    out.set(n.id, Math.max(floor, Math.min(127, Math.round(v))));
   }
   return out;
 }

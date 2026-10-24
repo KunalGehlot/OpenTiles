@@ -794,8 +794,9 @@ without a word when no MIDI output is found.
   ([checklist](#ipad-device-checklist)).
 - [x] **P6-16** (PRAC) Phrasing for the Player: phrases swell towards their high point and settle at
       the end, the last bar slows by at most 10 % and the final chord is held; dynamics marks and
-      hairpins set the level when a file has them (none of the catalogue's scores has any). On in
-      the Player ("Expressive"), off in practice; applied at playback, never stored. Done (ADR 0021,
+      hairpins set the level when a file has them (none of the catalogue's scores has any). Phrasing
+      and the pedal are on in the Player ("Expressive"), off in practice, applied at playback and
+      never stored; a score's marks (below) are read at import and heard in both. Done (ADR 0021,
       after the maintainer found the Player "very flat" on their piano, 2026-10-19): "Play
       expressively" in the Player's options, on by default and kept; shaped touch (the melody over
       the accompaniment, each phrase rising to its highest note and settling) for notes the file
