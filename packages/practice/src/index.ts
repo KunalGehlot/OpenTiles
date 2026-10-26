@@ -51,6 +51,17 @@ export type { LoopRange, LoopRun, LoopRunOutcome, LoopTrainerOptions } from './l
 export { boundaryStrength, PHRASE_READY_ACCURACY, splitPhrases, StepPractice } from './phrases';
 export type { Phrase, PhraseOptions, PhraseRunOutcome } from './phrases';
 export {
+  addBarRun,
+  barRunOf,
+  HARD_IN,
+  HARD_OF,
+  hardBarLoops,
+  hardBars,
+  MAX_BAR_RUNS,
+  normaliseBarRuns,
+} from './hard-bars';
+export type { BarRun } from './hard-bars';
+export {
   CALIBRATION_PITCHES,
   clickTrain,
   latencyFromAnswers,
