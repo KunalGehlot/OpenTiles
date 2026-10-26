@@ -260,3 +260,19 @@ export {
   weakScales,
 } from './scale-stats';
 export type { ScaleKindStats, ScaleRound, ScaleStats } from './scale-stats';
+export {
+  chordReviewEvents,
+  dueChordKinds,
+  dueReviews,
+  dueScaleKinds,
+  gradeOf,
+  localDayNumber,
+  MAX_REVIEWS,
+  MIN_EASE,
+  nextEase,
+  replayReviews,
+  review,
+  scaleReviewEvents,
+  START_EASE,
+} from './review';
+export type { ReviewEvent, ReviewGrade, ReviewState } from './review';
