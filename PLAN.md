@@ -118,6 +118,7 @@ and the device; a failure becomes a task at the top of the queue.
 | v0.3.0: a piece opens in the key it was last moved to; Options fits at ⅓ width         | Both   | P5-04, P2-15    | open                                 |
 | v0.4.0: scale drills from memory and in falling keys; fingers readable at ⅓ width      | Both   | P7-20, P7-24    | open                                 |
 | v0.5.0: an imported score's p and f, hairpins and sf heard in the Player               | Both   | P6-16           | open                                 |
+| v0.6.0: the new home-screen icon; the practice header and bar at ⅓ width, upright      | Both   | P5-09           | open                                 |
 | Frame time on an older iPad (falling notes, score, Player)                             | Both   | P4-11, P5-10    | open                                 |
 | The richer piano and the Player's room; stand mode                                     | Both   | P6-15, P6-17    | open                                 |
 | The Player over USB audio, and whether the microphone hears it                         | Safari | P6-13           | open                                 |
@@ -535,8 +536,17 @@ images, sounds or fonts, and credit the inspiration in [CREDITS.md](CREDITS.md).
   Options panel by `e2e/touch.spec.ts`; on an iPad in landscape the falling notes lose about 65 px
   of height to the taller bars. A manual light/dark switch (Settings → Accessibility → Appearance:
   same as this device, light or dark), the practice canvas and form controls following it and no
-  flash of the other theme on load. Left (in the queue): the rest of the list, and checking the
-  changes in the maintainer's Chrome.
+  flash of the other theme on load. Done (2026-10-28): home to playing is one click from the path
+  card on Home and two for a library piece (`e2e/two-clicks.spec.ts`, nothing needed changing);
+  one control bar under the header, with the step and the right and wrong counts in the header,
+  the view switch at the end of the bar, Restart, the metronome, Loop and the views icon-only, the
+  header's buttons icon-only below 1024 px, the composer line hidden when the title is short of
+  room, and the status row only when it has something to say (the notes gain about 44 px on an
+  iPad in landscape and 50 px on a phone; Plays on stays in the bar, as ADR 0019 wants its warning
+  always visible); panels fade out as they fade in (pages already eased in); a new logo chosen by
+  the maintainer, a tile falling onto a lit key, with the web and iPad icons rendered from it;
+  the Detector Lab as five numbered cards with plain names for its thresholds. Left: a look at it
+  all in the maintainer's Chrome.
 - [ ] **P5-10** (human) Release gate: frame time on an older iPad, a MIDI keyboard on an iPad through
       the iPad app (Safari has no Web MIDI; Firefox confirmed working 2026-10-09), legal consultation (P2-18), trademark (the domain
       opentiles.site was registered on 2026-10-10), a native German read-through, README
@@ -925,6 +935,11 @@ Record the outcome as an ADR in `docs/adr/` and tick it here.
 
 ## Changelog
 
+- **2026-10-28** — P5-09: the smoothness pass. The practice screen has one control bar under its
+  header instead of a controls row and a status row, so the notes start 44 px higher on an iPad in
+  landscape and 50 px on a phone; panels fade out as they open; a new logo (a tile falling onto a
+  lit key, the maintainer's choice of three); the Detector Lab reads like Settings; and a browser
+  test shows Home to playing in one click. Version 0.6.0.
 - **2026-10-28** — The queue: P6-16 is released (v0.5.0, published), so P5-09 is Now and the import
   gaps are Next.
 - **2026-10-24** — P6-16: an imported score's dynamics. MusicXML's p, mf, ff and the rest, its
