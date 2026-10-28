@@ -51,28 +51,25 @@ it belongs, and say why in the changelog; do not open a new phase for it.
 
 **Now**
 
-1. **P6-16** Dynamics marks and hairpins from imported MusicXML become note velocities, and
-   playback shapes the touch around them (ADR 0025; the maintainer chose velocities over a new
-   `Song` field, 2026-10-24). Release v0.5.0.
+1. **P5-09** The rest of the smoothness pass: home to playing in two clicks, one transport bar,
+   route and panel transitions, a refreshed logo, Detector Lab polish (reviewed in the
+   maintainer's Chrome). Release v0.6.0.
 
 **Next**
 
-2. **P5-09** The rest of the smoothness pass: home to playing in two clicks, one transport bar,
-   route and panel transitions, a refreshed logo, Detector Lab polish (reviewed in the
-   maintainer's Chrome).
-
-**Later** (in this order unless the maintainer reorders it)
-
-3. **P5-14, P5-18, P5-13** Import gaps: D.C. and D.S. jumps and multi-bar rests in the learner's
+2. **P5-14, P5-18, P5-13** Import gaps: D.C. and D.S. jumps and multi-bar rests in the learner's
    PDF, octave signs and clef changes inside a bar, grace notes from MIDI files, re-importing
    MIDI pieces already in a library, and dynamics marks in MuseScore and ABC files (P6-16 reads
    MusicXML's).
-4. **P5-05** Sight-reading: accidentals beyond the key, then rhythm reading.
-5. **P5-08** Library preview before opening, and collections.
-6. **P4-19** A choice of audio output device for this device's piano (where the browser offers it).
-7. **P5-06** Free play with recording and listen-back (needs an ADR and the lawyer's answer, P2-18).
-8. **P3-03** Encrypted sync goes live (needs the open decisions below and EU storage).
-9. **P4-05** Teacher features, **P4-03** courses, **P4-01** optical music recognition.
+
+**Later** (in this order unless the maintainer reorders it)
+
+3. **P5-05** Sight-reading: accidentals beyond the key, then rhythm reading.
+4. **P5-08** Library preview before opening, and collections.
+5. **P4-19** A choice of audio output device for this device's piano (where the browser offers it).
+6. **P5-06** Free play with recording and listen-back (needs an ADR and the lawyer's answer, P2-18).
+7. **P3-03** Encrypted sync goes live (needs the open decisions below and EU storage).
+8. **P4-05** Teacher features, **P4-03** courses, **P4-01** optical music recognition.
 
 **Waiting on the maintainer** (no code until they act or decide)
 
@@ -928,6 +925,8 @@ Record the outcome as an ADR in `docs/adr/` and tick it here.
 
 ## Changelog
 
+- **2026-10-28** — The queue: P6-16 is released (v0.5.0, published), so P5-09 is Now and the import
+  gaps are Next.
 - **2026-10-24** — P6-16: an imported score's dynamics. MusicXML's p, mf, ff and the rest, its
   hairpins and "cresc."/"dim." words, and sf and fp accents now set how loud each note plays, in
   the Player and in practice, with the melody and the phrase still shaped around them; the
