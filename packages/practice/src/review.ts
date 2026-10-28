@@ -2,7 +2,7 @@
 // the rounds the learner has already played. Nothing new is stored: the schedule is replayed from
 // the kept round statistics (chord-stats.ts, scale-stats.ts) with SM-2 (Woźniak, 1990), the rule
 // behind most flash-card programs, so it follows the backup to any device. Pure.
-import { WEAK_SHARE } from './chord-stats';
+import { MIN_ATTEMPTS, WEAK_SHARE } from './chord-stats';
 import type { ChordStats } from './chord-stats';
 import type { ScaleStats } from './scale-stats';
 
@@ -33,23 +33,32 @@ export interface ReviewState {
   lastDay: number;
   /** Local day number from which the item is due. */
   dueDay: number;
+  /** Whether the last review came on or after the due day; those count against the day's limit. */
+  lastWasDue: boolean;
 }
 
 export const START_EASE = 2.5;
 export const MIN_EASE = 1.3;
-/** Most reviews a day asks for, so a long break does not come back as a wall of them. */
+/**
+ * Most reviews of due items a day, for chords and for scales each, so a long break comes back
+ * spread over several days rather than as a wall of reviews.
+ */
 export const MAX_REVIEWS = 20;
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 
-/** Days since 1970 in the local time zone, so a review in the evening is due the next morning. */
+/**
+ * Days since 1970 in the local time zone, so a review in the evening is due the next morning. The
+ * days start and end where `localDay()` in apps/web/src/storage/db.ts puts them (both local time).
+ */
 export function localDayNumber(at: number): number {
   return Math.floor((at - new Date(at).getTimezoneOffset() * 60_000) / DAY_MS);
 }
 
 /**
  * A day's share right at the first try as a grade. Passing starts at `WEAK_SHARE`, the line under
- * which "Practise my weak chords" already counts a chord as weak, so the two never disagree.
+ * which "Practise my weak chords" already counts a chord as weak. Like `weakChords`, `review` does
+ * not let fewer than `MIN_ATTEMPTS` tries fail an item before it is due.
  */
 export function gradeOf(firstTry: number, attempts: number): ReviewGrade {
   if (attempts <= 0) return 0;
@@ -67,15 +76,18 @@ export function nextEase(ease: number, grade: ReviewGrade): number {
 }
 
 /**
- * The state after a review on `day`. A pass before the item is due changes nothing: chords turn up
- * in ordinary drills all the time, and counting those would push the next review out too fast. A
- * fail counts whenever it happens, since it shows the item is not secure.
+ * The state after a review on `day` with `attempts` tries. Before the item is due, a pass changes
+ * nothing: chords turn up in ordinary drills all the time, and counting those would push the next
+ * review out too fast. A fail before the due day counts only from `MIN_ATTEMPTS` tries, so one slip
+ * in a round with one or two tries of a secure chord does not send it back to the start. On or
+ * after the due day every review counts, as a flash card is graded on one answer.
  */
 export function review(
   state: ReviewState | undefined,
   item: string,
   grade: ReviewGrade,
   day: number,
+  attempts = MIN_ATTEMPTS,
 ): ReviewState {
   const s = state ?? {
     item,
@@ -85,10 +97,13 @@ export function review(
     lapses: 0,
     lastDay: day,
     dueDay: day,
+    lastWasDue: false,
   };
   const passed = grade >= 3;
-  if (state && passed && day < state.dueDay) return state;
+  const early = state !== undefined && day < state.dueDay;
+  if (early && (passed || attempts < MIN_ATTEMPTS)) return state;
   const ease = nextEase(s.ease, grade);
+  const lastWasDue = state !== undefined && !early;
   if (!passed) {
     return {
       ...s,
@@ -98,11 +113,12 @@ export function review(
       lapses: s.lapses + (s.reps > 0 ? 1 : 0),
       lastDay: day,
       dueDay: day + 1,
+      lastWasDue,
     };
   }
   const reps = s.reps + 1;
   const intervalDays = reps === 1 ? 1 : reps === 2 ? 6 : Math.round(s.intervalDays * ease);
-  return { ...s, ease, intervalDays, reps, lastDay: day, dueDay: day + intervalDays };
+  return { ...s, ease, intervalDays, reps, lastDay: day, dueDay: day + intervalDays, lastWasDue };
 }
 
 /**
@@ -122,22 +138,38 @@ export function replayReviews(events: readonly ReviewEvent[]): Map<string, Revie
   }
   const states = new Map<string, ReviewState>();
   for (const d of [...days.values()].sort((a, b) => a.day - b.day)) {
-    states.set(d.item, review(states.get(d.item), d.item, gradeOf(d.firstTry, d.attempts), d.day));
+    const grade = gradeOf(d.firstTry, d.attempts);
+    states.set(d.item, review(states.get(d.item), d.item, grade, d.day, d.attempts));
   }
   return states;
 }
 
-/** The items due at `now`, the longest overdue first and the hardest (lowest ease) among equals. */
+/**
+ * How many items were reviewed on the day of `now` when they were due. New items and early fails
+ * are left out, so a learner who meets 20 new chords today still gets their reviews.
+ */
+export function reviewedToday(states: Iterable<ReviewState>, now: number): number {
+  const today = localDayNumber(now);
+  let n = 0;
+  for (const s of states) if (s.lastDay === today && s.lastWasDue) n++;
+  return n;
+}
+
+/**
+ * The items due at `now`, the longest overdue first and the hardest (lowest ease) among equals.
+ * `limit` holds for the whole day: the items already reviewed today when due come off it.
+ */
 export function dueReviews(
   states: Iterable<ReviewState>,
   now: number,
   limit = MAX_REVIEWS,
 ): ReviewState[] {
+  const all = [...states];
   const today = localDayNumber(now);
-  return [...states]
+  return all
     .filter((s) => s.dueDay <= today)
     .sort((a, b) => a.dueDay - b.dueDay || a.ease - b.ease || a.item.localeCompare(b.item))
-    .slice(0, limit);
+    .slice(0, Math.max(0, limit - reviewedToday(all, now)));
 }
 
 /** Review events from the kept chord rounds, one per kind of chord in each round. */
@@ -166,7 +198,7 @@ export function scaleReviewEvents(stats: ScaleStats): ReviewEvent[] {
 
 /**
  * The kinds of chord due at `now`, as `chordStats` keys them, for a drill that draws only those.
- * `allowed` keeps only kinds the drill can draw, as `weakChords` does.
+ * `allowed` keeps only kinds the drill can draw, as `weakChords` does. At most `limit` a day.
  */
 export function dueChordKinds(
   stats: ChordStats,
@@ -177,7 +209,7 @@ export function dueChordKinds(
   return kindsOf(replayReviews(chordReviewEvents(stats)), 'chord:', now, allowed, limit);
 }
 
-/** The scales due at `now`, as `scaleStats` keys them. */
+/** The scales due at `now`, as `scaleStats` keys them; at most `limit` a day. */
 export function dueScaleKinds(
   stats: ScaleStats,
   now: number,
@@ -194,8 +226,9 @@ function kindsOf(
   allowed: ReadonlySet<string> | undefined,
   limit: number,
 ): string[] {
+  const left = Math.max(0, limit - reviewedToday(states.values(), now));
   const kinds = dueReviews(states.values(), now, Number.POSITIVE_INFINITY).map((s) =>
     s.item.slice(prefix.length),
   );
-  return (allowed ? kinds.filter((k) => allowed.has(k)) : kinds).slice(0, limit);
+  return (allowed ? kinds.filter((k) => allowed.has(k)) : kinds).slice(0, left);
 }

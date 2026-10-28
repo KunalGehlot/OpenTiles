@@ -177,6 +177,7 @@ export {
   addRound,
   kindTotals,
   MAX_ROUNDS,
+  MIN_ATTEMPTS,
   NO_CHORD_STATS,
   nextChordTempo,
   normaliseChordStats,
@@ -272,6 +273,7 @@ export {
   nextEase,
   replayReviews,
   review,
+  reviewedToday,
   scaleReviewEvents,
   START_EASE,
 } from './review';

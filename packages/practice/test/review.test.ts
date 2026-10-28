@@ -1,5 +1,6 @@
 // Spaced review (P7-26): SM-2 grades and intervals, early and late reviews, one review a day, the
-// schedule replayed from chord and scale rounds, and a simulated two months of chord practice.
+// schedule replayed from chord and scale rounds, the day's limit, and a simulated two months of
+// chord practice.
 import { describe, expect, it } from 'vitest';
 import {
   chordReviewEvents,
@@ -9,10 +10,12 @@ import {
   gradeOf,
   localDayNumber,
   MAX_REVIEWS,
+  MIN_ATTEMPTS,
   MIN_EASE,
   nextEase,
   replayReviews,
   review,
+  reviewedToday,
   START_EASE,
 } from '../src';
 import type { ChordRound, ChordStats, ReviewGrade, ReviewState, ScaleStats } from '../src';
@@ -76,6 +79,13 @@ describe('one item', () => {
     expect(failedEarly.dueDay).toBe(DAY0 + 4);
     expect(pass(undefined, 0, 0).lapses).toBe(0);
   });
+
+  it(`lets fewer than ${MIN_ATTEMPTS} tries fail it only once it is due`, () => {
+    const known = pass(pass(undefined, 0), 1);
+    expect(review(known, 'chord:7.dom7', 2, DAY0 + 3, MIN_ATTEMPTS - 1)).toBe(known);
+    expect(review(known, 'chord:7.dom7', 2, DAY0 + 3, MIN_ATTEMPTS).reps).toBe(0);
+    expect(review(known, 'chord:7.dom7', 2, known.dueDay, 1).reps).toBe(0);
+  });
 });
 
 describe('the schedule from the rounds', () => {
@@ -132,6 +142,50 @@ describe('the schedule from the rounds', () => {
     expect(dueReviews(states, at(5)).map((s) => s.item)).toEqual(['b', 'c', 'a']);
     expect(dueReviews(states, at(5), 1).map((s) => s.item)).toEqual(['b']);
     expect(dueReviews(states, at(0)).map((s) => s.item)).toEqual(['b']);
+  });
+
+  it('keeps a secure chord through one slip before it is due', () => {
+    // Reviewed on days 0, 1 and 7: a 17-day interval, due on day 24. On day 9 it comes up twice
+    // in an ordinary round and is missed once at the first try.
+    const rounds = [0, 1, 7].map((d) => chordRound(d, { '7.dom7': [4, 4] }));
+    const secure = replayReviews(chordReviewEvents({ version: 1, rounds })).get('chord:7.dom7');
+    expect([secure?.intervalDays, (secure?.dueDay ?? 0) - DAY0]).toEqual([17, 24]);
+    const slip = (d: number) =>
+      replayReviews(
+        chordReviewEvents({ version: 1, rounds: [...rounds, chordRound(d, { '7.dom7': [2, 1] })] }),
+      ).get('chord:7.dom7');
+    expect(slip(9)).toEqual(secure);
+    expect(slip(24)).toMatchObject({ intervalDays: 1, reps: 0, lapses: 1 });
+  });
+
+  it(`asks for at most ${MAX_REVIEWS} reviews a day, however often it is asked`, () => {
+    const kindsOf = (...qualities: string[]) =>
+      qualities.flatMap((q) => Array.from({ length: 12 }, (_, pc) => `${pc}.${q}`));
+    const round = (d: number, kinds: string[]) =>
+      chordRound(d, Object.fromEntries(kinds.map((k) => [k, [4, 4] as [number, number]])));
+    // 30 kinds learnt on day 0 are all due on day 1.
+    const learnt = kindsOf('maj', 'min', 'dim').slice(0, 30);
+    const first = dueChordKinds({ version: 1, rounds: [round(0, learnt)] }, at(1));
+    expect(first).toHaveLength(MAX_REVIEWS);
+    // The learner plays those 20 and 20 new kinds; asked again that day, nothing more is due.
+    const fresh = kindsOf('aug', 'sus4').slice(0, 20);
+    const after: ChordStats = {
+      version: 1,
+      rounds: [round(0, learnt), round(1, [...first, ...fresh])],
+    };
+    expect(reviewedToday(replayReviews(chordReviewEvents(after)).values(), at(1))).toBe(
+      MAX_REVIEWS,
+    );
+    expect(dueChordKinds(after, at(1))).toEqual([]);
+    // The other 10 come first the next day.
+    const left = learnt.filter((k) => !first.includes(k));
+    expect(dueChordKinds(after, at(2)).slice(0, 10).sort()).toEqual(left.sort());
+    // New kinds take nothing from the day's reviews; five reviews leave fifteen.
+    const some: ChordStats = {
+      version: 1,
+      rounds: [round(0, learnt), round(1, [...first.slice(0, 5), ...fresh])],
+    };
+    expect(dueChordKinds(some, at(1))).toHaveLength(MAX_REVIEWS - 5);
   });
 });
 
