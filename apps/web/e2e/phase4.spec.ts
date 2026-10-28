@@ -143,3 +143,24 @@ test('holds are judged, and the run can be heard back', async ({ page }) => {
   await listen.getByRole('button', { name: 'Stop', exact: true }).click();
   await expect(listen.getByRole('button', { name: 'Listen', exact: true })).toBeVisible();
 });
+
+test('a closed panel leaves at once for assistive tech, and the page after fading (P5-09)', async ({
+  page,
+}) => {
+  await page.goto('./#/practice/catalogue/ode-to-joy');
+  const options = page.getByRole('button', { name: 'Options' });
+  await options.click();
+  await expect(page.getByRole('group', { name: 'Options' })).toBeVisible();
+  await page.keyboard.press('Escape');
+  await expect(options).toHaveAttribute('aria-expanded', 'false');
+  await expect(options).toBeFocused();
+  // Gone from the accessibility tree at once, from the page once the fade has ended.
+  await expect(page.getByRole('group', { name: 'Options' })).toHaveCount(0);
+  await expect(page.locator('.popover__panel')).toHaveCount(0);
+  // Opened again at once, it is a live panel.
+  await options.click();
+  await options.click();
+  await options.click();
+  await expect(page.getByRole('group', { name: 'Options' })).toBeVisible();
+  await expect(page.locator('.popover__panel')).toHaveCount(1);
+});

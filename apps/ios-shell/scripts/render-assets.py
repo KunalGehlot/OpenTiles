@@ -20,11 +20,14 @@ ASSETS = Path(__file__).resolve().parent.parent / "ios" / "App" / "App" / "Asset
 GREEN = "#1f6f5c"  # icon background, --accent in apps/web/src/styles.css
 DARK = "#123b31"  # black keys
 WHITE = "#ffffff"
+MINT = "#9be7cd"  # the falling tile and the key it lands on
 PAGE = "#fbfaf7"  # --bg in apps/web/src/styles.css
 
 # (x, y, width, height, corner radius) in icon.svg units.
-WHITE_KEYS = [(10, 14, 10, 36, 2), (22, 14, 10, 36, 2), (34, 14, 10, 36, 2), (46, 14, 8, 36, 2)]
-BLACK_KEYS = [(17, 14, 7, 22, 1.5), (29, 14, 7, 22, 1.5), (43, 14, 7, 22, 1.5)]
+TILE = [(22, 9, 10, 17, 2.5)]
+WHITE_KEYS = [(10, 31, 10, 23, 2), (34, 31, 10, 23, 2), (46, 31, 8, 23, 2)]
+LIT_KEY = [(22, 31, 10, 23, 2)]
+BLACK_KEYS = [(17, 31, 7, 13, 1.5), (29, 31, 7, 13, 1.5), (43, 31, 7, 13, 1.5)]
 SUPERSAMPLE = 4
 
 
@@ -38,7 +41,7 @@ def icon(size: int, rounded: bool) -> Image.Image:
         draw.rounded_rectangle((0, 0, big - 1, big - 1), radius=14 * unit, fill=GREEN)
     else:
         draw.rectangle((0, 0, big - 1, big - 1), fill=GREEN)
-    for keys, colour in ((WHITE_KEYS, WHITE), (BLACK_KEYS, DARK)):
+    for keys, colour in ((TILE, MINT), (WHITE_KEYS, WHITE), (LIT_KEY, MINT), (BLACK_KEYS, DARK)):
         for x, y, w, h, r in keys:
             box = (x * unit, y * unit, (x + w) * unit - 1, (y + h) * unit - 1)
             draw.rounded_rectangle(box, radius=r * unit, fill=colour)

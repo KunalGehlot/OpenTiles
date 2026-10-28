@@ -1,5 +1,6 @@
 // Detector Lab (PLAN.md P0-10): the Phase 0 tool for trying microphone recognition on a real
-// piano, recording the test set (P0-04) and measuring latency (P0-11).
+// piano, recording the test set (P0-04) and measuring latency (P0-11). Laid out as numbered
+// settings cards (P5-09), with plain names for the thresholds and the engine's own in brackets.
 import { useEffect, useRef, useState } from 'react';
 import { stopPlayer } from '../player/browser';
 import type { DetectorEvent, DetectorMode, MicDetector, ThresholdName } from '@opentiles/engine';
@@ -8,6 +9,7 @@ import { synthFor } from '../audio/synth';
 import { parseNoteNames } from '../lib/notes';
 import { encodeWav } from '../lib/wav';
 import { t } from '../i18n';
+import { Setting } from '../ui/SettingRow';
 
 interface LoggedEvent extends DetectorEvent {
   receivedAt: number;
@@ -16,6 +18,33 @@ interface LoggedEvent extends DetectorEvent {
 const DEFAULT_THRESHOLDS: Record<DetectorMode, Record<ThresholdName, number>> = {
   wait: { accept: 0.25, wrong: 0.45, wrongMargin: 0.1, octaveBelow: 0.25 },
   'play-along': { accept: 0.4, wrong: 0.4, wrongMargin: 0.05, octaveBelow: 0.25 },
+};
+
+/** What each threshold does, in plain words, with the engine's name for the gate report. */
+const THRESHOLD_TEXT: Record<ThresholdName, { label: () => string; hint: () => string }> = {
+  accept: {
+    label: () => t('Accept a played note'),
+    hint: () => t('Lower accepts an expected note more readily; higher needs it clearer. (accept)'),
+  },
+  wrong: {
+    label: () => t('Call a note wrong'),
+    hint: () =>
+      t('How clear a note you were not asked for must be before it counts as wrong. (wrong)'),
+  },
+  wrongMargin: {
+    label: () => t('Wrong-note margin'),
+    hint: () =>
+      t(
+        'How much stronger a neighbouring wrong note must sound than the expected one. (wrongMargin)',
+      ),
+  },
+  octaveBelow: {
+    label: () => t('The octave below'),
+    hint: () =>
+      t(
+        'How clearly the note an octave lower must sound before it counts as played instead of the expected one. (octaveBelow)',
+      ),
+  },
 };
 
 const median = (xs: number[]) => {
@@ -120,6 +149,14 @@ export function DetectorLab() {
     setMode(m);
     setThresholds(DEFAULT_THRESHOLDS[m]);
     running?.detector.setMode(m);
+  };
+
+  const resetThresholds = () => {
+    const defaults = DEFAULT_THRESHOLDS[mode];
+    setThresholds(defaults);
+    for (const [name, value] of Object.entries(defaults)) {
+      running?.detector.setThreshold(name as ThresholdName, value);
+    }
   };
 
   const changeThreshold = (name: ThresholdName, value: number) => {
@@ -237,16 +274,23 @@ export function DetectorLab() {
   for (const e of log) counts[e.kind] += 1;
   const delays = log.filter((e) => e.kind === 'expected').map((e) => e.decidedAt - e.time);
 
+  const needsMic = running ? undefined : t('Start the microphone first.');
+  const defaults = DEFAULT_THRESHOLDS[mode];
+  const changed = (Object.keys(defaults) as ThresholdName[]).some(
+    (name) => thresholds[name] !== defaults[name],
+  );
+
   return (
-    <div className="stack">
+    <article className="settings lab">
       <h1>{t('Detector Lab')}</h1>
       <p className="lead">
         {t(
-          'Try microphone note recognition on a real piano. Tell the detector which notes you are about to play, play them (or something else) and watch its decisions. This is the Phase 0 test bench; everything runs on this device.',
+          'Try the microphone note recognition on a real piano: tell it which notes you are about to play, play them (or something else) and watch what it decides. Everything runs on this device.',
         )}
       </p>
 
-      <div className="panel stack">
+      <section aria-labelledby="lab-mic-title">
+        <h2 id="lab-mic-title">{t('1. Microphone')}</h2>
         <div className="row">
           {running ? (
             <button onClick={stop}>{t('Stop microphone')}</button>
@@ -255,17 +299,16 @@ export function DetectorLab() {
               {starting ? t('Starting…') : t('Start microphone')}
             </button>
           )}
-          <div className="segmented" role="group" aria-label={t('Mode')}>
-            <button aria-pressed={mode === 'wait'} onClick={() => changeMode('wait')}>
-              {t('Wait mode')}
-            </button>
-            <button aria-pressed={mode === 'play-along'} onClick={() => changeMode('play-along')}>
-              {t('Play along')}
-            </button>
-          </div>
           {running && (
-            <span className="row">
-              <span className="meter" aria-label={t('Input level')}>
+            <span className="lab__level">
+              <span
+                className="meter"
+                role="meter"
+                aria-label={t('Input level')}
+                aria-valuemin={0}
+                aria-valuemax={100}
+                aria-valuenow={Math.round(Math.min(1, level) * 100)}
+              >
                 <div style={{ width: `${Math.min(100, level * 100)}%` }} />
               </span>
               <span className="muted">
@@ -278,26 +321,54 @@ export function DetectorLab() {
           )}
         </div>
         {error && <p className="error">{error}</p>}
-        <label>
-          {t('Expected notes')}
+        <Setting
+          label={t('Tuned for')}
+          hint={
+            mode === 'wait'
+              ? t('Wait mode leans towards accepting, so a right note never holds you up.')
+              : t('Play along leans towards precision, so a wrong note never scores.')
+          }
+        >
+          <span className="segmented" role="group" aria-label={t('Mode')}>
+            <button aria-pressed={mode === 'wait'} onClick={() => changeMode('wait')}>
+              {t('Wait mode')}
+            </button>
+            <button aria-pressed={mode === 'play-along'} onClick={() => changeMode('play-along')}>
+              {t('Play along')}
+            </button>
+          </span>
+        </Setting>
+      </section>
+
+      <section aria-labelledby="lab-notes-title">
+        <h2 id="lab-notes-title">{t('2. The notes you will play')}</h2>
+        <p className="muted">
+          {t('Note names with their octave, such as C4 for middle C; several at once for a chord.')}
+        </p>
+        <div className="row">
           <input
             type="text"
             value={expectedText}
             onChange={(e) => setExpectedText(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && applyExpected(expected)}
+            aria-label={t('Expected notes')}
             aria-invalid={expected === null}
-            style={{ width: '14em' }}
+            className="lab__notes"
           />
-          <button disabled={!running || expected === null} onClick={() => applyExpected(expected)}>
+          <button
+            disabled={!running || expected === null}
+            title={needsMic}
+            onClick={() => applyExpected(expected)}
+          >
             {t('Set')}
           </button>
-          <span className="muted">{t('generation {n}', { n: generation })}</span>
-        </label>
-        <div className="row">
+        </div>
+        <div className="chips" role="group" aria-label={t('Examples')}>
           {['C4', 'A4', 'C4 E4 G4', 'C3 G3', 'C2', 'C6 E6', 'F#3 A3 D4'].map((notes) => (
             <button
               key={notes}
               disabled={!running}
+              title={needsMic}
               onClick={() => {
                 setExpectedText(notes);
                 applyExpected(parseNoteNames(notes));
@@ -307,14 +378,32 @@ export function DetectorLab() {
             </button>
           ))}
         </div>
-      </div>
+        <p className="muted" role="status">
+          {!running
+            ? t('Start the microphone first.')
+            : generation > 0
+              ? t('Listening for {notes} (set {n})', {
+                  notes: expectedText.trim(),
+                  n: generation,
+                })
+              : t('Set the notes to start listening.')}
+        </p>
+      </section>
 
-      <div className="panel stack">
-        <strong>{t('Thresholds')}</strong>
-        <div className="row">
-          {(Object.keys(thresholds) as ThresholdName[]).map((name) => (
-            <label key={name}>
-              {name}
+      <section aria-labelledby="lab-thresholds-title">
+        <h2 id="lab-thresholds-title">{t('3. Sensitivity')}</h2>
+        <p className="muted">
+          {t(
+            'Each slider is a score from 0 to 1 that a note must reach. The starting values suit the mode above; changes last until you leave this page.',
+          )}
+        </p>
+        {(Object.keys(thresholds) as ThresholdName[]).map((name) => (
+          <Setting
+            key={name}
+            label={THRESHOLD_TEXT[name].label()}
+            hint={THRESHOLD_TEXT[name].hint()}
+          >
+            <span className="lab__slider">
               <input
                 type="range"
                 min={0}
@@ -323,33 +412,52 @@ export function DetectorLab() {
                 value={thresholds[name]}
                 onChange={(e) => changeThreshold(name, Number(e.target.value))}
               />
-              {thresholds[name].toFixed(2)}
-            </label>
-          ))}
-        </div>
+              <output>{thresholds[name].toFixed(2)}</output>
+            </span>
+          </Setting>
+        ))}
         <div className="row">
-          <button disabled={!running} onClick={() => void calibrate()}>
-            {t('Measure room noise (2 s)')}
+          <button disabled={!changed} onClick={() => resetThresholds()}>
+            {t('Back to the starting values')}
           </button>
-          {noiseDb !== null && (
-            <span className="muted">{t('noise {db} dB per bin', { db: noiseDb.toFixed(1) })}</span>
-          )}
-          <button disabled={!running} onClick={() => void readTuning()}>
-            {t('Estimate tuning')}
-          </button>
-          {tuning !== null && (
-            <>
-              <span className="muted">
-                {t('{cents} cents from A = 440 Hz', { cents: tuning.toFixed(1) })}
-              </span>
-              <button onClick={() => running?.detector.setTuning(tuning)}>{t('Apply')}</button>
-            </>
-          )}
         </div>
-      </div>
+        <Setting
+          label={t('Room noise')}
+          hint={t('Two seconds of quiet, so the detector knows what to ignore.')}
+        >
+          <span className="row">
+            {noiseDb !== null && (
+              <span className="muted">
+                {t('noise {db} dB per bin', { db: noiseDb.toFixed(1) })}
+              </span>
+            )}
+            <button disabled={!running} title={needsMic} onClick={() => void calibrate()}>
+              {t('Measure room noise (2 s)')}
+            </button>
+          </span>
+        </Setting>
+        <Setting
+          label={t('Tuning')}
+          hint={t('After a few notes have been accepted: how far this piano is from A = 440 Hz.')}
+        >
+          <span className="row">
+            {tuning !== null && (
+              <>
+                <span className="muted">
+                  {t('{cents} cents from A = 440 Hz', { cents: tuning.toFixed(1) })}
+                </span>
+                <button onClick={() => running?.detector.setTuning(tuning)}>{t('Apply')}</button>
+              </>
+            )}
+            <button disabled={!running} title={needsMic} onClick={() => void readTuning()}>
+              {t('Estimate tuning')}
+            </button>
+          </span>
+        </Setting>
+      </section>
 
-      <div className="panel stack">
-        <strong>{t('Decisions')}</strong>
+      <section aria-labelledby="lab-decisions-title">
+        <h2 id="lab-decisions-title">{t('4. What it decided')}</h2>
         <p className="muted">
           {t('{accepted} accepted · {rejected} rejected · {wrong} wrong notes · {onsets} onsets', {
             accepted: counts.expected,
@@ -384,19 +492,26 @@ export function DetectorLab() {
           ))}
         </div>
         <div className="row">
-          <button onClick={() => setLog([])}>{t('Clear')}</button>
+          <button disabled={log.length === 0} onClick={() => setLog([])}>
+            {t('Clear')}
+          </button>
         </div>
-      </div>
+      </section>
 
-      <div className="panel stack">
-        <strong>{t('Test-set recorder and latency')}</strong>
+      <section aria-labelledby="lab-record-title">
+        <h2 id="lab-record-title">{t('5. Test recordings and timing')}</h2>
         <p className="muted">
           {t(
-            'Records exactly what the detector hears, as a WAV file saved to this device, for the Phase 0 test set. Only record public-domain or your own music.',
+            'Records exactly what the detector hears, as a WAV file saved to this device, for the test set. Only record public-domain or your own music.',
           )}
         </p>
         <div className="row">
-          <button disabled={!running} onClick={toggleRecording} aria-pressed={recording}>
+          <button
+            disabled={!running}
+            title={needsMic}
+            onClick={toggleRecording}
+            aria-pressed={recording}
+          >
             {recording ? t('Stop recording') : t('Record')}
           </button>
           {download && (
@@ -404,14 +519,14 @@ export function DetectorLab() {
               {t('Save {name}', { name: download.name })}
             </a>
           )}
-          <button disabled={!running} onClick={latencyTest}>
+          <button disabled={!running} title={needsMic} onClick={latencyTest}>
             {t('Latency test (speaker clicks)')}
           </button>
           <button onClick={() => void runBenchmark()}>{t('Benchmark detector speed')}</button>
         </div>
-        {latency && <p>{latency}</p>}
-        {benchmark && <p>{benchmark}</p>}
-      </div>
-    </div>
+        {latency && <p role="status">{latency}</p>}
+        {benchmark && <p role="status">{benchmark}</p>}
+      </section>
+    </article>
   );
 }

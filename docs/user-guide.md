@@ -109,7 +109,11 @@ missed, and which bars were hardest.
 
 ## Practice tools
 
-All of these are on the practice screen or under **Options**.
+The practice screen has a header and one control bar. The header shows the piece, how far you are
+(**Step 3/27** in wait mode) and your right and wrong notes, with the keyboard, microphone and
+**Options** buttons. The bar holds the mode, **Restart**, **Plays on**, the hands, the metronome,
+**Loop**, the tempo and the view; Restart, the metronome and Loop show only their icon, and their
+name appears when you hover over them. Everything below is in the bar or under **Options**.
 
 - **Hands: Left / Both / Right.** Practise one hand alone. **Play other hand** makes the app play
   the hand you are not practising. When that hand begins first, its opening plays after the
@@ -131,7 +135,8 @@ All of these are on the practice screen or under **Options**.
 
 ## Falling notes, score and sheet views
 
-Switch the view with the buttons at the top right of the practice area.
+Switch the view with the three buttons at the end of the control bar: bars for falling notes, a
+note for the score and a page for the sheet (hover over one to see its name).
 
 - **Falling notes** — bars fall toward the keys, like a rhythm game. Colours show the hand. The
   letter is the note name; the number is the finger.
