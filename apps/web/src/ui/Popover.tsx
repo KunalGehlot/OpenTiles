@@ -1,6 +1,7 @@
 // A small disclosure panel anchored under its button (P4-10): the button toggles aria-expanded,
 // Escape and a press outside close it, and Escape returns focus to the button. Plain React and CSS,
 // no `popover` attribute or anchor positioning: those are newer than the Safari floor (spec §5).
+// Closing, the panel fades out as it faded in (P5-09), inert, then leaves the page.
 import { useEffect, useId, useLayoutEffect, useRef, useState } from 'react';
 
 /** The least room left between a panel and the window's edge, px. */
@@ -28,6 +29,8 @@ export function Popover({
   align?: 'start' | 'end';
 }) {
   const [open, setOpen] = useState(false);
+  /** The panel after closing, until its fade-out ends. */
+  const [leaving, setLeaving] = useState(false);
   const root = useRef<HTMLDivElement>(null);
   const button = useRef<HTMLButtonElement>(null);
   const panel = useRef<HTMLDivElement>(null);
@@ -56,14 +59,24 @@ export function Popover({
     return () => window.removeEventListener('resize', place);
   }, [open]);
 
+  const close = () => {
+    setOpen(false);
+    setLeaving(true);
+  };
+  // animationend may not come (a hidden tab, a style without the animation): never keep it longer.
+  useEffect(() => {
+    if (!leaving) return;
+    const timer = setTimeout(() => setLeaving(false), 400);
+    return () => clearTimeout(timer);
+  }, [leaving]);
   useEffect(() => {
     if (!open) return;
     const onPointerDown = (e: PointerEvent) => {
-      if (e.target instanceof Node && !root.current?.contains(e.target)) setOpen(false);
+      if (e.target instanceof Node && !root.current?.contains(e.target)) close();
     };
     const onKeyDown = (e: KeyboardEvent) => {
       if (e.key !== 'Escape') return;
-      setOpen(false);
+      close();
       button.current?.focus();
     };
     document.addEventListener('pointerdown', onPointerDown);
@@ -84,13 +97,28 @@ export function Popover({
         aria-label={value === undefined ? undefined : `${label}: ${value}`}
         className={className}
         title={title}
-        onClick={() => setOpen((o) => !o)}
+        onClick={() => {
+          if (open) return close();
+          setLeaving(false);
+          setOpen(true);
+        }}
       >
         {icon}
         <span className="btn-label">{value ?? label}</span>
       </button>
-      {open && (
-        <div ref={panel} id={panelId} className="popover__panel" role="group" aria-label={label}>
+      {(open || leaving) && (
+        <div
+          ref={panel}
+          id={panelId}
+          className={open ? 'popover__panel' : 'popover__panel popover__panel--leaving'}
+          role="group"
+          aria-label={label}
+          aria-hidden={!open || undefined}
+          inert={!open || undefined}
+          onAnimationEnd={(e) => {
+            if (!open && e.target === e.currentTarget) setLeaving(false);
+          }}
+        >
           {children}
         </div>
       )}

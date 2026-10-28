@@ -224,6 +224,19 @@
   }
 }
 
+/* Closing: the way it came, a little faster, and nothing in it can be pressed meanwhile. */
+.popover__panel--leaving {
+  pointer-events: none;
+  animation: pop-out var(--dur-1) var(--ease) forwards;
+}
+
+@keyframes pop-out {
+  to {
+    opacity: 0;
+    transform: translateY(-0.25rem) scale(0.98);
+  }
+}
+
 /* ---- Controls ---- */
 
 .session-controls {
