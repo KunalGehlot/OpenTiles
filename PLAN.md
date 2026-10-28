@@ -522,31 +522,32 @@ images, sounds or fonts, and credit the inspiration in [CREDITS.md](CREDITS.md).
       moves with the arrow keys). It uses the session's own loop and seek, so the loop controls,
       the canvas drag and the strip always agree. Hidden in short landscape windows.
 - [ ] **P5-08** (APP) Library preview before opening and collections.
-- [~] **P5-09** (APP) Smoothness pass, reviewed together in the maintainer's dark-mode Chrome: home to
-  playing in two clicks, one transport bar, route and panel transitions, 44 px touch targets on
-  coarse pointers, a manual light/dark switch, a refreshed logo, Detector Lab polish.
-  Done (2026-10-10, from the maintainer's report): after a run the position glides back to
-  the start the way a drag of the score moves it (the score, the play bar and the falling
-  notes together; it used to slide the score alone and then jump), and the first note waits
-  under the play bar from the start, so Play no longer jumps; under Reduce motion it jumps
-  straight back. Every key press, and every note the piece plays in listen and play-along,
-  dips its key for a moment, so a repeated note shows as a new press while the key stays lit.
-  Done (2026-10-17): 44 px touch targets where the pointer is a finger (`styles/touch.css`; a
-  mouse keeps the denser sizes), measured on every main page, a library card and the practice
-  Options panel by `e2e/touch.spec.ts`; on an iPad in landscape the falling notes lose about 65 px
-  of height to the taller bars. A manual light/dark switch (Settings → Accessibility → Appearance:
-  same as this device, light or dark), the practice canvas and form controls following it and no
-  flash of the other theme on load. Done (2026-10-28): home to playing is one click from the path
-  card on Home and two for a library piece (`e2e/two-clicks.spec.ts`, nothing needed changing);
-  one control bar under the header, with the step and the right and wrong counts in the header,
-  the view switch at the end of the bar, Restart, the metronome, Loop and the views icon-only, the
-  header's buttons icon-only below 1024 px, the composer line hidden when the title is short of
-  room, and the status row only when it has something to say (the notes gain about 44 px on an
-  iPad in landscape and 50 px on a phone; Plays on stays in the bar, as ADR 0019 wants its warning
-  always visible); panels fade out as they fade in (pages already eased in); a new logo chosen by
-  the maintainer, a tile falling onto a lit key, with the web and iPad icons rendered from it;
-  the Detector Lab as five numbered cards with plain names for its thresholds. Left: a look at it
-  all in the maintainer's Chrome.
+- [x] **P5-09** (APP) Smoothness pass, reviewed together in the maintainer's dark-mode Chrome: home to
+      playing in two clicks, one transport bar, route and panel transitions, 44 px touch targets on
+      coarse pointers, a manual light/dark switch, a refreshed logo, Detector Lab polish.
+      Done (2026-10-10, from the maintainer's report): after a run the position glides back to
+      the start the way a drag of the score moves it (the score, the play bar and the falling
+      notes together; it used to slide the score alone and then jump), and the first note waits
+      under the play bar from the start, so Play no longer jumps; under Reduce motion it jumps
+      straight back. Every key press, and every note the piece plays in listen and play-along,
+      dips its key for a moment, so a repeated note shows as a new press while the key stays lit.
+      Done (2026-10-17): 44 px touch targets where the pointer is a finger (`styles/touch.css`; a
+      mouse keeps the denser sizes), measured on every main page, a library card and the practice
+      Options panel by `e2e/touch.spec.ts`; on an iPad in landscape the falling notes lose about 65 px
+      of height to the taller bars. A manual light/dark switch (Settings → Accessibility → Appearance:
+      same as this device, light or dark), the practice canvas and form controls following it and no
+      flash of the other theme on load. Done (2026-10-28): home to playing is one click from the path
+      card on Home and two for a library piece (`e2e/two-clicks.spec.ts`, nothing needed changing);
+      one control bar under the header, with the step and the right and wrong counts in the header,
+      the view switch at the end of the bar, Restart, the metronome, Loop and the views icon-only, the
+      header's buttons icon-only below 1024 px, the composer line hidden when the title is short of
+      room, and the status row only when it has something to say (the notes gain about 44 px on an
+      iPad in landscape and 50 px on a phone; Plays on stays in the bar, as ADR 0019 wants its warning
+      always visible); panels fade out as they fade in (pages already eased in); a new logo chosen by
+      the maintainer, a tile falling onto a lit key, with the web and iPad icons rendered from it;
+      the Detector Lab as five numbered cards with plain names for its thresholds. Checked in the
+      maintainer's Chrome (1440 px, dark and light); they kept Plays on in the bar and the icon-only
+      buttons on the iPad too.
 - [ ] **P5-10** (human) Release gate: frame time on an older iPad, a MIDI keyboard on an iPad through
       the iPad app (Safari has no Web MIDI; Firefox confirmed working 2026-10-09), legal consultation (P2-18), trademark (the domain
       opentiles.site was registered on 2026-10-10), a native German read-through, README
