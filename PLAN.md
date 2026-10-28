@@ -64,15 +64,16 @@ it belongs, and say why in the changelog; do not open a new phase for it.
 
 **Later** (in this order unless the maintainer reorders it)
 
-3. **P5-05** Sight-reading: accidentals beyond the key, then rhythm reading.
-4. **P5-08** Library preview before opening, and collections.
-5. **P4-19** A choice of audio output device for this device's piano (where the browser offers it).
-6. **P5-06** Free play with recording and listen-back (needs an ADR and the lawyer's answer, P2-18).
-7. **P3-03** Encrypted sync goes live (needs the open decisions below and EU storage).
-8. **P4-05** Teacher features, **P4-03** courses, **P4-01** optical music recognition.
-9. **P7-25 to P7-33** Spaced review and hard bars: chords and scales come back when they are due,
-   and a piece remembers the bars that keep going wrong (proposed 2026-10-26; waits for the
-   maintainer's answers in [spaced-review.md](docs/phase-7/spaced-review.md), ADR 0026).
+3. **P7-26 to P7-33** Spaced review and hard bars, built by a contributor: chords and scales come
+   back when they are due, and a piece remembers the bars that keep going wrong
+   ([spaced-review.md](docs/phase-7/spaced-review.md), ADR 0026). The maintainer reviews the pull
+   requests as they arrive.
+4. **P5-05** Sight-reading: accidentals beyond the key, then rhythm reading.
+5. **P5-08** Library preview before opening, and collections.
+6. **P4-19** A choice of audio output device for this device's piano (where the browser offers it).
+7. **P5-06** Free play with recording and listen-back (needs an ADR and the lawyer's answer, P2-18).
+8. **P3-03** Encrypted sync goes live (needs the open decisions below and EU storage).
+9. **P4-05** Teacher features, **P4-03** courses, **P4-01** optical music recognition.
 
 **Waiting on the maintainer** (no code until they act or decide)
 
@@ -91,7 +92,7 @@ it belongs, and say why in the changelog; do not open a new phase for it.
   README.
 - **Catalogue growth:** reviewing new pieces (P2-06, P2-07, P3-05, P4-13, P4-13b), and PDMX's
   complexity in the difficulty levels (P2-05).
-- **Proposed ADRs** waiting for a decision: 0015 to 0024 and 0026, and the
+- **Proposed ADRs** waiting for a decision: 0015 to 0024, and the
   [open decisions](#open-decisions).
 
 ## iPad device checklist
@@ -914,18 +915,18 @@ on 2026-10-22, and the decisions go into ADR 0022 (P7-00).
 - [x] **P7-23** (GOV) User guide, README, architecture, German strings; version 0.4.0.
 - [ ] **P7-24** (human) The maintainer's checks of the scale drills.
 
-Spaced review and hard bars (proposed 2026-10-26, from a contributor's Discussion): chords and
-scales come back on an SM-2 schedule replayed from the rounds already kept, and a piece remembers
-the bars that went wrong in recent runs. Every task's detail is in
-[docs/phase-7/spaced-review.md](docs/phase-7/spaced-review.md); the questions in its section 7 wait
-for the maintainer, and ADR 0026 is proposed.
+Spaced review and hard bars (planned 2026-10-26 by a contributor, from
+[Discussion #62](https://github.com/KunalGehlot/OpenTiles/discussions/62); accepted 2026-10-28):
+chords and scales come back on an SM-2 schedule replayed from the rounds already kept, and a piece
+remembers the bars that went wrong in recent runs. Every task's detail and the maintainer's answers
+are in [docs/phase-7/spaced-review.md](docs/phase-7/spaced-review.md); ADR 0026 is accepted. The
+contributor builds the tasks and the maintainer reviews each pull request.
 
-- [~] **P7-25** (GOV) The plan, the maintainer's answers and ADR 0026. Done: the plan and ADR 0026
-  (proposed). Left: the answers to Q1–Q10.
-- [ ] **P7-26** (PRAC) The review schedule: SM-2 replayed from `chordStats` and `scaleStats`, one review a day, early passes ignored.
+- [x] **P7-25** (GOV) The plan, the maintainer's answers and ADR 0026.
+- [ ] **P7-26** (PRAC) The review schedule: SM-2 replayed from `chordStats` and `scaleStats`, one review a day, early passes and slips of under three tries ignored, 20 a day.
 - [ ] **P7-27** (APP) "Due for review" on the Drills page, and Review now drawing only the due kinds.
-- [ ] **P7-28** (PRAC) Hard bars: bar runs, a bar hard in 2 of the last 3 runs that played it, loops around them.
-- [ ] **P7-29** (STORE) A piece's last ten bar runs in its progress and in the backup merge.
+- [ ] **P7-28** (PRAC) Hard bars: bar runs, a bar hard when 2 of the last 3 runs that played it had missed or wrong notes, loops around them.
+- [ ] **P7-29** (STORE) A piece's last ten runs (not loop passes) in its progress and in the backup merge.
 - [ ] **P7-30** (APP) Hard bars marked before a run, and Practise the hard bars.
 - [ ] **P7-31** (PRAC, APP) Misread notes come back in sight-reading (optional; changes ADR 0015).
 - [ ] **P7-32** (GOV) User guide, README, German strings.
@@ -956,6 +957,13 @@ Record the outcome as an ADR in `docs/adr/` and tick it here.
 
 ## Changelog
 
+- **2026-10-28** — P7-25: spaced review and hard bars, planned by a contributor from
+  [Discussion #62](https://github.com/KunalGehlot/OpenTiles/discussions/62) and accepted by the
+  maintainer, who answered Q1–Q10 (ADR 0026 accepted). Chords and scales come back when an SM-2
+  schedule, replayed from the rounds already kept, says they are due, at most 20 a day; before a
+  kind is due, a slip in a day with fewer than three tries of it does not count. A piece remembers
+  the bars with missed or wrong notes in 2 of its last 3 runs; loop passes are not runs. The tasks
+  go under Phase 7, built by the contributor, and the queue has them as Later item 3, after P5-09.
 - **2026-10-28** — P5-09: the smoothness pass. The practice screen has one control bar under its
   header instead of a controls row and a status row, so the notes start 44 px higher on an iPad in
   landscape and 50 px on a phone; panels fade out as they open; a new logo (a tile falling onto a
@@ -963,12 +971,6 @@ Record the outcome as an ADR in `docs/adr/` and tick it here.
   test shows Home to playing in one click. Version 0.6.0.
 - **2026-10-28** — The queue: P6-16 is released (v0.5.0, published), so P5-09 is Now and the import
   gaps are Next.
-- **2026-10-26** — P7-25 to P7-33 proposed: spaced review and hard bars, from a contributor's
-  Discussion. Chords and scales would come back when an SM-2 schedule, replayed from the rounds
-  already kept, says they are due, and a piece would remember the bars that keep going wrong. The
-  plan ([spaced-review.md](docs/phase-7/spaced-review.md)) and ADR 0026 are proposals; the queue
-  gets one Later item at the end for the maintainer to place or drop. Tasks go under Phase 7 because
-  they extend its drill progress, and no new phase is opened.
 - **2026-10-24** — P6-16: an imported score's dynamics. MusicXML's p, mf, ff and the rest, its
   hairpins and "cresc."/"dim." words, and sf and fp accents now set how loud each note plays, in
   the Player and in practice, with the melody and the phrase still shaped around them; the
