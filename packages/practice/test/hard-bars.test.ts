@@ -52,6 +52,13 @@ describe('keeping a run', () => {
     expect(normaliseBarRuns(stored)).toEqual([run(1, 0, 9, { 4: 2 }), run(2, 0, 9, { 3: 1 })]);
     expect(normaliseBarRuns(undefined)).toEqual([]);
   });
+
+  it('reads bar keys back as hardBars looks them up, inside the run only', () => {
+    const stored = { at: 1, fromMeasure: 2, toMeasure: 6, problems: { '03': 1, 9: 2 } };
+    const runs = normaliseBarRuns([stored, { ...stored, at: 2 }]);
+    expect(runs[0]).toEqual(run(1, 2, 6, { 3: 1 }));
+    expect(hardBars(runs)).toEqual([3]);
+  });
 });
 
 describe('hard bars', () => {

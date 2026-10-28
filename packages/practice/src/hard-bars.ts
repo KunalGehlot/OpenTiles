@@ -11,7 +11,10 @@ export interface BarRun {
   /** The bars the run played, by index into `Song.measures`, both ends included. */
   fromMeasure: number;
   toMeasure: number;
-  /** Problems (missed, extra or off-time notes) per bar index; bars without problems are left out. */
+  /**
+   * Missed and wrong notes per bar index, not early or late ones (Q7); bars without any are left
+   * out. Keys are bar indices written as `String(index)`.
+   */
   problems: Record<string, number>;
 }
 
@@ -23,7 +26,11 @@ export const HARD_OF = 3;
 
 const isIndex = (v: unknown): v is number => typeof v === 'number' && Number.isInteger(v) && v >= 0;
 
-/** Runs from anything stored, keeping only well-formed ones, oldest first. */
+/**
+ * Runs from anything stored, keeping only well-formed ones, oldest first. Bar keys come back as
+ * `hardBars` looks them up (`"03"` becomes `"3"`), and problems outside the run's bars are dropped,
+ * as `barRunOf` drops them.
+ */
 export function normaliseBarRuns(value: unknown): BarRun[] {
   if (!Array.isArray(value)) return [];
   const out: BarRun[] = [];
@@ -34,8 +41,10 @@ export function normaliseBarRuns(value: unknown): BarRun[] {
     if (!isIndex(x.fromMeasure) || !isIndex(x.toMeasure) || x.toMeasure < x.fromMeasure) continue;
     const problems: Record<string, number> = {};
     if (typeof x.problems === 'object' && x.problems !== null) {
-      for (const [bar, n] of Object.entries(x.problems)) {
-        if (isIndex(Number(bar)) && isIndex(n) && n > 0) problems[bar] = n;
+      for (const [key, n] of Object.entries(x.problems)) {
+        const bar = Number(key);
+        if (!isIndex(bar) || bar < x.fromMeasure || bar > x.toMeasure) continue;
+        if (isIndex(n) && n > 0) problems[String(bar)] = (problems[String(bar)] ?? 0) + n;
       }
     }
     out.push({ at: x.at, fromMeasure: x.fromMeasure, toMeasure: x.toMeasure, problems });
@@ -45,7 +54,8 @@ export function normaliseBarRuns(value: unknown): BarRun[] {
 
 /**
  * The run as it is kept, from the bars it played and its problems per bar (all of them, not only
- * the three the summary shows). Problems outside the range are dropped.
+ * the three the summary shows). The caller counts missed and wrong notes only (P7-29). Problems
+ * outside the range are dropped.
  */
 export function barRunOf(
   at: number,
@@ -71,7 +81,7 @@ export function addBarRun(runs: readonly BarRun[], run: BarRun): BarRun[] {
 }
 
 /**
- * The hard bars, in order. Only runs that played a bar count for it, so looping bars 5 to 8 says
+ * The hard bars, in order. Only runs that played a bar count for it, so a run from bar 5 says
  * nothing about bar 1, and a bar stops being hard once enough recent runs got through it cleanly.
  */
 export function hardBars(runs: readonly BarRun[]): number[] {
