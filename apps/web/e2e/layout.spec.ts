@@ -175,3 +175,36 @@ test('the Options panel fits a short window and scrolls to its last item', async
   await last.scrollIntoViewIfNeeded();
   await expect(last).toBeInViewport();
 });
+
+test('the practice controls are one bar under the header (P5-09)', async ({ page }) => {
+  await page.setViewportSize({ width: 1280, height: 860 });
+  await page.goto('./#/practice/catalogue/ode-to-joy');
+  const stats = page.locator('.session-bar .stats');
+  await expect(stats).toContainText('Step 1/');
+  // Nothing to say yet: no status row.
+  await expect(page.locator('.session-status')).toBeHidden();
+  const bar = page.locator('.session-controls');
+  const oneRow = async () => {
+    const heights = await bar
+      .locator(':scope > *')
+      .evaluateAll((els) => els.map((e) => Math.round(e.getBoundingClientRect().top)));
+    return Math.max(...heights) - Math.min(...heights);
+  };
+  expect(await oneRow()).toBeLessThan(12);
+  await page.getByRole('button', { name: 'Play along' }).click();
+  await expect(page.getByRole('button', { name: 'Start', exact: true })).toBeVisible();
+  expect(await oneRow()).toBeLessThan(12);
+  // The views keep their names for screen readers and tooltips.
+  await expect(
+    page.getByRole('group', { name: 'View' }).getByRole('button', { name: 'Score' }),
+  ).toHaveAttribute('title', 'Score');
+});
+
+test('the piece keeps its name beside the step at ⅓ width (P5-09)', async ({ page }) => {
+  await page.setViewportSize(SPLIT_VIEW_THIRD);
+  await page.goto('./#/practice/catalogue/ode-to-joy');
+  await expect(page.locator('.stats')).toContainText('Step 1/');
+  const title = await page.locator('.session-title__name').boundingBox();
+  expect(title?.width ?? 0).toBeGreaterThan(40);
+  await expect(page.locator('.stat--step-short')).toHaveText(/^1\/\d+$/);
+});

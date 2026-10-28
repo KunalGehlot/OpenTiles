@@ -1202,6 +1202,30 @@ function PracticeView({
           <span className="session-title__name">{title}</span>
           {subtitle && <span className="session-title__sub">{subtitle}</span>}
         </h1>
+        {/* In the header since the controls became one bar (P5-09). A narrow window shows the
+            step as "3/27" beside the full text, which stays one piece for screen readers. */}
+        <span className={mode === 'wait' ? 'stats stats--wait' : 'stats'} aria-live="polite">
+          {mode === 'wait' ? (
+            <>
+              <span className="stat stat--step">
+                {chordDrill
+                  ? t('Chord {step}/{count}', {
+                      step: Math.min(status.stepIndex + 1, status.stepCount),
+                      count: status.stepCount,
+                    })
+                  : t('Step {step}/{count}', {
+                      step: Math.min(status.stepIndex + 1, status.stepCount),
+                      count: status.stepCount,
+                    })}
+              </span>
+              <span className="stat stat--step-short" aria-hidden="true">
+                {Math.min(status.stepIndex + 1, status.stepCount)}/{status.stepCount}
+              </span>
+            </>
+          ) : null}
+          <span className="stat stat--ok">✓ {status.correct}</span>
+          <span className="stat stat--bad">✗ {status.wrong}</span>
+        </span>
         <div className="session-bar__end">
           {midiSupported() ? (
             midiInput ? (
@@ -1418,7 +1442,7 @@ function PracticeView({
               {status.playing ? t('Stop') : mode === 'listen' ? t('Play') : t('Start')}
             </button>
           )}
-          <button onClick={() => session.rebuild()}>
+          <button className="icon-only" onClick={() => session.rebuild()} title={t('Restart')}>
             <RotateCcw />
             <span className="btn-label">{t('Restart')}</span>
           </button>
@@ -1481,6 +1505,7 @@ function PracticeView({
         <div className="group">
           <MetronomeControl session={session} on={status.metronome} volume={prefs.clickVolume} />
           <button
+            className="icon-only"
             aria-expanded={showLoop || status.loop !== null}
             aria-pressed={status.loop !== null}
             onClick={() => {
@@ -1515,33 +1540,26 @@ function PracticeView({
           />
           <span className="tempo__value">{Math.round(tempo * 100)} %</span>
         </label>
+        {!drill && (
+          <div className="session-controls__view">
+            <ViewToggle
+              view={view}
+              onChange={setView}
+              notation={shownNotation}
+              hasSheet={sheet !== undefined}
+            />
+          </div>
+        )}
       </div>
       <div className="bar session-status">
-        <span className="stats" aria-live="polite">
-          {mode === 'wait' ? (
-            <span className="stat">
-              {chordDrill
-                ? t('Chord {step}/{count}', {
-                    step: Math.min(status.stepIndex + 1, status.stepCount),
-                    count: status.stepCount,
-                  })
-                : t('Step {step}/{count}', {
-                    step: Math.min(status.stepIndex + 1, status.stepCount),
-                    count: status.stepCount,
-                  })}
-            </span>
-          ) : null}
-          {firstTry && firstTry.judged > 0 && (
-            <span className="stat" data-testid="chord-first-try">
-              {t('{n} of {count} at the first try', {
-                n: firstTry.firstTry,
-                count: firstTry.judged,
-              })}
-            </span>
-          )}
-          <span className="stat stat--ok">✓ {status.correct}</span>
-          <span className="stat stat--bad">✗ {status.wrong}</span>
-        </span>
+        {firstTry && firstTry.judged > 0 && (
+          <span className="stat" data-testid="chord-first-try">
+            {t('{n} of {count} at the first try', {
+              n: firstTry.firstTry,
+              count: firstTry.judged,
+            })}
+          </span>
+        )}
         {liveStats && <LiveStatsStrip stats={status.live} mode={mode} />}
         {nameOnly && mode === 'wait' && !status.finished && (
           <button
@@ -1588,16 +1606,6 @@ function PracticeView({
             {midiWaitingMessage(navigator.userAgent)}
           </span>
         )}
-        <div className="session-status__view">
-          {!drill && (
-            <ViewToggle
-              view={view}
-              onChange={setView}
-              notation={shownNotation}
-              hasSheet={sheet !== undefined}
-            />
-          )}
-        </div>
       </div>
       {/* Above the loop controls, so it stays put under the pointer when they appear. */}
       {overview && !drill && (

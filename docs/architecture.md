@@ -244,9 +244,15 @@ its compact layouts. Components refer to token names, never to colours. Colours 
 system fonts (nothing is downloaded); icons are `lucide-react`, drawn at the size of their text. The
 CSS stays within what Safari 16.4 supports: no nesting, no `light-dark()`, no `popover` attribute.
 
-The practice screen is a slim session header (back, title, MIDI, microphone, Options), a controls
-row and a status row, then the canvas. Below 640 px wide or 520 px high the secondary buttons keep
-only their icon (their names stay for screen readers). `PracticeRenderer` draws tiles, bar
+The practice screen is a slim session header (back, title, the step and the right and wrong
+counts, MIDI, microphone, Options) and one control bar (mode, Restart, Plays on, hands, metronome,
+Loop, tempo, view), then the canvas (P5-09). A status row appears under them only when there is a
+hint, a drill's first tries, live stats or Show me (`.session-status:empty` hides it). Restart,
+the metronome, Loop and the views are icon-only everywhere; below 1024 px the header's buttons are
+too, and below 640 px wide or 520 px high every secondary button is (their names stay for screen
+readers and in tooltips). The composer line hides when the title has less than 28rem (a container
+query). Below 420 px the step reads "3/27" next to the full text, which stays one text node for
+screen readers and the iPad app's UI test. `PracticeRenderer` draws tiles, bar
 numbers, shaded black-key lanes, a glossy keyboard and a short bloom on a played key. Gradients
 are built once per resize, there is no `shadowBlur`, and the font is set only when it changes; frame
 time on an older iPad has not been measured yet.

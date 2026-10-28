@@ -105,6 +105,29 @@
   text-overflow: ellipsis;
 }
 
+/* Short of room, the composer line gives way before the piece's name, which shortens only once it
+   has the title to itself. */
+.session-title__name {
+  flex: none;
+  max-width: 100%;
+}
+
+.session-title__sub {
+  flex: 0 1 auto;
+  min-width: 0;
+}
+
+/* The title measures its own room (Safari 16+): a composer line cut to a word or two says nothing. */
+.session-title {
+  container-type: inline-size;
+}
+
+@container (max-width: 28rem) {
+  .session-title__sub {
+    display: none;
+  }
+}
+
 .session-title__sub {
   color: var(--muted);
   font-size: var(--text-sm);
@@ -237,15 +260,41 @@
   }
 }
 
-/* ---- Controls ---- */
+/* ---- Controls: one bar under the header (P5-09) ---- */
 
 .session-controls {
-  gap: var(--space-2) var(--space-5);
+  gap: var(--space-2) var(--space-4);
+}
+
+/* Restart, Loop, the metronome and the views keep only their icon; the name stays for screen
+   readers and in the tooltip. */
+.session-controls .icon-only .btn-label,
+.session-controls .metronome-control > button .btn-label,
+.session-controls__view .btn-label {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.session-controls .icon-only,
+.session-controls .metronome-control > button {
+  padding-inline: 0.6rem;
+}
+
+.session-controls__view {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+  margin-left: auto;
 }
 
 .tempo {
   display: inline-flex;
-  flex: 1 1 15rem;
+  flex: 1 1 10rem;
   flex-wrap: nowrap;
   align-items: center;
   gap: var(--space-2);
@@ -259,7 +308,8 @@
 
 .tempo input[type='range'] {
   flex: 1 1 auto;
-  width: auto;
+  /* Not the browser's own width (about 8rem), so the bar fits in one row before it wraps. */
+  width: 0;
   min-width: 5rem;
 }
 
@@ -287,20 +337,28 @@ label.check {
   width: 5rem;
 }
 
-/* The status row: how the run is going, and which view to look at. */
+/* How the run is going sits in the header; this row only appears for a hint, a drill's first tries,
+   live stats or Show me, and is gone when it has nothing to say. */
+.session-status:empty {
+  display: none;
+}
+
+.session-bar .stats {
+  flex: none;
+  gap: var(--space-3);
+  font-size: var(--text-sm);
+}
+
+.stat--step-short {
+  display: none;
+}
+
 .session-status {
   gap: var(--space-1) var(--space-4);
   padding-top: var(--space-1);
   padding-bottom: var(--space-1);
   background: var(--surface-2);
   font-size: var(--text-sm);
-}
-
-.session-status__view {
-  display: flex;
-  align-items: center;
-  gap: var(--space-2);
-  margin-left: auto;
 }
 
 .stats {
@@ -696,7 +754,7 @@ html[data-left-handed] .session-title {
   text-align: right;
 }
 
-html[data-left-handed] .session-status__view {
+html[data-left-handed] .session-controls__view {
   margin-right: auto;
   margin-left: 0;
 }
@@ -710,6 +768,20 @@ html[data-left-handed] .bar .popover__panel {
 html[data-left-handed] .bar .popover--start .popover__panel {
   right: 0;
   left: auto;
+}
+
+/* An iPad in portrait and other mid-width windows: the header's buttons keep only their icon, so
+   the step and the counts beside the title leave the title room. */
+@media (max-width: 1023px) {
+  .session-bar .btn-label,
+  .session-bar .chip__text {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
 }
 
 /*
@@ -770,14 +842,16 @@ html[data-left-handed] .bar .popover--start .popover__panel {
   }
 
   .tempo input[type='range'] {
-    flex: 1 1 auto;
-    width: auto;
     min-width: 4rem;
   }
 
   .session-status {
     padding-top: 0.2rem;
     padding-bottom: 0.2rem;
+  }
+
+  .session-bar .stats {
+    gap: var(--space-2);
   }
 
   .practice-canvas-wrap {
@@ -792,6 +866,22 @@ html[data-left-handed] .bar .popover--start .popover__panel {
 }
 
 @media (max-width: 420px) {
+  /* The title keeps some room: the step goes short, and in wait mode the right notes' count, which
+     the step already tells, is left to screen readers. */
+  .stat--step,
+  .stats--wait .stat--ok {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+
+  .stat--step-short {
+    display: inline;
+  }
+
   .back__label {
     position: absolute;
     width: 1px;

@@ -1,5 +1,6 @@
 // Falling notes / Score / Sheet switch for the practice screen, remembered on this device.
 import { useEffect, useRef, useState } from 'react';
+import { ChartNoAxesColumn, FileMusic, Music } from 'lucide-react';
 import { getSetting, setSetting } from '../../storage/db';
 import type { NotationSource } from './notation';
 import { t } from '../../i18n';
@@ -83,25 +84,26 @@ export function ViewToggle({
 }) {
   const noScore = notation.kind === 'none' ? notation.reason : null;
   const tab: ViewChoice = view === 'page' ? 'sheet' : view;
-  const views: [ViewChoice, string][] = [
-    ['falling', t('Falling notes')],
-    ['scroll', t('Score')],
-    ['sheet', t('Sheet')],
+  const views: [ViewChoice, string, React.ReactNode][] = [
+    ['falling', t('Falling notes'), <ChartNoAxesColumn key="falling" />],
+    ['scroll', t('Score'), <Music key="scroll" />],
+    ['sheet', t('Sheet'), <FileMusic key="sheet" />],
   ];
   return (
     <>
       <div className="segmented" role="group" aria-label={t('View')}>
-        {views.map(([v, label]) => {
+        {views.map(([v, label, icon]) => {
           const unavailable = noScore !== null && (v === 'scroll' || (v === 'sheet' && !hasSheet));
           return (
             <button
               key={v}
               aria-pressed={tab === v}
               disabled={unavailable}
-              title={unavailable ? (noScore ?? undefined) : undefined}
+              title={unavailable ? (noScore ?? undefined) : label}
               onClick={() => onChange(v)}
             >
-              {label}
+              {icon}
+              <span className="btn-label">{label}</span>
             </button>
           );
         })}
