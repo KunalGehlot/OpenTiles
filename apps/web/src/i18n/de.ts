@@ -692,8 +692,47 @@ export const de: Readonly<Record<string, string>> = {
   'Running…': 'Läuft …',
   '{perHop} ms per 5.3 ms hop on average ({ms} ms for {seconds} s of audio, {events} events). Target ≤ 2 ms on an older iPad.':
     'Im Mittel {perHop} ms pro 5,3-ms-Schritt ({ms} ms für {seconds} s Audio, {events} Ereignisse). Ziel: ≤ 2 ms auf einem älteren iPad.',
-  'Try microphone note recognition on a real piano. Tell the detector which notes you are about to play, play them (or something else) and watch its decisions. This is the Phase 0 test bench; everything runs on this device.':
-    'Probier die Notenerkennung über das Mikrofon an einem echten Klavier aus. Sag dem Detektor, welche Noten du gleich spielst, spiel sie (oder etwas anderes) und sieh dir seine Entscheidungen an. Das ist der Prüfstand aus Phase 0; alles läuft auf diesem Gerät.',
+  'Try the microphone note recognition on a real piano: tell it which notes you are about to play, play them (or something else) and watch what it decides. Everything runs on this device.':
+    'Probier die Notenerkennung über das Mikrofon an einem echten Klavier aus: Sag ihr, welche Noten du gleich spielst, spiel sie (oder etwas anderes) und sieh dir an, was sie entscheidet. Alles läuft auf diesem Gerät.',
+  '1. Microphone': '1. Mikrofon',
+  'Tuned for': 'Eingestellt auf',
+  'Wait mode leans towards accepting, so a right note never holds you up.':
+    'Der Wartemodus nimmt im Zweifel an, damit dich eine richtige Note nie aufhält.',
+  'Play along leans towards precision, so a wrong note never scores.':
+    'Beim Mitspielen entscheidet der Detektor im Zweifel streng, damit eine falsche Note nie zählt.',
+  '2. The notes you will play': '2. Die Noten, die du spielst',
+  'Note names with their octave, such as C4 for middle C; several at once for a chord.':
+    'Notennamen mit Oktave, etwa C4 für das eingestrichene C; mehrere auf einmal für einen Akkord.',
+  Examples: 'Beispiele',
+  'Start the microphone first.': 'Starte zuerst das Mikrofon.',
+  'Listening for {notes} (set {n})': 'Hört auf {notes} ({n}. Mal gesetzt)',
+  'Set the notes to start listening.': 'Setz die Noten, dann hört der Detektor zu.',
+  '3. Sensitivity': '3. Empfindlichkeit',
+  'Each slider is a score from 0 to 1 that a note must reach. The starting values suit the mode above; changes last until you leave this page.':
+    'Jeder Regler ist ein Wert von 0 bis 1, den eine Note erreichen muss. Die Startwerte passen zum Modus oben; Änderungen gelten, bis du diese Seite verlässt.',
+  'Accept a played note': 'Gespielte Note annehmen',
+  'Lower accepts an expected note more readily; higher needs it clearer. (accept)':
+    'Niedriger nimmt eine erwartete Note eher an; höher verlangt sie deutlicher. (accept)',
+  'Call a note wrong': 'Note als falsch melden',
+  'How clear a note you were not asked for must be before it counts as wrong. (wrong)':
+    'Wie deutlich eine nicht erwartete Note klingen muss, bevor sie als falsch zählt. (wrong)',
+  'Wrong-note margin': 'Abstand für falsche Noten',
+  'How much stronger a neighbouring wrong note must sound than the expected one. (wrongMargin)':
+    'Um wie viel stärker eine benachbarte falsche Note klingen muss als die erwartete. (wrongMargin)',
+  'The octave below': 'Die Oktave darunter',
+  'How clearly the note an octave lower must sound before it counts as played instead of the expected one. (octaveBelow)':
+    'Wie deutlich die Note eine Oktave tiefer klingen muss, bevor sie statt der erwarteten als gespielt zählt. (octaveBelow)',
+  'Back to the starting values': 'Zurück zu den Startwerten',
+  'Room noise': 'Raumgeräusch',
+  'Two seconds of quiet, so the detector knows what to ignore.':
+    'Zwei Sekunden Ruhe, damit der Detektor weiß, was er überhören soll.',
+  Tuning: 'Stimmung',
+  'After a few notes have been accepted: how far this piano is from A = 440 Hz.':
+    'Nach ein paar angenommenen Noten: wie weit dieses Klavier von A = 440 Hz abweicht.',
+  '4. What it decided': '4. Die Entscheidungen',
+  '5. Test recordings and timing': '5. Testaufnahmen und Zeitmessung',
+  'Records exactly what the detector hears, as a WAV file saved to this device, for the test set. Only record public-domain or your own music.':
+    'Nimmt genau das auf, was der Detektor hört, als WAV-Datei auf diesem Gerät, für die Testaufnahmen. Nimm nur gemeinfreie oder eigene Musik auf.',
   'Stop microphone': 'Mikrofon stoppen',
   'Start microphone': 'Mikrofon starten',
   'Wait mode': 'Wartemodus',
@@ -701,22 +740,16 @@ export const de: Readonly<Record<string, string>> = {
   '{rate} Hz · base latency {ms} ms': '{rate} Hz · Grundverzögerung {ms} ms',
   'Expected notes': 'Erwartete Noten',
   Set: 'Setzen',
-  'generation {n}': 'Generation {n}',
-  Thresholds: 'Schwellen',
   'Measure room noise (2 s)': 'Raumgeräusch messen (2 s)',
   'noise {db} dB per bin': 'Rauschen {db} dB pro Band',
   'Estimate tuning': 'Stimmung schätzen',
   '{cents} cents from A = 440 Hz': '{cents} Cent gegenüber A = 440 Hz',
   Apply: 'Übernehmen',
-  Decisions: 'Entscheidungen',
   '{accepted} accepted · {rejected} rejected · {wrong} wrong notes · {onsets} onsets':
     '{accepted} angenommen · {rejected} abgelehnt · {wrong} falsche Noten · {onsets} Einsätze',
   'decision {ms} ms after onset (median)': 'Entscheidung {ms} ms nach dem Einsatz (Median)',
   'Nothing yet.': 'Noch nichts.',
   Clear: 'Leeren',
-  'Test-set recorder and latency': 'Testaufnahmen und Verzögerung',
-  'Records exactly what the detector hears, as a WAV file saved to this device, for the Phase 0 test set. Only record public-domain or your own music.':
-    'Nimmt genau das auf, was der Detektor hört, als WAV-Datei auf diesem Gerät, für die Testaufnahmen aus Phase 0. Nimm nur gemeinfreie oder eigene Musik auf.',
   'Stop recording': 'Aufnahme stoppen',
   Record: 'Aufnehmen',
   'Save {name}': '{name} speichern',

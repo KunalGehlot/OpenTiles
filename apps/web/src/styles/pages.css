@@ -561,6 +561,44 @@ button.copy-link--done {
   align-items: end;
 }
 
+/* ---- Detector Lab (P5-09): the settings cards, a slider and its value on each threshold row ---- */
+
+.lab__notes {
+  flex: 1 1 12rem;
+  max-width: 18rem;
+  font-family: var(--font-mono);
+}
+
+.lab__level {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2) var(--space-3);
+}
+
+.lab__slider {
+  display: inline-flex;
+  flex: 1 1 12rem;
+  align-items: center;
+  gap: var(--space-3);
+  max-width: 18rem;
+}
+
+.lab__slider input {
+  flex: 1;
+  min-width: 0;
+}
+
+.lab__slider output {
+  min-width: 2.5rem;
+  font-variant-numeric: tabular-nums;
+  text-align: end;
+}
+
+.lab .chips {
+  margin: 0;
+}
+
 /* ---- Settings: one card per section, one row per setting ---- */
 
 .settings {

@@ -72,3 +72,19 @@ test('the detector benchmark runs the WebAssembly engine', async ({ page }) => {
   await page.getByRole('button', { name: 'Benchmark detector speed' }).click();
   await expect(page.getByText(/ms per 5\.3 ms hop/)).toBeVisible({ timeout: 20_000 });
 });
+
+test('the Detector Lab names its thresholds and puts them back', async ({ page }) => {
+  await page.goto('./#/lab');
+  const accept = page.getByRole('slider', { name: /Accept a played note/ });
+  await expect(accept).toHaveValue('0.25');
+  const reset = page.getByRole('button', { name: 'Back to the starting values' });
+  await expect(reset).toBeDisabled();
+  await accept.fill('0.6');
+  await expect(reset).toBeEnabled();
+  await page.getByRole('button', { name: 'Play along' }).click();
+  await expect(accept).toHaveValue('0.4');
+  await page.getByRole('slider', { name: /Call a note wrong/ }).fill('0.9');
+  await reset.click();
+  await expect(page.getByRole('slider', { name: /Call a note wrong/ })).toHaveValue('0.4');
+  await expect(page.getByRole('status').first()).toContainText('Start the microphone first.');
+});

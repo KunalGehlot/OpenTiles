@@ -78,6 +78,7 @@ for (const width of [1180, 375]) {
       '#/settings',
       '#/about',
       '#/sheet-music',
+      '#/lab',
     ]) {
       await page.goto(`./${hash}`);
       await expect(page.getByRole('heading', { level: 1 })).toBeVisible();

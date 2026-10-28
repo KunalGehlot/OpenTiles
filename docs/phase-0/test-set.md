@@ -27,9 +27,9 @@ says what to record, how, and in which format, so results are comparable across 
 
 ## How to record
 
-1. Use the **Detector Lab → Recorder** in the web app on an **iPad in Safari** (this captures with
-   echo cancellation, noise suppression and auto-gain switched off, exactly as the app will). Place
-   the iPad on the music stand as a learner would.
+1. Use **Detector Lab → 5. Test recordings and timing → Record** in the web app on an **iPad in
+   Safari** (this captures with echo cancellation, noise suppression and auto-gain switched off,
+   exactly as the app will). Place the iPad on the music stand as a learner would.
 2. Note the device model, iOS version, piano make/model and room in the file name or a side note:
    `acoustic-yamaha-u1_ipad-9gen_17-1_p13.wav`.
 3. The recorder saves a 16-bit mono WAV at the device sample rate.
