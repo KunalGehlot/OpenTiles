@@ -248,11 +248,13 @@ The practice screen is a slim session header (back, title, the step and the righ
 counts, MIDI, microphone, Options) and one control bar (mode, Restart, Plays on, hands, metronome,
 Loop, tempo, view), then the canvas (P5-09). A status row appears under them only when there is a
 hint, a drill's first tries, live stats or Show me (`.session-status:empty` hides it). Restart,
-the metronome, Loop and the views are icon-only everywhere; below 1024 px the header's buttons are
-too, and below 640 px wide or 520 px high every secondary button is (their names stay for screen
-readers and in tooltips). The composer line hides when the title has less than 28rem (a container
-query). Below 420 px the step reads "3/27" next to the full text, which stays one text node for
-screen readers and the iPad app's UI test. `PracticeRenderer` draws tiles, bar
+the metronome, Loop and the views are icon-only everywhere, and below 640 px wide or 520 px high
+every secondary button is (their names stay for screen readers and in tooltips). The header
+measures itself (container queries in rem, so Large print moves its breakpoints): its buttons go
+icon-only under 64rem, the step reads "3/27" under 26.25rem next to the full text (which stays one
+text node for screen readers and the iPad app's UI test), and under 24rem the step and the counts
+wrap onto their own line rather than squeeze the title below 6rem. The composer line hides when
+the title has less than 28rem. `PracticeRenderer` draws tiles, bar
 numbers, shaded black-key lanes, a glossy keyboard and a short bloom on a played key. Gradients
 are built once per resize, there is no `shadowBlur`, and the font is set only when it changes; frame
 time on an older iPad has not been measured yet.

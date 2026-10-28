@@ -56,9 +56,10 @@
   gap: var(--space-2);
 }
 
-/* The session header: back, title, inputs and options. */
+/* The session header: back, title, how the run goes, inputs and options. It measures itself, so its
+   breakpoints below are in rem and follow Large print. */
 .session-bar {
-  flex-wrap: nowrap;
+  container: session-bar / inline-size;
   gap: var(--space-3);
   min-height: 3.25rem;
   padding-top: max(var(--space-2), env(safe-area-inset-top));
@@ -87,10 +88,11 @@
 
 .session-title {
   display: flex;
-  flex: 1 1 auto;
+  /* Never squeezed below a few letters: the header wraps first (see the 24rem query). */
+  flex: 1 1 0;
   align-items: baseline;
   gap: var(--space-2);
-  min-width: 0;
+  min-width: 6rem;
   margin: 0;
   overflow: hidden;
   font-size: var(--text-md);
@@ -770,9 +772,9 @@ html[data-left-handed] .bar .popover--start .popover__panel {
   left: auto;
 }
 
-/* An iPad in portrait and other mid-width windows: the header's buttons keep only their icon, so
-   the step and the counts beside the title leave the title room. */
-@media (max-width: 1023px) {
+/* An iPad in portrait and other mid-width windows (wider with Large print): the header's buttons keep
+   only their icon, so the step and the counts beside the title leave the title room. */
+@container session-bar (max-width: 64rem) {
   .session-bar .btn-label,
   .session-bar .chip__text {
     position: absolute;
@@ -865,9 +867,10 @@ html[data-left-handed] .bar .popover--start .popover__panel {
   }
 }
 
-@media (max-width: 420px) {
-  /* The title keeps some room: the step goes short, and in wait mode the right notes' count, which
-     the step already tells, is left to screen readers. */
+/* The title keeps some room: the step goes short, and in wait mode the right notes' count, which
+   the step already tells, is left to screen readers. Still too narrow (Large print at a third of an
+   iPad), the step and the counts take their own line under the title. */
+@container session-bar (max-width: 26.25rem) {
   .stat--step,
   .stats--wait .stat--ok {
     position: absolute;
@@ -881,7 +884,15 @@ html[data-left-handed] .bar .popover--start .popover__panel {
   .stat--step-short {
     display: inline;
   }
+}
 
+@container session-bar (max-width: 24rem) {
+  .session-bar .stats {
+    order: 1;
+  }
+}
+
+@media (max-width: 420px) {
   .back__label {
     position: absolute;
     width: 1px;
