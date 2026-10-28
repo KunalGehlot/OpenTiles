@@ -1,14 +1,15 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
   <rect width="64" height="64" rx="14" fill="#1f6f5c"/>
+  <rect x="22" y="9" width="10" height="17" rx="2.5" fill="#9be7cd"/>
   <g fill="#fff">
-    <rect x="10" y="14" width="10" height="36" rx="2"/>
-    <rect x="22" y="14" width="10" height="36" rx="2"/>
-    <rect x="34" y="14" width="10" height="36" rx="2"/>
-    <rect x="46" y="14" width="8" height="36" rx="2"/>
+    <rect x="10" y="31" width="10" height="23" rx="2"/>
+    <rect x="34" y="31" width="10" height="23" rx="2"/>
+    <rect x="46" y="31" width="8" height="23" rx="2"/>
   </g>
+  <rect x="22" y="31" width="10" height="23" rx="2" fill="#9be7cd"/>
   <g fill="#123b31">
-    <rect x="17" y="14" width="7" height="22" rx="1.5"/>
-    <rect x="29" y="14" width="7" height="22" rx="1.5"/>
-    <rect x="43" y="14" width="7" height="22" rx="1.5"/>
+    <rect x="17" y="31" width="7" height="13" rx="1.5"/>
+    <rect x="29" y="31" width="7" height="13" rx="1.5"/>
+    <rect x="43" y="31" width="7" height="13" rx="1.5"/>
   </g>
 </svg>
