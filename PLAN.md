@@ -47,33 +47,34 @@ The iPad app is the web app inside a native shell (ADR 0023), so a feature reach
 ## Now, next, later
 
 Work from the top. Add a new request to this list in the pull request that plans it, at the place
-it belongs, and say why in the changelog; do not open a new phase for it.
+it belongs, and say why in the changelog; do not open a new phase for it. Work a contributor builds
+sits under **Alongside**: it does not take the queue's place, and its pull requests are reviewed as
+they arrive.
 
 **Now**
 
-1. **P5-09** The rest of the smoothness pass: home to playing in two clicks, one transport bar,
-   route and panel transitions, a refreshed logo, Detector Lab polish (reviewed in the
-   maintainer's Chrome). Release v0.6.0.
-
-**Next**
-
-2. **P5-14, P5-18, P5-13** Import gaps: D.C. and D.S. jumps and multi-bar rests in the learner's
+1. **P5-14, P5-18, P5-13** Import gaps: D.C. and D.S. jumps and multi-bar rests in the learner's
    PDF, octave signs and clef changes inside a bar, grace notes from MIDI files, re-importing
    MIDI pieces already in a library, and dynamics marks in MuseScore and ABC files (P6-16 reads
    MusicXML's).
 
+**Alongside** (built by a contributor)
+
+- **P7-27, P7-29 to P7-33** Spaced review and hard bars: "Due for review" on the Drills page, a
+  piece's bar runs and the hard-bar marks ([spaced-review.md](docs/phase-7/spaced-review.md), ADR
+  0026). The schedule (P7-26) and the hard-bar rule (P7-28) are in.
+
+**Next**
+
+2. **P5-05** Sight-reading: accidentals beyond the key, then rhythm reading.
+
 **Later** (in this order unless the maintainer reorders it)
 
-3. **P7-26 to P7-33** Spaced review and hard bars, built by a contributor: chords and scales come
-   back when they are due, and a piece remembers the bars that keep going wrong
-   ([spaced-review.md](docs/phase-7/spaced-review.md), ADR 0026). The maintainer reviews the pull
-   requests as they arrive.
-4. **P5-05** Sight-reading: accidentals beyond the key, then rhythm reading.
-5. **P5-08** Library preview before opening, and collections.
-6. **P4-19** A choice of audio output device for this device's piano (where the browser offers it).
-7. **P5-06** Free play with recording and listen-back (needs an ADR and the lawyer's answer, P2-18).
-8. **P3-03** Encrypted sync goes live (needs the open decisions below and EU storage).
-9. **P4-05** Teacher features, **P4-03** courses, **P4-01** optical music recognition.
+3. **P5-08** Library preview before opening, and collections.
+4. **P4-19** A choice of audio output device for this device's piano (where the browser offers it).
+5. **P5-06** Free play with recording and listen-back (needs an ADR and the lawyer's answer, P2-18).
+6. **P3-03** Encrypted sync goes live (needs the open decisions below and EU storage).
+7. **P4-05** Teacher features, **P4-03** courses, **P4-01** optical music recognition.
 
 **Waiting on the maintainer** (no code until they act or decide)
 
@@ -923,9 +924,9 @@ are in [docs/phase-7/spaced-review.md](docs/phase-7/spaced-review.md); ADR 0026 
 contributor builds the tasks and the maintainer reviews each pull request.
 
 - [x] **P7-25** (GOV) The plan, the maintainer's answers and ADR 0026.
-- [ ] **P7-26** (PRAC) The review schedule: SM-2 replayed from `chordStats` and `scaleStats`, one review a day, early passes and slips of under three tries ignored, 20 a day.
+- [x] **P7-26** (PRAC) The review schedule: SM-2 replayed from `chordStats` and `scaleStats`, one review a day, early passes and slips of under three tries ignored, 20 a day.
 - [ ] **P7-27** (APP) "Due for review" on the Drills page, and Review now drawing only the due kinds.
-- [ ] **P7-28** (PRAC) Hard bars: bar runs, a bar hard when 2 of the last 3 runs that played it had missed or wrong notes, loops around them.
+- [x] **P7-28** (PRAC) Hard bars: bar runs, a bar hard when 2 of the last 3 runs that played it had missed or wrong notes, loops around them.
 - [ ] **P7-29** (STORE) A piece's last ten runs (not loop passes) in its progress and in the backup merge.
 - [ ] **P7-30** (APP) Hard bars marked before a run, and Practise the hard bars.
 - [ ] **P7-31** (PRAC, APP) Misread notes come back in sight-reading (optional; changes ADR 0015).
@@ -957,6 +958,11 @@ Record the outcome as an ADR in `docs/adr/` and tick it here.
 
 ## Changelog
 
+- **2026-10-29** — The queue: P5-09 is released (v0.6.0), so the import gaps are Now and
+  sight-reading Next. The contributor's spaced review moves from Later item 3 to a line of its own,
+  **Alongside**, right after Now: the maintainer chose "right after P5-09, built by a contributor",
+  while our own next work stays the import gaps. P7-26 (the review schedule, #64) and P7-28 (the
+  hard-bar rule, #63) are merged.
 - **2026-10-28** — P7-25: spaced review and hard bars, planned by a contributor from
   [Discussion #62](https://github.com/KunalGehlot/OpenTiles/discussions/62) and accepted by the
   maintainer, who answered Q1–Q10 (ADR 0026 accepted). Chords and scales come back when an SM-2

@@ -2,9 +2,10 @@
 
 - **Status:** planned on 2026-10-26 by a contributor; the maintainer accepted it on 2026-10-28 and
   answered the questions in section 7, which ADR 0026 records. The tasks are P7-25 to P7-33 in
-  [PLAN.md](../../PLAN.md#phase-7--chord-drills-planned-2026-10-22), item 3 of the queue's Later
-  list; the contributor builds them and the maintainer reviews each pull request. The two pure
-  pieces came first, as [#64](https://github.com/KunalGehlot/OpenTiles/pull/64) (P7-26) and
+  [PLAN.md](../../PLAN.md#phase-7--chord-drills-planned-2026-10-22), under the queue's
+  **Alongside**, right after Now; the contributor builds them and the maintainer reviews each pull
+  request. The two pure pieces came first (merged 2026-10-29), as
+  [#64](https://github.com/KunalGehlot/OpenTiles/pull/64) (P7-26) and
   [#63](https://github.com/KunalGehlot/OpenTiles/pull/63) (P7-28), so the idea could be judged on
   working code.
 - **Where it came from:** [Discussion #62](https://github.com/KunalGehlot/OpenTiles/discussions/62),
