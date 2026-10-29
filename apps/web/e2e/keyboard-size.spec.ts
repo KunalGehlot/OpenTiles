@@ -86,23 +86,26 @@ function laneOffset(page: Page): Promise<number | null> {
     const token = getComputedStyle(document.documentElement).getPropertyValue('--hand-right');
     const hand = parseInt(token.trim().slice(1), 16);
     const rgb = [(hand >> 16) & 255, (hand >> 8) & 255, hand & 255];
-    // The keyboard is at most 40 % of the canvas and the note sits on the now-line above it.
-    const from = Math.floor(canvas.height / 2);
-    const data = ctx.getImageData(0, from, canvas.width, canvas.height - from).data;
-    const on = (x: number, y: number) => {
-      const i = ((y - from) * canvas.width + x) * 4;
-      return rgb.every((c, j) => Math.abs((data[i + j] ?? 0) - c) < 12);
-    };
-    // The key: the run of the hand's colour along the bottom row.
+    const matches = (data: Uint8ClampedArray, i: number) =>
+      rgb.every((c, j) => Math.abs((data[i + j] ?? 0) - c) < 12);
+    // The key: the run of the hand's colour along the bottom row. Only that row is read, then a
+    // strip above the key: the whole lower half of a 2560 px window at 2× is about 30 MB and took
+    // 60 ms a read on a Mac, against 2 ms for the row, and the poll reads it again and again.
     let y = canvas.height - Math.round(2 * scale);
+    const bottom = ctx.getImageData(0, y, canvas.width, 1).data;
     let k0 = 0;
-    while (k0 < canvas.width && !on(k0, y)) k0 += 1;
+    while (k0 < canvas.width && !matches(bottom, k0 * 4)) k0 += 1;
     let k1 = k0;
-    while (k1 < canvas.width && on(k1, y)) k1 += 1;
+    while (k1 < canvas.width && matches(bottom, k1 * 4)) k1 += 1;
     if (k0 >= canvas.width) return null;
     // Above it, look within a key's width either side, so a neighbouring lane is not counted.
     const lo = Math.max(0, 2 * k0 - k1);
     const hi = Math.min(canvas.width, 2 * k1 - k0);
+    // The keyboard is at most 40 % of the canvas and the note sits on the now-line above it.
+    const from = Math.floor(canvas.height / 2);
+    const strip = ctx.getImageData(lo, from, hi - lo, canvas.height - from).data;
+    const on = (x: number, row: number) =>
+      matches(strip, ((row - from) * (hi - lo) + (x - lo)) * 4);
     /**
      * Centre (device px) of the hand's colour near the key in row `y`, or null. A few pixels are
      * not enough: a tile's rounded corner can blend to the hand's colour at one point.
@@ -146,6 +149,9 @@ async function expectFitted(page: Page, low: number, high: number): Promise<void
 
 for (const size of WINDOWS) {
   test(`each keyboard size draws its own keys on a ${size.width} px window`, async ({ page }) => {
+    // Each size restarts the 3, 2, 1 count-in, and the lane is found once the note has come down:
+    // nine sizes take about 20 s on a Mac and ran past 30 s on CI's WebKit at 2056 and 2560 px.
+    if (size.width > 1000) test.setTimeout(60_000);
     await page.setViewportSize(size);
     await page.goto('./#/practice/catalogue/ode-to-joy');
     const canvas = page.locator('canvas');
