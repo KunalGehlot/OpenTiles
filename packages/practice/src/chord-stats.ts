@@ -26,7 +26,7 @@ export const MAX_ROUNDS = 200;
 /** A chord is weak below this share right at the first try. */
 export const WEAK_SHARE = 0.8;
 /** Attempts before a chord's share says anything. */
-const MIN_ATTEMPTS = 3;
+export const MIN_ATTEMPTS = 3;
 
 export const NO_CHORD_STATS: Readonly<ChordStats> = Object.freeze({ version: 1, rounds: [] });
 
