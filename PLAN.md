@@ -965,7 +965,9 @@ Record the outcome as an ADR in `docs/adr/` and tick it here.
   fix. The keyboard-size test runs one size per test, the glide back after a listen run asks for
   three frames, and the app's UI tests run a failed test again, up to three times (P3-10).
   Dependabot's realfft 3.5.1 (#69) and minor-and-patch group (#70, with Capacitor 8.6.0) are in,
-  and the app's Swift package pins Capacitor 8.6.0 as well. The queue is unchanged.
+  and the app's Swift package pins Capacitor 8.6.0 as well. Capacitor's code in the app is built
+  for iPadOS 15 again, the app's minimum: since v0.2.0 `cap sync` had taken the UI tests' 17.0.
+  The queue is unchanged.
 - **2026-10-29** — The queue: P5-09 is released (v0.6.0), so the import gaps are Now and
   sight-reading Next. The contributor's spaced review moves from Later item 3 to a line of its own,
   **Alongside**, right after Now: the maintainer chose "right after P5-09, built by a contributor",
