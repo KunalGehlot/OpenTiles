@@ -124,6 +124,7 @@ and the device; a failure becomes a task at the top of the queue.
 | v0.4.0: scale drills from memory and in falling keys; fingers readable at ⅓ width      | Both   | P7-20, P7-24    | open                                 |
 | v0.5.0: an imported score's p and f, hairpins and sf heard in the Player               | Both   | P6-16           | open                                 |
 | v0.6.0: the new home-screen icon; the practice header and bar at ⅓ width, upright      | Both   | P5-09           | open                                 |
+| v0.6.1: Capacitor 8.6.0: the app starts, plays its piano and follows a USB keyboard    | App    | P3-01           | open                                 |
 | Frame time on an older iPad (falling notes, score, Player)                             | Both   | P4-11, P5-10    | open                                 |
 | The richer piano and the Player's room; stand mode                                     | Both   | P6-15, P6-17    | open                                 |
 | The Player over USB audio, and whether the microphone hears it                         | Safari | P6-13           | open                                 |
@@ -958,6 +959,13 @@ Record the outcome as an ADR in `docs/adr/` and tick it here.
 
 ## Changelog
 
+- **2026-11-05** — v0.6.1, a fix between queue items: CI was red on `main`'s iPad run and on both
+  Dependabot pull requests. A score still opening when its view went was never closed in the
+  engraver's worker (P5-13); it is now, and a new test that holds the open back fails without the
+  fix. The keyboard-size test runs one size per test, the glide back after a listen run asks for
+  three frames, and the app's UI tests run a failed test again, up to three times (P3-10).
+  Dependabot's realfft 3.5.1 (#69) and minor-and-patch group (#70, with Capacitor 8.6.0) are in,
+  and the app's Swift package pins Capacitor 8.6.0 as well. The queue is unchanged.
 - **2026-10-29** — The queue: P5-09 is released (v0.6.0), so the import gaps are Now and
   sight-reading Next. The contributor's spaced review moves from Later item 3 to a line of its own,
   **Alongside**, right after Now: the maintainer chose "right after P5-09, built by a contributor",
