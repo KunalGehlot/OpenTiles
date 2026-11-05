@@ -361,7 +361,9 @@ test('the scrolling score glides back to its start after a listen run, like a dr
     () => (window as unknown as { returnSamples: { offset: number; bar: number }[] }).returnSamples,
   );
   const moving = samples.filter((s, i) => i > 0 && s.offset < (samples[i - 1]?.offset ?? 0) - 1);
-  expect(moving.length).toBeGreaterThan(5);
+  // A jump is one moving frame. The glide takes 0.6 to 1.4 s, which CI's WebKit drew in as few as
+  // five frames, so three show it glided.
+  expect(moving.length).toBeGreaterThanOrEqual(3);
   for (const s of moving) expect(Math.abs(s.bar)).toBeLessThan(3);
   // The play bar is back on the first note, not left on the last one.
   await expect.poll(() => cursorX(page), { timeout: 10_000 }).toBeCloseTo(startX, -1);
@@ -422,9 +424,15 @@ test('a foot pedal’s own key, chosen in Settings, turns the engraved pages (P2
   await expect(pager).toContainText('Page 1 of');
 });
 
-test('every score opened in the engraver is closed again (P5-13)', async ({ page }) => {
-  // The engraver's own messages to its worker carry a score number: count opens and closes.
-  await page.addInitScript(() => {
+/**
+ * Counts the engraver's opens and closes: its own messages to its worker carry a score number.
+ * With `openDelay` the worker hears of each open that much later, as on a slow iPad.
+ */
+async function countEngraved(
+  page: Page,
+  openDelay = 0,
+): Promise<() => Promise<{ open: number; close: number }>> {
+  await page.addInitScript((delay) => {
     const w = window as unknown as { __engraved: { open: number; close: number } };
     w.__engraved = { open: 0, close: 0 };
     const post = Worker.prototype.postMessage as (this: Worker, ...args: unknown[]) => void;
@@ -433,14 +441,22 @@ test('every score opened in the engraver is closed again (P5-13)', async ({ page
       if (m && typeof m.score === 'number') {
         if (m.type === 'open') w.__engraved.open += 1;
         if (m.type === 'close') w.__engraved.close += 1;
+        if (m.type === 'open' && delay > 0) {
+          setTimeout(() => post.apply(this, args), delay);
+          return;
+        }
       }
       post.apply(this, args);
     };
-  });
-  const counts = () =>
+  }, openDelay);
+  return () =>
     page.evaluate(
       () => (window as unknown as { __engraved: { open: number; close: number } }).__engraved,
     );
+}
+
+test('every score opened in the engraver is closed again (P5-13)', async ({ page }) => {
+  const counts = await countEngraved(page);
   const view = page.getByRole('group', { name: 'View' });
   const drawn = page.locator('[data-testid="score-strip"] g.note').first();
 
@@ -463,6 +479,26 @@ test('every score opened in the engraver is closed again (P5-13)', async ({ page
       const c = await counts();
       return c.open - c.close;
     })
+    .toBe(0);
+});
+
+test('a score still opening when its view goes is closed too (P5-13)', async ({ page }) => {
+  // The view is gone before the worker has opened the score, so only the open's answer can close
+  // it. This one used to stay open: seen now and then on CI's slower WebKit.
+  const counts = await countEngraved(page, 1500);
+  await page.goto('./#/practice/catalogue/ode-to-joy');
+  await page.getByRole('group', { name: 'View' }).getByRole('button', { name: 'Score' }).click();
+  await expect.poll(async () => (await counts()).open).toBe(1);
+  await page.evaluate(() => (location.hash = '#/library'));
+  await expect(page.getByRole('heading', { name: 'My library' })).toBeVisible();
+  await expect
+    .poll(
+      async () => {
+        const c = await counts();
+        return c.open - c.close;
+      },
+      { timeout: 10_000 },
+    )
     .toBe(0);
 });
 

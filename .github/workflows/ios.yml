@@ -69,12 +69,17 @@ jobs:
         working-directory: apps/ios-shell/plugins/core-midi
         run: xcodebuild test -quiet -scheme OpentilesCapacitorCoreMidi -destination "id=$IPAD_UDID"
       # The app itself with the web build that `ipa` synced: it starts, and Home, a catalogue piece
-      # and a chord drill open in its WebView (ios/App/AppUITests, PLAN.md P3-10).
+      # and a chord drill open in its WebView (ios/App/AppUITests, PLAN.md P3-10). A failed test
+      # runs again, up to three times in all: the runner's simulator now and then cannot launch or
+      # end the app ("Timed out while launching application via Xcode", "Failed to terminate
+      # org.opentiles.app"), which failed a run on main, on the v0.5.0 pull request and on the v0.6.0
+      # tag until it was run again.
       - name: The app on an iPad simulator
         working-directory: apps/ios-shell
         run: >-
           xcodebuild test -quiet -project ios/App/App.xcodeproj -scheme App
           -destination "id=$IPAD_UDID" -derivedDataPath build/dd-test
+          -retry-tests-on-failure -test-iterations 3
           -resultBundlePath build/AppUITests.xcresult CODE_SIGNING_ALLOWED=NO
       - name: Keep the UI test results (screenshots) when they fail
         if: failure()

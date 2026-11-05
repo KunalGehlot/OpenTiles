@@ -1,6 +1,6 @@
 {
   "name": "@opentiles/ios-shell",
-  "version": "0.6.0",
+  "version": "0.6.1",
   "private": true,
   "description": "Capacitor iPad app for OpenTiles with a native CoreMIDI plugin",
   "license": "AGPL-3.0-or-later",
@@ -15,12 +15,12 @@
     "device": "bash scripts/build.sh device"
   },
   "dependencies": {
-    "@capacitor/core": "^8.5.3",
-    "@capacitor/ios": "^8.5.3",
+    "@capacitor/core": "^8.6.0",
+    "@capacitor/ios": "^8.6.0",
     "@opentiles/capacitor-core-midi": "workspace:*"
   },
   "devDependencies": {
-    "@capacitor/cli": "^8.5.3",
+    "@capacitor/cli": "^8.6.0",
     "typescript": "~6.0.3"
   }
 }
