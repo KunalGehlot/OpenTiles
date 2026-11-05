@@ -75,7 +75,12 @@ export function ScoreView({
     openEngraver(notation)
       .then((opened) => {
         engraver = opened;
-        if (cancelled) return null;
+        // The view went while the score was opening: the cleanup below found nothing to close, so
+        // close it here, or its toolkit stays in the worker until the page reloads (P5-13).
+        if (cancelled) {
+          opened.close();
+          return null;
+        }
         return ScoreController.create(
           opened,
           song,
