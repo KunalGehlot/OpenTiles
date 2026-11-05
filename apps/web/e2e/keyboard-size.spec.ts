@@ -147,39 +147,52 @@ async function expectFitted(page: Page, low: number, high: number): Promise<void
     .toBe(true);
 }
 
+// One test per window and size. All nine sizes in one test (each restarts the 3, 2, 1 count-in and
+// waits for a note to come down) ran past a minute on CI's WebKit at 2560 px, and its retry started
+// all nine again.
 for (const size of WINDOWS) {
-  test(`each keyboard size draws its own keys on a ${size.width} px window`, async ({ page }) => {
-    // Each size restarts the 3, 2, 1 count-in, and the lane is found once the note has come down:
-    // nine sizes take about 20 s on a Mac and ran past 30 s on CI's WebKit at 2056 and 2560 px.
-    if (size.width > 1000) test.setTimeout(60_000);
-    await page.setViewportSize(size);
-    await page.goto('./#/practice/catalogue/ode-to-joy');
-    const canvas = page.locator('canvas');
-    await expect(canvas).toBeVisible();
-    await page.getByRole('button', { name: 'Right', exact: true }).click();
+  test.describe(`on a ${size.width} px window`, () => {
+    test.beforeEach(async ({ page }) => {
+      await page.setViewportSize(size);
+      await page.goto('./#/practice/catalogue/ode-to-joy');
+      await expect(page.locator('canvas')).toBeVisible();
+      await page.getByRole('button', { name: 'Right', exact: true }).click();
+    });
+
     for (const preset of PRESETS) {
-      await chooseSize(page, preset.id);
-      await expect(canvas).toHaveAttribute('data-keys', `${preset.low}-${preset.high}`);
-      await expect(canvas).toHaveAttribute('data-drawn', `${preset.low}-${preset.high}`);
-      await expectFitted(page, preset.low, preset.high);
-      // On a phone-narrow window an 88-key board has 6 px keys: too thin to find a lane in.
-      if (Math.min(size.width / whites(preset.low, preset.high), MAX_WHITE) >= 12) {
-        await expectLaneOverKey(page, preset.id);
+      test(`${preset.id} keys draw exactly those keys`, async ({ page }) => {
+        const canvas = page.locator('canvas');
+        await chooseSize(page, preset.id);
+        await expect(canvas).toHaveAttribute('data-keys', `${preset.low}-${preset.high}`);
+        await expect(canvas).toHaveAttribute('data-drawn', `${preset.low}-${preset.high}`);
+        await expectFitted(page, preset.low, preset.high);
+        // On a phone-narrow window an 88-key board has 6 px keys: too thin to find a lane in.
+        if (Math.min(size.width / whites(preset.low, preset.high), MAX_WHITE) >= 12) {
+          await expectLaneOverKey(page, preset.id);
+        }
+      });
+    }
+
+    test('"Fit piece" fills the window with more octaves around the piece’s keys', async ({
+      page,
+    }) => {
+      const canvas = page.locator('canvas');
+      // From a preset back to "Fit piece", as a learner would switch.
+      await chooseSize(page, '25');
+      await expect(canvas).toHaveAttribute('data-drawn', '48-72');
+      await chooseSize(page, 'auto');
+      await expect(canvas).toHaveAttribute('data-keys', PIECE_KEYS);
+      const [low = NaN, high = NaN] = PIECE_KEYS.split('-').map(Number);
+      const drawn = await drawnRange(page);
+      if (size.width < 600) expect(drawn).toEqual({ low, high });
+      else {
+        expect(drawn.low).toBeLessThanOrEqual(low);
+        expect(drawn.high).toBeGreaterThanOrEqual(high);
+        expect(drawn.high - drawn.low).toBeGreaterThan(high - low);
       }
-    }
-    // "Fit piece" still fills a wide window with more octaves around the piece's keys.
-    await chooseSize(page, 'auto');
-    await expect(canvas).toHaveAttribute('data-keys', PIECE_KEYS);
-    const [low = NaN, high = NaN] = PIECE_KEYS.split('-').map(Number);
-    const drawn = await drawnRange(page);
-    if (size.width < 600) expect(drawn).toEqual({ low, high });
-    else {
-      expect(drawn.low).toBeLessThanOrEqual(low);
-      expect(drawn.high).toBeGreaterThanOrEqual(high);
-      expect(drawn.high - drawn.low).toBeGreaterThan(high - low);
-    }
-    await expectFitted(page, drawn.low, drawn.high);
-    await expectLaneOverKey(page, 'auto');
+      await expectFitted(page, drawn.low, drawn.high);
+      await expectLaneOverKey(page, 'auto');
+    });
   });
 }
 

@@ -361,7 +361,9 @@ test('the scrolling score glides back to its start after a listen run, like a dr
     () => (window as unknown as { returnSamples: { offset: number; bar: number }[] }).returnSamples,
   );
   const moving = samples.filter((s, i) => i > 0 && s.offset < (samples[i - 1]?.offset ?? 0) - 1);
-  expect(moving.length).toBeGreaterThan(5);
+  // A jump is one moving frame. The glide takes 0.6 to 1.4 s, which CI's WebKit drew in as few as
+  // five frames, so three show it glided.
+  expect(moving.length).toBeGreaterThanOrEqual(3);
   for (const s of moving) expect(Math.abs(s.bar)).toBeLessThan(3);
   // The play bar is back on the first note, not left on the last one.
   await expect.poll(() => cursorX(page), { timeout: 10_000 }).toBeCloseTo(startX, -1);
