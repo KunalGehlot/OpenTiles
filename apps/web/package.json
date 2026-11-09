@@ -26,11 +26,11 @@
     "@opentiles/vault": "workspace:*",
     "dexie": "^4.4.7",
     "dexie-react-hooks": "^4.4.0",
-    "lucide-react": "^1.65.0",
-    "pdfjs-dist": "6.4.299",
+    "lucide-react": "^1.70.0",
+    "pdfjs-dist": "6.5.438",
     "react": "^19.3.1",
     "react-dom": "^19.3.1",
-    "verovio": "^6.3.0",
+    "verovio": "^6.4.1",
     "workbox-window": "^7.4.1"
   },
   "devDependencies": {
@@ -39,12 +39,12 @@
     "@types/node": "^22.20.5",
     "@types/react": "^19.3.0",
     "@types/react-dom": "^19.3.0",
-    "@vitejs/plugin-react": "^6.1.2",
+    "@vitejs/plugin-react": "^6.2.1",
     "@xmldom/xmldom": "^0.9.12",
     "fake-indexeddb": "^6.2.7",
     "typescript": "~6.0.3",
-    "vite": "^8.3.5",
+    "vite": "^8.3.6",
     "vite-plugin-pwa": "^2.0.0",
-    "vitest": "^5.0.5"
+    "vitest": "^5.1.0"
   }
 }
