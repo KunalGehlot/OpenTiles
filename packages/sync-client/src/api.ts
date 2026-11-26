@@ -67,8 +67,15 @@ function preconditionHeaders(baseVersion: number): Record<string, string> {
 
 export type SyncApi = ReturnType<typeof createSyncApi>;
 
+/** `url` without trailing slashes. A loop, not `/\/+$/`, which is slow on a long run of slashes. */
+export function trimTrailingSlashes(url: string): string {
+  let end = url.length;
+  while (end > 0 && url.charAt(end - 1) === '/') end -= 1;
+  return url.slice(0, end);
+}
+
 export function createSyncApi(options: SyncApiOptions) {
-  const base = options.baseUrl.replace(/\/+$/, '');
+  const base = trimTrailingSlashes(options.baseUrl);
   const doFetch = options.fetch ?? ((input, init) => fetch(input, init));
   let token = options.token ?? null;
 

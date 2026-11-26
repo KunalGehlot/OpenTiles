@@ -129,4 +129,24 @@ describe('sanitiseCrashReport', () => {
       'Cannot read property "notes" of undefined',
     );
   });
+
+  it('scrub finds addresses in running text and keeps the rest', () => {
+    expect(scrub('mail a.b@c.example.org, or x@y.io; not @nope.com or a@b or a@b.c')).toBe(
+      'mail [email], or [email]; not @nope.com or a@b or a@b.c',
+    );
+    expect(scrub('a@b.com123@c.org')).toBe('[email][email]');
+    expect(scrub('(me@host.de)<you@host.de>')).toBe('([email])<[email]>');
+  });
+
+  it('scrub stays fast on long runs without an @ or without a dot (CodeQL js/polynomial-redos)', () => {
+    const t0 = performance.now();
+    const runs = [
+      '!'.repeat(200_000),
+      `${'a@'.repeat(50_000)}`,
+      `x@${'!'.repeat(200_000)}`,
+      `x@${'a.'.repeat(100_000)}`,
+    ];
+    for (const run of runs) expect(scrub(run).length).toBeGreaterThan(0);
+    expect(performance.now() - t0).toBeLessThan(1000);
+  });
 });

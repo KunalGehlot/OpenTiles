@@ -1,5 +1,6 @@
 import { createVault, utf8Encode, type KeyBundle } from '@opentiles/vault';
 import { describe, expect, it } from 'vitest';
+import { trimTrailingSlashes } from '../src/api';
 import { buildCrashReport, scrubText } from '../src/crash';
 import { SyncApiError, VaultExistsError, VersionConflictError } from '../src/errors';
 import {
@@ -171,5 +172,26 @@ describe('crash reports', () => {
     expect(scrubText('Cannot read properties of undefined')).toBe(
       'Cannot read properties of undefined',
     );
+  });
+
+  it('scrubText finds addresses in running text and stays fast on long runs', () => {
+    expect(scrubText('mail a.b@c.example.org, or x@y.io; not @nope.com or a@b')).toBe(
+      'mail [email], or [email]; not @nope.com or a@b',
+    );
+    const t0 = performance.now();
+    expect(scrubText('!'.repeat(200_000))).toHaveLength(200_000);
+    scrubText(`x@${'a.'.repeat(100_000)}`);
+    expect(performance.now() - t0).toBeLessThan(1000);
+  });
+
+  it('trimTrailingSlashes trims only the end, and quickly', () => {
+    expect(trimTrailingSlashes('https://sync.example/')).toBe('https://sync.example');
+    expect(trimTrailingSlashes('https://sync.example///')).toBe('https://sync.example');
+    expect(trimTrailingSlashes('https://sync.example/a//b')).toBe('https://sync.example/a//b');
+    expect(trimTrailingSlashes('///')).toBe('');
+    const t0 = performance.now();
+    expect(trimTrailingSlashes(`/${'/'.repeat(300_000)}x`)).toHaveLength(300_002);
+    expect(trimTrailingSlashes('/'.repeat(300_000))).toBe('');
+    expect(performance.now() - t0).toBeLessThan(500);
   });
 });
