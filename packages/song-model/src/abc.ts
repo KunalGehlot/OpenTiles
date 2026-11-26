@@ -190,21 +190,67 @@ function parseUnitLength(value: string): number | undefined {
   return (num / den) * 4;
 }
 
+type TempoToken = { kind: 'int' | 'slash' | 'equals' | 'other'; text: string };
+
+/**
+ * Splits a Q: value into integers, `/`, `=` and everything else, skipping white space. One pass,
+ * so the matching below stays linear however long or odd the user's file is. (A single regex with
+ * a repeated `\d+\s*\/\s*\d+\s*` group backtracks exponentially on input like `0/000/000/…`.)
+ */
+function tempoTokens(value: string): TempoToken[] {
+  const tokens: TempoToken[] = [];
+  let i = 0;
+  while (i < value.length) {
+    const ch = value.charAt(i);
+    if (ch >= '0' && ch <= '9') {
+      let end = i + 1;
+      while (end < value.length && value.charAt(end) >= '0' && value.charAt(end) <= '9') end += 1;
+      tokens.push({ kind: 'int', text: value.slice(i, end) });
+      i = end;
+    } else {
+      i += 1;
+      if (ch === '/') tokens.push({ kind: 'slash', text: ch });
+      else if (ch === '=') tokens.push({ kind: 'equals', text: ch });
+      else if (!/\s/.test(ch)) tokens.push({ kind: 'other', text: ch });
+    }
+  }
+  return tokens;
+}
+
+/** The `1/4 1/8=80` form: the first run of fractions followed by `=` and a number. */
+function parseFractionTempo(value: string): number | undefined {
+  const t = tempoTokens(value);
+  let i = 0;
+  while (i < t.length) {
+    let j = i;
+    let beats = 0;
+    let fractions = 0;
+    // Each pass of this loop consumes `int / int`.
+    while (t[j]?.kind === 'int' && t[j + 1]?.kind === 'slash' && t[j + 2]?.kind === 'int') {
+      beats += (Number(t[j]?.text) / Number(t[j + 2]?.text)) * 4;
+      fractions += 1;
+      j += 3;
+    }
+    if (fractions > 0 && t[j]?.kind === 'equals' && t[j + 1]?.kind === 'int') {
+      let text = t[j + 1]?.text ?? '';
+      if (t[j + 2]?.text === '.' && t[j + 3]?.kind === 'int') text += `.${t[j + 3]?.text}`;
+      const perMinute = Number(text);
+      return beats > 0 && perMinute > 0 ? perMinute * beats : undefined;
+    }
+    // Starting again inside a run of fractions would end at the same place, so skip past it.
+    i = Math.max(i + 1, j);
+  }
+  return undefined;
+}
+
 /**
  * Q: field as quarter notes per minute. Accepts `1/4=120`, `3/8=60`, `1/4 1/8=80`,
  * `"Allegro" 1/4=120` and the old forms `C=120` and `120`, which count unit notes (L:).
  */
 export function parseTempo(value: string, unitBeats: number): number | undefined {
   const v = value.replace(/"[^"]*"/g, ' ').trim();
-  const full = /((?:\d+\s*\/\s*\d+\s*)+)=\s*(\d+(?:\.\d+)?)/.exec(v);
-  if (full) {
-    let beats = 0;
-    for (const f of (full[1] ?? '').matchAll(/(\d+)\s*\/\s*(\d+)/g)) {
-      beats += (Number(f[1]) / Number(f[2])) * 4;
-    }
-    const perMinute = Number(full[2]);
-    return beats > 0 && perMinute > 0 ? perMinute * beats : undefined;
-  }
+  // A slash means the fraction form; the old forms below cannot contain one.
+  if (v.includes('/')) return parseFractionTempo(v);
   const old = /^(?:C(\d*)\s*=\s*)?(\d+(?:\.\d+)?)$/.exec(v);
   if (old) {
     const mult = old[1] ? Number(old[1]) : 1;

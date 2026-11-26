@@ -74,6 +74,20 @@ describe('ABC fields', () => {
     expect(parseTempo('C=120', 0.5)).toBe(60);
     expect(parseTempo('200', 0.5)).toBe(100);
     expect(parseTempo('"Slowly"', 0.5)).toBeUndefined();
+    expect(parseTempo('1/4 = 90.5', 0.5)).toBe(90.5);
+    expect(parseTempo('1/4=0', 0.5)).toBeUndefined();
+  });
+
+  it('answers pathological tempo fields at once (CodeQL js/redos)', () => {
+    // These used to make the nested-quantifier regex backtrack exponentially.
+    const nasty = [
+      '0/' + '000/'.repeat(5000),
+      '1/4 '.repeat(20000) + 'x',
+      '0'.repeat(100000) + '/',
+    ];
+    const t0 = performance.now();
+    for (const q of nasty) expect(parseTempo(q, 0.5)).toBeUndefined();
+    expect(performance.now() - t0).toBeLessThan(500);
   });
 
   it('parses keys, modes, extra accidentals and clefs', () => {
