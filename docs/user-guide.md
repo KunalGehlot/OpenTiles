@@ -3,9 +3,8 @@
 How to practise with OpenTiles: pick a piece, connect your keyboard (or don't), choose a mode and
 use the tools that make hard bars easier. For quick answers see the [FAQ](faq.md).
 
-> OpenTiles is not released yet and there is no hosted copy to open. Until there is, follow
-> [Run it yourself](../README.md#run-it-yourself) in the README; it takes a few minutes and then
-> everything below applies.
+> Open OpenTiles at [opentiles.site](https://opentiles.site) in desktop Chrome, Edge or Firefox.
+> Everything below applies there, and to a copy you [run yourself](../README.md#run-it-yourself).
 
 ## Contents
 
