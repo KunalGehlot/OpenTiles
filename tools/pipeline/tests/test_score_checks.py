@@ -136,6 +136,66 @@ class BadScoresTest(unittest.TestCase):
         self.assertTrue(any("before the start" in e for e in check_score(score(bar))))
 
 
+class AccidentalsTest(unittest.TestCase):
+    def test_arranged_scores_carry_their_accidentals(self):
+        root = from_arrangement("key: 2\nRH: E#4e C#4e E#4q E4e C4e E4q\nLH: B2w\n")
+        self.assertEqual(check_score(root), [])
+
+    def test_missing_accidentals_are_found(self):
+        # Issue #75: <alter> without <accidental> is heard but drawn without its sign.
+        def pitched(step: str, alter: int, octave: int, staff: int = 1, extra: str = "", after: str = "") -> str:
+            return (
+                f"<note>{extra}<pitch><step>{step}</step><alter>{alter}</alter><octave>{octave}</octave></pitch>"
+                f"<duration>1</duration>{after}<staff>{staff}</staff></note>"
+            )
+
+        left = "<backup><duration>4</duration></backup>" + note("C", 3, 4, staff=2)
+        bar = pitched("F", 1, 4) + pitched("F", 1, 4) + pitched("F", 0, 4) + pitched("F", 1, 5) + left
+        self.assertEqual(
+            check_score(score(bar)),
+            [
+                "bar 1: F♯4 has no <accidental>, so it is drawn without one",
+                "bar 1: F♮4 has no <accidental>, so it is drawn without one",
+                "bar 1: F♯5 has no <accidental>, so it is drawn without one",
+            ],
+        )
+        written = bar.replace("<staff>1</staff>", "<accidental>sharp</accidental><staff>1</staff>", 1)
+        written = written.replace(
+            "<alter>0</alter><octave>4</octave></pitch><duration>1</duration>",
+            "<alter>0</alter><octave>4</octave></pitch><duration>1</duration><accidental>natural</accidental>",
+        ).replace(
+            "<alter>1</alter><octave>5</octave></pitch><duration>1</duration>",
+            "<alter>1</alter><octave>5</octave></pitch><duration>1</duration><accidental>sharp</accidental>",
+        )
+        self.assertEqual(check_score(score(written)), [])
+
+    def test_key_signatures_ties_and_voices(self):
+        def pitched(step: str, alter: int, octave: int, extra: str = "", dur: int = 1) -> str:
+            return (
+                f"<note><pitch><step>{step}</step><alter>{alter}</alter><octave>{octave}</octave></pitch>"
+                f"<duration>{dur}</duration>{extra}<staff>1</staff></note>"
+            )
+
+        left = "<backup><duration>4</duration></backup>" + note("C", 3, 4, staff=2)
+        # In G major the F sharp comes from the key.
+        root = score(pitched("F", 1, 4, dur=4) + left)
+        root.find("part/measure/attributes").insert(0, ET.fromstring("<key><fifths>1</fifths></key>"))
+        self.assertEqual(check_score(root), [])
+        # A tie continuation into the bar needs no accidental.
+        tied = pitched("C", 1, 4, '<tie type="stop"/>', dur=4) + left
+        self.assertEqual(check_score(score(tied)), [])
+        # A second voice's earlier note sets the line before a later note in the first voice.
+        voices = (
+            pitched("D", 0, 4, dur=2)
+            + pitched("C", 1, 4, dur=2)
+            + "<backup><duration>4</duration></backup>"
+            + pitched("C", 1, 4, "<accidental>sharp</accidental>", dur=1)
+            + "<forward><duration>3</duration></forward>"
+            + left
+        )
+        self.assertEqual(check_score(score(voices)), [])
+
+
 class FileTest(unittest.TestCase):
     def test_reads_mxl_and_rejects_garbage(self):
         xml = arrange.to_musicxml(arrange.parse("RH: C4w\nLH: C3w\n"))

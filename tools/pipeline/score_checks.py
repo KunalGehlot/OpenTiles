@@ -8,7 +8,10 @@ the catalogue CI and the PDMX pipeline can run them without Node:
 - every pitch lies on the piano, A0 (MIDI 21) to C8 (MIDI 108);
 - every note and rest that is not a grace note has a positive duration;
 - every bar is as long as its time signature says. Only the first bar (an upbeat), the last
-  bar and bars marked implicit="yes" may be shorter; no bar may be longer.
+  bar and bars marked implicit="yes" may be shorter; no bar may be longer;
+- every note whose alteration the key signature or an earlier note on its line in the bar does
+  not give has an <accidental>: <alter> only says how it sounds, and Verovio draws an accidental
+  only from <accidental> (issue #75).
 
 Hands follow the same rules as the song-model parser: on a grand staff the upper staff is the
 right hand; separate single-staff parts are split by average pitch; otherwise a bass clef means
@@ -27,6 +30,49 @@ from pathlib import Path
 
 LOWEST, HIGHEST = 21, 108  # A0 and C8
 STEP_SEMITONES = {"C": 0, "D": 2, "E": 4, "F": 5, "G": 7, "A": 9, "B": 11}
+SHARP_ORDER = "FCGDAEB"
+SIGNS = {-2: "𝄫", -1: "♭", 0: "♮", 1: "♯", 2: "𝄪"}
+
+
+@dataclass
+class Written:
+    """A note as written, for the accidental check."""
+
+    start: Fraction
+    staff: int
+    step: str
+    octave: int
+    alter: int
+    has_accidental: bool
+    tie_stop: bool
+
+
+def key_alter(step: str, fifths: int) -> int:
+    """The alteration the key signature gives a step: 1 sharp, -1 flat, 0 none."""
+    if fifths > 0 and step in SHARP_ORDER[:fifths]:
+        return 1
+    if fifths < 0 and step in SHARP_ORDER[::-1][:-fifths]:
+        return -1
+    return 0
+
+
+def missing_accidentals(notes: list[Written], fifths: int) -> list[Written]:
+    """Notes of one bar that need an <accidental> and have none.
+
+    Notes are taken in time order per staff, whatever voice they are in. A tie continuation
+    needs no accidental and does not carry one on.
+    """
+    missing: list[Written] = []
+    state: dict[tuple[int, str, int], int] = {}
+    for n in sorted(notes, key=lambda n: n.start):  # stable: written order within an onset
+        if n.tie_stop:
+            continue
+        line = (n.staff, n.step, n.octave)
+        current = state.get(line, key_alter(n.step, fifths))
+        if n.alter != current and not n.has_accidental:
+            missing.append(n)
+        state[line] = n.alter
+    return missing
 
 
 def load_score(path: Path) -> ET.Element:
@@ -82,13 +128,18 @@ def check_score(root: ET.Element, single_hand: str | None = None) -> list[str]:
         label = f"part {part_index}, " if len(root.findall("part")) > 1 else ""
         divisions = Fraction(1)
         bar: Fraction | None = Fraction(4)
+        fifths = 0
         measures = part.findall("measure")
         for index, measure in enumerate(measures):
             number = measure.get("number", str(index + 1))
             where = f"{label}bar {number}"
-            pos = longest = Fraction(0)
+            pos = longest = last_start = Fraction(0)
+            written: list[Written] = []
             for el in measure:
                 if el.tag == "attributes":
+                    key = el.findtext("key/fifths")
+                    if key and key.strip().lstrip("-").isdigit():
+                        fifths = int(key.strip())
                     if el.findtext("divisions"):
                         divisions = Fraction(el.findtext("divisions").strip())
                         if divisions <= 0:
@@ -113,8 +164,24 @@ def check_score(root: ET.Element, single_hand: str | None = None) -> list[str]:
                 elif el.tag == "note":
                     grace = el.find("grace") is not None
                     chord = el.find("chord") is not None
+                    start = last_start if chord else pos
+                    last_start = start
                     pitch = el.find("pitch")
                     if pitch is not None:
+                        alter = (pitch.findtext("alter") or "0").strip()
+                        if alter.lstrip("-").isdigit() and abs(int(alter)) <= 2:
+                            written.append(
+                                Written(
+                                    start,
+                                    int(el.findtext("staff") or "1"),
+                                    (pitch.findtext("step") or "").strip(),
+                                    int((pitch.findtext("octave") or "0").strip() or 0),
+                                    int(alter),
+                                    el.find("accidental") is not None,
+                                    el.find("tie[@type='stop']") is not None
+                                    or el.find("notations/tied[@type='stop']") is not None,
+                                )
+                            )
                         try:
                             midi = midi_pitch(pitch)
                         except ValueError as e:
@@ -137,6 +204,11 @@ def check_score(root: ET.Element, single_hand: str | None = None) -> list[str]:
                         continue
                     pos += dur
                     longest = max(longest, pos)
+            for n in missing_accidentals(written, fifths):
+                errors.append(
+                    f"{where}: {n.step}{SIGNS[n.alter]}{n.octave} has no <accidental>, so it is "
+                    "drawn without one"
+                )
             if bar is None:
                 continue
             short_allowed = index == 0 or index == len(measures) - 1 or measure.get("implicit") == "yes"
