@@ -94,6 +94,28 @@ class ArrangeTest(unittest.TestCase):
         )
         self.assertEqual(xml.count("<tuplet"), 6)
 
+    def test_accidentals_are_written_where_the_key_does_not_give_them(self):
+        # Issue #75: Verovio draws an accidental only from <accidental>, never from <alter>. The
+        # Mountain King's second bar in B minor (two sharps): E sharp, C sharp from the key,
+        # E sharp again in the bar, then naturals cancelling the E sharp and the key's C sharp.
+        bars = arrange.parse("key: 2\nRH: E#4e C#4e E#4q E4e C4e E4q | E#4q F4q [C4 C#5]h\nLH: B2w | B2w\n").rh
+        self.assertEqual(
+            arrange.bar_accidentals(bars[0], 2),
+            [["sharp"], [None], [None], ["natural"], ["natural"], [None]],
+        )
+        # A barline resets the bar's accidentals; another octave is another line; F is in the key.
+        self.assertEqual(arrange.bar_accidentals(bars[1], 2), [["sharp"], ["natural"], ["natural", None]])
+        # Flat keys, and each staff on its own.
+        self.assertEqual(
+            arrange.bar_accidentals(arrange.parse("RH: Bb4q B4q Bb4q Eb4q\nLH: rh\n").rh[0], -1),
+            [[None], ["natural"], ["flat"], ["flat"]],
+        )
+        xml = arrange.to_musicxml(arrange.parse("key: 2\nRH: E#4e. C4s3 D4s3 F#4s3 G4h B4e A4s\nLH: B2w\n"))
+        # The accidental sits between the dot and the time modification, as MusicXML orders them.
+        self.assertIn("<type>eighth</type><dot/><accidental>sharp</accidental><staff>1</staff>", xml)
+        self.assertIn("<type>16th</type><accidental>natural</accidental><time-modification>", xml)
+        self.assertEqual(xml.count("<accidental>"), 2)
+
     def test_sharps_are_not_comments(self):
         bars = arrange.parse("RH: F#4q G4q # a comment\nLH: rh\n").rh
         self.assertEqual(bars[0][0].pitches, [("F", 1, 4)])

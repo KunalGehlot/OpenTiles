@@ -43,6 +43,9 @@ VALUES = {
 }
 TYPES = {"w": "whole", "h": "half", "q": "quarter", "e": "eighth", "s": "16th", "t": "32nd"}
 STEPS = "CDEFGAB"
+# Key signatures add sharps in this order and flats in the reverse one.
+SHARP_ORDER = "FCGDAEB"
+ACCIDENTALS = {-1: "flat", 0: "natural", 1: "sharp"}
 TOKEN = re.compile(r"^(?P<pitch>\[[^\]]+\]|r|[A-Ga-g](?:#|b)?-?\d)(?P<value>[whqest])(?P<triplet>3?)(?P<dot>\.?)(?:@(?P<finger>[1-5]))?$")
 PITCH = re.compile(r"^([A-Ga-g])(#|b)?(-?\d)$")
 
@@ -165,8 +168,42 @@ def tuplet_marks(events: list[Event]) -> list[str | None]:
     return marks
 
 
+def key_alter(step: str, fifths: int) -> int:
+    """The alteration the key signature gives a step: 1 sharp, -1 flat, 0 none."""
+    if fifths > 0 and step in SHARP_ORDER[:fifths]:
+        return 1
+    if fifths < 0 and step in SHARP_ORDER[::-1][:-fifths]:
+        return -1
+    return 0
+
+
+def bar_accidentals(events: list[Event], fifths: int) -> list[list[str | None]]:
+    """The accidental to print on each note of one staff's bar, or None.
+
+    A note gets one when neither the key signature nor an earlier note on the same line and
+    octave in this bar already gives its alteration; that includes the natural that cancels
+    either. MusicXML's <alter> only says how the note sounds: Verovio draws an accidental only
+    from <accidental> (issue #75). The same rule as markAccidentals in the app's MusicXML writer.
+    """
+    state: dict[tuple[str, int], int] = {}
+    marks: list[list[str | None]] = []
+    for ev in events:
+        row: list[str | None] = []
+        for step, alter, octave in ev.pitches:
+            current = state.get((step, octave), key_alter(step, fifths))
+            row.append(ACCIDENTALS[alter] if alter != current else None)
+            state[(step, octave)] = alter
+        marks.append(row)
+    return marks
+
+
 def note_xml(
-    ev: Event, staff: int, voice: int, divisions: int = DIVISIONS, group_mark: str | None = None
+    ev: Event,
+    staff: int,
+    voice: int,
+    divisions: int = DIVISIONS,
+    group_mark: str | None = None,
+    accidentals: list[str | None] | None = None,
 ) -> str:
     dur = int(ev.beats * divisions)
     dot = "<dot/>" if ev.dotted else ""
@@ -175,16 +212,19 @@ def note_xml(
         if ev.triplet
         else ""
     )
-    kind = f"<type>{TYPES[ev.value]}</type>{dot}{tuplet}"
-    tail = f"<voice>{voice}</voice>{kind}<staff>{staff}</staff>"
     group = f'<tuplet type="{group_mark}"/>' if group_mark else ""
     if not ev.pitches:
+        tail = f"<voice>{voice}</voice><type>{TYPES[ev.value]}</type>{dot}{tuplet}<staff>{staff}</staff>"
         marks = f"<notations>{group}</notations>" if group else ""
         return f"<note><rest/><duration>{dur}</duration>{tail}{marks}</note>"
     out = []
     for i, (step, alter, octave) in enumerate(ev.pitches):
         chord = "<chord/>" if i > 0 else ""
         alt = f"<alter>{alter}</alter>" if alter else ""
+        mark = accidentals[i] if accidentals and i < len(accidentals) else None
+        # MusicXML's order inside <note>: type, dot, accidental, time-modification, staff.
+        acc = f"<accidental>{mark}</accidental>" if mark else ""
+        tail = f"<voice>{voice}</voice><type>{TYPES[ev.value]}</type>{dot}{acc}{tuplet}<staff>{staff}</staff>"
         # The first note of a chord carries its marks: the triplet bracket and the fingering.
         inner = ""
         if i == 0:
@@ -232,9 +272,16 @@ def to_musicxml(arr: Arrangement) -> str:
                     f"<per-minute>{int(bpm)}</per-minute></metronome></direction-type>"
                     f"<sound tempo=\"{int(bpm)}\"/></direction>"
                 )
-        parts.extend(note_xml(e, 1, 1, divisions, t) for e, t in zip(rh, tuplet_marks(rh)))
+        fifths = int(h.get("key", "0"))
+        parts.extend(
+            note_xml(e, 1, 1, divisions, t, a)
+            for e, t, a in zip(rh, tuplet_marks(rh), bar_accidentals(rh, fifths))
+        )
         parts.append(f"<backup><duration>{int(rh_len * divisions)}</duration></backup>")
-        parts.extend(note_xml(e, 2, 5, divisions, t) for e, t in zip(lh, tuplet_marks(lh)))
+        parts.extend(
+            note_xml(e, 2, 5, divisions, t, a)
+            for e, t, a in zip(lh, tuplet_marks(lh), bar_accidentals(lh, fifths))
+        )
         implicit = ' implicit="yes"' if is_pickup else ""
         measures.append(f'<measure number="{number}"{implicit}>{"".join(parts)}</measure>')
     if measures:
