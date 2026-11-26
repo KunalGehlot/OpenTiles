@@ -959,6 +959,12 @@ Record the outcome as an ADR in `docs/adr/` and tick it here.
 
 ## Changelog
 
+- **2026-11-26** — CI green again on Rust 1.100: its clippy failed the Engine job on every pull
+  request since 2026-11-12 (one index loop in the scorer, P0-06; the accuracy harness prints the
+  same numbers). Dependabot's minor-and-patch group (#76: Capacitor 8.6.2, Verovio 6.4.1, pdf.js
+  6.5.438, hono 4.13.18, which closes #73 and #74) is in, with the app's Swift package pinned to
+  Capacitor 8.6.2. The build and lint tools take the patched glob and minimatch through pnpm
+  overrides, closing the last two Dependabot alerts (P6-18). The queue is unchanged.
 - **2026-11-05** — v0.6.1, a fix between queue items: CI was red on `main`'s iPad run and on both
   Dependabot pull requests. A score still opening when its view went was never closed in the
   engraver's worker (P5-13); it is now, and a new test that holds the open back fails without the
