@@ -177,11 +177,9 @@ impl Scorer {
             if qi >= 128 {
                 continue;
             }
-            for m in 0..self.counts[qi] {
-                let fq = self.partials[qi][m];
-                if (hz / fq - 1.0).abs() < SHARED_RATIO {
-                    return true;
-                }
+            let mut partials = self.partials[qi].iter().take(self.counts[qi]);
+            if partials.any(|&fq| (hz / fq - 1.0).abs() < SHARED_RATIO) {
+                return true;
             }
         }
         false
