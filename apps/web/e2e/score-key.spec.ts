@@ -124,3 +124,149 @@ test('the page view has no pinned header', async ({ page }) => {
   await expect(page.locator('[data-testid="score-strip"] > svg')).toBeVisible({ timeout: 20_000 });
   await expect(page.getByTestId('score-key')).toHaveCount(0);
 });
+
+/**
+ * A self-made score (CC0), written here: quarter notes in D major, then from bar 7 in E♭ major
+ * with the lower staff changing to a treble clef; or a single staff in D major throughout.
+ */
+function changingScore(staves: 1 | 2): string {
+  const note = (step: string, octave: number, staff: number) =>
+    `<note><pitch><step>${step}</step><octave>${octave}</octave></pitch><duration>1</duration><type>quarter</type><staff>${staff}</staff></note>`;
+  const bars = Array.from({ length: 14 }, (_, i) => {
+    const later = staves === 2 && i >= 6;
+    const attrs =
+      i === 0
+        ? `<attributes><divisions>1</divisions><key><fifths>2</fifths></key><time><beats>4</beats><beat-type>4</beat-type></time>${
+            staves === 2
+              ? '<staves>2</staves><clef number="1"><sign>G</sign><line>2</line></clef><clef number="2"><sign>F</sign><line>4</line></clef>'
+              : '<clef><sign>G</sign><line>2</line></clef>'
+          }</attributes>`
+        : later && i === 6
+          ? '<attributes><key><fifths>-3</fifths></key><clef number="2"><sign>G</sign><line>2</line></clef></attributes>'
+          : '';
+    const upper = ['D', 'E', 'G', 'A'].map((s) => note(s, 5, 1)).join('');
+    const lower =
+      staves === 2
+        ? '<backup><duration>4</duration></backup>' +
+          ['D', 'F', 'A', 'F'].map((s) => note(s, later ? 4 : 3, 2)).join('')
+        : '';
+    return `<measure number="${i + 1}">${attrs}${upper}${lower}</measure>`;
+  });
+  return `<?xml version="1.0" encoding="UTF-8"?><score-partwise version="3.1"><work><work-title>Changing Keys</work-title></work><part-list><score-part id="P1"><part-name>Piano</part-name></score-part></part-list><part id="P1">${bars.join('')}</part></score-partwise>`;
+}
+
+async function importScore(page: Page, text: string): Promise<void> {
+  await page.goto('./#/library');
+  await page.getByRole('button', { name: 'Import a file…' }).click();
+  await page.getByRole('checkbox').check();
+  const chooser = page.waitForEvent('filechooser');
+  await page.getByRole('button', { name: 'Continue' }).click();
+  await (
+    await chooser
+  ).setFiles({ name: 'changing.musicxml', mimeType: 'application/xml', buffer: Buffer.from(text) });
+  await page.getByRole('button', { name: 'Save to my library' }).click();
+  await expect(page).toHaveURL(/#\/practice\/library\//);
+  await page.getByRole('group', { name: 'View' }).getByRole('button', { name: 'Score' }).click();
+  await expect(page.locator('[data-testid="score-strip"] > svg')).toBeVisible({ timeout: 20_000 });
+  await expect(page.getByTestId('score-cursor')).toBeVisible();
+}
+
+/**
+ * Drags the score left until `x` (page px) reaches the view's left edge, in drags of at most 70 %
+ * of the view, each held still before letting go so it does not coast. (Mobile WebKit has no
+ * wheel events in Playwright.)
+ */
+async function scrollTo(page: Page, x: number): Promise<void> {
+  const host = await page.locator('.ot-score-host').boundingBox();
+  if (!host) throw new Error('no score box');
+  const y = host.y + host.height / 2;
+  let left = x - host.x;
+  while (left > 1) {
+    const dx = Math.min(left, host.width * 0.7);
+    const from = host.x + host.width * 0.85;
+    await page.mouse.move(from, y);
+    await page.mouse.down();
+    await page.mouse.move(from - dx, y, { steps: 8 });
+    await page.waitForTimeout(150);
+    await page.mouse.up();
+    left -= dx;
+  }
+}
+
+/** The displayed region's clefs (glyph codes) and key accidentals (glyph codes), per staff. */
+function shownGlyphs(page: Page) {
+  return page.evaluate(() => {
+    const key = document.querySelector<HTMLElement>('[data-testid="score-key"]');
+    const shown = [...(key?.querySelectorAll<SVGGElement>('g.ot-key-region') ?? [])].filter(
+      (g) => g.style.display !== 'none',
+    );
+    const code = (u: Element | null) => /E[0-9A-F]{3}/.exec(u?.getAttribute('href') ?? '')?.[0];
+    return {
+      visible: !!key && !key.hidden,
+      regions: shown.length,
+      staves: [...(shown[0]?.querySelectorAll('g.ot-key-staff') ?? [])].map((staff) => ({
+        clef: code(staff.querySelector('g.clef use')),
+        key: [...staff.querySelectorAll('g.keyAccid use')].map(code),
+      })),
+    };
+  });
+}
+
+test('the pinned header follows a key and clef change and stays one header after a resize', async ({
+  page,
+}) => {
+  await importScore(page, changingScore(2));
+  // Just past the opening: D major, treble and bass clefs.
+  const staffStart = await page
+    .locator('[data-testid="score-strip"] g.measure g.staff > path')
+    .first()
+    .boundingBox();
+  await scrollTo(page, (staffStart?.x ?? 0) + 40);
+  await expect
+    .poll(() => shownGlyphs(page))
+    .toEqual({
+      visible: true,
+      regions: 1,
+      staves: [
+        { clef: 'E050', key: ['E262', 'E262'] },
+        { clef: 'E062', key: ['E262', 'E262'] },
+      ],
+    });
+
+  // Past bar 7: E♭ major on both staves, and the lower staff's treble clef at full size.
+  const change = await page
+    .locator('[data-testid="score-strip"] g.keySig')
+    .filter({ has: page.locator('use[*|href^="#E260"]') })
+    .first()
+    .boundingBox();
+  await scrollTo(page, (change?.x ?? 0) + 10);
+  const flats = ['E260', 'E260', 'E260'];
+  await expect
+    .poll(() => shownGlyphs(page))
+    .toEqual({
+      visible: true,
+      regions: 1,
+      staves: [
+        { clef: 'E050', key: flats },
+        { clef: 'E050', key: flats },
+      ],
+    });
+
+  // A narrower window moves the score under the edge; still one header, never two overlaid.
+  await page.setViewportSize({ width: 700, height: 800 });
+  await page.waitForTimeout(400);
+  expect((await shownGlyphs(page)).regions).toBeLessThanOrEqual(1);
+});
+
+test('a single staff gets its pinned clef and key signature too', async ({ page }) => {
+  await importScore(page, changingScore(1));
+  await expect(page.getByTestId('score-key')).toBeHidden();
+  const staffStart = await page
+    .locator('[data-testid="score-strip"] g.measure g.staff > path')
+    .first()
+    .boundingBox();
+  await scrollTo(page, (staffStart?.x ?? 0) + 40);
+  await expect
+    .poll(() => shownGlyphs(page))
+    .toEqual({ visible: true, regions: 1, staves: [{ clef: 'E050', key: ['E262', 'E262'] }] });
+});

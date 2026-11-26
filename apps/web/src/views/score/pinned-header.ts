@@ -30,6 +30,8 @@ export class PinnedHeader {
   private base = 0;
   /** The region shown (index), or -1 while the real opening is in view. */
   private shown = -1;
+  /** The group on screen, which may be shared by several regions. */
+  private showing: SVGGElement | null = null;
   private placed = false;
 
   constructor(private readonly el: HTMLElement) {}
@@ -84,8 +86,11 @@ export class PinnedHeader {
         if (box.width > 0) right = Math.max(right, box.x + box.width);
         r.style.display = 'none';
       }
-      const box = frame.getBBox();
-      if (box.width > 0) left = Math.min(left, box.x);
+      // A single staff has no brace and no system line to measure.
+      if (frame.firstChild) {
+        const box = frame.getBBox();
+        if (box.width > 0) left = Math.min(left, box.x);
+      }
     } catch {
       // No layout (a browser that cannot measure SVG): the header stays off.
       this.clear();
@@ -119,6 +124,7 @@ export class PinnedHeader {
     const ctm = this.system?.getScreenCTM();
     if (!this.svg || !this.root || !ctm || ctm.a <= 0) {
       this.placed = false;
+      this.show(-1);
       return;
     }
     const hostBox = host.getBoundingClientRect();
@@ -138,7 +144,6 @@ export class PinnedHeader {
     this.perPx = 1 / ctm.a;
     this.base = (hostBox.left - ctm.e - scrollPos) * this.perPx;
     this.placed = true;
-    this.shown = -2;
   }
 
   /** Called every frame with the scroll position; touches the DOM only when the region changes. */
@@ -154,13 +159,18 @@ export class PinnedHeader {
       while (next + 1 < this.regions.length && (this.regions[next + 1]?.from ?? Infinity) <= edge)
         next += 1;
     }
-    if (next === this.shown) return;
-    const was = this.regions[this.shown]?.group;
-    const now = this.regions[next]?.group;
-    if (was && was !== now) was.style.display = 'none';
-    if (now) now.style.display = '';
-    this.el.hidden = next < 0;
-    this.shown = next;
+    if (next !== this.shown) this.show(next);
+  }
+
+  private show(region: number): void {
+    const group = this.regions[region]?.group ?? null;
+    if (group !== this.showing) {
+      if (this.showing) this.showing.style.display = 'none';
+      if (group) group.style.display = '';
+      this.showing = group;
+    }
+    this.el.hidden = !group;
+    this.shown = group ? region : -1;
   }
 
   clear(): void {
@@ -172,6 +182,7 @@ export class PinnedHeader {
     this.regions = [];
     this.placed = false;
     this.shown = -1;
+    this.showing = null;
   }
 }
 
