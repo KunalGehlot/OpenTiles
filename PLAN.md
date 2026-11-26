@@ -86,9 +86,8 @@ they arrive.
   in a hidden tab), the chord and scale drills on a real keyboard (P7-13, P7-24), their MuseScore PDF and MIDI pair
   again (P5-18), the release gate (P5-10; with it a native German read-through, P2-14, and a pen
   test, P4-15), and the Player's screenshots for the README once they like its look (P6-14).
-- **Legal and publishing:** the legal consultation (P2-18), the trademark (P0-02), the Impressum's
-  postal address (P2-17), HTTPS enforced on GitHub Pages, and whether the README and user guide
-  link to opentiles.site (P5-11).
+- **Legal and publishing:** the legal consultation (P2-18), the trademark (P0-02) and the
+  Impressum's postal address (P2-17).
 - **App Store:** the Apple Developer Program (P3-02), after the licence question in the app's
   README.
 - **Catalogue growth:** reviewing new pieces (P2-06, P2-07, P3-05, P4-13, P4-13b), and PDMX's
@@ -125,6 +124,7 @@ and the device; a failure becomes a task at the top of the queue.
 | v0.5.0: an imported score's p and f, hairpins and sf heard in the Player               | Both   | P6-16           | open                                 |
 | v0.6.0: the new home-screen icon; the practice header and bar at ⅓ width, upright      | Both   | P5-09           | open                                 |
 | v0.6.1: Capacitor 8.6.0: the app starts, plays its piano and follows a USB keyboard    | App    | P3-01           | open                                 |
+| v0.6.2: catalogue accidentals drawn; the scrolling score's pinned clefs and key        | Both   | P2-04, P1-15    | open                                 |
 | Frame time on an older iPad (falling notes, score, Player)                             | Both   | P4-11, P5-10    | open                                 |
 | The richer piano and the Player's room; stand mode                                     | Both   | P6-15, P6-17    | open                                 |
 | The Player over USB audio, and whether the microphone hears it                         | Safari | P6-13           | open                                 |
@@ -240,7 +240,8 @@ Goal: Journeys A and B from spec §3 work end to end, offline, on iPad Safari an
 
 - [x] **P1-14** Animated keyboard, Canvas 2D, expected keys highlighted per hand colour.
 - [x] **P1-15** Scrolling score with Verovio: single staff line under a fixed cursor, each `Song`
-      note linked to its glyph for colour feedback.
+      note linked to its glyph for colour feedback. Since issue #75 (2026-11-26) the clefs and the
+      key signature in force stay pinned at the left edge once the opening has scrolled away.
 - [x] **P1-16** Falling-notes view (Canvas 2D) — the first practice view, and the only one for
       MIDI imports in v1.
 
@@ -286,7 +287,7 @@ engines.
 - [x] **P2-02** EU term check against Wikidata death years (composer and lyricist).
 - [x] **P2-03** Protected-edition exclusion (§§ 70/71 UrhG): only uploader's own CC0
       transcriptions.
-- [x] **P2-04** Automatic file validation: renders, plays, survives a `Song` round trip. Done: XML and musical sanity checks in the validator, Song round trip in the song-model tests, and a render check with Verovio in CI (`apps/web/test/catalogue-render.test.ts`: every catalogue score draws, every note has its glyph, every triplet group is drawn as one). It found triplets written without `<tuplet>` marks, which Verovio drew as plain sixteenths in Für Elise (complete) and the Menuett WoO 82; `arrange.py` now writes the marks.
+- [x] **P2-04** Automatic file validation: renders, plays, survives a `Song` round trip. Done: XML and musical sanity checks in the validator, Song round trip in the song-model tests, and a render check with Verovio in CI (`apps/web/test/catalogue-render.test.ts`: every catalogue score draws, every note has its glyph, every triplet group is drawn as one). It found triplets written without `<tuplet>` marks, which Verovio drew as plain sixteenths in Für Elise (complete) and the Menuett WoO 82; `arrange.py` now writes the marks. Issue #75 (2026-11-26) found that no score had an `<accidental>`: Verovio draws accidentals only from that element, so 35 pieces showed chromatic notes without their sharps, flats or naturals. `arrange.py` now writes them (the rule of the app's MusicXML writer), all 81 scores were written again with nothing else changed, and both the validator and the render check fail on a note drawn without the accidental it needs.
 - [~] **P2-05** Difficulty scoring (PDMX complexity + own measures → 5 levels). Done: estimateDifficulty in song-model, shown on the import review screen, within ±1 of the catalogue levels. Left: combine with PDMX complexity in the pipeline.
 - [~] **P2-06** Human review workflow: catalogue PR template, `verified: true`, ~10 min per piece.
 - [~] **P2-07** Publish static `.mxl` + JSON index with stable URLs; **150 verified pieces**. Done: the PDMX/Wikidata/edition pipeline and 81 pieces, all verified after the music review (P4-13c). Left: growth to 150.
@@ -570,7 +571,11 @@ images, sounds or fonts, and credit the inspiration in [CREDITS.md](CREDITS.md).
   2026-10-17 the site was still served through Cloudflare's proxy, which adds its bot-check script
   to every page and an error-report (NEL) header, so visitors' browsers can contact Cloudflare
   (hard rule 5), and GitHub has no certificate for the domain yet. Then HTTPS enforced, a header
-  check of the live site, and the lawyer's view of hosting in the USA (P2-18).
+  check of the live site, and the lawyer's view of hosting in the USA (P2-18). Checked 2026-11-26:
+  the DNS points straight at GitHub Pages ("DNS only"), HTTPS is enforced with GitHub's
+  certificate, `www` redirects to the apex, and pages, the service worker and catalogue files come
+  from GitHub with no Cloudflare or error-report headers. The README, FAQ and user guide link to
+  the site. Left: the lawyer's view (P2-18).
 - [~] **P5-12** (APP) A MIDI keyboard in Firefox stays connected. Reason (maintainer's report,
   2026-10-10): in Firefox the keyboard worked for a while, then fell silent after moving around the
   site, and then "Firefox found no MIDI keyboard" until Firefox was restarted. Each screen asked for
@@ -848,6 +853,11 @@ without a word when no MIDI output is found.
       its range (no majors, no new or removed packages, no install scripts); `minimumReleaseAge` (two days) in
       `pnpm-workspace.yaml` so pnpm will not install anything younger; CI
       `setup-node` uses `check-latest` so it runs the newest 22.x (22.23.4 or later has the fix).
+      Second round (2026-11-26): the build and lint tools' glob and minimatch moved to patched
+      majors by pnpm overrides (Dependabot alerts #4, #5), and five CodeQL alerts fixed: a ReDoS in
+      the ABC tempo field, the SVG sanitiser running to a fixed point (and dropping `set`, `animate`
+      and every link that leaves the SVG), and linear e-mail scrubbing and URL trimming in the sync
+      code. The sixth, on the XML parser, was a false positive (dismissed with the reason).
 - [x] **P6-19** (APP) Practice fixes (2026-10-22, maintainer: "play the other hand doesn't work on
       practice … fix it all"). Wait mode has no Play button, so nothing started the app's sound:
       on a MIDI keyboard the other hand, the steady click and the echo stayed silent until the
@@ -959,6 +969,16 @@ Record the outcome as an ADR in `docs/adr/` and tick it here.
 
 ## Changelog
 
+- **2026-11-26** — v0.6.2, a fix between queue items, for issue #75: no catalogue score wrote
+  `<accidental>`, and Verovio draws accidentals only from it, so 35 pieces (In the Hall of the
+  Mountain King and Greensleeves among them) showed chromatic notes without their sharps, flats or
+  naturals. `arrange.py` writes them, all 81 scores were written again with nothing else changed,
+  and the validator and the render check fail on a note drawn without the accidental it needs
+  (P2-04). The scrolling score keeps the clefs and key signature in force pinned at its left edge
+  (P1-15). Five CodeQL alerts are fixed and the sixth dismissed as a false positive (P6-18). The
+  README, FAQ and user guide point to opentiles.site, which P5-11 had left to the maintainer: their
+  goal of 2026-11-26, to make the site ready for public use, answers it; HTTPS is enforced too. The
+  queue is unchanged.
 - **2026-11-26** — CI green again on Rust 1.100: its clippy failed the Engine job on every pull
   request since 2026-11-12 (one index loop in the scorer, P0-06; the accuracy harness prints the
   same numbers). Dependabot's minor-and-patch group (#76: Capacitor 8.6.2, Verovio 6.4.1, pdf.js

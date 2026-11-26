@@ -24,4 +24,45 @@ describe('sanitiseSvg', () => {
       sanitiseSvg('<svg><scr<script></script>ipt>alert(1)</scr<script></script>ipt></svg>'),
     ).not.toMatch(/<script/i);
   });
+
+  it('leaves nothing blocked behind deeply nested constructions', () => {
+    // Removing the inner element or attribute rebuilds the outer one, one layer per pass. A loop
+    // with a fixed pass count left the outer layers standing (CodeQL js/incomplete-multi-character-
+    // sanitization).
+    const layers = 20;
+    let element = '<script></script>';
+    for (let i = 0; i < layers; i += 1) {
+      element = `<scr${element}ipt></script>`;
+    }
+    expect(sanitiseSvg(`<svg>${element}</svg>`)).toBe('<svg></svg>');
+  });
+
+  it('removes handlers and links behind other separators and spellings', () => {
+    const dirty = [
+      '<svg/onload=alert(1)></svg>',
+      '<svg a="b"onload=alert(1)></svg>',
+      "<svg a='b'ONLOAD = 'alert(1)'></svg>",
+      '<svg><a href=javascript:alert(1)>t</a></svg>',
+      '<svg><a href="java&#x73;cript:alert(1)">t</a></svg>',
+      '<svg><a HREF="https://example.org/">t</a></svg>',
+      "<svg><a xlink:href='vbscript:x'>t</a></svg>",
+      '<svg><set attributeName="href" to="javascript:alert(1)"/></svg>',
+      '<svg><animate attributeName="href" values="javascript:alert(1)"></animate></svg>',
+    ];
+    for (const svg of dirty) {
+      expect(sanitiseSvg(svg), svg).not.toMatch(
+        /\son[a-z]+\s*=|[/"']on[a-z]+\s*=|href|<set|<animate/i,
+      );
+    }
+    // Links inside the drawing stay.
+    const inner = '<svg><use xlink:href="#E0A4"/><use href=\'#x\'/></svg>';
+    expect(sanitiseSvg(inner)).toBe(inner);
+  });
+
+  it('is fast on long runs of white space and quotes', () => {
+    const t0 = performance.now();
+    sanitiseSvg(`<svg${' '.repeat(200_000)}>`);
+    sanitiseSvg(`<svg ${'a="'.repeat(50_000)}>`);
+    expect(performance.now() - t0).toBeLessThan(1000);
+  });
 });

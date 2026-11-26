@@ -12,9 +12,10 @@ be. The code is licensed AGPL-3.0-or-later, so the project cannot be closed off 
 
 ### Can I try it online?
 
-Not yet. OpenTiles is a working app that has not been released; a hosted version is waiting on
-the microphone tests on real pianos, a legal review and the deployment (see [PLAN.md](../PLAN.md)).
-You can [run it yourself](../README.md#run-it-yourself) today.
+Yes: open [opentiles.site](https://opentiles.site) in desktop Chrome, Edge or Firefox. There is
+nothing to install and no account; the site is built from the latest `main`. Version 1.0 is still
+waiting on the microphone tests on real pianos and a legal review (see [PLAN.md](../PLAN.md)). You
+can also [run it yourself](../README.md#run-it-yourself).
 
 ### Do I need an account?
 

@@ -14,6 +14,8 @@ export function parseXmlDocument(xml: string, domParser?: DomParserLike): Docume
   if (!parser) throw new ImportError('No XML parser is available in this environment.');
   let doc: Document;
   try {
+    // Always parsed as XML, never as HTML: the result is a tree that the importers read into a
+    // Song and drop. Nothing here writes it, or text taken from it, into the page.
     doc = parser.parseFromString(xml, 'application/xml');
   } catch {
     throw new ImportError('This file is not valid XML.');

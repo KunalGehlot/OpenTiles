@@ -17,7 +17,8 @@ and track your progress. No account, no tracking, no payment. Ever.
 ![Rust](https://img.shields.io/badge/engine-Rust%20%E2%86%92%20WebAssembly-b7410e.svg)
 ![TypeScript](https://img.shields.io/badge/app-TypeScript%20%2B%20React-3178c6.svg)
 
-[User guide](docs/user-guide.md) · [FAQ](docs/faq.md) · [Documentation](docs/README.md) ·
+**[Open OpenTiles](https://opentiles.site)** · [User guide](docs/user-guide.md) · [FAQ](docs/faq.md) ·
+[Documentation](docs/README.md) ·
 [Discussions](https://github.com/KunalGehlot/OpenTiles/discussions) ·
 [Contributing](CONTRIBUTING.md) · [Roadmap](PLAN.md)
 
@@ -25,13 +26,14 @@ and track your progress. No account, no tracking, no payment. Ever.
 
 </div>
 
-> **Status (October 2026): working app, not yet released.** Practice in wait, listen and play-along
-> modes with a MIDI keyboard (Chrome, Edge, Firefox), the microphone or the on-screen keys; falling
-> notes and score views; a catalogue of 81 reviewed public-domain pieces; your own MusicXML, MuseScore,
-> ABC and MIDI files; English and German. Before a public release: the microphone test on real pianos
-> a legal review and the deployment.
-> There is no hosted version to try yet; you can [run it yourself](#run-it-yourself) in a few minutes.
-> See [PLAN.md](PLAN.md).
+> **Status (November 2026): free to use at [opentiles.site](https://opentiles.site), before
+> version 1.0.** Practice in wait, listen and play-along modes with a MIDI keyboard (Chrome, Edge,
+> Firefox), the microphone or the on-screen keys; falling notes and score views; a catalogue of 81
+> reviewed public-domain pieces; your own MusicXML, MuseScore, ABC and MIDI files; English and
+> German. Still to come before 1.0: the microphone test on real pianos (listening works, but its
+> thresholds are tuned on synthetic recordings so far) and a legal review. You can also
+> [run it yourself](#run-it-yourself). See [PLAN.md](PLAN.md) and the
+> [releases](https://github.com/KunalGehlot/OpenTiles/releases).
 
 ## Features
 
@@ -121,7 +123,8 @@ Read more in [docs/architecture.md](docs/architecture.md) and the full
 
 ## Run it yourself
 
-You need [Node.js](https://nodejs.org) ≥ 22.12, [pnpm](https://pnpm.io) 10 and
+The site at [opentiles.site](https://opentiles.site) is built from `main`. To run your own copy, you
+need [Node.js](https://nodejs.org) ≥ 22.12, [pnpm](https://pnpm.io) 10 and
 [Rust](https://rustup.rs) (stable, with the `wasm32-unknown-unknown` target, which
 `rust-toolchain.toml` installs for you).
 
