@@ -86,8 +86,8 @@ they arrive.
   in a hidden tab), the chord and scale drills on a real keyboard (P7-13, P7-24), their MuseScore PDF and MIDI pair
   again (P5-18), the release gate (P5-10; with it a native German read-through, P2-14, and a pen
   test, P4-15), and the Player's screenshots for the README once they like its look (P6-14).
-- **Legal and publishing:** the legal consultation (P2-18), the trademark (P0-02) and the
-  Impressum's postal address (P2-17).
+- **Legal and publishing:** the legal consultation (P2-18), the trademark (P0-02), the
+  Impressum's postal address (P2-17) and the Pages domain verification (P5-11).
 - **App Store:** the Apple Developer Program (P3-02), after the licence question in the app's
   README.
 - **Catalogue growth:** reviewing new pieces (P2-06, P2-07, P3-05, P4-13, P4-13b), and PDMX's
@@ -575,7 +575,9 @@ images, sounds or fonts, and credit the inspiration in [CREDITS.md](CREDITS.md).
   the DNS points straight at GitHub Pages ("DNS only"), HTTPS is enforced with GitHub's
   certificate, `www` redirects to the apex, and pages, the service worker and catalogue files come
   from GitHub with no Cloudflare or error-report headers. The README, FAQ and user guide link to
-  the site. Left: the lawyer's view (P2-18).
+  the site. Left: the domain verification (`docs/deploying.md` step 2; no
+  `_github-pages-challenge-…` TXT record was in the DNS on 2026-11-26) and the lawyer's view
+  (P2-18).
 - [~] **P5-12** (APP) A MIDI keyboard in Firefox stays connected. Reason (maintainer's report,
   2026-10-10): in Firefox the keyboard worked for a while, then fell silent after moving around the
   site, and then "Firefox found no MIDI keyboard" until Firefox was restarted. Each screen asked for
@@ -969,6 +971,9 @@ Record the outcome as an ADR in `docs/adr/` and tick it here.
 
 ## Changelog
 
+- **2026-11-26** — P5-11 back to its real state: the Pages domain verification is still open (no
+  challenge record in the DNS), so it stays under "Waiting on the maintainer". The queue is
+  unchanged.
 - **2026-11-26** — v0.6.2, a fix between queue items, for issue #75: no catalogue score wrote
   `<accidental>`, and Verovio draws accidentals only from it, so 35 pieces (In the Hall of the
   Mountain King and Greensleeves among them) showed chromatic notes without their sharps, flats or
