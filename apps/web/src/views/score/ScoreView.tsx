@@ -49,6 +49,7 @@ export function ScoreView({
   const hostRef = useRef<HTMLDivElement>(null);
   const stripRef = useRef<HTMLDivElement>(null);
   const cursorRef = useRef<HTMLDivElement>(null);
+  const pinnedRef = useRef<HTMLDivElement>(null);
   const controllerRef = useRef<ScoreController | null>(null);
   const [state, setState] = useState<'loading' | 'ready' | { error: string }>('loading');
   const [page, setPage] = useState<PageInfo>({ page: 1, pageCount: 1 });
@@ -89,6 +90,7 @@ export function ScoreView({
           host,
           strip,
           cursor,
+          pinnedRef.current,
           suggested,
           notation.generated,
         );
@@ -178,6 +180,15 @@ export function ScoreView({
           <div ref={stripRef} className="ot-score-strip" data-testid="score-strip" />
           <div ref={cursorRef} className="ot-score-cursor" data-testid="score-cursor" hidden />
         </div>
+        {layout === 'scroll' && (
+          <div
+            ref={pinnedRef}
+            className="ot-score-key"
+            data-testid="score-key"
+            aria-hidden="true"
+            hidden
+          />
+        )}
       </div>
       {notation.generated && state === 'ready' && (
         <p className="ot-score-note muted">

@@ -12,6 +12,7 @@ import type { Engraver } from './engraver';
 import type { ScoreLinks } from './glyph-map';
 import { fingersToAdd, glyphStates, nearestByBeat, noteStates } from './note-states';
 import type { NoteState } from './note-states';
+import { PinnedHeader } from './pinned-header';
 
 export type { ScoreLayout } from './engrave-core';
 export { scaleFor } from './engrave-core';
@@ -72,6 +73,8 @@ export class ScoreController {
   /** Beats at which a note starts or ends, sorted: the colours change only when one is passed. */
   private readonly boundaries: number[];
   private readonly detach: () => void;
+  /** Scrolling view: the clefs and key signature kept in view at the left edge (issue #75). */
+  private readonly pinned: PinnedHeader | null;
   /** Called when the shown page or the page count changes. */
   onPage: (info: PageInfo) => void = () => {};
   /** Each layout asked for after a resize gets a number; only the newest is shown. */
@@ -90,6 +93,8 @@ export class ScoreController {
     host: HTMLElement,
     strip: HTMLElement,
     cursor: HTMLElement,
+    /** Where the scrolling view pins its clefs and key signature (issue #75). */
+    pinned: HTMLElement | null,
     /** Ids of notes whose finger was suggested rather than written (P4-08). */
     suggested: ReadonlySet<string> = new Set(),
     /** The score was written from the song, whose refs are the glyph ids (P5-13). */
@@ -106,6 +111,7 @@ export class ScoreController {
       host,
       strip,
       cursor,
+      pinned,
       size,
       drawn,
       links,
@@ -121,6 +127,7 @@ export class ScoreController {
     private readonly host: HTMLElement,
     private readonly strip: HTMLElement,
     private readonly cursor: HTMLElement,
+    pinned: HTMLElement | null,
     size: { width: number; height: number },
     drawn: DrawnScore,
     links: ScoreLinks,
@@ -130,6 +137,7 @@ export class ScoreController {
     this.noteById = new Map(song.notes.map((n) => [n.id, n]));
     this.size = size;
     this.mover = strip.parentElement ?? host;
+    this.pinned = layout === 'scroll' && pinned ? new PinnedHeader(pinned) : null;
     this.boundaries = [
       ...new Set(song.notes.flatMap((n) => [n.startBeat, n.startBeat + n.durationBeats])),
     ].sort((a, b) => a - b);
@@ -171,6 +179,7 @@ export class ScoreController {
         this.elements.get(g)?.classList.add('ot-lh');
     }
     this.addFingering();
+    this.pinned?.build(this.strip);
     this.measure();
     this.decorateHardest();
     this.onPage({ page: n, pageCount: this.pages.length });
@@ -211,6 +220,7 @@ export class ScoreController {
       this.anchors = [];
       return;
     }
+    this.pinned?.place(this.host, this.mover, Number.isNaN(this.shownPos) ? 0 : this.shownPos);
     const origin = this.mover.getBoundingClientRect();
     const boxes = new Map<number, MeasureBox>();
     this.measureIds.forEach((id, index) => {
@@ -461,6 +471,7 @@ export class ScoreController {
       this.shownPos = this.scrollPos;
       this.mover.style.transform = `translate3d(${(-this.scrollPos).toFixed(2)}px, 0, 0)`;
     }
+    this.pinned?.update(this.shownPos);
   }
 
   /**
@@ -581,6 +592,7 @@ export class ScoreController {
     window.clearTimeout(this.wheelTimer);
     this.endScrub();
     this.detach();
+    this.pinned?.clear();
     this.mover.style.transform = '';
     this.strip.style.paddingInline = '';
     this.strip.innerHTML = '';

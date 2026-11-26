@@ -102,6 +102,35 @@
   fill: var(--text);
 }
 
+/* The scrolling score's pinned clefs and key signature (issue #75): opaque in the score's own
+   colours, so the notes slide under it, with a hairline where they are cut. It never takes a
+   pointer, so dragging the score works through it. */
+.ot-score-key {
+  position: absolute;
+  left: 0;
+  top: 0;
+  z-index: 1;
+  background: var(--surface);
+  box-shadow: 1px 0 0 var(--line);
+  pointer-events: none;
+}
+
+.ot-score-key[hidden] {
+  display: none;
+}
+
+.ot-score-key svg {
+  display: block;
+  overflow: hidden;
+  color: var(--text);
+  fill: var(--text);
+}
+
+/* Verovio scopes its stroke colour to its own SVG; the cloned lines need it here. */
+.ot-score-key path {
+  stroke: currentColor;
+}
+
 .ot-score-cursor {
   position: absolute;
   left: 0;
